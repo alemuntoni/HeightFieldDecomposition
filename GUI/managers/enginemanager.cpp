@@ -19,7 +19,7 @@ EngineManager::~EngineManager()
 void EngineManager::on_generateGridPushButton_clicked() {
     DcelManager* dm = (DcelManager*)mainWindow->getManager(DCEL_MANAGER_ID);
     DrawableDcel* d = dm->getDcel();
-    int s = 50;
+    int s = 100;
     if (d != nullptr){
         BoundingBox bb = d->getBoundingBox();
         double maxl = std::max(bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
