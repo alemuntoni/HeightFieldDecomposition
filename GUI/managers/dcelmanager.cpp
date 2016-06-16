@@ -148,7 +148,7 @@ void DcelManager::on_loadDcelButton_clicked() {
     QString filename = QFileDialog::getOpenFileName(nullptr,
                        "Open DCEL",
                        ".",
-                       "DCEL(*.dcel);;OBJ(*.obj);;PLY(*.ply)");
+                       "OBJ(*.obj);;DCEL(*.dcel);;PLY(*.ply)");
 
     if (!filename.isEmpty())
     {

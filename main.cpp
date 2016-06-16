@@ -6,6 +6,7 @@
 #include "GUI/mainwindow.h"
 #include "GUI/managers/dcelmanager.h"
 #include "GUI/managers/windowmanager.h"
+#include "GUI/managers/enginemanager.h"
 #include "common.h"
 #include <QApplication>
 #include <lib/common/comparators.h>
@@ -24,6 +25,10 @@ int main(int argc, char *argv[]) {
     DcelManager d(&gui);
     DCEL_MANAGER_ID = gui.addManager(&d, "Dcel");
     gui.setCurrentIndexToolBox(DCEL_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
+
+    EngineManager e(&gui);
+    ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
+
 
     gui.updateGlCanvas();
     gui.show();

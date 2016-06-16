@@ -16,7 +16,8 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
                                           ui(new Ui::MainWindow),
                                           nMeshes(0),
-                                          first(true) {
+                                          first(true),
+                                          debugObjects(nullptr){
     ui->setupUi(this);
     ui->toolBox->removeItem(0);
 
@@ -178,6 +179,50 @@ void MainWindow::renameManager(unsigned int i, std::string s) {
 void MainWindow::setCurrentIndexToolBox(unsigned int i){
     if (i < managers.size())
         ui->toolBox->setCurrentIndex(i);
+}
+
+void MainWindow::enableDebugObjects() {
+    if (debugObjects == nullptr){
+        debugObjects = new DrawableDebugObjects();
+        pushObj(debugObjects, "Debug Objects");
+    }
+}
+
+void MainWindow::disableDebugObjects() {
+    if (debugObjects != nullptr){
+        deleteObj(debugObjects);
+        delete debugObjects;
+        debugObjects = nullptr;
+    }
+    ui->glCanvas->updateGL();
+}
+
+void MainWindow::addDebugSphere(const Pointd& center, double radius, const QColor& color, int precision) {
+    if (debugObjects!= nullptr){
+        debugObjects->addDebugSphere(center, radius, color, precision);
+        //ui->glCanvas->updateGL();
+    }
+}
+
+void MainWindow::clearDebugSpheres() {
+    if (debugObjects!= nullptr){
+        debugObjects->clearDebugSpheres();
+        ui->glCanvas->updateGL();
+    }
+}
+
+void MainWindow::addDebugCylinder(const Pointd& a, const Pointd& b, double radius, const QColor color) {
+    if (debugObjects!=nullptr){
+        debugObjects->addDebugCylinder(a,b,radius, color);
+        ui->glCanvas->updateGL();
+    }
+}
+
+void MainWindow::clearDebugCylinders() {
+    if (debugObjects!=nullptr){
+        debugObjects->clearDebugCylinders();
+        ui->glCanvas->updateGL();
+    }
 }
 
 /**

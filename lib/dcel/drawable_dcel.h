@@ -46,11 +46,6 @@ class DrawableDcel : public Dcel, public DrawableObject {
         bool isVisible() const;
         void setVisible(bool b);
 
-        void addDebugSphere(const Pointd& center, double radius, const QColor &color, int precision = 4);
-        void clearDebugSpheres();
-        void addDebugCylinder(const Pointd& a, const Pointd& b, double radius, const QColor color);
-        void clearDebugCylinders();
-
         void update();
 
         // rendering options
@@ -88,21 +83,6 @@ class DrawableDcel : public Dcel, public DrawableObject {
         std::vector<float> colors; /** \~Italian @brief vettore di colori associati ai triangoli (da considerare come triple rgb float) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */
 
         std::vector<unsigned int> triangles_face; /** \~Italian @brief vettore di mappatura triangoli->facce (ogni entrata ha posizione corrispondente a un terzo della posizione della tripla in tris e presenta l'identificativo di una faccia */
-
-        typedef struct {
-                Pointd center;
-                double radius;
-                QColor color;
-                int precision;
-        } Sphere;
-        typedef struct {
-                Pointd a;
-                Pointd b;
-                double radius;
-                QColor color;
-        } Cylinder;
-        std::vector<Sphere> debugSpheres;
-        std::vector<Cylinder> debugCylinders;
 };
 
 #endif // DRAWABLE_DCEL_H

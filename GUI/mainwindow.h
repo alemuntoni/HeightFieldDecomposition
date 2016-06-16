@@ -17,6 +17,7 @@
 
 #include "lib/common/drawable_object.h"
 #include "lib/common/bounding_box.h"
+#include "lib/common/drawabledebugobjects.h"
 
 namespace Ui {
     class MainWindow;
@@ -46,11 +47,17 @@ class MainWindow : public QMainWindow {
         void setFullScreen(bool);
         void setBackgroundColor(const QColor &);
 
-        //int addManager(QDockWidget *, Qt::DockWidgetArea position);
         int addManager(QFrame *f, std::string name, QToolBox *parent = nullptr);
         QFrame *getManager(unsigned int i);
         void renameManager(unsigned int i, std::string s);
         void setCurrentIndexToolBox(unsigned int i);
+
+        void enableDebugObjects();
+        void disableDebugObjects();
+        void addDebugSphere(const Pointd& center, double radius, const QColor &color, int precision = 4);
+        void clearDebugSpheres();
+        void addDebugCylinder(const Pointd& a, const Pointd& b, double radius, const QColor color);
+        void clearDebugCylinders();
 
     signals:
         /**
@@ -76,9 +83,8 @@ class MainWindow : public QMainWindow {
         std::map<int, QCheckBox * > checkBoxes;
         boost::bimap<int, DrawableObject*> mapObjects;
         int nMeshes;
-
-
         bool first;
+        DrawableDebugObjects* debugObjects;
 };
 
 #endif // MAINWINDOW_H

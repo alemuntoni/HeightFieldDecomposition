@@ -141,6 +141,7 @@ class Dcel : public SerializableObject {
         void updateFaceNormals();
         void updateVertexNormals();
         BoundingBox updateBoundingBox();
+        void scale(const BoundingBox &newBoundingBox);
         void recalculateIds();
         void resetFaceColors();
         void reset();

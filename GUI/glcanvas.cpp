@@ -91,7 +91,7 @@ void GLcanvas::fitScene() {
     else {
         for(int i=0; i<(int)drawlist.size(); ++i) {
             const DrawableObject * obj = drawlist[i];
-            if (obj->isVisible()) {
+            if (obj->isVisible() && obj->sceneRadius() > 0) {
                 center += obj->sceneCenter();
                 radius = std::max(radius, obj->sceneRadius());
                 ++count;

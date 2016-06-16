@@ -56,7 +56,11 @@ HEADERS += \
     common.h \
     lib/common/serialize.h \
     lib/common/pickable_object.h \
-    lib/dcel/pickable_dcel.h
+    lib/dcel/pickable_dcel.h \
+    lib/grid/grid.h \
+    lib/common/drawabledebugobjects.h \
+    GUI/managers/enginemanager.h \
+    lib/grid/drawablegrid.h
 
 SOURCES += \
     lib/dcel/dcel_face.cpp \
@@ -70,12 +74,17 @@ SOURCES += \
     GUI/managers/dcelmanager.cpp \
     GUI/managers/windowmanager.cpp \
     common.cpp \
-    lib/dcel/pickable_dcel.cpp
+    lib/dcel/pickable_dcel.cpp \
+    lib/grid/grid.cpp \
+    lib/common/drawabledebugobjects.cpp \
+    GUI/managers/enginemanager.cpp \
+    lib/grid/drawablegrid.cpp
 
 FORMS += \
     GUI/mainwindow.ui \
     GUI/managers/dcelmanager.ui \
     GUI/managers/windowmanager.ui \
+    GUI/managers/enginemanager.ui
 
 DISTFILES += \
     README.txt

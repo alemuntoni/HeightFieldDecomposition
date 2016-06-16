@@ -905,6 +905,20 @@ BoundingBox Dcel::updateBoundingBox() {
     return boundingBox;
 }
 
+void Dcel::scale(const BoundingBox& newBoundingBox) {
+    Pointd oldCenter = boundingBox.center();
+    Pointd newCenter = newBoundingBox.center();
+    Pointd deltaOld = boundingBox.getMax() - boundingBox.getMin();
+    Pointd deltaNew = newBoundingBox.getMax() - newBoundingBox.getMin();
+    for (Dcel::VertexIterator vit = vertexBegin(); vit != vertexEnd(); ++vit) {
+        Dcel::Vertex* v = *vit;
+        v->setCoordinate(v->getCoordinate() - oldCenter);
+        v->setCoordinate(v->getCoordinate() * (deltaNew / deltaOld));
+        v->setCoordinate(v->getCoordinate() + newCenter);
+    }
+    boundingBox = newBoundingBox;
+}
+
 /**
  * \~Italian
  * @brief Funzione che ricalcola gli id di vertici, half edge e facce della Dcel.

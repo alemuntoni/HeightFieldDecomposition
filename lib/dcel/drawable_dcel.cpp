@@ -96,54 +96,6 @@ void DrawableDcel::setVisible(bool b) {
 
 /**
  * \~Italian
- * @brief DrawableDcel::addDebugSphere
- * Aggiunge una sfera visualizzabile, indipendente dalla DrawableDcel stessa.
- *
- * @param[in] center: centro della sfera
- * @param[in] radius: raggio della sfera
- * @param[in] color: colore della sfera
- * @param[in] precision: precisione nel rendering della sfera, defualt = 4
- */
-void DrawableDcel::addDebugSphere(const Pointd& center, double radius, const QColor& color, int precision) {
-    Sphere s = {center, radius, color, precision};
-    debugSpheres.push_back(s);
-}
-
-/**
- * \~Italian
- * @brief DrawableDcel::clearDebugSpheres
- * Rimuove tutte le sfere di debug presenti nella DrawableDcel
- */
-void DrawableDcel::clearDebugSpheres() {
-    debugSpheres.clear();
-}
-
-/**
- * \~Italian
- * @brief DrawableDcel::addDebugCylinder
- * Aggiunge un cilindtro visualizzabile, indipendente dalla DrawableDcel stessa.
- *
- * @param[in] a: estremo a del cilindro
- * @param[in] b: estremo b del cilindro
- * @param[in] radius: raggio del cilindro
- * @param[in] color: colore del cilindro
- */
-void DrawableDcel::addDebugCylinder(const Pointd& a, const Pointd& b, double radius, const QColor color) {
-    Cylinder c = {a, b, radius, color};
-    debugCylinders.push_back(c);
-}
-
-/**
- * \~Italian
- * @brief DrawableDcel::clearDebugCylinders
- * Rimuove tutti i cilindri di debug presenti nella DrawableDcel
- */
-void DrawableDcel::clearDebugCylinders() {
-    debugCylinders.clear();
-}
-
-/**
- * \~Italian
  * @brief DrawableDcel::update()
  * Aggiorna i vettori visualuizzati dalla draw() con le informazioni contenute nella Dcel.
  * Fa in modo che la mesh visualizzata sia effettivamente quella contenuta all'interno della struttura dati
@@ -381,13 +333,6 @@ void DrawableDcel::draw() const {
             }
         }
     }
-    for (unsigned int i = 0; i < debugSpheres.size(); i++){
-        sphere(debugSpheres[i].center, debugSpheres[i].radius, debugSpheres[i].color, debugSpheres[i].precision);
-    }
-    for (unsigned int i = 0; i < debugCylinders.size(); i++){
-        cylinder(debugCylinders[i].a, debugCylinders[i].b, debugCylinders[i].radius, debugCylinders[i].radius, debugCylinders[i].color);
-    }
-
 }
 
 void DrawableDcel::setWireframe(bool b) {
