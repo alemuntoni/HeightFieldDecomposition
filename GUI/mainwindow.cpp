@@ -53,9 +53,9 @@ void MainWindow::updateGlCanvas() {
  * @param obj: nuovo oggetto da visualizzare nella canvas
  * @param checkBoxName: nome assegnato alla checkbox relativa al nuovo oggetto
  */
-void MainWindow::pushObj(DrawableObject *obj, std::string checkBoxName) {
+void MainWindow::pushObj(DrawableObject *obj, std::string checkBoxName, bool b) {
     ui->glCanvas->pushObj(obj);
-    ui->glCanvas->fitScene();
+    if (b) ui->glCanvas->fitScene();
     ui->glCanvas->updateGL();
 
     QCheckBox * cb = new QCheckBox();
@@ -80,7 +80,7 @@ void MainWindow::pushObj(DrawableObject *obj, std::string checkBoxName) {
  *
  * @param obj: oggetto che verrà rimosso dalla canvas
  */
-void MainWindow::deleteObj(DrawableObject* obj) {
+void MainWindow::deleteObj(DrawableObject* obj, bool b) {
     int i = mapObjects.right.at(obj);
 
     QCheckBox * cb = checkBoxes[i];
@@ -94,7 +94,7 @@ void MainWindow::deleteObj(DrawableObject* obj) {
     delete cb;
 
     ui->glCanvas->deleteObj(obj);
-    ui->glCanvas->fitScene();
+    if (b) ui->glCanvas->fitScene();
     ui->glCanvas->updateGL();
 }
 

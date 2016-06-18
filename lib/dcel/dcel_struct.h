@@ -13,6 +13,7 @@
 #include <map>
 #include <set>
 #include <array>
+#include <omp.h>
 
 #include "lib/common/bounding_box.h"
 
@@ -142,6 +143,7 @@ class Dcel : public SerializableObject {
         void updateVertexNormals();
         BoundingBox updateBoundingBox();
         void scale(const BoundingBox &newBoundingBox);
+        void rotate(double matrix[3][3], const Pointd& centroid = Pointd());
         void recalculateIds();
         void resetFaceColors();
         void reset();

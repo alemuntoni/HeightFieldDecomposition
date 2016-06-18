@@ -56,6 +56,7 @@ class BoundingBox : public SerializableObject{
         double getMaxZ()    const;
         Pointd  center()    const;
         double diag()       const;
+        bool isIntern(const Pointd& p)     const;
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -249,6 +250,11 @@ inline Pointd BoundingBox::center() const {
  */
 inline double BoundingBox::diag() const {
     return (min - max).getLength();
+}
+
+inline bool BoundingBox::isIntern(const Pointd &p) const {
+    return (p.x() >= min.x() && p.y() >= min.y() && p.z() >= min.z() &&
+            p.x() <= max.x() && p.y() <= max.y() && p.z() <= max.z());
 }
 
 /**

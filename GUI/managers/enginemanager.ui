@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>318</width>
     <height>681</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>20</y>
+     <y>30</y>
      <width>121</width>
      <height>27</height>
     </rect>
@@ -31,6 +31,225 @@
    <property name="text">
     <string>Generate Grid</string>
    </property>
+  </widget>
+  <widget class="QSpinBox" name="samplesSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>30</y>
+     <width>101</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>20</number>
+   </property>
+   <property name="maximum">
+    <number>200</number>
+   </property>
+   <property name="singleStep">
+    <number>10</number>
+   </property>
+   <property name="value">
+    <number>50</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>10</y>
+     <width>131</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Samples per Max</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>70</y>
+     <width>121</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Kernel Distance</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="distanceSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>90</y>
+     <width>69</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <double>0.500000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>50.000000000000000</double>
+   </property>
+   <property name="singleStep">
+    <double>0.500000000000000</double>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="kernelRadioButton">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>140</y>
+     <width>117</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Kernel</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="weigthsRadioButton">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>170</y>
+     <width>117</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Weigths</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="targetComboBox">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>100</y>
+     <width>85</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>+X</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>+Y</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>+Z</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>-X</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>-Y</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>-Z</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>80</y>
+     <width>67</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Target:</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="freezeKernelPushButton">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>130</y>
+     <width>131</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Freeze Kernel</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="sliceCheckBox">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>200</y>
+     <width>121</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Sliced Visual</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="sliceSlider">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>230</y>
+     <width>121</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="sliceComboBox">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>260</y>
+     <width>121</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>+X</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>+Y</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>+Z</string>
+    </property>
+   </item>
   </widget>
  </widget>
  <resources/>

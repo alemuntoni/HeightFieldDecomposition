@@ -37,8 +37,8 @@ class MainWindow : public QMainWindow {
         ~MainWindow();
 
         void updateGlCanvas();
-        void pushObj(DrawableObject * obj, std::string checkBoxName);
-        void deleteObj(DrawableObject * obj);
+        void pushObj(DrawableObject * obj, std::string checkBoxName, bool b = true);
+        void deleteObj(DrawableObject * obj, bool b = true);
         BoundingBox getFullBoundingBox();
         int getNumberVisibleObjects();
         void saveSnapshot();

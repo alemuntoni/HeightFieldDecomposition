@@ -92,7 +92,6 @@ template <class T> class Point : SerializableObject {
         Point<T> operator *= (const Point<T>& otherPoint);
         Point<T> operator /= (const T& scalar );
         Point<T> operator /= (const Point<T>& otherPoint);
-        std::ostream& operator << (std::ostream& inputStream);
 
         /*****************
         * Public Methods *
@@ -112,6 +111,7 @@ template <class T> class Point : SerializableObject {
                        \~Italian @brief La componente \c y del punto/vettore */
         T zCoord; /**< \~English @brief The \c z component of the point/vector
                        \~Italian @brief La componente \c z del punto/vettore */
+
 };
 
 /****************
@@ -120,6 +120,12 @@ template <class T> class Point : SerializableObject {
 
 template <class T>
 Point<T> operator * (const T& scalar, const Point<T>& point);
+
+template <class T>
+Point<T> mul(const T m[][3], const Point<T>& point);
+
+template <class T>
+std::ostream& operator<< (std::ostream& inputStream, const Point<T>& p);
 
 /**************
 * Other Types *
@@ -519,9 +525,9 @@ inline double Point<T>::normalize() {
  */
 template <class T>
 inline void Point<T>::rotate(double matrix[3][3], const Point<T>& centroid) {
-    this -= centroid;
-    rotate(matrix);
-    this += centroid;
+    *this -= centroid;
+    *this = mul(matrix, *this);
+    *this += centroid;
 }
 
 /**
@@ -638,18 +644,6 @@ inline Point<T> Point<T>::operator /= (const Point<T>& otherPoint) {
     return *this;
 }
 
-/**
- * \~Italian
- * @brief Operatore di stram sul punto/vettore
- * @param[in] input_stream: stream di input
- * @return Lo stream di input a cui è stato accodato lo stream del punto/vettore
- */
-template <class T>
-inline std::ostream& Point<T>::operator << (std::ostream& inputStream) {
-    inputStream << "[" << xCoord << ", " << yCoord << ", " << zCoord << "]";
-    return inputStream;
-}
-
 /*****************
 * Public Methods *
 ******************/
@@ -682,6 +676,27 @@ inline Point<T> operator * (const T& scalar, const Point<T>& point) {
     return Point<T>(point.xCoord * scalar,
                     point.yCoord * scalar,
                     point.zCoord * scalar);
+}
+
+template <class T>
+inline Point<T> mul(const T m[][3], const Point<T>& point) {
+    Point<T> tmp = point;
+    tmp.setX(m[0][0]*point.x() + m[0][1]*point.y() + m[0][2]*point.z());
+    tmp.setY(m[1][0]*point.x() + m[1][1]*point.y() + m[1][2]*point.z());
+    tmp.setZ(m[2][0]*point.x() + m[2][1]*point.y() + m[2][2]*point.z());
+    return tmp;
+}
+
+/**
+ * \~Italian
+ * @brief Operatore di stram sul punto/vettore
+ * @param[in] input_stream: stream di input
+ * @return Lo stream di input a cui è stato accodato lo stream del punto/vettore
+ */
+template <class T>
+std::ostream& operator<<(std::ostream& inputStream, const Point<T>& p) {
+    inputStream << "[" << p.x() << ", " << p.y() << ", " << p.z() << "]";
+    return inputStream;
 }
 
 #endif // DCEL_POINT_H

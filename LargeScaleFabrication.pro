@@ -11,6 +11,7 @@ CONFIG(release, debug|release){
 
 unix:!macx{
     QMAKE_CXXFLAGS += -std=c++11  -fopenmp
+    QMAKE_LFLAGS +=  -fopenmp
     LIBS += /usr/lib/x86_64-linux-gnu/libGLU.so
     LIBS += -lboost_system -DBOOST_LOG_DYN_LINK -lboost_log -lboost_thread -lpthread
     LIBS += -lQGLViewer

@@ -6,28 +6,31 @@
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::EngineManager),
-    mainWindow((MainWindow*)parent)
-{
+    mainWindow((MainWindow*)parent),
+    g(nullptr) {
     ui->setupUi(this);
 }
 
-EngineManager::~EngineManager()
-{
+EngineManager::~EngineManager() {
     delete ui;
 }
 
 void EngineManager::on_generateGridPushButton_clicked() {
     DcelManager* dm = (DcelManager*)mainWindow->getManager(DCEL_MANAGER_ID);
     DrawableDcel* d = dm->getDcel();
-    int s = 100;
+    int s = ui->samplesSpinBox->value();
     if (d != nullptr){
         BoundingBox bb = d->getBoundingBox();
         double maxl = std::max(bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
         maxl = std::max(maxl, bb.getMaxZ() - bb.getMinZ());
         double av = maxl / s;
         BoundingBox nBB(-(bb.getMax()-bb.getMin())/av, (bb.getMax()-bb.getMin())/av);
-
         d->scale(nBB);
+
+        //double m[3][3];
+        //getRotationMatrix(Vec3(0,0,1), 0.785398, m);
+        //d->rotate(m);
+
         d->update();
         d->saveOnObjFile("tmp.obj");
         exec("./grid_generator tmp.obj");
@@ -35,9 +38,9 @@ void EngineManager::on_generateGridPushButton_clicked() {
 
         Eigen::RowVector3i nGmin;
         Eigen::RowVector3i nGmax;
-        Eigen::RowVector3i res;
         Eigen::VectorXd S;
         Eigen::MatrixXd GV;
+        Eigen::RowVector3i res;
 
         std::ifstream file;
         file.open ("tmp.bin", std::ios::in | std::ios::binary);
@@ -48,24 +51,102 @@ void EngineManager::on_generateGridPushButton_clicked() {
         Serializer::deserialize(S, file);
         file.close();
 
-
-        mainWindow->updateGlCanvas();
-
-        mainWindow->enableDebugObjects();
-        for (int i = 0; i < res(0); i++){
-            for (int j = 0; j < res(1); j++){
-                for (int k= 0; k < res(2); k++){
-                    Pointd p(GV.row(i+res(0)*(j + res(1)*k))(0), GV.row(i+res(0)*(j + res(1)*k))(1), GV.row(i+res(0)*(j + res(1)*k))(2));
-                    if (S(i+res(0)*(j + res(1)*k)) < -3) mainWindow->addDebugSphere(p, 0.5, QColor(255,0,0));
-                    //else mainWindow->addDebugSphere(p, 0.5, QColor(0,0,255));
-                }
-            }
+        if (g!=nullptr){
+            g->setVisible(false);
+            mainWindow->updateGlCanvas();
+            mainWindow->deleteObj(g);
+            delete g;
+            g = nullptr;
         }
+        g = new DrawableGrid(res, GV, S, nGmin, nGmax);
+        g->setKernelDistance(ui->distanceSpinBox->value());
+        mainWindow->pushObj(g, "Grid");
+        g->setTarget(XYZ[ui->targetComboBox->currentIndex()]);
+        g->calculateWeights(*d);
         mainWindow->updateGlCanvas();
+
 
         std::remove("tmp.bin");
         std::remove("tmp.obj");
         std::remove("tmp.mtu");
 
+    }
+}
+
+void EngineManager::on_distanceSpinBox_valueChanged(double arg1) {
+    if (g!=nullptr){
+        g->setKernelDistance(arg1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_targetComboBox_currentIndexChanged(int index) {
+    DcelManager* dm = (DcelManager*)mainWindow->getManager(DCEL_MANAGER_ID);
+    DrawableDcel* d = dm->getDcel();
+    if (d!= nullptr && g!= nullptr){
+        g->setTarget(XYZ[index]);
+        g->calculateWeights(*d);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_kernelRadioButton_toggled(bool checked) {
+    if (checked && g!=nullptr){
+        g->setDrawKernel();
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_weigthsRadioButton_toggled(bool checked) {
+    if (checked && g!=nullptr){
+        g->setDrawBorders();
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_freezeKernelPushButton_clicked() {
+    if (g!=nullptr){
+        double d = ui->distanceSpinBox->value();
+        g->freezeKernel(d);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_sliceCheckBox_stateChanged(int arg1) {
+    if (g!=nullptr){
+        if (arg1 == Qt::Checked){
+            ui->sliceComboBox->setEnabled(true);
+            ui->sliceSlider->setEnabled(true);
+            int s = ui->sliceComboBox->currentIndex();
+            g->setSliceValue(0);
+            g->setSlice(s+1);
+            if (s == 0) ui->sliceSlider->setMaximum(g->getResX() -1);
+            if (s == 1) ui->sliceSlider->setMaximum(g->getResY() -1);
+            if (s == 2) ui->sliceSlider->setMaximum(g->getResZ() -1);
+        }
+        else {
+            ui->sliceComboBox->setEnabled(false);
+            ui->sliceSlider->setEnabled(false);
+            g->setSlice(0);
+        }
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_sliceSlider_valueChanged(int value) {
+    if (g!=nullptr){
+        g->setSliceValue(value);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_sliceComboBox_currentIndexChanged(int index) {
+    if (g!=nullptr){
+        g->setSliceValue(0);
+        g->setSlice(index+1);
+        ui->sliceSlider->setValue(0);
+        if (index == 0) ui->sliceSlider->setMaximum(g->getResX() -1);
+        if (index == 1) ui->sliceSlider->setMaximum(g->getResY() -1);
+        if (index == 2) ui->sliceSlider->setMaximum(g->getResZ() -1);
     }
 }

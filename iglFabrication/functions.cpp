@@ -3,8 +3,7 @@
 /**
  * @brief generateGridAndDistanceField
  *
- * The bounding box of the input mesh has to be centered on point (0,0,0), and must be sufficiently larger
- * to build a Grid with a step 2x2x2.
+ * The bounding box  must be sufficiently larger to build a Grid with a step 2x2x2.
  *
  * The Grid generated will have a border of two points guaranteed to be outside the mesh.
  *
