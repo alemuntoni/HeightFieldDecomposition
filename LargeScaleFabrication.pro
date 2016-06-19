@@ -62,7 +62,8 @@ HEADERS += \
     lib/common/drawabledebugobjects.h \
     GUI/managers/enginemanager.h \
     lib/grid/drawablegrid.h \
-    engine/tricubic.h
+    engine/tricubic.h \
+    lib/common/arrays.h
 
 SOURCES += \
     lib/dcel/dcel_face.cpp \

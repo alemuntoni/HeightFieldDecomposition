@@ -1,36 +1,15 @@
 #ifndef TRI_CUBIC_INTERPOLATOR_H
 #define TRI_CUBIC_INTERPOLATOR_H
 
-/*#include <string>
-#include <sstream>
-#include <Eigen/Dense>
-#include <boost/array.hpp>
-#include <boost/multi_array.hpp>
-#include <boost/python.hpp>
+#include <Eigen/Core>
+#include "lib/common/arrays.h"
+#include "lib/common/point.h"
 
-using namespace boost::python;
+namespace TricubicInterpolator {
 
-//This code is adapted from https://github.com/deepzot/likely
-class TriCubicInterpolator{
-  // Performs tri-cubic interpolation within a 3D periodic grid.
-  // Based on http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.89.7835
-  public:
-    TriCubicInterpolator(list data, list nkpoints);
-    double ip(list xyz);
-  private:
-    boost::multi_array<double,1> _data;
-    double _spacing;
-    int _n1, _n2, _n3;
-    int _i1, _i2, _i3;
-    bool _initialized;
-    Eigen::Matrix<double,64,1> _coefs;
-    Eigen::Matrix<double,64,64> _C;
-    inline int _index(int i1, int i2, int i3) const {
-        if((i1 %= _n1) < 0) i1 += _n1;
-        if((i2 %= _n2) < 0) i2 += _n2;
-        if((i3 %= _n3) < 0) i3 += _n3;
-        return i1 + _n1*(i2 + _n2*i3);
-	}
-};*/
+    void getoCoefficients(Array4D<double>& coeffs, const Array3D<double> &weights);
+
+    double getValue(const Pointd &p, const std::vector<double> coeffs);
+}
 
 #endif

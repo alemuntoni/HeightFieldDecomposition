@@ -269,9 +269,7 @@ inline void Serializer::deserialize(std::vector<T, A...> &v, std::ifstream& bina
     Serializer::deserialize(size, binaryFile);
     v.resize(size);
     for (unsigned int it = 0; it < size; ++it){
-        T obj;
-        Serializer::deserialize(obj, binaryFile);
-        v[it] = obj;
+        Serializer::deserialize(v[it], binaryFile);
     }
 }
 
@@ -379,9 +377,7 @@ inline void Serializer::deserialize(Eigen::Matrix<T, A...> &m, std::ifstream& bi
 
     for (unsigned int i = 0; i < row; i++){
         for (unsigned int j = 0; j < col; ++j){
-            T obj;
-            Serializer::deserialize(obj, binaryFile);
-            m(i,j) = obj;
+            Serializer::deserialize(m(i,j), binaryFile);
         }
     }
 }

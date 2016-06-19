@@ -56,6 +56,7 @@ class BoundingBox : public SerializableObject{
         double getMaxZ()    const;
         Pointd  center()    const;
         double diag()       const;
+        bool isStrictlyIntern(const Pointd& p)     const;
         bool isIntern(const Pointd& p)     const;
 
         // SerializableObject interface
@@ -250,6 +251,11 @@ inline Pointd BoundingBox::center() const {
  */
 inline double BoundingBox::diag() const {
     return (min - max).getLength();
+}
+
+inline bool BoundingBox::isStrictlyIntern(const Pointd &p) const {
+    return (p.x() > min.x() && p.y() > min.y() && p.z() > min.z() &&
+            p.x() < max.x() && p.y() < max.y() && p.z() < max.z());
 }
 
 inline bool BoundingBox::isIntern(const Pointd &p) const {

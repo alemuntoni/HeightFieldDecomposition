@@ -10,21 +10,15 @@ Grid::Grid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoor
     resX = resolution(0);
     resY = resolution(1);
     resZ = resolution(2);
-    weights.setConstant(resX*resY*resZ, BORDER_PAY);
+    weights = Array3D<double>(resX,resY,resZ, BORDER_PAY);
     for (unsigned int i = 2; i < resX-2; i++){
         for (unsigned int j = 2; j < resY-2; j++){
             for (unsigned int k = 2; k < resZ-2; ++k){
-                weights(getIndex(i,j,k)) = STD_PAY;
+                weights(i,j,k) = STD_PAY;
             }
         }
     }
-    coeffs.setConstant((resX-1)*(resY-1)*(resZ-1)*64, 0);
-    // tutti i primi coefficienti delle tricubiche sono pari a BORDER_PAY.
-    // dopo, tutti i coefficienti dei cubi "interni" verranno calcolati in base ai valori del grigliato
-    // rimarranno invariati quindi solo i cofficienti dei cubi sul bordo, dove l'interpolante sarà una funzione costante
-    for (unsigned int i = 0; i < (resX-1)*(resY-1)*(resZ-1)*64; i+=64)
-        coeffs[i] = BORDER_PAY;
-
+    coeffs = Array4D<double>((resX-1),(resY-1),(resZ-1),64, 0);
 }
 
 /**
@@ -34,7 +28,7 @@ Grid::Grid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoor
  * @param d
  */
 void Grid::calculateWeights(const Dcel& d) {
-    /*for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
+    for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
         const Dcel::Face* f = *fit;
         if (f->getNormal().dot(target) >= 0){
             Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
@@ -59,7 +53,7 @@ void Grid::calculateWeights(const Dcel& d) {
             setNeighboroudWeigth(p3, MAX_PAY);
         }
 
-    }*/
+    }
 }
 
 /**
@@ -73,10 +67,25 @@ void Grid::freezeKernel(double value) {
         for (unsigned int j = 0; j < getResY(); ++j){
             for (unsigned int k = 0; k < getResZ(); ++k){
                 if (getSignedDistance(i,j,k) < -value){
-                    weights(getIndex(i,j,k)) = MAX_PAY;
+                    weights(i,j,k) = MAX_PAY;
                 }
             }
         }
+    }
+    TricubicInterpolator::getoCoefficients(coeffs, weights);
+}
+
+double Grid::getValue(const Pointd& p) const {
+    if (! bb.isStrictlyIntern(p)) return BORDER_PAY;
+    unsigned int xi = getIndexOfCoordinateX(p.x()), yi = getIndexOfCoordinateY(p.y()), zi = getIndexOfCoordinateZ(p.z());
+    unsigned int gridIndex = getIndex(xi,yi,zi);
+    Pointd n(gridCoordinates(gridIndex,0), gridCoordinates(gridIndex,1), gridCoordinates(gridIndex,2));
+    if (n == p)
+        return weights(xi,yi,zi);
+    else{
+        n = (p - n) / 2; // n ora è un punto nell'intervallo 0 - 1
+        std::vector<double> coef = coeffs(xi,yi,zi);
+        return TricubicInterpolator::getValue(n, coef);
     }
 }
 
@@ -87,7 +96,7 @@ void Grid::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(resZ, binaryFile);
     Serializer::serialize(gridCoordinates, binaryFile);
     Serializer::serialize(signedDistances, binaryFile);
-    Serializer::serialize(weights, binaryFile);
+    weights.serialize(binaryFile);
     target.serialize(binaryFile);
 
 
@@ -100,7 +109,7 @@ void Grid::deserialize(std::ifstream& binaryFile) {
     Serializer::deserialize(resZ, binaryFile);
     Serializer::deserialize(gridCoordinates, binaryFile);
     Serializer::deserialize(signedDistances, binaryFile);
-    Serializer::deserialize(weights, binaryFile);
+    weights.deserialize(binaryFile);
     target.deserialize(binaryFile);
 }
 
@@ -108,35 +117,35 @@ void Grid::setNeighboroudWeigth(const Pointd& p, double w) {
     unsigned int i = getIndexOfCoordinateX(p.x());
     unsigned int j = getIndexOfCoordinateY(p.y());
     unsigned int k = getIndexOfCoordinateZ(p.z());
-    weights(getIndex(i-1,j-1,k-1)) = w;
-    weights(getIndex(i-1,j-1,k  )) = w;
-    weights(getIndex(i-1,j-1,k+1)) = w;
-    weights(getIndex(i-1,j  ,k-1)) = w;
-    weights(getIndex(i-1,j  ,k  )) = w;
-    weights(getIndex(i-1,j  ,k+1)) = w;
-    weights(getIndex(i-1,j+1,k-1)) = w;
-    weights(getIndex(i-1,j+1,k  )) = w;
-    weights(getIndex(i-1,j+1,k+1)) = w;
+    weights(i-1,j-1,k-1) = w;
+    weights(i-1,j-1,k  ) = w;
+    weights(i-1,j-1,k+1) = w;
+    weights(i-1,j  ,k-1) = w;
+    weights(i-1,j  ,k  ) = w;
+    weights(i-1,j  ,k+1) = w;
+    weights(i-1,j+1,k-1) = w;
+    weights(i-1,j+1,k  ) = w;
+    weights(i-1,j+1,k+1) = w;
 
-    weights(getIndex(i  ,j-1,k-1)) = w;
-    weights(getIndex(i  ,j-1,k  )) = w;
-    weights(getIndex(i  ,j-1,k+1)) = w;
-    weights(getIndex(i  ,j  ,k-1)) = w;
-    weights(getIndex(i  ,j  ,k  )) = w;
-    weights(getIndex(i  ,j  ,k+1)) = w;
-    weights(getIndex(i  ,j+1,k-1)) = w;
-    weights(getIndex(i  ,j+1,k  )) = w;
-    weights(getIndex(i  ,j+1,k+1)) = w;
+    weights(i  ,j-1,k-1) = w;
+    weights(i  ,j-1,k  ) = w;
+    weights(i  ,j-1,k+1) = w;
+    weights(i  ,j  ,k-1) = w;
+    weights(i  ,j  ,k  ) = w;
+    weights(i  ,j  ,k+1) = w;
+    weights(i  ,j+1,k-1) = w;
+    weights(i  ,j+1,k  ) = w;
+    weights(i  ,j+1,k+1) = w;
 
-    weights(getIndex(i+1,j-1,k-1)) = w;
-    weights(getIndex(i+1,j-1,k  )) = w;
-    weights(getIndex(i+1,j-1,k+1)) = w;
-    weights(getIndex(i+1,j  ,k-1)) = w;
-    weights(getIndex(i+1,j  ,k  )) = w;
-    weights(getIndex(i+1,j  ,k+1)) = w;
-    weights(getIndex(i+1,j+1,k-1)) = w;
-    weights(getIndex(i+1,j+1,k  )) = w;
-    weights(getIndex(i+1,j+1,k+1)) = w;
+    weights(i+1,j-1,k-1) = w;
+    weights(i+1,j-1,k  ) = w;
+    weights(i+1,j-1,k+1) = w;
+    weights(i+1,j  ,k-1) = w;
+    weights(i+1,j  ,k  ) = w;
+    weights(i+1,j  ,k+1) = w;
+    weights(i+1,j+1,k-1) = w;
+    weights(i+1,j+1,k  ) = w;
+    weights(i+1,j+1,k+1) = w;
 }
 
 

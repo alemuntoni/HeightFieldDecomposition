@@ -2,8 +2,9 @@
 #define GRID_H
 
 #include "lib/common/bounding_box.h"
+#include "lib/common/arrays.h"
 #include "lib/dcel/dcel.h"
-#include <Eigen/Core>
+#include "engine/tricubic.h"
 
 #define BORDER_PAY 5
 #define STD_PAY 0
@@ -26,6 +27,8 @@ class Grid : public SerializableObject{
         void calculateWeights(const Dcel &d);
         void freezeKernel(double value);
 
+        double getValue(const Pointd &p) const;
+
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);
@@ -33,7 +36,6 @@ class Grid : public SerializableObject{
     protected:
         Pointd getPoint(unsigned int i, unsigned int j, unsigned int k) const;
         unsigned int getIndex(unsigned int i, unsigned int j, unsigned int k) const;
-        unsigned int getIndexCoeffs(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const;
         double getSignedDistance(unsigned int i, unsigned int j, unsigned int k) const;
         double getWeight(unsigned int i, unsigned int j, unsigned int k) const;
         int getIndexOfCoordinateX(double x) const;
@@ -46,8 +48,8 @@ class Grid : public SerializableObject{
         unsigned int resX, resY, resZ;
         Eigen::MatrixXd gridCoordinates;
         Eigen::VectorXd signedDistances;
-        Eigen::VectorXd weights;
-        Eigen::VectorXd coeffs;
+        Array3D<double> weights;
+        Array4D<double> coeffs;
         Vec3 target;
 
 };
@@ -85,20 +87,12 @@ inline unsigned int Grid::getIndex(unsigned int i, unsigned int j, unsigned int 
     return k+resZ*(j + resY*i);
 }
 
-inline unsigned int Grid::getIndexCoeffs(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const {
-    assert (i < resX-1);
-    assert (j < resY-1);
-    assert (k < resZ-1);
-    assert (l < 64);
-    return l + 64*(k+resZ*(j + resY*i));
-}
-
 inline double Grid::getSignedDistance(unsigned int i, unsigned int j, unsigned int k) const {
     return signedDistances(getIndex(i,j,k));
 }
 
 inline double Grid::getWeight(unsigned int i, unsigned int j, unsigned int k) const {
-    return weights(getIndex(i,j,k));
+    return weights(i,j,k);
 }
 
 inline int Grid::getIndexOfCoordinateX(double x) const {
