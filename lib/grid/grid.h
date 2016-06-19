@@ -33,6 +33,7 @@ class Grid : public SerializableObject{
     protected:
         Pointd getPoint(unsigned int i, unsigned int j, unsigned int k) const;
         unsigned int getIndex(unsigned int i, unsigned int j, unsigned int k) const;
+        unsigned int getIndexCoeffs(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const;
         double getSignedDistance(unsigned int i, unsigned int j, unsigned int k) const;
         double getWeight(unsigned int i, unsigned int j, unsigned int k) const;
         int getIndexOfCoordinateX(double x) const;
@@ -46,6 +47,7 @@ class Grid : public SerializableObject{
         Eigen::MatrixXd gridCoordinates;
         Eigen::VectorXd signedDistances;
         Eigen::VectorXd weights;
+        Eigen::VectorXd coeffs;
         Vec3 target;
 
 };
@@ -79,7 +81,16 @@ inline unsigned int Grid::getIndex(unsigned int i, unsigned int j, unsigned int 
     assert (i < resX);
     assert (j < resY);
     assert (k < resZ);
-    return i+resX*(j + resY*k);
+    //return i+resX*(j + resY*k);
+    return k+resZ*(j + resY*i);
+}
+
+inline unsigned int Grid::getIndexCoeffs(unsigned int i, unsigned int j, unsigned int k, unsigned int l) const {
+    assert (i < resX-1);
+    assert (j < resY-1);
+    assert (k < resZ-1);
+    assert (l < 64);
+    return l + 64*(k+resZ*(j + resY*i));
 }
 
 inline double Grid::getSignedDistance(unsigned int i, unsigned int j, unsigned int k) const {

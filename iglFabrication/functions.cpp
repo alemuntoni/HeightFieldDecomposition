@@ -43,7 +43,8 @@ bool generateGridAndDistanceField(const std::string& s) {
             for (int j = 0; j < res(1); ++j){
                 zi = nGmin(2);
                 for (int k = 0; k < res(2); ++k){
-                    GV.row(i+res(0)*(j + res(1)*k)) = Eigen::RowVector3i(xi,yi,zi).cast<double>();
+                    //GV.row(i+res(0)*(j + res(1)*k)) = Eigen::RowVector3i(xi,yi,zi).cast<double>();
+                    GV.row(k+res(2)*(j + res(1)*i)) = Eigen::RowVector3i(xi,yi,zi).cast<double>();
                     zi+=2;
                 }
                 yi+=2;

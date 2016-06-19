@@ -18,6 +18,13 @@ Grid::Grid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoor
             }
         }
     }
+    coeffs.setConstant((resX-1)*(resY-1)*(resZ-1)*64, 0);
+    // tutti i primi coefficienti delle tricubiche sono pari a BORDER_PAY.
+    // dopo, tutti i coefficienti dei cubi "interni" verranno calcolati in base ai valori del grigliato
+    // rimarranno invariati quindi solo i cofficienti dei cubi sul bordo, dove l'interpolante sarà una funzione costante
+    for (unsigned int i = 0; i < (resX-1)*(resY-1)*(resZ-1)*64; i+=64)
+        coeffs[i] = BORDER_PAY;
+
 }
 
 /**

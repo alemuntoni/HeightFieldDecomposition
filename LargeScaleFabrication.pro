@@ -61,7 +61,8 @@ HEADERS += \
     lib/grid/grid.h \
     lib/common/drawabledebugobjects.h \
     GUI/managers/enginemanager.h \
-    lib/grid/drawablegrid.h
+    lib/grid/drawablegrid.h \
+    engine/tricubic.h
 
 SOURCES += \
     lib/dcel/dcel_face.cpp \
@@ -79,7 +80,8 @@ SOURCES += \
     lib/grid/grid.cpp \
     lib/common/drawabledebugobjects.cpp \
     GUI/managers/enginemanager.cpp \
-    lib/grid/drawablegrid.cpp
+    lib/grid/drawablegrid.cpp \
+    engine/tricubic.cpp
 
 FORMS += \
     GUI/mainwindow.ui \
