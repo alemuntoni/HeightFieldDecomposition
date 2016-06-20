@@ -30,18 +30,16 @@ Grid::Grid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoor
 void Grid::calculateWeights(const Dcel& d) {
     for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
         const Dcel::Face* f = *fit;
-        if (f->getNormal().dot(target) >= 0){
-            Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
-            Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
-            Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
+        Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
+        Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
+        Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
 
-            setNeighboroudWeigth(p1, MIN_PAY);
-            setNeighboroudWeigth(p2, MIN_PAY);
-            setNeighboroudWeigth(p3, MIN_PAY);
-        }
+        setNeighboroudWeigth(p1, MIN_PAY);
+        setNeighboroudWeigth(p2, MIN_PAY);
+        setNeighboroudWeigth(p3, MIN_PAY);
 
     }
-    for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
+    /*for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
         const Dcel::Face* f = *fit;
         if (f->getNormal().dot(target) < 0){
             Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
@@ -53,7 +51,7 @@ void Grid::calculateWeights(const Dcel& d) {
             setNeighboroudWeigth(p3, MAX_PAY);
         }
 
-    }
+    }*/
 }
 
 /**
@@ -62,7 +60,21 @@ void Grid::calculateWeights(const Dcel& d) {
  * Assegna massimo peso ai punti nel kernel
  * @param value
  */
-void Grid::freezeKernel(double value) {
+void Grid::freezeKernel(const Dcel& d, double value) {
+    // grid border and rest
+    weights.setConstant(BORDER_PAY);
+    for (unsigned int i = 2; i < resX-2; i++){
+        for (unsigned int j = 2; j < resY-2; j++){
+            for (unsigned int k = 2; k < resZ-2; ++k){
+                weights(i,j,k) = STD_PAY;
+            }
+        }
+    }
+
+    //mesh border
+    calculateWeights(d);
+
+    //kernel
     for (unsigned int i = 0; i < getResX(); ++i){
         for (unsigned int j = 0; j < getResY(); ++j){
             for (unsigned int k = 0; k < getResZ(); ++k){
@@ -97,8 +109,8 @@ void Grid::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(gridCoordinates, binaryFile);
     Serializer::serialize(signedDistances, binaryFile);
     weights.serialize(binaryFile);
+    coeffs.serialize(binaryFile);
     target.serialize(binaryFile);
-
 
 }
 
@@ -110,6 +122,7 @@ void Grid::deserialize(std::ifstream& binaryFile) {
     Serializer::deserialize(gridCoordinates, binaryFile);
     Serializer::deserialize(signedDistances, binaryFile);
     weights.deserialize(binaryFile);
+    coeffs.deserialize(binaryFile);
     target.deserialize(binaryFile);
 }
 

@@ -10,13 +10,19 @@ namespace Ui {
     class EngineManager;
 }
 
-class EngineManager : public QFrame
+class EngineManager : public QFrame, public SerializableObject
 {
         Q_OBJECT
 
     public:
         explicit EngineManager(QWidget *parent = 0);
+
+        void deleteDrawableObject(DrawableObject* d);
         ~EngineManager();
+
+        // SerializableObject interface
+        void serialize(std::ofstream& binaryFile) const;
+        void deserialize(std::ifstream& binaryFile);
 
     private slots:
         void on_generateGridPushButton_clicked();
@@ -37,10 +43,15 @@ class EngineManager : public QFrame
 
         void on_sliceComboBox_currentIndexChanged(int index);
 
+        void on_pushButton_clicked();
+
+        void on_pushButton_2_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
         DrawableGrid* g;
+        DrawableDcel* d;
 };
 
 #endif // ENGINEMANAGER_H

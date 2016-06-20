@@ -25,7 +25,7 @@ class Grid : public SerializableObject{
         void setTarget(const Vec3& value);
 
         void calculateWeights(const Dcel &d);
-        void freezeKernel(double value);
+        void freezeKernel(const Dcel& d, double value);
 
         double getValue(const Pointd &p) const;
 

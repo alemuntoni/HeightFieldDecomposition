@@ -174,6 +174,7 @@ void TricubicInterpolator::getoCoefficients(Array4D<double>& coeffs, const Array
 }
 
 double TricubicInterpolator::getValue(const Pointd& p, const std::vector<double> coeffs) {
+    assert (coeffs.size() == 64);
     int ijkn =0;
     double dzpow = 1;
     double result = 0;

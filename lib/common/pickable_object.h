@@ -31,6 +31,7 @@ class PickableObject
     public:
         PickableObject() {}   /**< \~English @brief Empty constructor
                                    \~Italian @brief Costruttore, vuoto */
+        virtual ~PickableObject() {}
 
         virtual void drawWithNames() const = 0; /**< \~English @brief Disegna tutti gli oggetti cliccabili dell'oggetto
                                                      \~Italian @brief Draws all the pickable objects of the object */

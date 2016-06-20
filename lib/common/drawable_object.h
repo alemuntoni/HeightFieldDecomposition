@@ -38,6 +38,8 @@ class DrawableObject
         DrawableObject() {}                      /**< \~Italian @brief Costruttore, vuoto
                                                       \~English @brief Empty constructor */
 
+        virtual ~DrawableObject() {}
+
         virtual void  draw()          const = 0; /**< \~Italian @brief Disegna l'oggetto mediante chiamate OpenGL
                                                       \~English @brief Draws the object through OpenGL */
         virtual Pointd sceneCenter()  const = 0; /**< \~Italian @brief Restituisce la posizione del centro dell'oggetto

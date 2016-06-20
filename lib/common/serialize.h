@@ -33,6 +33,7 @@ class SerializableObject
 {
     public:
         SerializableObject() {}
+        virtual ~SerializableObject() {}
 
         /**
          * \~English

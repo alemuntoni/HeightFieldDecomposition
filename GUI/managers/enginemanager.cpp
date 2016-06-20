@@ -7,19 +7,49 @@ EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::EngineManager),
     mainWindow((MainWindow*)parent),
-    g(nullptr) {
+    g(nullptr),
+    d(nullptr){
     ui->setupUi(this);
+}
+
+void EngineManager::deleteDrawableObject(DrawableObject* d) {
+    if (d != nullptr){
+        d->setVisible(false);
+        mainWindow->deleteObj(d);
+        delete d;
+        d = nullptr;
+    }
 }
 
 EngineManager::~EngineManager() {
     delete ui;
 }
 
+void EngineManager::serialize(std::ofstream& binaryFile) const {
+    g->serialize(binaryFile);
+    d->serialize(binaryFile);
+}
+
+void EngineManager::deserialize(std::ifstream& binaryFile) {
+    deleteDrawableObject(g);
+    deleteDrawableObject(d);
+    g = new DrawableGrid();
+    d = new DrawableDcel();
+    g->deserialize(binaryFile);
+    d->deserialize(binaryFile);
+    d->update();
+    mainWindow->pushObj(d, "Scaled Mesh");
+    mainWindow->pushObj(g, "Grid");
+}
+
 void EngineManager::on_generateGridPushButton_clicked() {
     DcelManager* dm = (DcelManager*)mainWindow->getManager(DCEL_MANAGER_ID);
-    DrawableDcel* d = dm->getDcel();
-    int s = ui->samplesSpinBox->value();
-    if (d != nullptr){
+    DrawableDcel* dd = dm->getDcel();
+    if (dd != nullptr){
+        deleteDrawableObject(d);
+        d = new DrawableDcel(*dd);
+        mainWindow->pushObj(d, "Scaled Mesh");
+        int s = ui->samplesSpinBox->value();
         BoundingBox bb = d->getBoundingBox();
         double maxl = std::max(bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
         maxl = std::max(maxl, bb.getMaxZ() - bb.getMinZ());
@@ -105,9 +135,9 @@ void EngineManager::on_weigthsRadioButton_toggled(bool checked) {
 }
 
 void EngineManager::on_freezeKernelPushButton_clicked() {
-    if (g!=nullptr){
-        double d = ui->distanceSpinBox->value();
-        g->freezeKernel(d);
+    if (g!=nullptr && d!=nullptr){
+        double value = ui->distanceSpinBox->value();
+        g->freezeKernel(*d, value);
         mainWindow->updateGlCanvas();
     }
 }
@@ -149,4 +179,18 @@ void EngineManager::on_sliceComboBox_currentIndexChanged(int index) {
         if (index == 1) ui->sliceSlider->setMaximum(g->getResY() -1);
         if (index == 2) ui->sliceSlider->setMaximum(g->getResZ() -1);
     }
+}
+
+void EngineManager::on_pushButton_clicked() {
+    std::ofstream myfile;
+    myfile.open ("engine.bin", std::ios::out | std::ios::binary);
+    serialize(myfile);
+    myfile.close();
+}
+
+void EngineManager::on_pushButton_2_clicked() {
+    std::ifstream myfile;
+    myfile.open ("engine.bin", std::ios::in | std::ios::binary);
+    deserialize(myfile);
+    myfile.close();
 }
