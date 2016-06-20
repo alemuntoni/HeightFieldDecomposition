@@ -8,7 +8,8 @@ EngineManager::EngineManager(QWidget *parent) :
     ui(new Ui::EngineManager),
     mainWindow((MainWindow*)parent),
     g(nullptr),
-    d(nullptr){
+    d(nullptr),
+    b(nullptr){
     ui->setupUi(this);
 }
 
@@ -40,6 +41,7 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
     mainWindow->pushObj(g, "Grid");
+    mainWindow->updateGlCanvas();
 }
 
 void EngineManager::on_generateGridPushButton_clicked() {
@@ -138,8 +140,14 @@ void EngineManager::on_freezeKernelPushButton_clicked() {
     if (g!=nullptr && d!=nullptr){
         double value = ui->distanceSpinBox->value();
         g->freezeKernel(*d, value);
+        deleteDrawableObject(b);
+        Pointd p1(0,0,0);
+        Pointd p2(ui->wSpinBox->value(), ui->hSpinBox->value(), ui->dSpinBox->value());
+        b = new Box3D(p1, p2, QColor(0,0,0));
+        mainWindow->pushObj(b, "Box");
         mainWindow->updateGlCanvas();
     }
+
 }
 
 void EngineManager::on_sliceCheckBox_stateChanged(int arg1) {
@@ -178,6 +186,7 @@ void EngineManager::on_sliceComboBox_currentIndexChanged(int index) {
         if (index == 0) ui->sliceSlider->setMaximum(g->getResX() -1);
         if (index == 1) ui->sliceSlider->setMaximum(g->getResY() -1);
         if (index == 2) ui->sliceSlider->setMaximum(g->getResZ() -1);
+        mainWindow->updateGlCanvas();
     }
 }
 
@@ -193,4 +202,67 @@ void EngineManager::on_pushButton_2_clicked() {
     myfile.open ("engine.bin", std::ios::in | std::ios::binary);
     deserialize(myfile);
     myfile.close();
+}
+
+void EngineManager::on_wSpinBox_valueChanged(double arg1) {
+    if (b!=nullptr){
+        b->setW(arg1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_hSpinBox_valueChanged(double arg1) {
+    if (b!=nullptr){
+        b->setH(arg1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_dSpinBox_valueChanged(double arg1) {
+    if (b!=nullptr){
+        b->setD(arg1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_plusXButton_clicked() {
+    if (b!=nullptr){
+        b->moveX(ui->stepSpinBox->value());
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_minusXButton_clicked() {
+    if (b!=nullptr){
+        b->moveX(- ui->stepSpinBox->value());
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_plusYButton_clicked() {
+    if (b!=nullptr){
+        b->moveY(ui->stepSpinBox->value());
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_minusYButton_clicked() {
+    if (b!=nullptr){
+        b->moveY(- ui->stepSpinBox->value());
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_plusZButton_clicked() {
+    if (b!=nullptr){
+        b->moveZ(ui->stepSpinBox->value());
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_minusZButton_clicked() {
+    if (b!=nullptr){
+        b->moveZ(- ui->stepSpinBox->value());
+        mainWindow->updateGlCanvas();
+    }
 }

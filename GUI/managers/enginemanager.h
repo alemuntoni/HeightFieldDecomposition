@@ -5,6 +5,7 @@
 #include "dcelmanager.h"
 #include "lib/grid/drawablegrid.h"
 #include "common.h"
+#include "engine/box.h"
 
 namespace Ui {
     class EngineManager;
@@ -47,11 +48,30 @@ class EngineManager : public QFrame, public SerializableObject
 
         void on_pushButton_2_clicked();
 
+        void on_wSpinBox_valueChanged(double arg1);
+
+        void on_hSpinBox_valueChanged(double arg1);
+
+        void on_dSpinBox_valueChanged(double arg1);
+
+        void on_plusXButton_clicked();
+
+        void on_minusXButton_clicked();
+
+        void on_plusYButton_clicked();
+
+        void on_minusYButton_clicked();
+
+        void on_plusZButton_clicked();
+
+        void on_minusZButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
         DrawableGrid* g;
         DrawableDcel* d;
+        Box3D* b;
 };
 
 #endif // ENGINEMANAGER_H

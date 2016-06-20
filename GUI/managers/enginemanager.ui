@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>318</width>
-    <height>681</height>
+    <height>837</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -278,6 +278,203 @@
    </property>
    <property name="text">
     <string>Deserialize</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="plusYButton">
+   <property name="geometry">
+    <rect>
+     <x>118</x>
+     <y>510</y>
+     <width>71</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+Y</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="stepSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>550</y>
+     <width>69</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="decimals">
+    <number>3</number>
+   </property>
+   <property name="singleStep">
+    <double>0.500000000000000</double>
+   </property>
+   <property name="value">
+    <double>0.500000000000000</double>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="minusYButton">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>590</y>
+     <width>71</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>-Y</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="plusXButton">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>550</y>
+     <width>71</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+X</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="minusXButton">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>550</y>
+     <width>71</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>-X</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="plusZButton">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>590</y>
+     <width>71</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>+Z</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="minusZButton">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>510</y>
+     <width>71</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>-Z</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="showBoxCheckBox">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>470</y>
+     <width>101</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Show Box</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="wSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>650</y>
+     <width>69</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="singleStep">
+    <double>0.500000000000000</double>
+   </property>
+   <property name="value">
+    <double>1.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="hSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>650</y>
+     <width>69</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="singleStep">
+    <double>0.500000000000000</double>
+   </property>
+   <property name="value">
+    <double>1.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="dSpinBox">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>650</y>
+     <width>69</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="singleStep">
+    <double>0.500000000000000</double>
+   </property>
+   <property name="value">
+    <double>1.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>630</y>
+     <width>51</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>w:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>630</y>
+     <width>51</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>h:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>630</y>
+     <width>51</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>d:</string>
    </property>
   </widget>
  </widget>
