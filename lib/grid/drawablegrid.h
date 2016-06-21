@@ -31,7 +31,13 @@ class DrawableGrid: public Grid, public DrawableObject
         bool isVisible() const;
         void setVisible(bool b);
 
+        void addCube(const BoundingBox &bb);
+
+
     private:
+
+        void drawLine(const Pointd& a, const Pointd& b) const;
+        void drawCube(const BoundingBox& b) const;
 
         enum {
             DRAW_KERNEL, DRAW_BORDERS
@@ -45,6 +51,7 @@ class DrawableGrid: public Grid, public DrawableObject
         int drawMode;
         int slice;
         int sliceValue;
+        std::vector<BoundingBox> cubes;
 };
 
 #endif // DRAWABLEGRID_H

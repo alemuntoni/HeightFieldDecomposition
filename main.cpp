@@ -24,12 +24,12 @@ int main(int argc, char *argv[]) {
     // Creo un dcel manager e lo aggiungo alla mainwindow
     DcelManager d(&gui);
     DCEL_MANAGER_ID = gui.addManager(&d, "Dcel");
-    gui.setCurrentIndexToolBox(DCEL_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
 
     EngineManager e(&gui);
     ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
 
 
+    gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
     gui.updateGlCanvas();
     gui.show();
 

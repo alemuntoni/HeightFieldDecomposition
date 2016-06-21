@@ -26,6 +26,13 @@ EngineManager::~EngineManager() {
     delete ui;
 }
 
+void EngineManager::updateLabel(double value, QLabel* label) {
+    std::stringstream ss;
+    ss << std::setprecision(std::numeric_limits<double>::digits10+1);
+    ss << value;
+    label->setText(QString::fromStdString(ss.str()));
+}
+
 void EngineManager::serialize(std::ofstream& binaryFile) const {
     g->serialize(binaryFile);
     d->serialize(binaryFile);
@@ -145,6 +152,7 @@ void EngineManager::on_freezeKernelPushButton_clicked() {
         Pointd p2(ui->wSpinBox->value(), ui->hSpinBox->value(), ui->dSpinBox->value());
         b = new Box3D(p1, p2, QColor(0,0,0));
         mainWindow->pushObj(b, "Box");
+        e = Energy(*g);
         mainWindow->updateGlCanvas();
     }
 
@@ -264,5 +272,12 @@ void EngineManager::on_minusZButton_clicked() {
     if (b!=nullptr){
         b->moveZ(- ui->stepSpinBox->value());
         mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_energyBoxPushButton_clicked() {
+    if (b!=nullptr){
+        double energy = e.energy(*b);
+        updateLabel(energy, ui->energyLabel);
     }
 }

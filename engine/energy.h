@@ -11,11 +11,11 @@ class Energy{
         Energy(DrawableGrid& g);
 
         // Integral
-        static double integralTricubicInterpolation(const Eigen::VectorXd& a, double u1, double v1, double w1, double u2, double v2, double w2);
+        static double integralTricubicInterpolation(const std::vector<double>& a, double u1, double v1, double w1, double u2, double v2, double w2);
         double integralTricubicInterpolationEnergy(const Box3D& b);
 
         // Generic Evaluating Function
-        double evaluateTricubicInterpolationFunction(const Box3D &b, double (*f)(const Eigen::VectorXd &a, double u1, double v1, double w1, double u2, double v2, double w2));
+        double evaluateTricubicInterpolationFunction(const Box3D &b, double (*f)(const std::vector<double> &a, double u1, double v1, double w1, double u2, double v2, double w2));
 
         // Total Energy
         double energy(const Box3D& b);

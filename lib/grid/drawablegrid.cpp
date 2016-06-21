@@ -53,7 +53,7 @@ double DrawableGrid::getHsvFactor(double w) const {
 
 void DrawableGrid::draw() const {
     if (visible){
-        double xi, yi, zi;
+        //double xi, yi, zi;
         switch (drawMode){
             case DRAW_KERNEL:
                 switch (slice){
@@ -118,14 +118,14 @@ void DrawableGrid::draw() const {
                                 sphere(getPoint(sliceValue,j,k), 0.4, c);
                             }
                         }
-                        xi = gridCoordinates(getIndex(sliceValue,0,0), 0);
+                        /*xi = gridCoordinates(getIndex(sliceValue,0,0), 0);
                         for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=0.5){
                             for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=0.5){
                                 double w = getValue(Pointd(xi,yi,zi));
                                 QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
                                 sphere(Pointd(xi,yi,zi), 0.2, c);
                             }
-                        }
+                        }*/
                         break;
                     case Y_SLICE:
                         for (unsigned int i = 0; i < getResX(); ++i){
@@ -135,14 +135,14 @@ void DrawableGrid::draw() const {
                                 sphere(getPoint(i,sliceValue,k), 0.4, c);
                             }
                         }
-                        yi = gridCoordinates(getIndex(0,sliceValue,0), 1);
+                        /*yi = gridCoordinates(getIndex(0,sliceValue,0), 1);
                         for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=0.5){
                             for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=0.5){
                                 double w = getValue(Pointd(xi,yi,zi));
                                 QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
                                 sphere(Pointd(xi,yi,zi), 0.2, c);
                             }
-                        }
+                        }*/
                         break;
                     case Z_SLICE:
                         for (unsigned int i = 0; i < getResX(); ++i){
@@ -152,19 +152,23 @@ void DrawableGrid::draw() const {
                                 sphere(getPoint(i,j,sliceValue), 0.4, c);
                             }
                         }
-                        zi = gridCoordinates(getIndex(0,0,sliceValue), 2);
+                        /*zi = gridCoordinates(getIndex(0,0,sliceValue), 2);
                         for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=0.5){
                             for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=0.5){
                                 double w = getValue(Pointd(xi,yi,zi));
                                 QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
                                 sphere(Pointd(xi,yi,zi), 0.2, c);
                             }
-                        }
+                        }*/
                         break;
                 }
                 break;
             default:
                 assert(0);
+        }
+
+        for (unsigned int i = 0; i < cubes.size(); ++i){
+            drawCube(cubes[i]);
         }
     }
 }
@@ -183,4 +187,55 @@ bool DrawableGrid::isVisible() const {
 
 void DrawableGrid::setVisible(bool b) {
     visible = b;
+}
+
+void DrawableGrid::addCube(const BoundingBox& bb) {
+    cubes.push_back(bb);
+}
+
+void DrawableGrid::drawLine(const Pointd &a, const Pointd &b) const
+{
+    glBegin(GL_LINES);
+    glColor3f(0.0, 0.0, 0.0);
+    glVertex3f(a.x(), a.y(), a.z());
+    glVertex3f(b.x(), b.y(), b.z());
+    glEnd();
+}
+
+void DrawableGrid::drawCube(const BoundingBox &b) const
+{
+    Pointd to(b.getMinX(), b.getMinY(), b.getMaxZ());
+    drawLine(b.getMin(), to);
+    to.set(b.getMinX(), b.getMaxY(), b.getMinZ());
+    drawLine(b.getMin(), to);
+    to.set(b.getMaxX(), b.getMinY(), b.getMinZ());
+    drawLine(b.getMin(), to);
+
+    to.set(b.getMaxX(), b.getMaxY(), b.getMinZ());
+    drawLine(b.getMax(), to);
+    to.set(b.getMaxX(), b.getMinY(), b.getMaxZ());
+    drawLine(b.getMax(), to);
+    to.set(b.getMinX(), b.getMaxY(), b.getMaxZ());
+    drawLine(b.getMax(), to);
+
+    Pointd from(b.getMinX(), b.getMinY(), b.getMaxZ());
+    to.set(b.getMinX(), b.getMaxY(), b.getMaxZ());
+    drawLine(from, to);
+    from.set(b.getMinX(), b.getMinY(), b.getMaxZ());
+    to.set(b.getMaxX(), b.getMinY(), b.getMaxZ());
+    drawLine(from, to);
+
+    from.set(b.getMinX(), b.getMaxY(), b.getMinZ());
+    to.set(b.getMinX(), b.getMaxY(), b.getMaxZ());
+    drawLine(from, to);
+    from.set(b.getMinX(), b.getMaxY(), b.getMinZ());
+    to.set(b.getMaxX(), b.getMaxY(), b.getMinZ());
+    drawLine(from, to);
+
+    from.set(b.getMaxX(), b.getMinY(), b.getMinZ());
+    to.set(b.getMaxX(), b.getMaxY(), b.getMinZ());
+    drawLine(from, to);
+    from.set(b.getMaxX(), b.getMinY(), b.getMinZ());
+    to.set(b.getMaxX(), b.getMinY(), b.getMaxZ());
+    drawLine(from, to);
 }

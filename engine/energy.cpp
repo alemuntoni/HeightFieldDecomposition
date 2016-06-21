@@ -8,9 +8,9 @@ Energy::Energy(DrawableGrid& g) : g(&g){
 }
 
 //sia i coefficienti che la sotto-box integrata devono essere nell'intervallo 0-1
-double Energy::integralTricubicInterpolation(const Eigen::VectorXd& a, double u1, double v1, double w1, double u2, double v2, double w2) {
+double Energy::integralTricubicInterpolation(const std::vector<double>& a, double u1, double v1, double w1, double u2, double v2, double w2) {
     //Simpy generated code
-    assert (a.rows() == 64);
+    assert (a.size() == 64);
     double C_result;
     C_result = - pow(w1, 4) *
                ((1.0L/4.0L)*a[48]*u1*v1 - 1.0L/4.0L*a[48]*u1*v2 - 1.0L/4.0L*a[48]*u2*v1 + (1.0L/4.0L)*a[48]*u2*v2 +
@@ -156,7 +156,61 @@ double Energy::integralTricubicInterpolationEnergy(const Box3D& b) {
     return evaluateTricubicInterpolationFunction(b, integralTricubicInterpolation);
 }
 
-double Energy::evaluateTricubicInterpolationFunction(const Box3D& b, double (*f)(const Eigen::VectorXd&, double, double, double, double, double, double)) {
+double Energy::evaluateTricubicInterpolationFunction(const Box3D& b, double (*f)(const std::vector<double>&, double, double, double, double, double, double)) {
+
+    //verificare se b.getMin() e b.getMax() sono interni...
+    Pointd min = g->getNearestGridPoint(b.getMin()), max = g->getNearestGridPoint(b.getMax());
+    double unit = g->getUnit();
+    double firstX = min.x(), firstY = min.y(), firstZ = min.z(), lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
+
+    double minbx = b.getMin().x(), minby = b.getMin().y(), minbz = b.getMin().z();
+    double maxbx = b.getMax().x(), maxby = b.getMax().y(), maxbz = b.getMax().z();
+    double energy = 0;
+
+    double x1, y1, z1;
+    for (x1 = firstX; x1 <= lastX; x1+=unit){
+        double x2 = x1 + unit;
+        for (y1 = firstY; y1 <= lastY; y1+=unit){
+            double y2 = y1 + unit;
+            for (z1 = firstZ; z1<=lastZ; z1+=unit){
+                double z2 = z1 + unit;
+
+                if (maxbx <= x1 || minbx >= x2 ||
+                    maxby <= y1 || minby >= y2 ||
+                    maxbz <= z1 || minbz >= z2 ) // not contained
+                    energy += 0;
+                else {
+                    std::vector<double> coeffs;
+                    g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+                    if (minbx <= x1 && maxbx >= x2 &&
+                        minby <= y1 && maxby >= y2 &&
+                        minbz <= z1 && maxbz >= z2 ) { // completly contained
+                        energy += f(coeffs, 0,0,0,1,1,1);
+                        g->addCube(BoundingBox(Pointd(x1,y1,z1), Pointd(x2,y2,z2)));
+                    }
+                    else { //partially contained
+                        double u1 = minbx < x1 ? x1 : minbx;
+                        double v1 = minby < y1 ? y1 : minby;
+                        double w1 = minbz < z1 ? z1 : minbz;
+                        double u2 = maxbx > x2 ? x2 : maxbx;
+                        double v2 = maxby > y2 ? y2 : maxby;
+                        double w2 = maxbz > z2 ? z2 : maxbz;
+                        g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+                        u1 = (u1-x1)/unit;
+                        u2 = (u2-x1)/unit;
+                        v1 = (v1-y1)/unit;
+                        v2 = (v2-y1)/unit;
+                        w1 = (w1-z1)/unit;
+                        w2 = (w2-z1)/unit;
+                        energy += f(coeffs, u1,v1,w1,u2,v2,w2);
+                    }
+                }
+
+            }
+        }
+    }
+
+    return energy;
 
 }
 

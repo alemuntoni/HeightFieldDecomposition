@@ -6,10 +6,10 @@
 #include "lib/dcel/dcel.h"
 #include "engine/tricubic.h"
 
-#define BORDER_PAY 5
+#define BORDER_PAY 0.5
 #define STD_PAY 0
-#define MIN_PAY -10
-#define MAX_PAY 10
+#define MIN_PAY -1
+#define MAX_PAY 1
 
 
 class Grid : public SerializableObject{
@@ -21,6 +21,9 @@ class Grid : public SerializableObject{
         unsigned int getResY() const;
         unsigned int getResZ() const;
 
+        BoundingBox getBoundingBox();
+
+
         Vec3 getTarget() const;
         void setTarget(const Vec3& value);
 
@@ -28,6 +31,10 @@ class Grid : public SerializableObject{
         void freezeKernel(const Dcel& d, double value);
 
         double getValue(const Pointd &p) const;
+        double getUnit();
+
+        Pointd getNearestGridPoint(const Pointd& p);
+        void getCoefficients(std::vector<double> &coeffs, const Pointd& p);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -58,6 +65,10 @@ inline unsigned int Grid::getResZ() const {
     return resZ;
 }
 
+inline BoundingBox Grid::getBoundingBox() {
+    return bb;
+}
+
 inline unsigned int Grid::getResY() const {
     return resY;
 }
@@ -72,6 +83,21 @@ inline Vec3 Grid::getTarget() const {
 
 inline void Grid::setTarget(const Vec3& value) {
     target = value;
+}
+
+inline double Grid::getUnit() {
+    return gridCoordinates(getIndex(1,0,0), (0)) - gridCoordinates(getIndex(0,0,0), (0));
+}
+
+inline Pointd Grid::getNearestGridPoint(const Pointd& p) {
+    unsigned int ind = getIndex(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
+    return Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2));
+}
+
+inline void Grid::getCoefficients(std::vector<double>& coeffs, const Pointd& p) {
+    if(bb.isIntern(p))
+        coeffs = this->coeffs(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
+    else coeffs = this->coeffs(0, 0, 0);
 }
 
 inline Pointd Grid::getPoint(unsigned int i, unsigned int j, unsigned int k) const {

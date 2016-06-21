@@ -2,10 +2,12 @@
 #define ENGINEMANAGER_H
 
 #include <QFrame>
+#include <QLabel>
 #include "dcelmanager.h"
 #include "lib/grid/drawablegrid.h"
 #include "common.h"
 #include "engine/box.h"
+#include "engine/energy.h"
 
 namespace Ui {
     class EngineManager;
@@ -20,6 +22,8 @@ class EngineManager : public QFrame, public SerializableObject
 
         void deleteDrawableObject(DrawableObject* d);
         ~EngineManager();
+
+        void updateLabel(double value, QLabel* label);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -66,12 +70,15 @@ class EngineManager : public QFrame, public SerializableObject
 
         void on_minusZButton_clicked();
 
+        void on_energyBoxPushButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
         DrawableGrid* g;
         DrawableDcel* d;
         Box3D* b;
+        Energy e;
 };
 
 #endif // ENGINEMANAGER_H

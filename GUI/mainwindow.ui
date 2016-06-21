@@ -58,7 +58,7 @@
    </property>
    <property name="minimumSize">
     <size>
-     <width>486</width>
+     <width>514</width>
      <height>233</height>
     </size>
    </property>
@@ -104,9 +104,15 @@
      </item>
      <item>
       <widget class="QToolBox" name="toolBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
-         <width>312</width>
+         <width>340</width>
          <height>0</height>
         </size>
        </property>
@@ -127,14 +133,13 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>310</width>
+          <width>338</width>
           <height>499</height>
          </rect>
         </property>
         <attribute name="label">
          <string>Page 2</string>
         </attribute>
-        <zorder>scrollArea</zorder>
        </widget>
       </widget>
      </item>
