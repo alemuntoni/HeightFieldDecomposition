@@ -157,11 +157,25 @@ double Energy::integralTricubicInterpolationEnergy(const Box3D& b) {
 }
 
 double Energy::evaluateTricubicInterpolationFunction(const Box3D& b, double (*f)(const std::vector<double>&, double, double, double, double, double, double)) {
+    double unit = g->getUnit();
+
+    BoundingBox bb = g->getBoundingBox();
+    Pointd c = bb.getMin();
+    Pointd d = c-b.getMin();
+    Pointd nu = d / g->getUnit();
+    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+    Pointi di = ni * g->getUnit();
+    Pointd min = c - Pointd(di.x(), di.y(), di.z());
+    d = c-b.getMax();
+    nu = d / g->getUnit();
+    ni = Pointi(nu.x(), nu.y(), nu.z());
+    di = ni * g->getUnit();
+    Pointd max = c - Pointd(di.x(), di.y(), di.z());
 
     //verificare se b.getMin() e b.getMax() sono interni...
-    Pointd min = g->getNearestGridPoint(b.getMin()), max = g->getNearestGridPoint(b.getMax());
-    double unit = g->getUnit();
-    double firstX = min.x(), firstY = min.y(), firstZ = min.z(), lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
+    //Pointd minn = g->getNearestGridPoint(b.getMin()), maxx = g->getNearestGridPoint(b.getMax());
+
+    double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
 
     double minbx = b.getMin().x(), minby = b.getMin().y(), minbz = b.getMin().z();
     double maxbx = b.getMax().x(), maxby = b.getMax().y(), maxbz = b.getMax().z();

@@ -95,7 +95,7 @@ inline Pointd Grid::getNearestGridPoint(const Pointd& p) {
 }
 
 inline void Grid::getCoefficients(std::vector<double>& coeffs, const Pointd& p) {
-    if(bb.isIntern(p))
+    if(bb.isStrictlyIntern(p))
         coeffs = this->coeffs(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
     else coeffs = this->coeffs(0, 0, 0);
 }

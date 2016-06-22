@@ -68,6 +68,7 @@ template <class T> class Point : SerializableObject {
         bool operator < (const Point<T>& otherPoint)        const;
         Point<T> operator - ()                              const;
         Point<T> operator + (const Point<T>& otherPoint)    const;
+        Point<T> operator - (const T& scalar)               const;
         Point<T> operator - (const Point<T>& otherPoint)    const;
         Point<T> operator * (const T& scalar)               const;
         Point<T> operator * (const Point<T>& otherPoint)    const;
@@ -400,6 +401,13 @@ inline Point<T> Point<T>::operator + (const Point<T>& otherPoint) const {
     return Point<T>(xCoord + otherPoint.xCoord,
                     yCoord + otherPoint.yCoord,
                     zCoord + otherPoint.zCoord);
+}
+
+template <class T>
+inline Point<T> Point<T>::operator -(const T& scalar) const {
+    return Point<T>(xCoord - scalar,
+                    yCoord - scalar,
+                    zCoord - scalar);
 }
 
 /**
