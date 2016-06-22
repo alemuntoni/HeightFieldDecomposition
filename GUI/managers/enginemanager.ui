@@ -687,6 +687,40 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="1">
+           <widget class="QRadioButton" name="boxRadioButton">
+            <property name="text">
+             <string>Box</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QRadioButton" name="c1RadioButton">
+            <property name="text">
+             <string>C1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QRadioButton" name="c2RadioButton">
+            <property name="text">
+             <string>C2</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QRadioButton" name="c3RadioButton">
+            <property name="text">
+             <string>C3</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

@@ -235,42 +235,142 @@ void EngineManager::on_dSpinBox_valueChanged(double arg1) {
 
 void EngineManager::on_plusXButton_clicked() {
     if (b!=nullptr){
-        b->moveX(ui->stepSpinBox->value());
+        if (ui->boxRadioButton->isChecked())
+            b->moveX(ui->stepSpinBox->value());
+        else {
+            Pointd c;
+            if (ui->c1RadioButton->isChecked()){
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+            }
+            if (ui->c2RadioButton->isChecked()){
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+            }
+            if (ui->c3RadioButton->isChecked()){
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+            }
+        }
         mainWindow->updateGlCanvas();
     }
 }
 
 void EngineManager::on_minusXButton_clicked() {
     if (b!=nullptr){
-        b->moveX(- ui->stepSpinBox->value());
+        if (ui->boxRadioButton->isChecked())
+            b->moveX(- ui->stepSpinBox->value());
+        else {
+            Pointd c;
+            if (ui->c1RadioButton->isChecked()){
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+            }
+            if (ui->c2RadioButton->isChecked()){
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+            }
+            if (ui->c3RadioButton->isChecked()){
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+            }
+        }
         mainWindow->updateGlCanvas();
     }
 }
 
 void EngineManager::on_plusYButton_clicked() {
     if (b!=nullptr){
-        b->moveY(ui->stepSpinBox->value());
+        if (ui->boxRadioButton->isChecked())
+            b->moveY(ui->stepSpinBox->value());
+        else {
+            Pointd c;
+            if (ui->c1RadioButton->isChecked()){
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+            }
+            if (ui->c2RadioButton->isChecked()){
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+            }
+            if (ui->c3RadioButton->isChecked()){
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+            }
+
+        }
         mainWindow->updateGlCanvas();
     }
 }
 
 void EngineManager::on_minusYButton_clicked() {
     if (b!=nullptr){
-        b->moveY(- ui->stepSpinBox->value());
+        if (ui->boxRadioButton->isChecked())
+            b->moveY(- ui->stepSpinBox->value());
+        else {
+            Pointd c;
+            if (ui->c1RadioButton->isChecked()){
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+            }
+            if (ui->c2RadioButton->isChecked()){
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+            }
+            if (ui->c3RadioButton->isChecked()){
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+            }
+
+        }
         mainWindow->updateGlCanvas();
     }
 }
 
 void EngineManager::on_plusZButton_clicked() {
     if (b!=nullptr){
-        b->moveZ(ui->stepSpinBox->value());
+        if (ui->boxRadioButton->isChecked())
+            b->moveZ(ui->stepSpinBox->value());
+        else {
+            Pointd c;
+            if (ui->c1RadioButton->isChecked()){
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+            }
+            if (ui->c2RadioButton->isChecked()){
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+            }
+            if (ui->c3RadioButton->isChecked()){
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+            }
+
+        }
         mainWindow->updateGlCanvas();
     }
 }
 
 void EngineManager::on_minusZButton_clicked() {
     if (b!=nullptr){
-        b->moveZ(- ui->stepSpinBox->value());
+        if (ui->boxRadioButton->isChecked())
+            b->moveZ(- ui->stepSpinBox->value());
+        else {
+            Pointd c;
+            if (ui->c1RadioButton->isChecked()){
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+            }
+            if (ui->c2RadioButton->isChecked()){
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+            }
+            if (ui->c3RadioButton->isChecked()){
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+            }
+
+        }
         mainWindow->updateGlCanvas();
     }
 }

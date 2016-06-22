@@ -3,6 +3,7 @@
 
 #include "lib/common/drawable_object.h"
 #include "GUI/objects/cylinder.h"
+#include "GUI/objects/sphere.h"
 
 class Box3D : public DrawableObject{
     public:
@@ -15,6 +16,13 @@ class Box3D : public DrawableObject{
         void setMin(const Pointd& value);
         Pointd getMax() const;
         void setMax(const Pointd& value);
+
+        Pointd getConstraint1() const;
+        Pointd getConstraint2() const;
+        Pointd getConstraint3() const;
+        void setConstraint1(const Pointd &p);
+        void setConstraint2(const Pointd &p);
+        void setConstraint3(const Pointd &p);
 
         void setW(double d);
         void setH(double d);

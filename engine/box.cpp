@@ -9,6 +9,30 @@ Box3D::Box3D(const Pointd& min, const Pointd& max, const Pointd& c1, const Point
 Box3D::Box3D(const Pointd& min, const Pointd& max, const QColor c) : min(min), max(max), color(c), visible(true){
 }
 
+Pointd Box3D::getConstraint1() const {
+    return c1;
+}
+
+Pointd Box3D::getConstraint2() const {
+    return c2;
+}
+
+Pointd Box3D::getConstraint3() const {
+    return c3;
+}
+
+void Box3D::setConstraint1(const Pointd& p) {
+    c1 = p;
+}
+
+void Box3D::setConstraint2(const Pointd& p) {
+    c2 = p;
+}
+
+void Box3D::setConstraint3(const Pointd& p) {
+    c3 = p;
+}
+
 void Box3D::draw() const {
     if (visible){
         cylinder(min, Pointd(max.x(), min.y(), min.z()), 0.05, 0.05, color);
@@ -25,6 +49,10 @@ void Box3D::draw() const {
         cylinder(Pointd(max.x(), min.y(), min.z()), Pointd(max.x(), min.y(), max.z()), 0.05, 0.05, color);
         cylinder(Pointd(max.x(), max.y(), min.z()), max, 0.05, 0.05, color);
         cylinder(Pointd(min.x(), max.y(), min.z()), Pointd(min.x(), max.y(), max.z()), 0.05, 0.05, color);
+
+        sphere(c1, 0.15, QColor(255,0,255));
+        sphere(c2, 0.15, QColor(255,0,255));
+        sphere(c3, 0.15, QColor(255,0,255));
     }
 }
 

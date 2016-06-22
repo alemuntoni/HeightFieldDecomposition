@@ -7,6 +7,30 @@ Energy::Energy() {
 Energy::Energy(DrawableGrid& g) : g(&g){
 }
 
+double Energy::lowConstraint(const Pointd& min, const Pointd& c, double s) {
+    return fi(c.x()-min.x(),s) + fi(c.y()-min.y(),s)+ fi(c.z()-min.z(),s);
+}
+
+double Energy::highConstraint(const Pointd& max, const Pointd& c, double s) {
+    return fi(max.x()-c.x(),s) + fi(max.y()-c.y(),s) + fi(max.z()-c.z(),s);
+}
+
+double Energy::gBarrier(double x, double s) {
+    return (1/(pow(s,3)))*pow(x,3) - (3/(pow(s,2)))*pow(x,2) + (3/(s))*x;
+}
+
+double Energy::fi(double x, double s) {
+    return x <= 0 ? std::numeric_limits<double>::max() :
+                    x > s ?
+                        0 : (1 / gBarrier(x, s) - 1);
+}
+
+double Energy::barrierEnergy(const Box3D& b, double s) {
+    Pointd c1 = b.getConstraint1(), c2 = b.getConstraint2(), c3 = b.getConstraint3();
+    Pointd min = b.getMin(), max = b.getMax();
+    return lowConstraint(min, c1, s) + lowConstraint(min, c2, s) + lowConstraint(min, c3, s) + highConstraint(max, c1, s) + highConstraint(max, c2, s) + highConstraint(max, c3, s);
+}
+
 //sia i coefficienti che la sotto-box integrata devono essere nell'intervallo 0-1
 double Energy::integralTricubicInterpolation(const std::vector<double>& a, double u1, double v1, double w1, double u2, double v2, double w2) {
     //Simpy generated code
@@ -200,7 +224,7 @@ double Energy::evaluateTricubicInterpolationFunction(const Box3D& b, double (*f)
                         minby <= y1 && maxby >= y2 &&
                         minbz <= z1 && maxbz >= z2 ) { // completly contained
                         energy += f(coeffs, 0,0,0,1,1,1);
-                        g->addCube(BoundingBox(Pointd(x1,y1,z1), Pointd(x2,y2,z2)));
+                        //g->addCube(BoundingBox(Pointd(x1,y1,z1), Pointd(x2,y2,z2)));
                     }
                     else { //partially contained
                         double u1 = minbx < x1 ? x1 : minbx;
@@ -209,7 +233,7 @@ double Energy::evaluateTricubicInterpolationFunction(const Box3D& b, double (*f)
                         double u2 = maxbx > x2 ? x2 : maxbx;
                         double v2 = maxby > y2 ? y2 : maxby;
                         double w2 = maxbz > z2 ? z2 : maxbz;
-                        g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+                        //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
                         u1 = (u1-x1)/unit;
                         u2 = (u2-x1)/unit;
                         v1 = (v1-y1)/unit;
@@ -229,5 +253,5 @@ double Energy::evaluateTricubicInterpolationFunction(const Box3D& b, double (*f)
 }
 
 double Energy::energy(const Box3D& b) {
-    return integralTricubicInterpolationEnergy(b)/* + barrierEnergy(b)*/;
+    return integralTricubicInterpolationEnergy(b) + barrierEnergy(b);
 }
