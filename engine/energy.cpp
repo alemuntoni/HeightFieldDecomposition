@@ -7,25 +7,68 @@ Energy::Energy() {
 Energy::Energy(DrawableGrid& g) : g(&g){
 }
 
-double Energy::lowConstraint(const Pointd& min, const Pointd& c, double s) {
+double Energy::gradientDiscend(Box3D& b) const {
+    int iterations = 0;
+    double objValue, newObjValue;
+    double alfa = 1;
+    Pointd c1 = b.getConstraint1();
+    Pointd c2 = b.getConstraint2();
+    Pointd c3 = b.getConstraint3();
+    Eigen::VectorXd x(6);
+    x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
+    Eigen::VectorXd new_x(6);
+    do{
+        objValue = energy(x, c1, c2, c3);
+        //Eigen::Vector4d gradient;
+        Eigen::VectorXd gradientFiniteDiffernece(6);
+        //e.gradientEnergy(gradient, x, c.x(), c.y());
+        gradientEnergyFiniteDifference(gradientFiniteDiffernece, x, c1, c2, c3);
+        new_x = x - alfa * gradientFiniteDiffernece;
+        newObjValue = energy(new_x, c1, c2, c3);
+        if (newObjValue < objValue) {
+            //double norm = gradientFiniteDiffernece.norm();
+            //std::cerr << norm << "\n";
+            iterations++;
+            x = new_x;
+            //alfa = 1;
+        }
+        else
+            alfa /= 2;
+    } while (alfa > 0.0005);
+    b = Box3D(Pointd(x(0), x(1), x(2)), Pointd(x(3), x(4), x(5)), c1, c2, c3/*r.isRotated()*/);
+    return iterations;
+}
+
+void Energy::gradientEnergyFiniteDifference(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
+    gradient <<
+            (energy(x(0)+EPSILON_GRAD, x(1), x(2), x(3), x(4), x(5), c1, c2, c3) - energy(x(0)-EPSILON_GRAD, x(1), x(2), x(3), x(4), x(5), c1, c2, c3)) / (2*EPSILON_GRAD),
+            (energy(x(0), x(1)+EPSILON_GRAD, x(2), x(3), x(4), x(5), c1, c2, c3) - energy(x(0), x(1)-EPSILON_GRAD, x(2), x(3), x(4), x(5), c1, c2, c3)) / (2*EPSILON_GRAD),
+            (energy(x(0), x(1), x(2)+EPSILON_GRAD, x(3), x(4), x(5), c1, c2, c3) - energy(x(0), x(1), x(2)-EPSILON_GRAD, x(3), x(4), x(5), c1, c2, c3)) / (2*EPSILON_GRAD),
+            (energy(x(0), x(1), x(2), x(3)+EPSILON_GRAD, x(4), x(5), c1, c2, c3) - energy(x(0), x(1), x(2), x(3)-EPSILON_GRAD, x(4), x(5), c1, c2, c3)) / (2*EPSILON_GRAD),
+            (energy(x(0), x(1), x(2), x(3), x(4)+EPSILON_GRAD, x(5), c1, c2, c3) - energy(x(0), x(1), x(2), x(3), x(4)-EPSILON_GRAD, x(5), c1, c2, c3)) / (2*EPSILON_GRAD),
+            (energy(x(0), x(1), x(2), x(3), x(4), x(5)+EPSILON_GRAD, c1, c2, c3) - energy(x(0), x(1), x(2), x(3), x(4), x(5)-EPSILON_GRAD, c1, c2, c3)) / (2*EPSILON_GRAD);
+
+}
+
+double Energy::lowConstraint(const Pointd& min, const Pointd& c, double s) const {
     return fi(c.x()-min.x(),s) + fi(c.y()-min.y(),s)+ fi(c.z()-min.z(),s);
 }
 
-double Energy::highConstraint(const Pointd& max, const Pointd& c, double s) {
+double Energy::highConstraint(const Pointd& max, const Pointd& c, double s) const {
     return fi(max.x()-c.x(),s) + fi(max.y()-c.y(),s) + fi(max.z()-c.z(),s);
 }
 
-double Energy::gBarrier(double x, double s) {
+double Energy::gBarrier(double x, double s) const {
     return (1/(pow(s,3)))*pow(x,3) - (3/(pow(s,2)))*pow(x,2) + (3/(s))*x;
 }
 
-double Energy::fi(double x, double s) {
+double Energy::fi(double x, double s) const {
     return x <= 0 ? std::numeric_limits<double>::max() :
                     x > s ?
                         0 : (1 / gBarrier(x, s) - 1);
 }
 
-double Energy::barrierEnergy(const Box3D& b, double s) {
+double Energy::barrierEnergy(const Box3D& b, double s) const {
     Pointd c1 = b.getConstraint1(), c2 = b.getConstraint2(), c3 = b.getConstraint3();
     Pointd min = b.getMin(), max = b.getMax();
     return lowConstraint(min, c1, s) + lowConstraint(min, c2, s) + lowConstraint(min, c3, s) + highConstraint(max, c1, s) + highConstraint(max, c2, s) + highConstraint(max, c3, s);
@@ -176,33 +219,30 @@ double Energy::integralTricubicInterpolation(const std::vector<double>& a, doubl
 
 }
 
-double Energy::integralTricubicInterpolationEnergy(const Box3D& b) {
-    return evaluateTricubicInterpolationFunction(b, integralTricubicInterpolation);
+double Energy::integralTricubicInterpolationEnergy(const Pointd& min, const Pointd& max) const {
+    return evaluateTricubicInterpolationFunction(min, max, integralTricubicInterpolation);
 }
 
-double Energy::evaluateTricubicInterpolationFunction(const Box3D& b, double (*f)(const std::vector<double>&, double, double, double, double, double, double)) {
+double Energy::evaluateTricubicInterpolationFunction(const Pointd& bmin, const Pointd& bmax, double (*f)(const std::vector<double>&, double, double, double, double, double, double)) const {
     double unit = g->getUnit();
 
     BoundingBox bb = g->getBoundingBox();
     Pointd c = bb.getMin();
-    Pointd d = c-b.getMin();
+    Pointd d = c-bmin;
     Pointd nu = d / g->getUnit();
     Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
     Pointi di = ni * g->getUnit();
     Pointd min = c - Pointd(di.x(), di.y(), di.z());
-    d = c-b.getMax();
+    d = c-bmax;
     nu = d / g->getUnit();
     ni = Pointi(nu.x(), nu.y(), nu.z());
     di = ni * g->getUnit();
     Pointd max = c - Pointd(di.x(), di.y(), di.z());
 
-    //verificare se b.getMin() e b.getMax() sono interni...
-    //Pointd minn = g->getNearestGridPoint(b.getMin()), maxx = g->getNearestGridPoint(b.getMax());
-
     double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
 
-    double minbx = b.getMin().x(), minby = b.getMin().y(), minbz = b.getMin().z();
-    double maxbx = b.getMax().x(), maxby = b.getMax().y(), maxbz = b.getMax().z();
+    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
+    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
     double energy = 0;
 
     double x1, y1, z1;
@@ -252,6 +292,17 @@ double Energy::evaluateTricubicInterpolationFunction(const Box3D& b, double (*f)
 
 }
 
-double Energy::energy(const Box3D& b) {
-    return integralTricubicInterpolationEnergy(b) + barrierEnergy(b);
+double Energy::energy(const Box3D& b) const {
+    return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b);
+}
+
+double Energy::energy(const Eigen::VectorXd &x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
+    assert(x.rows() == 6);
+    Box3D b(Pointd(x(0), x(1), x(2)), Pointd(x(3), x(4), x(5)), c1, c2, c3);
+    return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b);
+}
+
+double Energy::energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
+    Box3D b(Pointd(minx, miny, minz), Pointd(maxx, maxy, maxz), c1, c2, c3);
+    return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b);
 }

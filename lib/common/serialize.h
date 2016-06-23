@@ -15,6 +15,7 @@
 #include <QColor>
 #include <typeinfo>
 #include <Eigen/Core>
+#include <array>
 
 #include <type_traits> // To use 'std::integral_constant'.
 
@@ -124,6 +125,10 @@ namespace Serializer {
     template <typename T, int ...A> void serialize(const Eigen::Matrix<T, A...> &m, std::ofstream& binaryFile);
 
     template <typename T, int ...A> void deserialize(Eigen::Matrix<T, A...> &m, std::ifstream& binaryFile);
+
+    template <typename T, size_t ...A> void serialize(const std::array<T, A...> &a, std::ofstream& binaryFile);
+
+    template <typename T, size_t ...A> void deserialize(std::array<T, A...> &a, std::ifstream& binaryFile);
 }
 
 /**
@@ -380,6 +385,37 @@ inline void Serializer::deserialize(Eigen::Matrix<T, A...> &m, std::ifstream& bi
         for (unsigned int j = 0; j < col; ++j){
             Serializer::deserialize(m(i,j), binaryFile);
         }
+    }
+}
+
+/**
+ * \~English
+ * @brief Serializer::serialize
+ * @param[in] m: Eigen::Matrix
+ * @param binaryFile
+ */
+template <typename T, size_t ...A>
+inline void Serializer::serialize(const std::array<T, A...> &a, std::ofstream& binaryFile){
+    size_t size = a.size();
+    Serializer::serialize(size, binaryFile);
+    for (typename std::array<T, A...>::iterator it = a.begin(); it != a.end(); ++it)
+        Serializer::serialize((*it), binaryFile);
+}
+
+/**
+ * \~English
+ * @brief Serializer::deserialize
+ * @warning please make sure that the input set is an empty set.
+ * @param[out] m: Eigen::Matrix
+ * @param binaryFile
+ */
+template <typename T, size_t ...A>
+inline void Serializer::deserialize(std::array<T, A...> &a, std::ifstream& binaryFile){
+    size_t size;
+    Serializer::deserialize(size, binaryFile);
+    assert(size == a.size());
+    for (unsigned int it = 0; it < size; ++it){
+        Serializer::deserialize(a[it], binaryFile);
     }
 }
 

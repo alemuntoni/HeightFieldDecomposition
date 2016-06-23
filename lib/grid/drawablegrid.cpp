@@ -48,7 +48,8 @@ void DrawableGrid::setSliceValue(int value) {
 }
 
 double DrawableGrid::getHsvFactor(double w) const {
-    return 1-((w - MIN_PAY)/(MAX_PAY-MIN_PAY));
+    if (w>10) w = 10;
+    return 1-((w - MIN_PAY)/(10-MIN_PAY));
 }
 
 void DrawableGrid::draw() const {
@@ -100,9 +101,9 @@ void DrawableGrid::draw() const {
             case DRAW_BORDERS:
                 switch (slice){
                     case NO_SLICE:
-                        for (unsigned int i = 0; i < getResX(); ++i){
-                            for (unsigned int j = 0; j < getResY(); ++j){
-                                for (unsigned int k = 0; k < getResZ(); ++k){
+                        for (unsigned int i = 0; i < getResX(); i+=2){
+                            for (unsigned int j = 0; j < getResY(); j+=2){
+                                for (unsigned int k = 0; k < getResZ(); k+=2){
                                     double w = getWeight(i,j,k);
                                     QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
                                     sphere(getPoint(i,j,k), 0.3, c);

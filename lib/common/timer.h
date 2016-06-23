@@ -17,7 +17,7 @@ class Timer {
             _start = clock();
         }
 
-        inline void stop_and_print() {
+        inline void stopAndPrint() {
             _stop = clock();
             float cycles = _stop - _start;
             secs = ((float)cycles) / ((float)CLOCKS_PER_SEC);

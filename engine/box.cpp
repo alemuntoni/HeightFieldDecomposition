@@ -71,3 +71,23 @@ bool Box3D::isVisible() const {
 void Box3D::setVisible(bool b) {
     visible = b;
 }
+
+void Box3D::serialize(std::ofstream& binaryFile) const {
+    min.serialize(binaryFile);
+    max.serialize(binaryFile);
+    c1.serialize(binaryFile);
+    c2.serialize(binaryFile);
+    c3.serialize(binaryFile);
+    Serializer::serialize(color, binaryFile);
+    Serializer::serialize(rotation, binaryFile);
+}
+
+void Box3D::deserialize(std::ifstream& binaryFile) {
+    min.deserialize(binaryFile);
+    max.deserialize(binaryFile);
+    c1.deserialize(binaryFile);
+    c2.deserialize(binaryFile);
+    c3.deserialize(binaryFile);
+    Serializer::deserialize(color, binaryFile);
+    Serializer::deserialize(rotation, binaryFile);
+}

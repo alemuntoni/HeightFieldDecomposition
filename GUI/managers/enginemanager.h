@@ -8,6 +8,7 @@
 #include "common.h"
 #include "engine/box.h"
 #include "engine/energy.h"
+#include "lib/common/timer.h"
 
 namespace Ui {
     class EngineManager;
@@ -71,6 +72,12 @@ class EngineManager : public QFrame, public SerializableObject
         void on_minusZButton_clicked();
 
         void on_energyBoxPushButton_clicked();
+
+        void on_minimizePushButton_clicked();
+
+        void on_serializeBoxPushButton_clicked();
+
+        void on_deserializeBoxPushButton_clicked();
 
     private:
         Ui::EngineManager *ui;

@@ -381,3 +381,31 @@ void EngineManager::on_energyBoxPushButton_clicked() {
         updateLabel(energy, ui->energyLabel);
     }
 }
+
+void EngineManager::on_minimizePushButton_clicked() {
+    if (b!=nullptr){
+        Timer t("Gradient Discend");
+        double energy = e.gradientDiscend(*b);
+        t.stopAndPrint();
+        updateLabel(energy, ui->minimizedEnergyLabel);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_serializeBoxPushButton_clicked() {
+    if (b!=nullptr){
+        std::ofstream myfile;
+        myfile.open ("box.bin", std::ios::out | std::ios::binary);
+        b->serialize(myfile);
+        myfile.close();
+    }
+}
+
+void EngineManager::on_deserializeBoxPushButton_clicked() {
+    if (b!=nullptr){
+        std::ifstream myfile;
+        myfile.open ("box.bin", std::ios::in | std::ios::binary);
+        b->deserialize(myfile);
+        myfile.close();
+    }
+}

@@ -6,10 +6,10 @@
 #include "lib/dcel/dcel.h"
 #include "engine/tricubic.h"
 
-#define BORDER_PAY 0.5
+#define BORDER_PAY 5
 #define STD_PAY 0
-#define MIN_PAY -1
-#define MAX_PAY 1
+#define MIN_PAY -10
+#define MAX_PAY 1000
 
 
 class Grid : public SerializableObject{
@@ -21,7 +21,7 @@ class Grid : public SerializableObject{
         unsigned int getResY() const;
         unsigned int getResZ() const;
 
-        BoundingBox getBoundingBox();
+        BoundingBox getBoundingBox() const;
 
 
         Vec3 getTarget() const;
@@ -31,10 +31,10 @@ class Grid : public SerializableObject{
         void freezeKernel(const Dcel& d, double value);
 
         double getValue(const Pointd &p) const;
-        double getUnit();
+        double getUnit() const;
 
         Pointd getNearestGridPoint(const Pointd& p);
-        void getCoefficients(std::vector<double> &coeffs, const Pointd& p);
+        void getCoefficients(std::vector<double> &coeffs, const Pointd& p) const;
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -65,7 +65,7 @@ inline unsigned int Grid::getResZ() const {
     return resZ;
 }
 
-inline BoundingBox Grid::getBoundingBox() {
+inline BoundingBox Grid::getBoundingBox() const {
     return bb;
 }
 
@@ -85,7 +85,7 @@ inline void Grid::setTarget(const Vec3& value) {
     target = value;
 }
 
-inline double Grid::getUnit() {
+inline double Grid::getUnit() const {
     return gridCoordinates(getIndex(1,0,0), (0)) - gridCoordinates(getIndex(0,0,0), (0));
 }
 
@@ -94,7 +94,7 @@ inline Pointd Grid::getNearestGridPoint(const Pointd& p) {
     return Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2));
 }
 
-inline void Grid::getCoefficients(std::vector<double>& coeffs, const Pointd& p) {
+inline void Grid::getCoefficients(std::vector<double>& coeffs, const Pointd& p) const {
     if(bb.isStrictlyIntern(p))
         coeffs = this->coeffs(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
     else coeffs = this->coeffs(0, 0, 0);

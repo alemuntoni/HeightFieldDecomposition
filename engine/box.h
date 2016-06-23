@@ -5,7 +5,7 @@
 #include "GUI/objects/cylinder.h"
 #include "GUI/objects/sphere.h"
 
-class Box3D : public DrawableObject{
+class Box3D : public DrawableObject, public SerializableObject{
     public:
         Box3D();
         Box3D(const Pointd &min, const Pointd &max, const Pointd &c1 = Pointd(), const Pointd &c2 = Pointd(), const Pointd &c3 = Pointd(), const QColor c = QColor(0,0,0));
@@ -38,11 +38,16 @@ class Box3D : public DrawableObject{
         bool isVisible() const;
         void setVisible(bool b);
 
+        // SerializableObject interface
+        void serialize(std::ofstream& binaryFile) const;
+        void deserialize(std::ifstream& binaryFile);
+
     protected:
         Pointd min, max;
         Pointd c1, c2, c3;
         QColor color;
         bool visible;
+        Eigen::Matrix<double, 3, 3> rotation;
 };
 
 inline void Box3D::setColor(const QColor& c) {
