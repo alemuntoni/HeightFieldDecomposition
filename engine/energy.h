@@ -15,6 +15,16 @@ class Energy{
         double gradientDiscend(Box3D &b) const;
 
         // Gradient
+        static double gradientXMinComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
+        static double gradientYMinComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
+        static double gradientZMinComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
+        static double gradientXMaxComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
+        static double gradientYMaxComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
+        static double gradientZMaxComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
+
+        double gradientEvaluateComponent(const Pointd& bmin, const Pointd& bmax, double (*f)(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2)) const;
+        void gradientTricubicInterpolationEnergy(Eigen::VectorXd &gradient, const Pointd& min, const Pointd& max) const;
+        void gradientEnergy(Eigen::VectorXd &gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
         void gradientEnergyFiniteDifference(Eigen::VectorXd &gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
 
         // Barrier
@@ -29,9 +39,6 @@ class Energy{
         // Integral
         static double integralTricubicInterpolation(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
         double integralTricubicInterpolationEnergy(const Pointd& min, const Pointd& max) const;
-
-        // Generic Evaluating Function
-        double evaluateTricubicInterpolationFunction(const Pointd& bmin, const Pointd& bmax, double (*f)(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2)) const;
 
         // Total Energy
         double energy(const Box3D& b) const;
