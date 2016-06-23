@@ -12,14 +12,14 @@ class Box3D : public DrawableObject, public SerializableObject{
         Box3D(const Pointd &min, const Pointd &max, const QColor c);
 
         void setColor(const QColor &c);
-        Pointd getMin() const;
+        const Pointd& getMin() const;
         void setMin(const Pointd& value);
-        Pointd getMax() const;
+        const Pointd& getMax() const;
         void setMax(const Pointd& value);
 
-        Pointd getConstraint1() const;
-        Pointd getConstraint2() const;
-        Pointd getConstraint3() const;
+        const Pointd& getConstraint1() const;
+        const Pointd& getConstraint2() const;
+        const Pointd& getConstraint3() const;
         void setConstraint1(const Pointd &p);
         void setConstraint2(const Pointd &p);
         void setConstraint3(const Pointd &p);
@@ -54,7 +54,7 @@ inline void Box3D::setColor(const QColor& c) {
     color = c;
 }
 
-inline Pointd Box3D::getMin() const {
+inline const Pointd& Box3D::getMin() const {
     return min;
 }
 
@@ -62,7 +62,7 @@ inline void Box3D::setMin(const Pointd& value) {
     min = value;
 }
 
-inline Pointd Box3D::getMax() const {
+inline const Pointd& Box3D::getMax() const {
     return max;
 }
 

@@ -34,8 +34,9 @@ double Energy::gradientDiscend(Box3D& b) const {
         }
         else
             alfa /= 2;
-    } while (alfa > 0.0005);
-    b = Box3D(Pointd(x(0), x(1), x(2)), Pointd(x(3), x(4), x(5)), c1, c2, c3/*r.isRotated()*/);
+    } while (alfa > 0.00005);
+    b.setMin(Pointd(x(0), x(1), x(2)));
+    b.setMax(Pointd(x(3), x(4), x(5)));
     return iterations;
 }
 
@@ -47,7 +48,6 @@ void Energy::gradientEnergyFiniteDifference(Eigen::VectorXd& gradient, const Eig
             (energy(x(0), x(1), x(2), x(3)+EPSILON_GRAD, x(4), x(5), c1, c2, c3) - energy(x(0), x(1), x(2), x(3)-EPSILON_GRAD, x(4), x(5), c1, c2, c3)) / (2*EPSILON_GRAD),
             (energy(x(0), x(1), x(2), x(3), x(4)+EPSILON_GRAD, x(5), c1, c2, c3) - energy(x(0), x(1), x(2), x(3), x(4)-EPSILON_GRAD, x(5), c1, c2, c3)) / (2*EPSILON_GRAD),
             (energy(x(0), x(1), x(2), x(3), x(4), x(5)+EPSILON_GRAD, c1, c2, c3) - energy(x(0), x(1), x(2), x(3), x(4), x(5)-EPSILON_GRAD, c1, c2, c3)) / (2*EPSILON_GRAD);
-
 }
 
 double Energy::lowConstraint(const Pointd& min, const Pointd& c, double s) const {
@@ -298,8 +298,9 @@ double Energy::energy(const Box3D& b) const {
 
 double Energy::energy(const Eigen::VectorXd &x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
     assert(x.rows() == 6);
-    Box3D b(Pointd(x(0), x(1), x(2)), Pointd(x(3), x(4), x(5)), c1, c2, c3);
-    return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b);
+    Pointd min(x(0), x(1), x(2)), max(x(3), x(4), x(5));
+    Box3D b(min, max, c1, c2, c3);
+    return integralTricubicInterpolationEnergy(min, max) + barrierEnergy(b);
 }
 
 double Energy::energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
