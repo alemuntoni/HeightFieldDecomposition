@@ -27,11 +27,11 @@ class Energy{
         double barrierEnergy(const Box3D &b, double s = 0.2) const;
 
         // Integral
-        static double integralTricubicInterpolation(const std::vector<double>& a, double u1, double v1, double w1, double u2, double v2, double w2);
+        static double integralTricubicInterpolation(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
         double integralTricubicInterpolationEnergy(const Pointd& min, const Pointd& max) const;
 
         // Generic Evaluating Function
-        double evaluateTricubicInterpolationFunction(const Pointd& bmin, const Pointd& bmax, double (*f)(const std::vector<double> &a, double u1, double v1, double w1, double u2, double v2, double w2)) const;
+        double evaluateTricubicInterpolationFunction(const Pointd& bmin, const Pointd& bmax, double (*f)(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2)) const;
 
         // Total Energy
         double energy(const Box3D& b) const;

@@ -96,7 +96,7 @@ double Grid::getValue(const Pointd& p) const {
         return weights(xi,yi,zi);
     else{
         n = (p - n) / 2; // n ora è un punto nell'intervallo 0 - 1
-        std::vector<double> coef = coeffs(xi,yi,zi);
+        const double* coef = coeffs(xi,yi,zi);
         return TricubicInterpolator::getValue(n, coef);
     }
 }

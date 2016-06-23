@@ -388,6 +388,9 @@ void EngineManager::on_minimizePushButton_clicked() {
         double energy = e.gradientDiscend(*b);
         t.stopAndPrint();
         updateLabel(energy, ui->minimizedEnergyLabel);
+        ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
+        ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
+        ui->dSpinBox->setValue(b->getMax().z()-b->getMin().z());
         mainWindow->updateGlCanvas();
     }
 }

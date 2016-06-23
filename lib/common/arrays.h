@@ -12,7 +12,7 @@ template <class T> class Array3D : public SerializableObject{
         Array3D(size_t sizeX, size_t sizeY, size_t sizeZ, const T& value = 0);
         T& operator () (size_t i, size_t j, size_t k);
         T operator () (size_t i, size_t j, size_t k) const;
-        std::vector<T> operator () (size_t i, size_t j) const;
+        const T* operator () (size_t i, size_t j) const;
 
         size_t getSizeX() const;
         size_t getSizeY() const;
@@ -38,7 +38,7 @@ template <class T> class Array4D : public SerializableObject{
         Array4D(size_t sizeX, size_t sizeY, size_t sizeZ, size_t sizeW, const T& value = 0);
         T& operator () (size_t i, size_t j, size_t k, size_t l);
         T operator () (size_t i, size_t j, size_t k, size_t l) const;
-        std::vector<T> operator () (size_t i, size_t j, size_t k) const;
+        const T* operator () (size_t i, size_t j, size_t k) const;
 
         size_t getSizeX() const;
         size_t getSizeY() const;
@@ -83,10 +83,10 @@ inline T Array3D<T>::operator ()(size_t i, size_t j, size_t k) const {
 }
 
 template <class T>
-inline std::vector<T> Array3D<T>::operator ()(size_t i, size_t j) const{
+inline const T* Array3D<T>::operator ()(size_t i, size_t j) const{
     assert (i < sizeX);
     assert (j < sizeY);
-    return std::vector<T>(v.begin()+ (sizeZ*(j + sizeY*i)), v.begin()+(sizeZ*((j+1) + sizeY*i)));
+    return &(v[sizeZ*(j + sizeY*i)]);
 }
 
 template <class T>
@@ -160,12 +160,21 @@ inline T Array4D<T>::operator ()(size_t i, size_t j, size_t k, size_t l) const {
     return v[getIndex(i,j,k,l)];
 }
 
-template <class T>
+/*template <class T>
 inline std::vector<T> Array4D<T>::operator ()(size_t i, size_t j, size_t k) const {
     assert (i < sizeX);
     assert (j < sizeY);
     assert (k < sizeZ);
     return std::vector<T>(v.begin()+ sizeW*(k + sizeZ*(j + sizeY*i)), v.begin()+ sizeW*((k+1) + sizeZ*(j + sizeY*i)));
+}*/
+
+template <class T>
+inline const T* Array4D<T>::operator ()(size_t i, size_t j, size_t k) const {
+    assert (i < sizeX);
+    assert (j < sizeY);
+    assert (k < sizeZ);
+    return &(v[sizeW*(k + sizeZ*(j + sizeY*i))]);
+    //return std::vector<T>(v.begin()+ sizeW*(k + sizeZ*(j + sizeY*i)), v.begin()+ sizeW*((k+1) + sizeZ*(j + sizeY*i)));
 }
 
 template <class T>

@@ -49,9 +49,9 @@ template <class T> class Point : SerializableObject {
         * Public Inline Methods *
         *************************/
 
-        T x()                                               const;
-        T y()                                               const;
-        T z()                                               const;
+        const T& x()                                        const;
+        const T& y()                                        const;
+        const T& z()                                        const;
         double dist(const Point<T>& otherPoint)             const;
         T dot(const Point<T>& otherVector)                  const;
         Point<T> cross(const Point<T>& otherVector)         const;
@@ -76,6 +76,9 @@ template <class T> class Point : SerializableObject {
         Point<T> operator / (const Point<T>& otherPoint)    const;
 
 
+        T& x();
+        T& y();
+        T& z();
         void setX(const T& x);
         void setY(const T& y);
         void setZ(const T& z);
@@ -176,7 +179,7 @@ inline Point<T>::Point(T x, T y, T z) : xCoord(x), yCoord(y), zCoord(z) {
  * @return La componente \c x
  */
 template <class T>
-inline T Point<T>::x() const {
+inline const T& Point<T>::x() const {
     return this->xCoord;
 }
 
@@ -190,7 +193,7 @@ inline T Point<T>::x() const {
  * @return La componente \c y
  */
 template <class T>
-inline T Point<T>::y() const {
+inline const T& Point<T>::y() const {
     return this->yCoord;
 }
 
@@ -204,7 +207,7 @@ inline T Point<T>::y() const {
  * @return La componente \c z
  */
 template <class T>
-inline T Point<T>::z() const {
+inline const T& Point<T>::z() const {
     return this->zCoord;
 }
 
@@ -252,9 +255,9 @@ inline T Point<T>::dot(const Point<T>& otherVector) const {
  */
 template <class T>
 inline Point<T> Point<T>::cross(const Point<T>& otherVector) const {
-    return Point(yCoord * otherVector.zCoord - zCoord * otherVector.yCoord,
+    return std::move(Point<T>(yCoord * otherVector.zCoord - zCoord * otherVector.yCoord,
                  zCoord * otherVector.xCoord - xCoord * otherVector.zCoord,
-                 xCoord * otherVector.yCoord - yCoord * otherVector.xCoord);
+                 xCoord * otherVector.yCoord - yCoord * otherVector.xCoord));
 }
 
 /**
@@ -290,9 +293,9 @@ inline double Point<T>::getLengthSquared() const {
  */
 template <class T>
 inline Point<T> Point<T>::min(const Point<T>& otherPoint) const {
-    return Point<T>(std::min(x(), otherPoint.x()),
+    return std::move(Point<T>(std::min(x(), otherPoint.x()),
                     std::min(y(), otherPoint.y()),
-                    std::min(z(), otherPoint.z()));
+                    std::min(z(), otherPoint.z())));
 }
 
 /**
@@ -308,9 +311,9 @@ inline Point<T> Point<T>::min(const Point<T>& otherPoint) const {
  */
 template <class T>
 inline Point<T> Point<T>::max(const Point<T>& otherPoint) const {
-    return Point<T>(std::max(x(), otherPoint.x()),
+    return std::move(Point<T>(std::max(x(), otherPoint.x()),
                     std::max(y(), otherPoint.y()),
-                    std::max(z(), otherPoint.z()));
+                    std::max(z(), otherPoint.z())));
 }
 
 /**
@@ -387,7 +390,7 @@ inline bool Point<T>::operator < (const Point<T>& otherPoint) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator - () const {
-    return Point<T>(-xCoord, -yCoord, -zCoord);
+    return std::move(Point<T>(-xCoord, -yCoord, -zCoord));
 }
 
 /**
@@ -398,16 +401,16 @@ inline Point<T> Point<T>::operator - () const {
  */
 template <class T>
 inline Point<T> Point<T>::operator + (const Point<T>& otherPoint) const {
-    return Point<T>(xCoord + otherPoint.xCoord,
+    return std::move(Point<T>(xCoord + otherPoint.xCoord,
                     yCoord + otherPoint.yCoord,
-                    zCoord + otherPoint.zCoord);
+                    zCoord + otherPoint.zCoord));
 }
 
 template <class T>
 inline Point<T> Point<T>::operator -(const T& scalar) const {
-    return Point<T>(xCoord - scalar,
+    return std::move(Point<T>(xCoord - scalar,
                     yCoord - scalar,
-                    zCoord - scalar);
+                    zCoord - scalar));
 }
 
 /**
@@ -418,9 +421,9 @@ inline Point<T> Point<T>::operator -(const T& scalar) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator - (const Point<T>& otherPoint) const {
-    return Point<T>(xCoord - otherPoint.xCoord,
+    return std::move(Point<T>(xCoord - otherPoint.xCoord,
                     yCoord - otherPoint.yCoord,
-                    zCoord - otherPoint.zCoord);
+                    zCoord - otherPoint.zCoord));
 }
 
 /**
@@ -431,7 +434,7 @@ inline Point<T> Point<T>::operator - (const Point<T>& otherPoint) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator * (const T& scalar) const {
-    return Point<T>(xCoord * scalar, yCoord * scalar, zCoord * scalar);
+    return std::move(Point<T>(xCoord * scalar, yCoord * scalar, zCoord * scalar));
 }
 
 /**
@@ -442,7 +445,7 @@ inline Point<T> Point<T>::operator * (const T& scalar) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator * (const Point<T>& otherPoint) const {
-    return Point<T>(xCoord * otherPoint.xCoord, yCoord * otherPoint.yCoord, zCoord * otherPoint.zCoord);
+    return std::move(Point<T>(xCoord * otherPoint.xCoord, yCoord * otherPoint.yCoord, zCoord * otherPoint.zCoord));
 }
 
 /**
@@ -453,7 +456,7 @@ inline Point<T> Point<T>::operator * (const Point<T>& otherPoint) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator / (const T& scalar) const {
-    return Point<T>(xCoord / scalar, yCoord / scalar, zCoord / scalar);
+    return std::move(Point<T>(xCoord / scalar, yCoord / scalar, zCoord / scalar));
 }
 
 /**
@@ -464,7 +467,49 @@ inline Point<T> Point<T>::operator / (const T& scalar) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator / (const Point<T>& otherPoint) const {
-    return Point<T>(xCoord / otherPoint.xCoord, yCoord / otherPoint.yCoord, zCoord / otherPoint.zCoord);
+    return std::move(Point<T>(xCoord / otherPoint.xCoord, yCoord / otherPoint.yCoord, zCoord / otherPoint.zCoord));
+}
+
+/**
+ * \~English
+ * @brief Returns the \c x component of the point/vector
+ * @return \c x component
+ *
+ * \~Italian
+ * @brief Restituisce la componente \c x del punto/vettore
+ * @return La componente \c x
+ */
+template <class T>
+inline T& Point<T>::x() {
+    return this->xCoord;
+}
+
+/**
+ * \~English
+ * @brief Returns the \c y component of the point/vector
+ * @return \c y component
+ *
+ * \~Italian
+ * @brief Restituisce la componente \c y del punto/vettore
+ * @return La componente \c y
+ */
+template <class T>
+inline T& Point<T>::y() {
+    return this->yCoord;
+}
+
+/**
+ * \~English
+ * @brief Returns the \c z component of the point/vector
+ * @return \c z component
+ *
+ * \~Italian
+ * @brief Restituisce la componente \c z del punto/vettore
+ * @return La componente \c z
+ */
+template <class T>
+inline T& Point<T>::z() {
+    return this->zCoord;
 }
 
 /**
@@ -666,7 +711,7 @@ std::string Point<T>::toString() const {
     std::stringstream ss;
     ss << "[" << xCoord << ", " << yCoord << ", " << zCoord << "]";
     std::string s1 = ss.str();
-    return s1;
+    return std::move(s1);
 }
 
 /****************
@@ -681,9 +726,9 @@ std::string Point<T>::toString() const {
  */
 template <class T>
 inline Point<T> operator * (const T& scalar, const Point<T>& point) {
-    return Point<T>(point.xCoord * scalar,
+    return std::move(Point<T>(point.xCoord * scalar,
                     point.yCoord * scalar,
-                    point.zCoord * scalar);
+                    point.zCoord * scalar));
 }
 
 template <class T>
@@ -692,7 +737,7 @@ inline Point<T> mul(const T m[][3], const Point<T>& point) {
     tmp.setX(m[0][0]*point.x() + m[0][1]*point.y() + m[0][2]*point.z());
     tmp.setY(m[1][0]*point.x() + m[1][1]*point.y() + m[1][2]*point.z());
     tmp.setZ(m[2][0]*point.x() + m[2][1]*point.y() + m[2][2]*point.z());
-    return tmp;
+    return std::move(tmp);
 }
 
 /**

@@ -34,7 +34,7 @@ class Grid : public SerializableObject{
         double getUnit() const;
 
         Pointd getNearestGridPoint(const Pointd& p);
-        void getCoefficients(std::vector<double> &coeffs, const Pointd& p) const;
+        void getCoefficients(const double*& coeffs, const Pointd& p) const;
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -94,7 +94,7 @@ inline Pointd Grid::getNearestGridPoint(const Pointd& p) {
     return Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2));
 }
 
-inline void Grid::getCoefficients(std::vector<double>& coeffs, const Pointd& p) const {
+inline void Grid::getCoefficients(const double* &coeffs, const Pointd& p) const {
     if(bb.isStrictlyIntern(p))
         coeffs = this->coeffs(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
     else coeffs = this->coeffs(0, 0, 0);

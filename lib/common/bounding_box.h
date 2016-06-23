@@ -46,14 +46,14 @@ class BoundingBox : public SerializableObject{
         * Public Inline Methods *
         *************************/
 
-        Pointd getMin()     const;
-        Pointd getMax()     const;
-        double getMinX()    const;
-        double getMinY()    const;
-        double getMinZ()    const;
-        double getMaxX()    const;
-        double getMaxY()    const;
-        double getMaxZ()    const;
+        const Pointd& getMin()     const;
+        const Pointd& getMax()     const;
+        const double& getMinX()    const;
+        const double& getMinY()    const;
+        const double& getMinZ()    const;
+        const double& getMaxX()    const;
+        const double& getMaxY()    const;
+        const double& getMaxZ()    const;
         Pointd  center()    const;
         double diag()       const;
         bool isStrictlyIntern(const Pointd& p)     const;
@@ -132,7 +132,7 @@ inline BoundingBox::BoundingBox(const Pointd& min, const Pointd& max) : min(min)
  * @brief Restituisce il punto minimo del bounding box
  * @return Il punto minimo
  */
-inline Pointd BoundingBox::getMin() const {
+inline const Pointd& BoundingBox::getMin() const {
     return min;
 }
 
@@ -145,7 +145,7 @@ inline Pointd BoundingBox::getMin() const {
  * @brief Restituisce il punto massimo del bounding box
  * @return Il punto massimo
  */
-inline Pointd BoundingBox::getMax() const {
+inline const Pointd& BoundingBox::getMax() const {
     return max;
 }
 
@@ -158,7 +158,7 @@ inline Pointd BoundingBox::getMax() const {
  * @brief Restituisce la componente x del punto minimo del bounding box
  * @return La componente x del punto minimo
  */
-inline double BoundingBox::getMinX() const {
+inline const double& BoundingBox::getMinX() const {
     return min.x();
 }
 
@@ -171,7 +171,7 @@ inline double BoundingBox::getMinX() const {
  * @brief Restituisce la componente y del punto minimo del bounding box
  * @return La componente y del punto minimo
  */
-inline double BoundingBox::getMinY() const {
+inline const double& BoundingBox::getMinY() const {
     return min.y();
 }
 
@@ -184,7 +184,7 @@ inline double BoundingBox::getMinY() const {
  * @brief Restituisce la componente z del punto minimo del bounding box
  * @return La componente z del punto minimo
  */
-inline double BoundingBox::getMinZ() const {
+inline const double& BoundingBox::getMinZ() const {
     return min.z();
 }
 
@@ -197,7 +197,7 @@ inline double BoundingBox::getMinZ() const {
  * @brief Restituisce la componente x del punto massimo del bounding box
  * @return La componente x del punto massimo
  */
-inline double BoundingBox::getMaxX() const {
+inline const double& BoundingBox::getMaxX() const {
     return max.x();
 }
 
@@ -210,7 +210,7 @@ inline double BoundingBox::getMaxX() const {
  * @brief Restituisce la componente y del punto massimo del bounding box
  * @return La componente y del punto massimo
  */
-inline double BoundingBox::getMaxY() const {
+inline const double& BoundingBox::getMaxY() const {
     return max.y();
 }
 
@@ -223,7 +223,7 @@ inline double BoundingBox::getMaxY() const {
  * @brief Restituisce la componente z del punto massimo del bounding box
  * @return La componente z del punto massimo
  */
-inline double BoundingBox::getMaxZ() const {
+inline const double& BoundingBox::getMaxZ() const {
     return max.z();
 }
 
@@ -237,7 +237,7 @@ inline double BoundingBox::getMaxZ() const {
  * @return Il punto al centro del bounding box
  */
 inline Pointd BoundingBox::center() const {
-    return (min + max) * 0.5;
+    return std::move((min + max) * 0.5);
 }
 
 /**

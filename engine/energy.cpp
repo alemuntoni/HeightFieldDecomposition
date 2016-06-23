@@ -75,9 +75,9 @@ double Energy::barrierEnergy(const Box3D& b, double s) const {
 }
 
 //sia i coefficienti che la sotto-box integrata devono essere nell'intervallo 0-1
-double Energy::integralTricubicInterpolation(const std::vector<double>& a, double u1, double v1, double w1, double u2, double v2, double w2) {
+double Energy::integralTricubicInterpolation(const double*& a, double u1, double v1, double w1, double u2, double v2, double w2) {
     //Simpy generated code
-    assert (a.size() == 64);
+    //assert (a.size() == 64);
     double C_result;
     C_result = - pow(w1, 4) *
                ((1.0L/4.0L)*a[48]*u1*v1 - 1.0L/4.0L*a[48]*u1*v2 - 1.0L/4.0L*a[48]*u2*v1 + (1.0L/4.0L)*a[48]*u2*v2 +
@@ -223,7 +223,7 @@ double Energy::integralTricubicInterpolationEnergy(const Pointd& min, const Poin
     return evaluateTricubicInterpolationFunction(min, max, integralTricubicInterpolation);
 }
 
-double Energy::evaluateTricubicInterpolationFunction(const Pointd& bmin, const Pointd& bmax, double (*f)(const std::vector<double>&, double, double, double, double, double, double)) const {
+double Energy::evaluateTricubicInterpolationFunction(const Pointd& bmin, const Pointd& bmax, double (*f)(const double* &, double, double, double, double, double, double)) const {
     double unit = g->getUnit();
 
     BoundingBox bb = g->getBoundingBox();
@@ -258,7 +258,7 @@ double Energy::evaluateTricubicInterpolationFunction(const Pointd& bmin, const P
                     maxbz <= z1 || minbz >= z2 ) // not contained
                     energy += 0;
                 else {
-                    std::vector<double> coeffs;
+                    const double* coeffs;
                     g->getCoefficients(coeffs, Pointd(x1,y1,z1));
                     if (minbx <= x1 && maxbx >= x2 &&
                         minby <= y1 && maxby >= y2 &&
