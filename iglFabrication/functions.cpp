@@ -31,7 +31,7 @@ bool generateGridAndDistanceField(const std::string& s) {
         Eigen::RowVector3d Vmax = V.colwise().maxCoeff();
 
         // create grid GV
-        Eigen::RowVector3i border(6, 6, 6);
+        Eigen::RowVector3i border(10, 10, 10);
         Eigen::RowVector3i nGmin = (Vmin).cast<int>() - border;
         Eigen::RowVector3i nGmax = (Vmax).cast<int>() + border; //bounding box of the Grid
         Eigen::RowVector3i res = (nGmax - nGmin)/2; res(0)+=1; res(1)+=1; res(2)+=1;

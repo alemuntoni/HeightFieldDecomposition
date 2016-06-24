@@ -226,7 +226,7 @@ template <typename T, typename ...A>
 inline void Serializer::serialize(const std::set<T, A...> &s, std::ofstream& binaryFile){
     size_t size = s.size();
     Serializer::serialize(size, binaryFile);
-    for (typename std::set<T, A...>::iterator it = s.begin(); it != s.end(); ++it)
+    for (typename std::set<T, A...>::const_iterator it = s.begin(); it != s.end(); ++it)
         Serializer::serialize((*it), binaryFile);
 }
 
@@ -258,7 +258,7 @@ template <typename T, typename ...A>
 inline void Serializer::serialize(const std::vector<T, A...> &v, std::ofstream& binaryFile){
     size_t size = v.size();
     Serializer::serialize(size, binaryFile);
-    for (typename std::vector<T, A...>::iterator it = v.begin(); it != v.end(); ++it)
+    for (typename std::vector<T, A...>::const_iterator it = v.begin(); it != v.end(); ++it)
         Serializer::serialize((*it), binaryFile);
 }
 
@@ -289,7 +289,7 @@ template <typename T, typename ...A>
 inline void Serializer::serialize(const std::list<T, A...> &l, std::ofstream& binaryFile){
     size_t size = l.size();
     Serializer::serialize(size, binaryFile);
-    for (typename std::list<T, A...>::iterator it = l.begin(); it != l.end(); ++it)
+    for (typename std::list<T, A...>::const_iterator it = l.begin(); it != l.end(); ++it)
         Serializer::serialize((*it), binaryFile);
 }
 
@@ -321,7 +321,7 @@ template <typename T1, typename T2, typename ...A>
 inline void Serializer::serialize(const std::map<T1, T2, A...> &m, std::ofstream& binaryFile){
     size_t size = m.size();
     Serializer::serialize(size, binaryFile);
-    for (typename std::map<T1, T2, A...>::iterator it = m.begin(); it != m.end(); ++it){
+    for (typename std::map<T1, T2, A...>::const_iterator it = m.begin(); it != m.end(); ++it){
         Serializer::serialize((it->first), binaryFile);
         Serializer::serialize((it->second), binaryFile);
     }

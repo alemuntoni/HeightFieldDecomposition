@@ -32,7 +32,7 @@ class DrawableGrid: public Grid, public DrawableObject
         void setVisible(bool b);
 
         void addCube(const BoundingBox &bb);
-
+        void deleteCubes();
 
     private:
 

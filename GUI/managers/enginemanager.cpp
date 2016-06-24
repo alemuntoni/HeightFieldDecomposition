@@ -9,7 +9,8 @@ EngineManager::EngineManager(QWidget *parent) :
     mainWindow((MainWindow*)parent),
     g(nullptr),
     d(nullptr),
-    b(nullptr){
+    b(nullptr),
+    iterations(nullptr){
     ui->setupUi(this);
 }
 
@@ -37,18 +38,22 @@ void EngineManager::serialize(std::ofstream& binaryFile) const {
     g->serialize(binaryFile);
     d->serialize(binaryFile);
     b->serialize(binaryFile);
+    iterations->serialize(binaryFile);
 }
 
 void EngineManager::deserialize(std::ifstream& binaryFile) {
     deleteDrawableObject(g);
     deleteDrawableObject(d);
     deleteDrawableObject(b);
+    deleteDrawableObject(iterations);
     g = new DrawableGrid();
     d = new DrawableDcel();
     b = new Box3D();
+    iterations = new BoxList();
     g->deserialize(binaryFile);
     d->deserialize(binaryFile);
     b->deserialize(binaryFile);
+    iterations->deserialize(binaryFile);
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
     mainWindow->pushObj(g, "Grid");
@@ -57,6 +62,15 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
     ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
     ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
     ui->dSpinBox->setValue(b->getMax().z()-b->getMin().z());
+    iterations->setVisibleBox(0);
+    ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
+    mainWindow->pushObj(iterations, "Iterations");
+    double energy = e.energy(iterations->getBox(0));
+    updateLabel(energy, ui->energyIterationLabel);
+    ui->weigthsRadioButton->setChecked(true);
+    ui->sliceCheckBox->setChecked(true);
+    g->setDrawBorders();
+    g->setSlice(1);
     mainWindow->updateGlCanvas();
 }
 
@@ -390,7 +404,15 @@ void EngineManager::on_energyBoxPushButton_clicked() {
         Eigen::VectorXd gradient(6);
         Eigen::VectorXd finiteGradient(6);
         e.gradientTricubicInterpolationEnergy(gradient, b->getMin(), b->getMax());
+        updateLabel(gradient(0), ui->gminx);
+        updateLabel(gradient(1), ui->gminy);
+        updateLabel(gradient(2), ui->gminz);
+        updateLabel(gradient(3), ui->gmaxx);
+        updateLabel(gradient(4), ui->gmaxy);
+        updateLabel(gradient(5), ui->gmaxz);
         e.gradientEnergyFiniteDifference(finiteGradient, *b);
+        std::cerr << "Gradient: \n" << gradient << "\n";
+        std::cerr << "Finite Gradient: \n" << finiteGradient << "\n";
         updateLabel(energy, ui->energyLabel);
         mainWindow->updateGlCanvas();
     }
@@ -399,9 +421,18 @@ void EngineManager::on_energyBoxPushButton_clicked() {
 void EngineManager::on_minimizePushButton_clicked() {
     if (b!=nullptr){
         Timer t("Gradient Discend");
-        double energy = e.gradientDiscend(*b);
+        deleteDrawableObject(iterations);
+        iterations = new BoxList();
+        double it = e.gradientDiscend(*b, *iterations);
         t.stopAndPrint();
-        updateLabel(energy, ui->minimizedEnergyLabel);
+        iterations->setVisibleBox(0);
+        ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
+        mainWindow->pushObj(iterations, "Iterations");
+        updateLabel(it, ui->minimizedEnergyLabel);
+        double energy = e.energy(iterations->getBox(0));
+        updateLabel(energy, ui->energyIterationLabel);
+        energy = e.energy(*b);
+        updateLabel(energy, ui->energyLabel);
         ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
         ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
         ui->dSpinBox->setValue(b->getMax().z()-b->getMin().z());
@@ -425,5 +456,26 @@ void EngineManager::on_deserializeBoxPushButton_clicked() {
         b->deserialize(myfile);
         myfile.close();
         mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_iterationsSlider_sliderMoved(int position) {
+    if (iterations != nullptr){
+        iterations->setVisibleBox(position);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_energyIterationsButton_clicked() {
+    if (iterations != nullptr){
+        Box3D b = iterations->getBox(ui->iterationsSlider->value());
+        double energy = e.energy(b);
+        Eigen::VectorXd gradient(6);
+        Eigen::VectorXd finiteGradient(6);
+        e.gradientTricubicInterpolationEnergy(gradient, b.getMin(), b.getMax());
+        e.gradientEnergyFiniteDifference(finiteGradient, b);
+        std::cerr << "Gradient: \n" << gradient << "\n";
+        std::cerr << "Finite Gradient: \n" << finiteGradient << "\n";
+        updateLabel(energy, ui->energyIterationLabel);
     }
 }

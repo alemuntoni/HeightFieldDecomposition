@@ -130,35 +130,35 @@ void Grid::setNeighboroudWeigth(const Pointd& p, double w) {
     unsigned int i = getIndexOfCoordinateX(p.x());
     unsigned int j = getIndexOfCoordinateY(p.y());
     unsigned int k = getIndexOfCoordinateZ(p.z());
-    weights(i-1,j-1,k-1) = w;
-    weights(i-1,j-1,k  ) = w;
-    weights(i-1,j-1,k+1) = w;
-    weights(i-1,j  ,k-1) = w;
+    //weights(i-1,j-1,k-1) = w;
+    //weights(i-1,j-1,k  ) = w;
+    //weights(i-1,j-1,k+1) = w;
+    //weights(i-1,j  ,k-1) = w;
     weights(i-1,j  ,k  ) = w;
-    weights(i-1,j  ,k+1) = w;
-    weights(i-1,j+1,k-1) = w;
-    weights(i-1,j+1,k  ) = w;
-    weights(i-1,j+1,k+1) = w;
+    //weights(i-1,j  ,k+1) = w;
+    //weights(i-1,j+1,k-1) = w;
+    //weights(i-1,j+1,k  ) = w;
+    //weights(i-1,j+1,k+1) = w;
 
-    weights(i  ,j-1,k-1) = w;
+    //weights(i  ,j-1,k-1) = w;
     weights(i  ,j-1,k  ) = w;
-    weights(i  ,j-1,k+1) = w;
+    //weights(i  ,j-1,k+1) = w;
     weights(i  ,j  ,k-1) = w;
     weights(i  ,j  ,k  ) = w;
     weights(i  ,j  ,k+1) = w;
-    weights(i  ,j+1,k-1) = w;
+    //weights(i  ,j+1,k-1) = w;
     weights(i  ,j+1,k  ) = w;
-    weights(i  ,j+1,k+1) = w;
+    //weights(i  ,j+1,k+1) = w;
 
-    weights(i+1,j-1,k-1) = w;
-    weights(i+1,j-1,k  ) = w;
-    weights(i+1,j-1,k+1) = w;
-    weights(i+1,j  ,k-1) = w;
+    //weights(i+1,j-1,k-1) = w;
+    //weights(i+1,j-1,k  ) = w;
+    //weights(i+1,j-1,k+1) = w;
+    //weights(i+1,j  ,k-1) = w;
     weights(i+1,j  ,k  ) = w;
-    weights(i+1,j  ,k+1) = w;
-    weights(i+1,j+1,k-1) = w;
-    weights(i+1,j+1,k  ) = w;
-    weights(i+1,j+1,k+1) = w;
+    //weights(i+1,j  ,k+1) = w;
+    //weights(i+1,j+1,k-1) = w;
+    //weights(i+1,j+1,k  ) = w;
+    //weights(i+1,j+1,k+1) = w;
 }
 
 

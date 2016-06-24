@@ -79,7 +79,7 @@ void Box3D::serialize(std::ofstream& binaryFile) const {
     c2.serialize(binaryFile);
     c3.serialize(binaryFile);
     Serializer::serialize(color, binaryFile);
-    Serializer::serialize(rotation, binaryFile);
+    //Serializer::serialize(rotation, binaryFile);
 }
 
 void Box3D::deserialize(std::ifstream& binaryFile) {
@@ -89,5 +89,5 @@ void Box3D::deserialize(std::ifstream& binaryFile) {
     c2.deserialize(binaryFile);
     c3.deserialize(binaryFile);
     Serializer::deserialize(color, binaryFile);
-    Serializer::deserialize(rotation, binaryFile);
+    //Serializer::deserialize(rotation, binaryFile);
 }

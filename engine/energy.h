@@ -3,6 +3,7 @@
 
 #include "lib/grid/drawablegrid.h"
 #include "box.h"
+#include "boxlist.h"
 
 #define EPSILON_GRAD 1e-8
 
@@ -12,15 +13,15 @@ class Energy{
         Energy(DrawableGrid& g);
 
         // Gradient Discend
-        double gradientDiscend(Box3D &b) const;
+        double gradientDiscend(Box3D &b, BoxList& iterations) const;
 
         // Gradient
-        static double gradientXMinComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
-        static double gradientYMinComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
-        static double gradientZMinComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
-        static double gradientXMaxComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
-        static double gradientYMaxComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
-        static double gradientZMaxComponent(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2);
+        static double gradientXMinComponent(const double* &a, double u1, double v1, double w1, double v2, double w2);
+        static double gradientYMinComponent(const double* &a, double u1, double v1, double w1, double u2, double w2);
+        static double gradientZMinComponent(const double* &a, double u1, double v1, double w1, double u2, double v2);
+        static double gradientXMaxComponent(const double* &a, double v1, double w1, double u2, double v2, double w2);
+        static double gradientYMaxComponent(const double* &a, double u1, double w1, double u2, double v2, double w2);
+        static double gradientZMaxComponent(const double* &a, double u1, double v1, double u2, double v2, double w2);
 
         double gradientEvaluateComponent(const Pointd& bmin, const Pointd& bmax, double (*f)(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2)) const;
         double gradientEvaluateXMinComponent(const Pointd& bmin, const Pointd& bmax) const;

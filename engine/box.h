@@ -47,7 +47,7 @@ class Box3D : public DrawableObject, public SerializableObject{
         Pointd c1, c2, c3;
         QColor color;
         bool visible;
-        Eigen::Matrix<double, 3, 3> rotation;
+        //Eigen::Matrix<double, 3, 3> rotation;
 };
 
 inline void Box3D::setColor(const QColor& c) {

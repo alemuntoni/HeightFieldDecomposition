@@ -79,12 +79,17 @@ class EngineManager : public QFrame, public SerializableObject
 
         void on_deserializeBoxPushButton_clicked();
 
+        void on_iterationsSlider_sliderMoved(int position);
+
+        void on_energyIterationsButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
         DrawableGrid* g;
         DrawableDcel* d;
         Box3D* b;
+        BoxList* iterations;
         Energy e;
 };
 

@@ -194,6 +194,10 @@ void DrawableGrid::addCube(const BoundingBox& bb) {
     cubes.push_back(bb);
 }
 
+void DrawableGrid::deleteCubes() {
+    cubes.clear();
+}
+
 void DrawableGrid::drawLine(const Pointd &a, const Pointd &b) const
 {
     glBegin(GL_LINES);
