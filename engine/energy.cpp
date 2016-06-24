@@ -34,7 +34,7 @@ double Energy::gradientDiscend(Box3D& b, BoxList& iterations) const {
         if (newObjValue < objValue) {
             nIterations++;
             diff = new_x - x;
-            //std::cerr << "It: " << nIterations << "; Diff norm: " << diff.norm() << "\n";
+            std::cerr << "It: " << nIterations << "; Diff norm: " << diff.norm() << "\n";
             x = new_x;
             b.setMin(Pointd(x(0), x(1), x(2)));
             b.setMax(Pointd(x(3), x(4), x(5)));
@@ -43,9 +43,9 @@ double Energy::gradientDiscend(Box3D& b, BoxList& iterations) const {
         }
         else{
             alfa /= 10;
-            //std::cerr << "alfa: " << alfa << "\n";
+            std::cerr << "alfa: " << alfa << "\n";
         }
-    } while (diff.norm() > 0.005 && nIterations < 1000);
+    } while ((diff.norm() > 0.005 && alfa >1e-7) && nIterations < 1000);
     std::cerr << "Gradient norm: " << gradient.norm() << "\n";
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));

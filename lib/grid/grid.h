@@ -9,7 +9,7 @@
 #define BORDER_PAY 5
 #define STD_PAY 0
 #define MIN_PAY -10
-#define MAX_PAY 1000
+#define MAX_PAY 10000000
 
 
 class Grid : public SerializableObject{
