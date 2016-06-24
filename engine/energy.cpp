@@ -7,7 +7,12 @@ Energy::Energy() {
 Energy::Energy(DrawableGrid& g) : g(&g){
 }
 
-double Energy::gradientDiscend(Box3D& b, BoxList& iterations) const {
+int Energy::gradientDiscend(Box3D& b) const {
+    BoxList dummy;
+    return gradientDiscend(b, dummy, false);
+}
+
+int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     int nIterations = 0;
     double objValue, newObjValue;
     double alfa = 0.1;
@@ -21,36 +26,31 @@ double Energy::gradientDiscend(Box3D& b, BoxList& iterations) const {
     Eigen::VectorXd diff(6); diff = x;
     do{
         objValue = energy(x, c1, c2, c3);
-        //Eigen::Vector4d gradient;
         //Eigen::VectorXd gradientFiniteDiffernece(6);
-
-        //e.gradientEnergy(gradient, x, c.x(), c.y());
         //gradientEnergyFiniteDifference(gradientFiniteDiffernece, x, c1, c2, c3);
         gradientEnergy(gradient, x, c1, c2, c3);
         //std::cerr << "Diff norm: \n" << (gradient-gradientFiniteDiffernece).norm() << "\n\n";
-        //new_x = x - alfa * gradientFiniteDiffernece;
         new_x = x - alfa * gradient;
         newObjValue = energy(new_x, c1, c2, c3);
         if (newObjValue < objValue) {
             nIterations++;
             diff = new_x - x;
-            std::cerr << "It: " << nIterations << "; Diff norm: " << diff.norm() << "\n";
+            if (nIterations % 100 == 0) std::cerr << "It: " << nIterations << "; Diff norm: " << diff.norm() << "\n";
             x = new_x;
-            b.setMin(Pointd(x(0), x(1), x(2)));
-            b.setMax(Pointd(x(3), x(4), x(5)));
-            iterations.addBox(b);
+            if (saveIt){
+                b.setMin(Pointd(x(0), x(1), x(2)));
+                b.setMax(Pointd(x(3), x(4), x(5)));
+                iterations.addBox(b);
+            }
             alfa *= 2;
         }
         else{
             alfa /= 10;
-            std::cerr << "alfa: " << alfa << "\n";
         }
-    } while ((diff.norm() > 0.005 && alfa >1e-7) && nIterations < 1000);
-    std::cerr << "Gradient norm: " << gradient.norm() << "\n";
+    } while ((diff.norm() > 0.005 && alfa >1e-5) && nIterations < 1000);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
-    iterations.addBox(b);
-    std::cerr << gradient;
+    if (saveIt) iterations.addBox(b);
     return nIterations;
 }
 

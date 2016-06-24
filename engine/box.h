@@ -42,12 +42,16 @@ class Box3D : public DrawableObject, public SerializableObject{
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);
 
+        const Vec3& getTarget() const;
+        void setTarget(const Vec3& value);
+
     protected:
         Pointd min, max;
         Pointd c1, c2, c3;
         QColor color;
         bool visible;
-        //Eigen::Matrix<double, 3, 3> rotation;
+        Vec3 target;
+        Eigen::Matrix<double, 3, 3> rotation;
 };
 
 inline void Box3D::setColor(const QColor& c) {

@@ -67,6 +67,7 @@ template <class T> class Point : SerializableObject {
         bool operator != (const Point<T>& otherPoint)       const;
         bool operator < (const Point<T>& otherPoint)        const;
         Point<T> operator - ()                              const;
+        Point<T> operator + (const T& scalar)               const;
         Point<T> operator + (const Point<T>& otherPoint)    const;
         Point<T> operator - (const T& scalar)               const;
         Point<T> operator - (const Point<T>& otherPoint)    const;
@@ -391,6 +392,13 @@ inline bool Point<T>::operator < (const Point<T>& otherPoint) const {
 template <class T>
 inline Point<T> Point<T>::operator - () const {
     return std::move(Point<T>(-xCoord, -yCoord, -zCoord));
+}
+
+template <class T>
+inline Point<T> Point<T>::operator +(const T& scalar) const {
+    return std::move(Point<T>(xCoord + scalar,
+                    yCoord + scalar,
+                    zCoord + scalar));
 }
 
 /**

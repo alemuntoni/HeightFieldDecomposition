@@ -6,12 +6,14 @@
 class BoxList : public DrawableObject, public SerializableObject{
     public:
         BoxList();
+        BoxList(bool cylinders);
 
         void addBox(const Box3D &b);
         void setVisibleBox(int i);
         void clearBoxes();
         unsigned int getNumberBoxes();
         Box3D getBox(unsigned int i);
+        void setCylinders(bool b);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -28,6 +30,10 @@ class BoxList : public DrawableObject, public SerializableObject{
         std::vector<Box3D> boxes;
         bool visible;
         int n;
+        bool cylinder;
+
+        void drawLine(const Pointd& a, const Pointd& b) const;
+        void drawCube(const Box3D& b) const;
 };
 
 #endif // BOXLIST_H

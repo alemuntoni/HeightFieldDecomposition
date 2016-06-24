@@ -49,9 +49,9 @@ class EngineManager : public QFrame, public SerializableObject
 
         void on_sliceComboBox_currentIndexChanged(int index);
 
-        void on_pushButton_clicked();
+        void on_serializePushButton_clicked();
 
-        void on_pushButton_2_clicked();
+        void on_deserializePushButton_clicked();
 
         void on_wSpinBox_valueChanged(double arg1);
 
@@ -83,6 +83,12 @@ class EngineManager : public QFrame, public SerializableObject
 
         void on_energyIterationsButton_clicked();
 
+        void on_createBoxesPushButton_clicked();
+
+        void on_showAllSolutionsCheckBox_stateChanged(int arg1);
+
+        void on_solutionsSlider_valueChanged(int value);
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
@@ -90,6 +96,7 @@ class EngineManager : public QFrame, public SerializableObject
         DrawableDcel* d;
         Box3D* b;
         BoxList* iterations;
+        BoxList* solutions;
         Energy e;
 };
 

@@ -2,6 +2,7 @@
 #include "ui_enginemanager.h"
 #include "common.h"
 #include <cstdio>
+#include <QFileDialog>
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -10,8 +11,10 @@ EngineManager::EngineManager(QWidget *parent) :
     g(nullptr),
     d(nullptr),
     b(nullptr),
-    iterations(nullptr){
+    iterations(nullptr),
+    solutions(nullptr){
     ui->setupUi(this);
+    ui->iterationsSlider->setMaximum(0);
 }
 
 void EngineManager::deleteDrawableObject(DrawableObject* d) {
@@ -38,22 +41,26 @@ void EngineManager::serialize(std::ofstream& binaryFile) const {
     g->serialize(binaryFile);
     d->serialize(binaryFile);
     b->serialize(binaryFile);
-    iterations->serialize(binaryFile);
+    bool b = false;
+    if (solutions!=nullptr){
+        b = true;
+        Serializer::serialize(b, binaryFile);
+        solutions->serialize(binaryFile);
+    }
+    else
+        Serializer::serialize(b, binaryFile);
 }
 
 void EngineManager::deserialize(std::ifstream& binaryFile) {
     deleteDrawableObject(g);
     deleteDrawableObject(d);
     deleteDrawableObject(b);
-    deleteDrawableObject(iterations);
     g = new DrawableGrid();
     d = new DrawableDcel();
     b = new Box3D();
-    iterations = new BoxList();
     g->deserialize(binaryFile);
     d->deserialize(binaryFile);
     b->deserialize(binaryFile);
-    iterations->deserialize(binaryFile);
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
     mainWindow->pushObj(g, "Grid");
@@ -62,15 +69,25 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
     ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
     ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
     ui->dSpinBox->setValue(b->getMax().z()-b->getMin().z());
-    iterations->setVisibleBox(0);
-    ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
-    mainWindow->pushObj(iterations, "Iterations");
-    double energy = e.energy(iterations->getBox(0));
-    updateLabel(energy, ui->energyIterationLabel);
     ui->weigthsRadioButton->setChecked(true);
     ui->sliceCheckBox->setChecked(true);
     g->setDrawBorders();
     g->setSlice(1);
+
+    bool b;
+    Serializer::deserialize(b, binaryFile);
+    if (b){
+        deleteDrawableObject(solutions);
+        solutions = new BoxList();
+        solutions->deserialize(binaryFile);
+        solutions->setVisibleBox(0);
+        solutions->setCylinders(false);
+        mainWindow->pushObj(solutions, "Solutions");
+        ui->showAllSolutionsCheckBox->setEnabled(true);
+        ui->solutionsSlider->setEnabled(true);
+
+    }
+
     mainWindow->updateGlCanvas();
 }
 
@@ -221,18 +238,31 @@ void EngineManager::on_sliceComboBox_currentIndexChanged(int index) {
     }
 }
 
-void EngineManager::on_pushButton_clicked() {
-    std::ofstream myfile;
-    myfile.open ("engine.bin", std::ios::out | std::ios::binary);
-    serialize(myfile);
-    myfile.close();
+void EngineManager::on_serializePushButton_clicked() {
+    QString filename = QFileDialog::getSaveFileName(nullptr,
+                       "Serialize",
+                       ".",
+                       "BIN(*.bin)");
+    if (!filename.isEmpty()) {
+        std::ofstream myfile;
+        myfile.open (filename.toStdString(), std::ios::out | std::ios::binary);
+        serialize(myfile);
+        myfile.close();
+    }
 }
 
-void EngineManager::on_pushButton_2_clicked() {
-    std::ifstream myfile;
-    myfile.open ("engine.bin", std::ios::in | std::ios::binary);
-    deserialize(myfile);
-    myfile.close();
+void EngineManager::on_deserializePushButton_clicked() {
+    QString filename = QFileDialog::getOpenFileName(nullptr,
+                       "Deserialize",
+                       ".",
+                       "BIN(*.bin)");
+
+    if (!filename.isEmpty()) {
+        std::ifstream myfile;
+        myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
+        deserialize(myfile);
+        myfile.close();
+    }
 }
 
 void EngineManager::on_wSpinBox_valueChanged(double arg1) {
@@ -402,7 +432,6 @@ void EngineManager::on_energyBoxPushButton_clicked() {
     if (b!=nullptr){
         double energy = e.energy(*b);
         Eigen::VectorXd gradient(6);
-        Eigen::VectorXd finiteGradient(6);
         e.gradientTricubicInterpolationEnergy(gradient, b->getMin(), b->getMax());
         updateLabel(gradient(0), ui->gminx);
         updateLabel(gradient(1), ui->gminy);
@@ -410,9 +439,7 @@ void EngineManager::on_energyBoxPushButton_clicked() {
         updateLabel(gradient(3), ui->gmaxx);
         updateLabel(gradient(4), ui->gmaxy);
         updateLabel(gradient(5), ui->gmaxz);
-        e.gradientEnergyFiniteDifference(finiteGradient, *b);
-        std::cerr << "Gradient: \n" << gradient << "\n";
-        std::cerr << "Finite Gradient: \n" << finiteGradient << "\n";
+        std::cerr << "\nGradient: \n" << gradient << "\n";
         updateLabel(energy, ui->energyLabel);
         mainWindow->updateGlCanvas();
     }
@@ -420,18 +447,27 @@ void EngineManager::on_energyBoxPushButton_clicked() {
 
 void EngineManager::on_minimizePushButton_clicked() {
     if (b!=nullptr){
-        Timer t("Gradient Discend");
-        deleteDrawableObject(iterations);
-        iterations = new BoxList();
-        double it = e.gradientDiscend(*b, *iterations);
-        t.stopAndPrint();
-        iterations->setVisibleBox(0);
-        ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
-        mainWindow->pushObj(iterations, "Iterations");
+        double it;
+        if (ui->saveIterationsCheckBox->isChecked()){
+            deleteDrawableObject(iterations);
+            iterations = new BoxList();
+            Timer t("Gradient Discend");
+            it = e.gradientDiscend(*b, *iterations);
+            t.stopAndPrint();
+            iterations->setVisibleBox(0);
+            ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
+            mainWindow->pushObj(iterations, "Iterations");
+
+            double energy = e.energy(iterations->getBox(0));
+            updateLabel(energy, ui->energyIterationLabel);
+        }
+        else {
+            Timer t("Gradient Discend");
+            it = e.gradientDiscend(*b);
+            t.stopAndPrint();
+        }
         updateLabel(it, ui->minimizedEnergyLabel);
-        double energy = e.energy(iterations->getBox(0));
-        updateLabel(energy, ui->energyIterationLabel);
-        energy = e.energy(*b);
+        double energy = e.energy(*b);
         updateLabel(energy, ui->energyLabel);
         ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
         ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
@@ -477,5 +513,72 @@ void EngineManager::on_energyIterationsButton_clicked() {
         std::cerr << "Gradient: \n" << gradient << "\n";
         std::cerr << "Finite Gradient: \n" << finiteGradient << "\n";
         updateLabel(energy, ui->energyIterationLabel);
+    }
+}
+
+void EngineManager::on_createBoxesPushButton_clicked() {
+    if (d!=nullptr){
+        deleteDrawableObject(solutions);
+        solutions = new BoxList();
+        for (Dcel::ConstFaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit){
+            const Dcel::Face* f = *fit;
+            Vec3 n =f->getNormal();
+            double angle = n.dot(XYZ[0]);
+            int k = 0;
+            for (unsigned int i = 1; i < 6; i++){
+                if (n.dot(XYZ[i]) > angle){
+                    angle = n.dot(XYZ[i]);
+                    k = i;
+                }
+            }
+            Box3D box;
+            box.setTarget(XYZ[k]);
+            Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
+            Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
+            Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
+            Pointd bmin = p1;
+            bmin = bmin.min(p2);
+            bmin = bmin.min(p3);
+            bmin = bmin - 1;
+            Pointd bmax = p1;
+            bmax = bmax.max(p2);
+            bmax = bmax.max(p3);
+            bmax = bmax + 1;
+            box.setMin(bmin);
+            box.setMax(bmax);
+            box.setColor(colorOfNormal(XYZ[k]));
+            box.setConstraint1(p1);
+            box.setConstraint2(p2);
+            box.setConstraint3(p3);
+            solutions->addBox(box);
+        }
+        ui->showAllSolutionsCheckBox->setEnabled(true);
+        solutions->setVisibleBox(0);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        mainWindow->pushObj(solutions, "Solutions");
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_showAllSolutionsCheckBox_stateChanged(int arg1) {
+    if (arg1 == Qt::Checked){
+        ui->solutionsSlider->setEnabled(false);
+        ui->solutionsSlider->setValue(0);
+        solutions->setCylinders(true);
+        solutions->setVisibleBox(-1);
+    }
+    else {
+        ui->solutionsSlider->setEnabled(true);
+        ui->solutionsSlider->setValue(0);
+        solutions->setCylinders(false);
+        solutions->setVisibleBox(0);
+    }
+    mainWindow->updateGlCanvas();
+}
+
+void EngineManager::on_solutionsSlider_valueChanged(int value) {
+    if (ui->solutionsSlider->isEnabled()){
+        solutions->setVisibleBox(value);
+        mainWindow->updateGlCanvas();
     }
 }

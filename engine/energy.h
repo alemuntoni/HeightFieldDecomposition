@@ -13,7 +13,8 @@ class Energy{
         Energy(DrawableGrid& g);
 
         // Gradient Discend
-        double gradientDiscend(Box3D &b, BoxList& iterations) const;
+        int gradientDiscend(Box3D &b) const;
+        int gradientDiscend(Box3D &b, BoxList& iterations, bool saveIt = true) const;
 
         // Gradient
         static double gradientXMinComponent(const double* &a, double u1, double v1, double w1, double v2, double w2);
