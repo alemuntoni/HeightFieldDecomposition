@@ -10,7 +10,7 @@ Energy::Energy(DrawableGrid& g) : g(&g){
 double Energy::gradientDiscend(Box3D& b, BoxList& iterations) const {
     int nIterations = 0;
     double objValue, newObjValue;
-    double alfa = 1;
+    double alfa = 0.1;
     Pointd c1 = b.getConstraint1();
     Pointd c2 = b.getConstraint2();
     Pointd c3 = b.getConstraint3();

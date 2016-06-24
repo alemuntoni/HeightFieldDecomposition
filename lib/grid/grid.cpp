@@ -130,35 +130,109 @@ void Grid::setNeighboroudWeigth(const Pointd& p, double w) {
     unsigned int i = getIndexOfCoordinateX(p.x());
     unsigned int j = getIndexOfCoordinateY(p.y());
     unsigned int k = getIndexOfCoordinateZ(p.z());
-    //weights(i-1,j-1,k-1) = w;
-    //weights(i-1,j-1,k  ) = w;
-    //weights(i-1,j-1,k+1) = w;
-    //weights(i-1,j  ,k-1) = w;
-    weights(i-1,j  ,k  ) = w;
-    //weights(i-1,j  ,k+1) = w;
-    //weights(i-1,j+1,k-1) = w;
-    //weights(i-1,j+1,k  ) = w;
-    //weights(i-1,j+1,k+1) = w;
 
-    //weights(i  ,j-1,k-1) = w;
-    weights(i  ,j-1,k  ) = w;
-    //weights(i  ,j-1,k+1) = w;
-    weights(i  ,j  ,k-1) = w;
-    weights(i  ,j  ,k  ) = w;
-    weights(i  ,j  ,k+1) = w;
-    //weights(i  ,j+1,k-1) = w;
-    weights(i  ,j+1,k  ) = w;
-    //weights(i  ,j+1,k+1) = w;
+    // point in a grid point
+    if (gridCoordinates(getIndex(i,j,k),0) == p.x() &&
+        gridCoordinates(getIndex(i,j,k),1) == p.y() &&
+        gridCoordinates(getIndex(i,j,k),2) == p.z()){
+        weights(i-1,j  ,k  ) = w;
+        weights(i  ,j-1,k  ) = w;
+        weights(i  ,j  ,k-1) = w;
+        weights(i  ,j  ,k  ) = w;
+        weights(i  ,j  ,k+1) = w;
+        weights(i  ,j+1,k  ) = w;
+        weights(i+1,j  ,k  ) = w;
+    }
 
-    //weights(i+1,j-1,k-1) = w;
-    //weights(i+1,j-1,k  ) = w;
-    //weights(i+1,j-1,k+1) = w;
-    //weights(i+1,j  ,k-1) = w;
-    weights(i+1,j  ,k  ) = w;
-    //weights(i+1,j  ,k+1) = w;
-    //weights(i+1,j+1,k-1) = w;
-    //weights(i+1,j+1,k  ) = w;
-    //weights(i+1,j+1,k+1) = w;
+    //point between edge xy
+    if (gridCoordinates(getIndex(i,j,k),0) == p.x() &&
+        gridCoordinates(getIndex(i,j,k),1) == p.y() &&
+        gridCoordinates(getIndex(i,j,k),2) != p.z()){
+        weights(i-1,j,k) = w;
+        weights(i,j-1,k) = w;
+        weights(i,j,k) = w;
+        weights(i,j+1,k) = w;
+        weights(i+1,j,k) = w;
+        weights(i-1,j,k+1) = w;
+        weights(i,j-1,k+1) = w;
+        weights(i,j,k+1) = w;
+        weights(i,j+1,k+1) = w;
+        weights(i+1,j,k+1) = w;
+    }
+
+    //point between edge xz
+    if (gridCoordinates(getIndex(i,j,k),0) == p.x() &&
+        gridCoordinates(getIndex(i,j,k),1) != p.y() &&
+        gridCoordinates(getIndex(i,j,k),2) == p.z()){
+        weights(i-1,j,k) = w;
+        weights(i,j,k-1) = w;
+        weights(i,j,k) = w;
+        weights(i,j,k+1) = w;
+        weights(i+1,j,k) = w;
+        weights(i-1,j+1,k) = w;
+        weights(i,j+1,k-1) = w;
+        weights(i,j+1,k) = w;
+        weights(i,j+1,k+1) = w;
+        weights(i+1,j+1,k) = w;
+    }
+
+    //point between edge xz
+    if (gridCoordinates(getIndex(i,j,k),0) != p.x() &&
+        gridCoordinates(getIndex(i,j,k),1) == p.y() &&
+        gridCoordinates(getIndex(i,j,k),2) == p.z()){
+        weights(i,j-1,k) = w;
+        weights(i,j,k-1) = w;
+        weights(i,j,k) = w;
+        weights(i,j,k+1) = w;
+        weights(i,j+1,k) = w;
+        weights(i+1,j-1,k) = w;
+        weights(i+1,j,k-1) = w;
+        weights(i+1,j,k) = w;
+        weights(i+1,j,k+1) = w;
+        weights(i+1,j+1,k) = w;
+    }
+
+    //point between faces x
+    if (gridCoordinates(getIndex(i,j,k),0) == p.x() &&
+        gridCoordinates(getIndex(i,j,k),1) != p.y() &&
+        gridCoordinates(getIndex(i,j,k),2) != p.z()){
+        weights(i, j, k) = w;
+        weights(i, j, k+1) = w;
+        weights(i, j+1, k) = w;
+        weights(i, j+1, k+1) = w;
+    }
+    //point between faces y
+    if (gridCoordinates(getIndex(i,j,k),0) != p.x() &&
+        gridCoordinates(getIndex(i,j,k),1) == p.y() &&
+        gridCoordinates(getIndex(i,j,k),2) != p.z()){
+        weights(i, j, k) = w;
+        weights(i, j, k+1) = w;
+        weights(i+1, j, k) = w;
+        weights(i+1, j, k+1) = w;
+    }
+    //point between faces z
+    if (gridCoordinates(getIndex(i,j,k),0) != p.x() &&
+        gridCoordinates(getIndex(i,j,k),1) != p.y() &&
+        gridCoordinates(getIndex(i,j,k),2) == p.z()){
+        weights(i, j, k) = w;
+        weights(i, j+1, k) = w;
+        weights(i+1, j, k) = w;
+        weights(i+1, j+1, k) = w;
+    }
+
+    //point inside a cube
+    if (gridCoordinates(getIndex(i,j,k),0) != p.x() &&
+        gridCoordinates(getIndex(i,j,k),1) != p.y() &&
+        gridCoordinates(getIndex(i,j,k),2) != p.z()){
+        weights(i   ,j   ,k   ) = w;
+        weights(i   ,j   ,k+1 ) = w;
+        weights(i   ,j+1 ,k   ) = w;
+        weights(i   ,j+1 ,k+1 ) = w;
+        weights(i+1 ,j   ,k   ) = w;
+        weights(i+1 ,j   ,k+1 ) = w;
+        weights(i+1 ,j+1 ,k   ) = w;
+        weights(i+1 ,j+1 ,k+1 ) = w;
+    }
 }
 
 
