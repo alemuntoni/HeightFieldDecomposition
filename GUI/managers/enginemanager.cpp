@@ -36,18 +36,27 @@ void EngineManager::updateLabel(double value, QLabel* label) {
 void EngineManager::serialize(std::ofstream& binaryFile) const {
     g->serialize(binaryFile);
     d->serialize(binaryFile);
+    b->serialize(binaryFile);
 }
 
 void EngineManager::deserialize(std::ifstream& binaryFile) {
     deleteDrawableObject(g);
     deleteDrawableObject(d);
+    deleteDrawableObject(b);
     g = new DrawableGrid();
     d = new DrawableDcel();
+    b = new Box3D();
     g->deserialize(binaryFile);
     d->deserialize(binaryFile);
+    b->deserialize(binaryFile);
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
     mainWindow->pushObj(g, "Grid");
+    mainWindow->pushObj(b, "Box");
+    e = Energy(*g);
+    ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
+    ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
+    ui->dSpinBox->setValue(b->getMax().z()-b->getMin().z());
     mainWindow->updateGlCanvas();
 }
 
@@ -378,7 +387,12 @@ void EngineManager::on_minusZButton_clicked() {
 void EngineManager::on_energyBoxPushButton_clicked() {
     if (b!=nullptr){
         double energy = e.energy(*b);
+        Eigen::VectorXd gradient(6);
+        Eigen::VectorXd finiteGradient(6);
+        e.gradientTricubicInterpolationEnergy(gradient, b->getMin(), b->getMax());
+        e.gradientEnergyFiniteDifference(finiteGradient, *b);
         updateLabel(energy, ui->energyLabel);
+        mainWindow->updateGlCanvas();
     }
 }
 
@@ -410,5 +424,6 @@ void EngineManager::on_deserializeBoxPushButton_clicked() {
         myfile.open ("box.bin", std::ios::in | std::ios::binary);
         b->deserialize(myfile);
         myfile.close();
+        mainWindow->updateGlCanvas();
     }
 }

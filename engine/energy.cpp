@@ -21,10 +21,10 @@ double Energy::gradientDiscend(Box3D& b) const {
     do{
         objValue = energy(x, c1, c2, c3);
         //Eigen::Vector4d gradient;
-        Eigen::VectorXd gradientFiniteDiffernece(6);
+        //Eigen::VectorXd gradientFiniteDiffernece(6);
 
         //e.gradientEnergy(gradient, x, c.x(), c.y());
-        gradientEnergyFiniteDifference(gradientFiniteDiffernece, x, c1, c2, c3);
+        //gradientEnergyFiniteDifference(gradientFiniteDiffernece, x, c1, c2, c3);
         gradientEnergy(gradient, x, c1, c2, c3);
         //new_x = x - alfa * gradientFiniteDiffernece;
         new_x = x - alfa * gradient;
@@ -34,11 +34,15 @@ double Energy::gradientDiscend(Box3D& b) const {
             //std::cerr << norm << "\n";
             iterations++;
             x = new_x;
-            //alfa = 1;
+            alfa = 0.1;
+            //std::cerr << "Iteration: " << iterations << "; obj: " << newObjValue << " norm: " << gradient.norm() << "\n\n";
         }
-        else
-            alfa /= 2;
-    } while (alfa > 1e-7);
+        else{
+            alfa /= 10;
+            //std::cerr << "alfa: " << alfa << "\n";
+        }
+    } while (alfa > 1e-7 && iterations < 1000);
+    std::cerr << "Gradient norm: " << gradient.norm() << "\n";
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     std::cerr << gradient;
@@ -149,13 +153,405 @@ double Energy::gradientEvaluateComponent(const Pointd& bmin, const Pointd& bmax,
     return energy;
 }
 
+double Energy::gradientEvaluateXMinComponent(const Pointd& bmin, const Pointd& bmax) const {
+    double unit = g->getUnit();
+
+    BoundingBox bb = g->getBoundingBox();
+    Pointd c = bb.getMin();
+    Pointd d = c-bmin;
+    Pointd nu = d / g->getUnit();
+    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+    Pointi di = ni * g->getUnit();
+    Pointd min = c - Pointd(di.x(), di.y(), di.z());
+    d = c-bmax;
+    nu = d / g->getUnit();
+    ni = Pointi(nu.x(), nu.y(), nu.z());
+    di = ni * g->getUnit();
+    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+
+    double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastY = max.y()+unit, lastZ = max.z()+unit;
+
+    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
+    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double energy = 0;
+
+    double x1, y1, z1;
+    //fissare x1
+    x1 = firstX;
+    while (x1 <= minbx){
+        x1+=unit;
+    }
+    double x2 = x1;
+    x1-=unit;
+    for (y1 = firstY; y1 <= lastY; y1+=unit){
+        double y2 = y1 + unit;
+        for (z1 = firstZ; z1<=lastZ; z1+=unit){
+            double z2 = z1 + unit;
+
+            if (maxbx <= x1 || minbx >= x2 ||
+                maxby <= y1 || minby >= y2 ||
+                maxbz <= z1 || minbz >= z2 ) // not contained
+                energy += 0;
+            else {
+                const double* coeffs;
+                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+
+                double u1 = minbx < x1 ? x1 : minbx;
+                double v1 = minby < y1 ? y1 : minby;
+                double w1 = minbz < z1 ? z1 : minbz;
+                double u2 = maxbx > x2 ? x2 : maxbx;
+                double v2 = maxby > y2 ? y2 : maxby;
+                double w2 = maxbz > z2 ? z2 : maxbz;
+                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+                u1 = (u1-x1)/unit;
+                u2 = (u2-x1)/unit;
+                v1 = (v1-y1)/unit;
+                v2 = (v2-y1)/unit;
+                w1 = (w1-z1)/unit;
+                w2 = (w2-z1)/unit;
+                energy += gradientXMinComponent(coeffs, u1,v1,w1,u2,v2,w2);
+            }
+
+        }
+    }
+
+    return energy;
+}
+
+double Energy::gradientEvaluateYMinComponent(const Pointd& bmin, const Pointd& bmax) const {
+    double unit = g->getUnit();
+
+    BoundingBox bb = g->getBoundingBox();
+    Pointd c = bb.getMin();
+    Pointd d = c-bmin;
+    Pointd nu = d / g->getUnit();
+    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+    Pointi di = ni * g->getUnit();
+    Pointd min = c - Pointd(di.x(), di.y(), di.z());
+    d = c-bmax;
+    nu = d / g->getUnit();
+    ni = Pointi(nu.x(), nu.y(), nu.z());
+    di = ni * g->getUnit();
+    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+
+    double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
+
+    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
+    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double energy = 0;
+
+    double x1, y1, z1;
+
+    //fissare y1
+    y1 = firstY;
+    while (y1 <= minby){
+        y1+=unit;
+    }
+    double y2 = y1;
+    y1-=unit;
+
+    for (x1 = firstX; x1 <= lastX; x1+=unit){
+        double x2 = x1 + unit;
+        for (z1 = firstZ; z1<=lastZ; z1+=unit){
+            double z2 = z1 + unit;
+
+            if (maxbx <= x1 || minbx >= x2 ||
+                    maxby <= y1 || minby >= y2 ||
+                    maxbz <= z1 || minbz >= z2 ) // not contained
+                energy += 0;
+            else {
+                const double* coeffs;
+                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+
+                double u1 = minbx < x1 ? x1 : minbx;
+                double v1 = minby < y1 ? y1 : minby;
+                double w1 = minbz < z1 ? z1 : minbz;
+                double u2 = maxbx > x2 ? x2 : maxbx;
+                double v2 = maxby > y2 ? y2 : maxby;
+                double w2 = maxbz > z2 ? z2 : maxbz;
+                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+                u1 = (u1-x1)/unit;
+                u2 = (u2-x1)/unit;
+                v1 = (v1-y1)/unit;
+                v2 = (v2-y1)/unit;
+                w1 = (w1-z1)/unit;
+                w2 = (w2-z1)/unit;
+                energy += gradientYMinComponent(coeffs, u1,v1,w1,u2,v2,w2);
+            }
+        }
+    }
+
+    return energy;
+}
+
+double Energy::gradientEvaluateZMinComponent(const Pointd& bmin, const Pointd& bmax) const {
+    double unit = g->getUnit();
+
+    BoundingBox bb = g->getBoundingBox();
+    Pointd c = bb.getMin();
+    Pointd d = c-bmin;
+    Pointd nu = d / g->getUnit();
+    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+    Pointi di = ni * g->getUnit();
+    Pointd min = c - Pointd(di.x(), di.y(), di.z());
+    d = c-bmax;
+    nu = d / g->getUnit();
+    ni = Pointi(nu.x(), nu.y(), nu.z());
+    di = ni * g->getUnit();
+    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+
+    double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
+
+    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
+    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double energy = 0;
+
+    double x1, y1, z1;
+
+    //fissare z1
+    z1 = firstZ;
+    while (z1 <= minbz){
+        z1+=unit;
+    }
+    double z2 = z1;
+    z1-=unit;
+
+    for (x1 = firstX; x1 <= lastX; x1+=unit){
+        double x2 = x1 + unit;
+        for (y1 = firstY; y1<=lastY; y1+=unit){
+            double y2 = y1 + unit;
+
+            if (maxbx <= x1 || minbx >= x2 ||
+                    maxby <= y1 || minby >= y2 ||
+                    maxbz <= z1 || minbz >= z2 ) // not contained
+                energy += 0;
+            else {
+                const double* coeffs;
+                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+
+                double u1 = minbx < x1 ? x1 : minbx;
+                double v1 = minby < y1 ? y1 : minby;
+                double w1 = minbz < z1 ? z1 : minbz;
+                double u2 = maxbx > x2 ? x2 : maxbx;
+                double v2 = maxby > y2 ? y2 : maxby;
+                double w2 = maxbz > z2 ? z2 : maxbz;
+                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+                u1 = (u1-x1)/unit;
+                u2 = (u2-x1)/unit;
+                v1 = (v1-y1)/unit;
+                v2 = (v2-y1)/unit;
+                w1 = (w1-z1)/unit;
+                w2 = (w2-z1)/unit;
+                energy += gradientZMinComponent(coeffs, u1,v1,w1,u2,v2,w2);
+            }
+        }
+    }
+
+    return energy;
+}
+
+double Energy::gradientEvaluateXMaxComponent(const Pointd& bmin, const Pointd& bmax) const {
+    double unit = g->getUnit();
+
+    BoundingBox bb = g->getBoundingBox();
+    Pointd c = bb.getMin();
+    Pointd d = c-bmin;
+    Pointd nu = d / g->getUnit();
+    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+    Pointi di = ni * g->getUnit();
+    Pointd min = c - Pointd(di.x(), di.y(), di.z());
+    d = c-bmax;
+    nu = d / g->getUnit();
+    ni = Pointi(nu.x(), nu.y(), nu.z());
+    di = ni * g->getUnit();
+    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+
+    double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
+
+    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
+    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double energy = 0;
+
+    double x1, y1, z1;
+    //fissare x1
+    x1 = lastX;
+    while (x1 >= maxbx){
+        x1-=unit;
+    }
+    double x2 = x1+unit;
+
+    for (y1 = firstY; y1 <= lastY; y1+=unit){
+        double y2 = y1 + unit;
+        for (z1 = firstZ; z1<=lastZ; z1+=unit){
+            double z2 = z1 + unit;
+
+            if (maxbx <= x1 || minbx >= x2 ||
+                maxby <= y1 || minby >= y2 ||
+                maxbz <= z1 || minbz >= z2 ) // not contained
+                energy += 0;
+            else {
+                const double* coeffs;
+                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+
+                double u1 = minbx < x1 ? x1 : minbx;
+                double v1 = minby < y1 ? y1 : minby;
+                double w1 = minbz < z1 ? z1 : minbz;
+                double u2 = maxbx > x2 ? x2 : maxbx;
+                double v2 = maxby > y2 ? y2 : maxby;
+                double w2 = maxbz > z2 ? z2 : maxbz;
+                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+                u1 = (u1-x1)/unit;
+                u2 = (u2-x1)/unit;
+                v1 = (v1-y1)/unit;
+                v2 = (v2-y1)/unit;
+                w1 = (w1-z1)/unit;
+                w2 = (w2-z1)/unit;
+                energy += gradientXMaxComponent(coeffs, u1,v1,w1,u2,v2,w2);
+            }
+
+        }
+    }
+
+    return energy;
+}
+
+double Energy::gradientEvaluateYMaxComponent(const Pointd& bmin, const Pointd& bmax) const {
+    double unit = g->getUnit();
+
+    BoundingBox bb = g->getBoundingBox();
+    Pointd c = bb.getMin();
+    Pointd d = c-bmin;
+    Pointd nu = d / g->getUnit();
+    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+    Pointi di = ni * g->getUnit();
+    Pointd min = c - Pointd(di.x(), di.y(), di.z());
+    d = c-bmax;
+    nu = d / g->getUnit();
+    ni = Pointi(nu.x(), nu.y(), nu.z());
+    di = ni * g->getUnit();
+    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+
+    double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
+
+    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
+    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double energy = 0;
+
+    double x1, y1, z1;
+
+    //fissare y1
+    y1 = lastY;
+    while (y1 >= maxby){
+        y1-=unit;
+    }
+    double y2 = y1+unit;
+
+    for (x1 = firstX; x1 <= lastX; x1+=unit){
+        double x2 = x1 + unit;
+        for (z1 = firstZ; z1<=lastZ; z1+=unit){
+            double z2 = z1 + unit;
+
+            if (maxbx <= x1 || minbx >= x2 ||
+                    maxby <= y1 || minby >= y2 ||
+                    maxbz <= z1 || minbz >= z2 ) // not contained
+                energy += 0;
+            else {
+                const double* coeffs;
+                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+
+                double u1 = minbx < x1 ? x1 : minbx;
+                double v1 = minby < y1 ? y1 : minby;
+                double w1 = minbz < z1 ? z1 : minbz;
+                double u2 = maxbx > x2 ? x2 : maxbx;
+                double v2 = maxby > y2 ? y2 : maxby;
+                double w2 = maxbz > z2 ? z2 : maxbz;
+                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+                u1 = (u1-x1)/unit;
+                u2 = (u2-x1)/unit;
+                v1 = (v1-y1)/unit;
+                v2 = (v2-y1)/unit;
+                w1 = (w1-z1)/unit;
+                w2 = (w2-z1)/unit;
+                energy += gradientYMaxComponent(coeffs, u1,v1,w1,u2,v2,w2);
+            }
+        }
+    }
+
+    return energy;
+}
+
+double Energy::gradientEvaluateZMaxComponent(const Pointd& bmin, const Pointd& bmax) const {
+    double unit = g->getUnit();
+
+    BoundingBox bb = g->getBoundingBox();
+    Pointd c = bb.getMin();
+    Pointd d = c-bmin;
+    Pointd nu = d / g->getUnit();
+    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+    Pointi di = ni * g->getUnit();
+    Pointd min = c - Pointd(di.x(), di.y(), di.z());
+    d = c-bmax;
+    nu = d / g->getUnit();
+    ni = Pointi(nu.x(), nu.y(), nu.z());
+    di = ni * g->getUnit();
+    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+
+    double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
+
+    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
+    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double energy = 0;
+
+    double x1, y1, z1;
+
+    //fissare z1
+    z1 = lastZ;
+    while (z1 >= maxbz){
+        z1-=unit;
+    }
+    double z2 = z1+unit;
+
+    for (x1 = firstX; x1 <= lastX; x1+=unit){
+        double x2 = x1 + unit;
+        for (y1 = firstY; y1<=lastY; y1+=unit){
+            double y2 = y1 + unit;
+
+            if (maxbx <= x1 || minbx >= x2 ||
+                    maxby <= y1 || minby >= y2 ||
+                    maxbz <= z1 || minbz >= z2 ) // not contained
+                energy += 0;
+            else {
+                const double* coeffs;
+                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+
+                double u1 = minbx < x1 ? x1 : minbx;
+                double v1 = minby < y1 ? y1 : minby;
+                double w1 = minbz < z1 ? z1 : minbz;
+                double u2 = maxbx > x2 ? x2 : maxbx;
+                double v2 = maxby > y2 ? y2 : maxby;
+                double w2 = maxbz > z2 ? z2 : maxbz;
+                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+                u1 = (u1-x1)/unit;
+                u2 = (u2-x1)/unit;
+                v1 = (v1-y1)/unit;
+                v2 = (v2-y1)/unit;
+                w1 = (w1-z1)/unit;
+                w2 = (w2-z1)/unit;
+                energy += gradientZMaxComponent(coeffs, u1,v1,w1,u2,v2,w2);
+            }
+        }
+    }
+
+    return energy;
+}
+
 void Energy::gradientTricubicInterpolationEnergy(Eigen::VectorXd& gradient, const Pointd& min, const Pointd& max) const {
-    gradient(0) = gradientEvaluateComponent(min, max, gradientXMinComponent);
-    gradient(1) = gradientEvaluateComponent(min, max, gradientYMinComponent);
-    gradient(2) = gradientEvaluateComponent(min, max, gradientZMinComponent);
-    gradient(3) = gradientEvaluateComponent(min, max, gradientXMaxComponent);
-    gradient(4) = gradientEvaluateComponent(min, max, gradientYMaxComponent);
-    gradient(5) = gradientEvaluateComponent(min, max, gradientZMaxComponent);
+    gradient(0) = gradientEvaluateXMinComponent(min, max);
+    gradient(1) = gradientEvaluateYMinComponent(min, max);
+    gradient(2) = gradientEvaluateZMinComponent(min, max);
+    gradient(3) = gradientEvaluateXMaxComponent(min, max);
+    gradient(4) = gradientEvaluateYMaxComponent(min, max);
+    gradient(5) = gradientEvaluateZMaxComponent(min, max);
 
 }
 
@@ -164,7 +560,14 @@ void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x,
     Pointd min(x(0), x(1), x(2)), max(x(3), x(4), x(5));
     Box3D b(min, max, c1, c2, c3);
     gradientTricubicInterpolationEnergy(gradient, min, max);
+    for (int i = 0; i < 6; i++) gradient(i) /= 2;
     //gradient += gradientBarrierEnergy(b);
+}
+
+void Energy::gradientEnergyFiniteDifference(Eigen::VectorXd& gradient, const Box3D b) const {
+    Eigen::VectorXd x(6);
+    x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
+    gradientEnergyFiniteDifference(gradient, x, b.getConstraint1(), b.getConstraint2(), b.getConstraint3());
 }
 
 void Energy::gradientEnergyFiniteDifference(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
@@ -416,17 +819,17 @@ double Energy::integralTricubicInterpolationEnergy(const Pointd& bmin, const Poi
 }
 
 double Energy::energy(const Box3D& b) const {
-    return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b);
+    return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) /*+ barrierEnergy(b)*/;
 }
 
 double Energy::energy(const Eigen::VectorXd &x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
     assert(x.rows() == 6);
     Pointd min(x(0), x(1), x(2)), max(x(3), x(4), x(5));
     Box3D b(min, max, c1, c2, c3);
-    return integralTricubicInterpolationEnergy(min, max) + barrierEnergy(b);
+    return integralTricubicInterpolationEnergy(min, max) /*+ barrierEnergy(b)*/;
 }
 
 double Energy::energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
     Box3D b(Pointd(minx, miny, minz), Pointd(maxx, maxy, maxz), c1, c2, c3);
-    return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b);
+    return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) /*+ barrierEnergy(b)*/;
 }
