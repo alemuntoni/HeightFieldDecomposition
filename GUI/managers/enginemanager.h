@@ -89,6 +89,8 @@ class EngineManager : public QFrame, public SerializableObject
 
         void on_solutionsSlider_valueChanged(int value);
 
+        void on_minimizeAllPushButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow

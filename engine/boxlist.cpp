@@ -30,6 +30,11 @@ Box3D BoxList::getBox(unsigned int i) {
     return Box3D();
 }
 
+void BoxList::setBox(unsigned int i, const Box3D& b) {
+    assert (i < boxes.size());
+    boxes[i] = b;
+}
+
 void BoxList::setCylinders(bool b) {
     cylinder = b;
 }

@@ -3,6 +3,7 @@
 #include "common.h"
 #include <cstdio>
 #include <QFileDialog>
+#include <omp.h>
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -581,4 +582,26 @@ void EngineManager::on_solutionsSlider_valueChanged(int value) {
         solutions->setVisibleBox(value);
         mainWindow->updateGlCanvas();
     }
+}
+
+void EngineManager::on_minimizeAllPushButton_clicked() {
+    if (solutions != nullptr){
+        Timer total("Minimization All Boxes");
+        int np = solutions->getNumberBoxes();
+        # pragma omp parallel for if(np>10)
+        for (int i = 0; i < np; i++){
+            Box3D b = solutions->getBox(i);
+            std::stringstream ss;
+            ss << "Minimization " << i << " box";
+            Timer t(ss.str());
+            e.gradientDiscend(b);
+            t.stopAndPrint();
+            //solutions->setBox(i, b);
+            //solutions->setVisibleBox(i);
+            //mainWindow->updateGlCanvas();
+            std::cerr << "Total: " << total.delay() << "\n\n";
+        }
+        total.stopAndPrint();
+    }
+
 }

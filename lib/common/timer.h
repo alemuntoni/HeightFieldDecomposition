@@ -7,7 +7,7 @@
 
 class Timer {
     public:
-        Timer (QString _caption) : caption(_caption) {
+        Timer (const std::string& _caption) : caption(_caption) {
             secs = 0.f;
             start();
         }
@@ -21,15 +21,18 @@ class Timer {
             _stop = clock();
             float cycles = _stop - _start;
             secs = ((float)cycles) / ((float)CLOCKS_PER_SEC);
-            std::cout << "[" << secs << " secs]\t" << caption.toStdString() << std::endl;
+            std::cout << "[" << secs << " secs]\t" << caption << std::endl;
         }
 
         inline float delay() {
-            return secs;
+            float s = clock();
+            float cycles = s - _start;
+            s = ((float)cycles) / ((float)CLOCKS_PER_SEC);
+            return s;
         }
 
     private:
-        QString caption;
+        std::string caption;
         clock_t _start, _stop;
         float secs;
 };

@@ -13,6 +13,7 @@ class BoxList : public DrawableObject, public SerializableObject{
         void clearBoxes();
         unsigned int getNumberBoxes();
         Box3D getBox(unsigned int i);
+        void setBox(unsigned int i, const Box3D &b);
         void setCylinders(bool b);
 
         // SerializableObject interface
