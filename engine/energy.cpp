@@ -15,7 +15,7 @@ int Energy::gradientDiscend(Box3D& b) const {
 int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     int nIterations = 0;
     double objValue, newObjValue;
-    double alfa = 0.1;
+    double alfa = 1;
     Pointd c1 = b.getConstraint1();
     Pointd c2 = b.getConstraint2();
     Pointd c3 = b.getConstraint3();
@@ -35,7 +35,7 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
         if (newObjValue < objValue) {
             nIterations++;
             diff = new_x - x;
-            if (nIterations % 100 == 0) std::cerr << "It: " << nIterations << "; Diff norm: " << diff.norm() << "\n";
+            /*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "\n";
             x = new_x;
             if (saveIt){
                 b.setMin(Pointd(x(0), x(1), x(2)));
@@ -45,7 +45,7 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
             alfa *= 2;
         }
         else{
-            alfa /= 10;
+            alfa /= 2;
         }
     } while ((diff.norm() > 0.005 && alfa >1e-5) && nIterations < 1000);
     b.setMin(Pointd(x(0), x(1), x(2)));
@@ -554,6 +554,7 @@ void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x,
     Box3D b(min, max, c1, c2, c3);
     gradientTricubicInterpolationEnergy(gradient, min, max);
     //gradient += gradientBarrierEnergy(b);
+    gradient.normalize();
 }
 
 void Energy::gradientEnergyFiniteDifference(Eigen::VectorXd& gradient, const Box3D b) const {
