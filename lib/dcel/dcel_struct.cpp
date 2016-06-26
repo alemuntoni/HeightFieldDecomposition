@@ -923,6 +923,15 @@ void Dcel::scale(const BoundingBox& newBoundingBox) {
     boundingBox = newBoundingBox;
 }
 
+void Dcel::rotate(const Eigen::Matrix3d &matrix, const Pointd& centroid) {
+    for (Dcel::VertexIterator vit = vertexBegin(); vit != vertexEnd(); ++vit){
+        Dcel::Vertex* v = *vit;
+        Pointd r = v->getCoordinate();
+        r.rotate(matrix, centroid);
+        v->setCoordinate(r);
+    }
+}
+
 void Dcel::rotate(double matrix[3][3], const Pointd& centroid) {
     for (Dcel::VertexIterator vit = vertexBegin(); vit != vertexEnd(); ++vit){
         Dcel::Vertex* v = *vit;

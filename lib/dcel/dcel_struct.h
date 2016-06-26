@@ -143,6 +143,7 @@ class Dcel : public SerializableObject {
         void updateVertexNormals();
         BoundingBox updateBoundingBox();
         void scale(const BoundingBox &newBoundingBox);
+        void rotate(const Eigen::Matrix3d& matrix, const Pointd& centroid = Pointd());
         void rotate(double matrix[3][3], const Pointd& centroid = Pointd());
         void recalculateIds();
         void resetFaceColors();

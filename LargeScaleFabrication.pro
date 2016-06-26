@@ -66,7 +66,8 @@ HEADERS += \
     lib/common/arrays.h \
     engine/energy.h \
     engine/box.h \
-    engine/boxlist.h
+    engine/boxlist.h \
+    engine/engine.h
 
 SOURCES += \
     lib/dcel/dcel_face.cpp \
@@ -88,7 +89,8 @@ SOURCES += \
     engine/tricubic.cpp \
     engine/energy.cpp \
     engine/box.cpp \
-    engine/boxlist.cpp
+    engine/boxlist.cpp \
+    engine/engine.cpp
 
 FORMS += \
     GUI/mainwindow.ui \

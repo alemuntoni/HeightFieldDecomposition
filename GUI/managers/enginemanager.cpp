@@ -99,57 +99,15 @@ void EngineManager::on_generateGridPushButton_clicked() {
         deleteDrawableObject(d);
         d = new DrawableDcel(*dd);
         mainWindow->pushObj(d, "Scaled Mesh");
-        int s = ui->samplesSpinBox->value();
-        BoundingBox bb = d->getBoundingBox();
-        double maxl = std::max(bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
-        maxl = std::max(maxl, bb.getMaxZ() - bb.getMinZ());
-        double av = maxl / s;
-        BoundingBox nBB(-(bb.getMax()-bb.getMin())/av, (bb.getMax()-bb.getMin())/av);
-        d->scale(nBB);
+        deleteDrawableObject(g);
+        g = new DrawableGrid();
 
-        //double m[3][3];
-        //getRotationMatrix(Vec3(0,0,1), 0.785398, m);
-        //d->rotate(m);
+        Engine::generateGrid(*g, *d, ui->samplesSpinBox->value(), XYZ[ui->targetComboBox->currentIndex()], ui->distanceSpinBox->value());
 
         d->update();
-        d->saveOnObjFile("tmp.obj");
-        exec("./grid_generator tmp.obj");
-
-
-        Eigen::RowVector3i nGmin;
-        Eigen::RowVector3i nGmax;
-        Eigen::VectorXd S;
-        Eigen::MatrixXd GV;
-        Eigen::RowVector3i res;
-
-        std::ifstream file;
-        file.open ("tmp.bin", std::ios::in | std::ios::binary);
-        Serializer::deserialize(nGmin, file);
-        Serializer::deserialize(nGmax, file);
-        Serializer::deserialize(res, file);
-        Serializer::deserialize(GV, file);
-        Serializer::deserialize(S, file);
-        file.close();
-
-        if (g!=nullptr){
-            g->setVisible(false);
-            mainWindow->updateGlCanvas();
-            mainWindow->deleteObj(g);
-            delete g;
-            g = nullptr;
-        }
-        g = new DrawableGrid(res, GV, S, nGmin, nGmax);
         g->setKernelDistance(ui->distanceSpinBox->value());
         mainWindow->pushObj(g, "Grid");
-        g->setTarget(XYZ[ui->targetComboBox->currentIndex()]);
-        g->calculateWeights(*d);
         mainWindow->updateGlCanvas();
-
-
-        std::remove("tmp.bin");
-        std::remove("tmp.obj");
-        std::remove("tmp.mtu");
-
     }
 }
 
@@ -161,11 +119,9 @@ void EngineManager::on_distanceSpinBox_valueChanged(double arg1) {
 }
 
 void EngineManager::on_targetComboBox_currentIndexChanged(int index) {
-    DcelManager* dm = (DcelManager*)mainWindow->getManager(DCEL_MANAGER_ID);
-    DrawableDcel* d = dm->getDcel();
     if (d!= nullptr && g!= nullptr){
         g->setTarget(XYZ[index]);
-        g->calculateWeights(*d);
+        g->calculateBorderWeights(*d);
         mainWindow->updateGlCanvas();
     }
 }
@@ -187,7 +143,7 @@ void EngineManager::on_weigthsRadioButton_toggled(bool checked) {
 void EngineManager::on_freezeKernelPushButton_clicked() {
     if (g!=nullptr && d!=nullptr){
         double value = ui->distanceSpinBox->value();
-        g->freezeKernel(*d, value);
+        g->calculateWeightsAndFreezeKernel(*d, value);
         deleteDrawableObject(b);
         Pointd p1(0,0,0);
         Pointd p2(ui->wSpinBox->value(), ui->hSpinBox->value(), ui->dSpinBox->value());
@@ -521,38 +477,8 @@ void EngineManager::on_createBoxesPushButton_clicked() {
     if (d!=nullptr){
         deleteDrawableObject(solutions);
         solutions = new BoxList();
-        for (Dcel::ConstFaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit){
-            const Dcel::Face* f = *fit;
-            Vec3 n =f->getNormal();
-            double angle = n.dot(XYZ[0]);
-            int k = 0;
-            for (unsigned int i = 1; i < 6; i++){
-                if (n.dot(XYZ[i]) > angle){
-                    angle = n.dot(XYZ[i]);
-                    k = i;
-                }
-            }
-            Box3D box;
-            box.setTarget(XYZ[k]);
-            Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
-            Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
-            Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
-            Pointd bmin = p1;
-            bmin = bmin.min(p2);
-            bmin = bmin.min(p3);
-            bmin = bmin - 1;
-            Pointd bmax = p1;
-            bmax = bmax.max(p2);
-            bmax = bmax.max(p3);
-            bmax = bmax + 1;
-            box.setMin(bmin);
-            box.setMax(bmax);
-            box.setColor(colorOfNormal(XYZ[k]));
-            box.setConstraint1(p1);
-            box.setConstraint2(p2);
-            box.setConstraint3(p3);
-            solutions->addBox(box);
-        }
+        //Engine::calculateInitialBoxes(*solutions, *d, Eigen::Matrix3d::Identity(), true, XYZ[ui->targetComboBox->currentIndex()]);
+        Engine::calculateInitialBoxes(*solutions, *d);
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);

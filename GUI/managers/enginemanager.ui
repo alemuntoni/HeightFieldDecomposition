@@ -282,7 +282,7 @@
           <item row="5" column="1">
            <widget class="QDoubleSpinBox" name="distanceSpinBox">
             <property name="minimum">
-             <double>0.500000000000000</double>
+             <double>6.000000000000000</double>
             </property>
             <property name="maximum">
              <double>50.000000000000000</double>

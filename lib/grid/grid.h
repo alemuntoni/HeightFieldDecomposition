@@ -27,8 +27,8 @@ class Grid : public SerializableObject{
         Vec3 getTarget() const;
         void setTarget(const Vec3& value);
 
-        void calculateWeights(const Dcel &d);
-        void freezeKernel(const Dcel& d, double value);
+        void calculateBorderWeights(const Dcel &d, bool heightfields = false);
+        void calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool heightfields = false);
 
         double getValue(const Pointd &p) const;
         double getUnit() const;

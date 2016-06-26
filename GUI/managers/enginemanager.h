@@ -14,8 +14,7 @@ namespace Ui {
     class EngineManager;
 }
 
-class EngineManager : public QFrame, public SerializableObject
-{
+class EngineManager : public QFrame, public SerializableObject {
         Q_OBJECT
 
     public:

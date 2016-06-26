@@ -545,7 +545,6 @@ void Energy::gradientTricubicInterpolationEnergy(Eigen::VectorXd& gradient, cons
     gradient(3) = gradientEvaluateXMaxComponent(min, max);
     gradient(4) = gradientEvaluateYMaxComponent(min, max);
     gradient(5) = gradientEvaluateZMaxComponent(min, max);
-    for (int i = 0; i < 6; i++) gradient(i) /= 2;
 }
 
 void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
@@ -553,6 +552,7 @@ void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x,
     Pointd min(x(0), x(1), x(2)), max(x(3), x(4), x(5));
     Box3D b(min, max, c1, c2, c3);
     gradientTricubicInterpolationEnergy(gradient, min, max);
+    //for (int i = 0; i < 6; i++) gradient(i) /= 2;
     //gradient += gradientBarrierEnergy(b);
     gradient.normalize();
 }

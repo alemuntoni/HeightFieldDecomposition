@@ -23,6 +23,7 @@ class Box3D : public DrawableObject, public SerializableObject{
         void setConstraint1(const Pointd &p);
         void setConstraint2(const Pointd &p);
         void setConstraint3(const Pointd &p);
+        void setRotationMatrix(const Eigen::Matrix3d &rot);
 
         void setW(double d);
         void setH(double d);
@@ -51,7 +52,7 @@ class Box3D : public DrawableObject, public SerializableObject{
         QColor color;
         bool visible;
         Vec3 target;
-        Eigen::Matrix<double, 3, 3> rotation;
+        Eigen::Matrix3d rotation;
 };
 
 inline void Box3D::setColor(const QColor& c) {

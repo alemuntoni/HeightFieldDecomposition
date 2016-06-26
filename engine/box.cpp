@@ -33,6 +33,10 @@ void Box3D::setConstraint3(const Pointd& p) {
     c3 = p;
 }
 
+void Box3D::setRotationMatrix(const Eigen::Matrix3d& rot) {
+    rotation = rot;
+}
+
 void Box3D::draw() const {
     if (visible){
         cylinder(min, Pointd(max.x(), min.y(), min.z()), 0.05, 0.05, color);
