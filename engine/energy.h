@@ -6,6 +6,7 @@
 #include "boxlist.h"
 
 #define EPSILON_GRAD 1e-8
+#define S_BARRIER 0.2
 
 class Energy{
     public:
@@ -16,6 +17,11 @@ class Energy{
         int gradientDiscend(Box3D &b) const;
         int gradientDiscend(Box3D &b, BoxList& iterations, bool saveIt = true) const;
 
+        //Gradient Barrier
+        double derivateGBarrier(double x, double s) const;
+        double derivateFi(double x, double s) const;
+        void gradientBarrier(Eigen::VectorXd& gBarrier, const Box3D& b, double s = S_BARRIER) const;
+
         // Gradient
         static double gradientXMinComponent(const double* &a, double u1, double v1, double w1, double v2, double w2);
         static double gradientYMinComponent(const double* &a, double u1, double v1, double w1, double u2, double w2);
@@ -24,7 +30,6 @@ class Energy{
         static double gradientYMaxComponent(const double* &a, double u1, double w1, double u2, double v2, double w2);
         static double gradientZMaxComponent(const double* &a, double u1, double v1, double u2, double v2, double w2);
 
-        double gradientEvaluateComponent(const Pointd& bmin, const Pointd& bmax, double (*f)(const double* &a, double u1, double v1, double w1, double u2, double v2, double w2)) const;
         double gradientEvaluateXMinComponent(const Pointd& bmin, const Pointd& bmax) const;
         double gradientEvaluateYMinComponent(const Pointd& bmin, const Pointd& bmax) const;
         double gradientEvaluateZMinComponent(const Pointd& bmin, const Pointd& bmax) const;
@@ -43,7 +48,7 @@ class Energy{
         double gBarrier(double x, double s) const;
         double fi(double x, double s) const;
 
-        double barrierEnergy(const Box3D &b, double s = 0.2) const;
+        double barrierEnergy(const Box3D &b, double s = S_BARRIER) const;
 
         // Integral
         static double integralTricubicInterpolation(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
@@ -53,6 +58,7 @@ class Energy{
         double energy(const Box3D& b) const;
         double energy(const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
         double energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
+
     private:
         DrawableGrid* g;
 

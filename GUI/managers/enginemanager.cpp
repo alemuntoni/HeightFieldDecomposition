@@ -106,6 +106,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
 
         d->update();
         g->setKernelDistance(ui->distanceSpinBox->value());
+        e = Energy(*g);
         mainWindow->pushObj(g, "Grid");
         mainWindow->updateGlCanvas();
     }
@@ -443,13 +444,14 @@ void EngineManager::on_serializeBoxPushButton_clicked() {
 }
 
 void EngineManager::on_deserializeBoxPushButton_clicked() {
-    if (b!=nullptr){
-        std::ifstream myfile;
-        myfile.open ("box.bin", std::ios::in | std::ios::binary);
-        b->deserialize(myfile);
-        myfile.close();
-        mainWindow->updateGlCanvas();
-    }
+    deleteDrawableObject(b);
+    b = new Box3D();
+    mainWindow->pushObj(b, "Box");
+    std::ifstream myfile;
+    myfile.open ("box.bin", std::ios::in | std::ios::binary);
+    b->deserialize(myfile);
+    myfile.close();
+    mainWindow->updateGlCanvas();
 }
 
 void EngineManager::on_iterationsSlider_sliderMoved(int position) {
