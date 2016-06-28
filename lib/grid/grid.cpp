@@ -86,7 +86,20 @@ void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool hei
             }
         }
     }
-    TricubicInterpolator::getoCoefficients(coeffs, weights);
+    TricubicInterpolator::getCoefficients(coeffs, weights);
+}
+
+void Grid::calculateFullBoxValues(double (*integralTricubicInterpolation)(const double *&, double, double, double, double, double, double)) {
+    fullBoxValues = Array3D<double>(getResX()-1, getResY()-1, getResZ()-1);
+    for (unsigned int i = 0; i < fullBoxValues.getSizeX(); ++i){
+        for (unsigned int j = 0; j < fullBoxValues.getSizeY(); ++j){
+            for (unsigned int k = 0; k < fullBoxValues.getSizeZ(); ++k){
+                const double * coeffs;
+                getCoefficients(coeffs, i, j, k);
+                fullBoxValues(i,j,k) = integralTricubicInterpolation(coeffs, 0,0,0,1,1,1);
+            }
+        }
+    }
 }
 
 double Grid::getValue(const Pointd& p) const {
@@ -112,6 +125,7 @@ void Grid::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(signedDistances, binaryFile);
     weights.serialize(binaryFile);
     coeffs.serialize(binaryFile);
+    fullBoxValues.serialize(binaryFile);
     target.serialize(binaryFile);
 
 }
@@ -125,6 +139,7 @@ void Grid::deserialize(std::ifstream& binaryFile) {
     Serializer::deserialize(signedDistances, binaryFile);
     weights.deserialize(binaryFile);
     coeffs.deserialize(binaryFile);
+    fullBoxValues.deserialize(binaryFile);
     target.deserialize(binaryFile);
 }
 

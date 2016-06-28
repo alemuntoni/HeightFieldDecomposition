@@ -41,43 +41,38 @@ void EngineManager::updateLabel(double value, QLabel* label) {
 void EngineManager::serialize(std::ofstream& binaryFile) const {
     g->serialize(binaryFile);
     d->serialize(binaryFile);
-    b->serialize(binaryFile);
-    bool b = false;
+    bool bb = false;
+
+    bb = false;
     if (solutions!=nullptr){
-        b = true;
-        Serializer::serialize(b, binaryFile);
+        bb = true;
+        Serializer::serialize(bb, binaryFile);
         solutions->serialize(binaryFile);
     }
     else
-        Serializer::serialize(b, binaryFile);
+        Serializer::serialize(bb, binaryFile);
 }
 
 void EngineManager::deserialize(std::ifstream& binaryFile) {
     deleteDrawableObject(g);
     deleteDrawableObject(d);
-    deleteDrawableObject(b);
     g = new DrawableGrid();
     d = new DrawableDcel();
-    b = new Box3D();
     g->deserialize(binaryFile);
     d->deserialize(binaryFile);
-    b->deserialize(binaryFile);
+    bool bb = false;
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
     mainWindow->pushObj(g, "Grid");
-    mainWindow->pushObj(b, "Box");
     e = Energy(*g);
-    ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
-    ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
-    ui->dSpinBox->setValue(b->getMax().z()-b->getMin().z());
     ui->weigthsRadioButton->setChecked(true);
     ui->sliceCheckBox->setChecked(true);
     g->setDrawBorders();
     g->setSlice(1);
 
-    bool b;
-    Serializer::deserialize(b, binaryFile);
-    if (b){
+
+    Serializer::deserialize(bb, binaryFile);
+    if (bb){
         deleteDrawableObject(solutions);
         solutions = new BoxList();
         solutions->deserialize(binaryFile);
@@ -86,7 +81,7 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
         mainWindow->pushObj(solutions, "Solutions");
         ui->showAllSolutionsCheckBox->setEnabled(true);
         ui->solutionsSlider->setEnabled(true);
-
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
     }
 
     mainWindow->updateGlCanvas();
@@ -107,6 +102,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
         d->update();
         g->setKernelDistance(ui->distanceSpinBox->value());
         e = Energy(*g);
+        e.calculateFullBoxValues();
         mainWindow->pushObj(g, "Grid");
         mainWindow->updateGlCanvas();
     }
@@ -479,7 +475,7 @@ void EngineManager::on_createBoxesPushButton_clicked() {
     if (d!=nullptr){
         deleteDrawableObject(solutions);
         solutions = new BoxList();
-        //Engine::calculateInitialBoxes(*solutions, *d, Eigen::Matrix3d::Identity(), true, XYZ[ui->targetComboBox->currentIndex()]);
+        Engine::calculateInitialBoxes(*solutions, *d, Eigen::Matrix3d::Identity(), true, XYZ[ui->targetComboBox->currentIndex()]);
         Engine::calculateInitialBoxes(*solutions, *d);
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
@@ -524,12 +520,16 @@ void EngineManager::on_minimizeAllPushButton_clicked() {
             Timer t(ss.str());
             e.gradientDiscend(b);
             t.stopAndPrint();
-            //solutions->setBox(i, b);
+            solutions->setBox(i, b);
             //solutions->setVisibleBox(i);
             //mainWindow->updateGlCanvas();
             std::cerr << "Total: " << total.delay() << "\n\n";
         }
         total.stopAndPrint();
+        std::ofstream myfile;
+        myfile.open ("solutions.bin", std::ios::out | std::ios::binary);
+        solutions->serialize(myfile);
+        myfile.close();
     }
 
 }

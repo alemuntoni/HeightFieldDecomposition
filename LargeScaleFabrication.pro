@@ -67,7 +67,8 @@ HEADERS += \
     engine/energy.h \
     engine/box.h \
     engine/boxlist.h \
-    engine/engine.h
+    engine/engine.h \
+    lib/common/timer.h
 
 SOURCES += \
     lib/dcel/dcel_face.cpp \

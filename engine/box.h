@@ -75,6 +75,18 @@ inline void Box3D::setMax(const Pointd& value) {
     max = value;
 }
 
+inline const Pointd& Box3D::getConstraint1() const {
+    return c1;
+}
+
+inline const Pointd& Box3D::getConstraint2() const {
+    return c2;
+}
+
+inline const Pointd& Box3D::getConstraint3() const {
+    return c3;
+}
+
 inline void Box3D::setW(double d) {
     max.setX(min.x()+d);
 }

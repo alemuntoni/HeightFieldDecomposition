@@ -29,12 +29,14 @@ class Grid : public SerializableObject{
 
         void calculateBorderWeights(const Dcel &d, bool heightfields = false);
         void calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool heightfields = false);
+        void calculateFullBoxValues(double (*integralTricubicInterpolation)(const double *&, double, double, double, double, double, double));
 
         double getValue(const Pointd &p) const;
         double getUnit() const;
 
         Pointd getNearestGridPoint(const Pointd& p);
         void getCoefficients(const double*& coeffs, const Pointd& p) const;
+        double getFullBoxValue(const Pointd&p);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -50,6 +52,7 @@ class Grid : public SerializableObject{
         int getIndexOfCoordinateZ(double z) const;
 
         void setNeighboroudWeigth(const Pointd&p, double w);
+        void getCoefficients(const double*& coeffs, unsigned int i, unsigned int j, unsigned int k) const;
 
         BoundingBox bb;
         unsigned int resX, resY, resZ;
@@ -57,6 +60,7 @@ class Grid : public SerializableObject{
         Eigen::VectorXd signedDistances;
         Array3D<double> weights;
         Array4D<double> coeffs;
+        Array3D<double> fullBoxValues;
         Vec3 target;
 
 };
@@ -94,10 +98,20 @@ inline Pointd Grid::getNearestGridPoint(const Pointd& p) {
     return Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2));
 }
 
+inline void Grid::getCoefficients(const double* &coeffs, unsigned int i, unsigned int j, unsigned int k) const {
+    coeffs = this->coeffs(i, j, k);
+}
+
 inline void Grid::getCoefficients(const double* &coeffs, const Pointd& p) const {
     if(bb.isStrictlyIntern(p))
         coeffs = this->coeffs(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
     else coeffs = this->coeffs(0, 0, 0);
+}
+
+inline double Grid::getFullBoxValue(const Pointd& p) {
+    if(bb.isStrictlyIntern(p))
+        return fullBoxValues(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
+    else return fullBoxValues(0,0,0);
 }
 
 inline Pointd Grid::getPoint(unsigned int i, unsigned int j, unsigned int k) const {

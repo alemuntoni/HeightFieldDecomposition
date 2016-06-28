@@ -9,18 +9,6 @@ Box3D::Box3D(const Pointd& min, const Pointd& max, const Pointd& c1, const Point
 Box3D::Box3D(const Pointd& min, const Pointd& max, const QColor c) : min(min), max(max), color(c), visible(true){
 }
 
-const Pointd& Box3D::getConstraint1() const {
-    return c1;
-}
-
-const Pointd& Box3D::getConstraint2() const {
-    return c2;
-}
-
-const Pointd& Box3D::getConstraint3() const {
-    return c3;
-}
-
 void Box3D::setConstraint1(const Pointd& p) {
     c1 = p;
 }

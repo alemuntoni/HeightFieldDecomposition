@@ -1,6 +1,6 @@
 #include "tricubic.h"
 
-void TricubicInterpolator::getoCoefficients(Array4D<double>& coeffs, const Array3D<double>& weights) {
+void TricubicInterpolator::getCoefficients(Array4D<double>& coeffs, const Array3D<double>& weights) {
     assert(coeffs.getSizeX() == weights.getSizeX()-1);
     assert(coeffs.getSizeY() == weights.getSizeY()-1);
     assert(coeffs.getSizeZ() == weights.getSizeZ()-1);
