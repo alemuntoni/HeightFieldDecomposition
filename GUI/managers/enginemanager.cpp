@@ -531,5 +531,4 @@ void EngineManager::on_minimizeAllPushButton_clicked() {
         solutions->serialize(myfile);
         myfile.close();
     }
-
 }

@@ -25,6 +25,7 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     Eigen::VectorXd diff(6); diff = x;
     objValue = energy(x, c1, c2, c3);
     bool ng = true;
+    double norm = 1;
     do{
         //gradientEnergyFiniteDifference(gradientFiniteDiffernece, x, c1, c2, c3);
         if (ng) gradientEnergy(gradient, x, c1, c2, c3);
@@ -34,7 +35,8 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
         if (newObjValue < objValue) {
             nIterations++;
             diff = new_x - x;
-            ///*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "\n";
+            norm = diff.norm();
+            /*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "\n";
             x = new_x;
             objValue = newObjValue;
             if (saveIt){
@@ -49,7 +51,7 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
             alfa /= 10;
             ng = false;
         }
-    } while ((diff.norm() > 0.005 && alfa >1e-5) && nIterations < 1000);
+    } while ((norm > 0.005 && alfa >1e-5) && nIterations < 1000);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
@@ -113,26 +115,38 @@ double Energy::gradientZMaxComponent(const double*& a, double u1, double v1, dou
     return G_result;
 }
 
-double Energy::gradientEvaluateXMinComponent(const Pointd& bmin, const Pointd& bmax) const {
+double Energy::gradientEvaluateXMinComponent(const Eigen::VectorXd &x) const {
     double unit = g->getUnit();
 
-    BoundingBox bb = g->getBoundingBox();
-    Pointd c = bb.getMin();
-    Pointd d = c-bmin;
-    Pointd nu = d / g->getUnit();
-    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
-    Pointi di = ni * g->getUnit();
-    Pointd min = c - Pointd(di.x(), di.y(), di.z());
-    d = c-bmax;
-    nu = d / g->getUnit();
-    ni = Pointi(nu.x(), nu.y(), nu.z());
-    di = ni * g->getUnit();
-    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+    Pointd min, max;
+    const BoundingBox &bb = g->getBoundingBox();
+    if (bb.isStrictlyIntern(x(0), x(1), x(2))){
+        min = g->getNearestGridPoint(Pointd(x(0), x(1), x(2)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(0), x(1), x(2));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        min = c - Pointd(di.x(), di.y(), di.z());
+    }
+    if ((bb.isStrictlyIntern(x(3), x(4), x(5)))){
+        max = g->getNearestGridPoint(Pointd(x(3), x(4), x(5)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(3), x(4), x(5));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        max = c - Pointd(di.x(), di.y(), di.z());
+    }
 
     double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastY = max.y()+unit, lastZ = max.z()+unit;
 
-    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
-    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double minbx = x(0), minby = x(1), minbz = x(2);
+    double maxbx = x(3), maxby = x(4), maxbz = x(5);
     double energy = 0;
 
     double x1, y1, z1;
@@ -176,26 +190,38 @@ double Energy::gradientEvaluateXMinComponent(const Pointd& bmin, const Pointd& b
     return energy;
 }
 
-double Energy::gradientEvaluateYMinComponent(const Pointd& bmin, const Pointd& bmax) const {
+double Energy::gradientEvaluateYMinComponent(const Eigen::VectorXd &x) const {
     double unit = g->getUnit();
 
-    BoundingBox bb = g->getBoundingBox();
-    Pointd c = bb.getMin();
-    Pointd d = c-bmin;
-    Pointd nu = d / g->getUnit();
-    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
-    Pointi di = ni * g->getUnit();
-    Pointd min = c - Pointd(di.x(), di.y(), di.z());
-    d = c-bmax;
-    nu = d / g->getUnit();
-    ni = Pointi(nu.x(), nu.y(), nu.z());
-    di = ni * g->getUnit();
-    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+    Pointd min, max;
+    const BoundingBox &bb = g->getBoundingBox();
+    if (bb.isStrictlyIntern(x(0), x(1), x(2))){
+        min = g->getNearestGridPoint(Pointd(x(0), x(1), x(2)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(0), x(1), x(2));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        min = c - Pointd(di.x(), di.y(), di.z());
+    }
+    if ((bb.isStrictlyIntern(x(3), x(4), x(5)))){
+        max = g->getNearestGridPoint(Pointd(x(3), x(4), x(5)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(3), x(4), x(5));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        max = c - Pointd(di.x(), di.y(), di.z());
+    }
 
     double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastZ = max.z()+unit;
 
-    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
-    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double minbx = x(0), minby = x(1), minbz = x(2);
+    double maxbx = x(3), maxby = x(4), maxbz = x(5);
     double energy = 0;
 
     double x1, y1, z1;
@@ -240,26 +266,38 @@ double Energy::gradientEvaluateYMinComponent(const Pointd& bmin, const Pointd& b
     return energy;
 }
 
-double Energy::gradientEvaluateZMinComponent(const Pointd& bmin, const Pointd& bmax) const {
+double Energy::gradientEvaluateZMinComponent(const Eigen::VectorXd& x) const {
     double unit = g->getUnit();
 
-    BoundingBox bb = g->getBoundingBox();
-    Pointd c = bb.getMin();
-    Pointd d = c-bmin;
-    Pointd nu = d / g->getUnit();
-    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
-    Pointi di = ni * g->getUnit();
-    Pointd min = c - Pointd(di.x(), di.y(), di.z());
-    d = c-bmax;
-    nu = d / g->getUnit();
-    ni = Pointi(nu.x(), nu.y(), nu.z());
-    di = ni * g->getUnit();
-    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+    Pointd min, max;
+    const BoundingBox &bb = g->getBoundingBox();
+    if (bb.isStrictlyIntern(x(0), x(1), x(2))){
+        min = g->getNearestGridPoint(Pointd(x(0), x(1), x(2)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(0), x(1), x(2));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        min = c - Pointd(di.x(), di.y(), di.z());
+    }
+    if ((bb.isStrictlyIntern(x(3), x(4), x(5)))){
+        max = g->getNearestGridPoint(Pointd(x(3), x(4), x(5)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(3), x(4), x(5));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        max = c - Pointd(di.x(), di.y(), di.z());
+    }
 
     double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit;
 
-    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
-    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double minbx = x(0), minby = x(1), minbz = x(2);
+    double maxbx = x(3), maxby = x(4), maxbz = x(5);
     double energy = 0;
 
     double x1, y1, z1;
@@ -304,26 +342,38 @@ double Energy::gradientEvaluateZMinComponent(const Pointd& bmin, const Pointd& b
     return energy;
 }
 
-double Energy::gradientEvaluateXMaxComponent(const Pointd& bmin, const Pointd& bmax) const {
+double Energy::gradientEvaluateXMaxComponent(const Eigen::VectorXd &x) const {
     double unit = g->getUnit();
 
-    BoundingBox bb = g->getBoundingBox();
-    Pointd c = bb.getMin();
-    Pointd d = c-bmin;
-    Pointd nu = d / g->getUnit();
-    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
-    Pointi di = ni * g->getUnit();
-    Pointd min = c - Pointd(di.x(), di.y(), di.z());
-    d = c-bmax;
-    nu = d / g->getUnit();
-    ni = Pointi(nu.x(), nu.y(), nu.z());
-    di = ni * g->getUnit();
-    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+    Pointd min, max;
+    const BoundingBox &bb = g->getBoundingBox();
+    if (bb.isStrictlyIntern(x(0), x(1), x(2))){
+        min = g->getNearestGridPoint(Pointd(x(0), x(1), x(2)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(0), x(1), x(2));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        min = c - Pointd(di.x(), di.y(), di.z());
+    }
+    if ((bb.isStrictlyIntern(x(3), x(4), x(5)))){
+        max = g->getNearestGridPoint(Pointd(x(3), x(4), x(5)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(3), x(4), x(5));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        max = c - Pointd(di.x(), di.y(), di.z());
+    }
 
     double firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
 
-    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
-    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double minbx = x(0), minby = x(1), minbz = x(2);
+    double maxbx = x(3), maxby = x(4), maxbz = x(5);
     double energy = 0;
 
     double x1, y1, z1;
@@ -367,26 +417,38 @@ double Energy::gradientEvaluateXMaxComponent(const Pointd& bmin, const Pointd& b
     return energy;
 }
 
-double Energy::gradientEvaluateYMaxComponent(const Pointd& bmin, const Pointd& bmax) const {
+double Energy::gradientEvaluateYMaxComponent(const Eigen::VectorXd& x) const {
     double unit = g->getUnit();
 
-    BoundingBox bb = g->getBoundingBox();
-    Pointd c = bb.getMin();
-    Pointd d = c-bmin;
-    Pointd nu = d / g->getUnit();
-    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
-    Pointi di = ni * g->getUnit();
-    Pointd min = c - Pointd(di.x(), di.y(), di.z());
-    d = c-bmax;
-    nu = d / g->getUnit();
-    ni = Pointi(nu.x(), nu.y(), nu.z());
-    di = ni * g->getUnit();
-    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+    Pointd min, max;
+    const BoundingBox &bb = g->getBoundingBox();
+    if (bb.isStrictlyIntern(x(0), x(1), x(2))){
+        min = g->getNearestGridPoint(Pointd(x(0), x(1), x(2)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(0), x(1), x(2));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        min = c - Pointd(di.x(), di.y(), di.z());
+    }
+    if ((bb.isStrictlyIntern(x(3), x(4), x(5)))){
+        max = g->getNearestGridPoint(Pointd(x(3), x(4), x(5)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(3), x(4), x(5));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        max = c - Pointd(di.x(), di.y(), di.z());
+    }
 
     double firstX = min.x()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
 
-    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
-    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double minbx = x(0), minby = x(1), minbz = x(2);
+    double maxbx = x(3), maxby = x(4), maxbz = x(5);
     double energy = 0;
 
     double x1, y1, z1;
@@ -430,26 +492,38 @@ double Energy::gradientEvaluateYMaxComponent(const Pointd& bmin, const Pointd& b
     return energy;
 }
 
-double Energy::gradientEvaluateZMaxComponent(const Pointd& bmin, const Pointd& bmax) const {
+double Energy::gradientEvaluateZMaxComponent(const Eigen::VectorXd &x) const {
     double unit = g->getUnit();
 
-    BoundingBox bb = g->getBoundingBox();
-    Pointd c = bb.getMin();
-    Pointd d = c-bmin;
-    Pointd nu = d / g->getUnit();
-    Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
-    Pointi di = ni * g->getUnit();
-    Pointd min = c - Pointd(di.x(), di.y(), di.z());
-    d = c-bmax;
-    nu = d / g->getUnit();
-    ni = Pointi(nu.x(), nu.y(), nu.z());
-    di = ni * g->getUnit();
-    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+    Pointd min, max;
+    const BoundingBox &bb = g->getBoundingBox();
+    if (bb.isStrictlyIntern(x(0), x(1), x(2))){
+        min = g->getNearestGridPoint(Pointd(x(0), x(1), x(2)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(0), x(1), x(2));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        min = c - Pointd(di.x(), di.y(), di.z());
+    }
+    if ((bb.isStrictlyIntern(x(3), x(4), x(5)))){
+        max = g->getNearestGridPoint(Pointd(x(3), x(4), x(5)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(3), x(4), x(5));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        max = c - Pointd(di.x(), di.y(), di.z());
+    }
 
     double firstX = min.x()-unit, firstY = min.y()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
 
-    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
-    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double minbx = x(0), minby = x(1), minbz = x(2);
+    double maxbx = x(3), maxby = x(4), maxbz = x(5);
     double energy = 0;
 
     double x1, y1, z1;
@@ -497,7 +571,7 @@ void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x,
     assert(x.rows() == 6);
     Pointd min(x(0), x(1), x(2)), max(x(3), x(4), x(5));
     Box3D b(min, max, c1, c2, c3);
-    gradientTricubicInterpolationEnergy(gradient, min, max);
+    gradientTricubicInterpolationEnergy(gradient, x);
     //for (int i = 0; i < 6; i++) gradient(i) /= 2;
     Eigen::VectorXd gBarrier(6);
     gradientBarrier(gBarrier, b);
@@ -667,26 +741,59 @@ double Energy::integralTricubicInterpolation(const double*& a, double u1, double
 }
 
 double Energy::integralTricubicInterpolationEnergy(const Pointd& bmin, const Pointd& bmax) const {
-    g->deleteCubes();
+    Eigen::VectorXd x(6);
+    x << bmin.x(), bmin.y(), bmin.z(), bmax.x(), bmax.y(), bmax.z();
+    return integralTricubicInterpolationEnergy(x);
+
+}
+
+double Energy::integralTricubicInterpolationEnergy(const Eigen::VectorXd& x) const {
+    //g->deleteCubes();
     double unit = g->getUnit();
 
-    BoundingBox bb = g->getBoundingBox();
-    Pointd c = bb.getMin();
-    Pointd d = c-bmin;
+    Pointd min, max;
+    const BoundingBox &bb = g->getBoundingBox();
+    if (bb.isStrictlyIntern(x(0), x(1), x(2))){
+        min = g->getNearestGridPoint(Pointd(x(0), x(1), x(2)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(0), x(1), x(2));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        min = c - Pointd(di.x(), di.y(), di.z());
+    }
+    if ((bb.isStrictlyIntern(x(3), x(4), x(5)))){
+        max = g->getNearestGridPoint(Pointd(x(3), x(4), x(5)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(3), x(4), x(5));
+        Pointd nu = d / g->getUnit();
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * g->getUnit();
+        max = c - Pointd(di.x(), di.y(), di.z());
+    }
+
+    /*
+    const Pointd &c = bb.getMin();
+    Pointd d = c-Pointd(x(0), x(1), x(2));
     Pointd nu = d / g->getUnit();
     Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
     Pointi di = ni * g->getUnit();
     Pointd min = c - Pointd(di.x(), di.y(), di.z());
-    d = c-bmax;
+    d = c-Pointd(x(3), x(4), x(5));
     nu = d / g->getUnit();
     ni = Pointi(nu.x(), nu.y(), nu.z());
     di = ni * g->getUnit();
-    Pointd max = c - Pointd(di.x(), di.y(), di.z());
+    Pointd max = c - Pointd(di.x(), di.y(), di.z());*/
+
 
     double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
 
-    double minbx = bmin.x(), minby = bmin.y(), minbz = bmin.z();
-    double maxbx = bmax.x(), maxby = bmax.y(), maxbz = bmax.z();
+    double minbx = x(0), minby = x(1), minbz = x(2);
+    double maxbx = x(3), maxby = x(4), maxbz = x(5);
     double energy = 0;
 
     double x1, y1, z1;
@@ -735,5 +842,4 @@ double Energy::integralTricubicInterpolationEnergy(const Pointd& bmin, const Poi
     }
 
     return energy;
-
 }

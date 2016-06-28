@@ -36,7 +36,7 @@ class Grid : public SerializableObject{
 
         Pointd getNearestGridPoint(const Pointd& p);
         void getCoefficients(const double*& coeffs, const Pointd& p) const;
-        double getFullBoxValue(const Pointd&p);
+        double getFullBoxValue(const Pointd&p) const;
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -108,7 +108,7 @@ inline void Grid::getCoefficients(const double* &coeffs, const Pointd& p) const 
     else coeffs = this->coeffs(0, 0, 0);
 }
 
-inline double Grid::getFullBoxValue(const Pointd& p) {
+inline double Grid::getFullBoxValue(const Pointd& p) const {
     if(bb.isStrictlyIntern(p))
         return fullBoxValues(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
     else return fullBoxValues(0,0,0);

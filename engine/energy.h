@@ -31,13 +31,14 @@ class Energy{
         static double gradientYMaxComponent(const double* &a, double u1, double w1, double u2, double v2, double w2);
         static double gradientZMaxComponent(const double* &a, double u1, double v1, double u2, double v2, double w2);
 
-        double gradientEvaluateXMinComponent(const Pointd& bmin, const Pointd& bmax) const;
-        double gradientEvaluateYMinComponent(const Pointd& bmin, const Pointd& bmax) const;
-        double gradientEvaluateZMinComponent(const Pointd& bmin, const Pointd& bmax) const;
-        double gradientEvaluateXMaxComponent(const Pointd& bmin, const Pointd& bmax) const;
-        double gradientEvaluateYMaxComponent(const Pointd& bmin, const Pointd& bmax) const;
-        double gradientEvaluateZMaxComponent(const Pointd& bmin, const Pointd& bmax) const;
+        double gradientEvaluateXMinComponent(const Eigen::VectorXd& x) const;
+        double gradientEvaluateYMinComponent(const Eigen::VectorXd& x) const;
+        double gradientEvaluateZMinComponent(const Eigen::VectorXd &x) const;
+        double gradientEvaluateXMaxComponent(const Eigen::VectorXd& x) const;
+        double gradientEvaluateYMaxComponent(const Eigen::VectorXd &x) const;
+        double gradientEvaluateZMaxComponent(const Eigen::VectorXd& x) const;
         void gradientTricubicInterpolationEnergy(Eigen::VectorXd &gradient, const Pointd& min, const Pointd& max) const;
+        void gradientTricubicInterpolationEnergy(Eigen::VectorXd &gradient, const Eigen::VectorXd& x) const;
         void gradientEnergy(Eigen::VectorXd &gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
         void gradientEnergyFiniteDifference(Eigen::VectorXd &gradient, const Box3D b) const;
         void gradientEnergyFiniteDifference(Eigen::VectorXd &gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
@@ -54,6 +55,7 @@ class Energy{
         // Integral
         static double integralTricubicInterpolation(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
         double integralTricubicInterpolationEnergy(const Pointd& min, const Pointd& max) const;
+        double integralTricubicInterpolationEnergy(const Eigen::VectorXd &x) const;
 
         // Total Energy
         double energy(const Box3D& b) const;
@@ -71,12 +73,24 @@ inline int Energy::gradientDiscend(Box3D& b) const {
 }
 
 inline void Energy::gradientTricubicInterpolationEnergy(Eigen::VectorXd& gradient, const Pointd& min, const Pointd& max) const {
-    gradient(0) = gradientEvaluateXMinComponent(min, max);
-    gradient(1) = gradientEvaluateYMinComponent(min, max);
-    gradient(2) = gradientEvaluateZMinComponent(min, max);
-    gradient(3) = gradientEvaluateXMaxComponent(min, max);
-    gradient(4) = gradientEvaluateYMaxComponent(min, max);
-    gradient(5) = gradientEvaluateZMaxComponent(min, max);
+    Eigen::VectorXd x;
+    x << min.x(), min.y(), min.z(), max.x(), max.y(), max.z();
+
+    gradient(0) = gradientEvaluateXMinComponent(x);
+    gradient(1) = gradientEvaluateYMinComponent(x);
+    gradient(2) = gradientEvaluateZMinComponent(x);
+    gradient(3) = gradientEvaluateXMaxComponent(x);
+    gradient(4) = gradientEvaluateYMaxComponent(x);
+    gradient(5) = gradientEvaluateZMaxComponent(x);
+}
+
+inline void Energy::gradientTricubicInterpolationEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x) const {
+    gradient(0) = gradientEvaluateXMinComponent(x);
+    gradient(1) = gradientEvaluateYMinComponent(x);
+    gradient(2) = gradientEvaluateZMinComponent(x);
+    gradient(3) = gradientEvaluateXMaxComponent(x);
+    gradient(4) = gradientEvaluateYMaxComponent(x);
+    gradient(5) = gradientEvaluateZMaxComponent(x);
 }
 
 inline double Energy::lowConstraint(const Pointd& min, const Pointd& c, double s) const {
@@ -111,7 +125,7 @@ inline double Energy::energy(const Eigen::VectorXd &x, const Pointd& c1, const P
     assert(x.rows() == 6);
     Pointd min(x(0), x(1), x(2)), max(x(3), x(4), x(5));
     Box3D b(min, max, c1, c2, c3);
-    return integralTricubicInterpolationEnergy(min, max) + barrierEnergy(b);
+    return integralTricubicInterpolationEnergy(x) + barrierEnergy(b);
 }
 
 inline double Energy::energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {

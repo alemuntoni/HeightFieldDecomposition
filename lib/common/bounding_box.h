@@ -57,7 +57,9 @@ class BoundingBox : public SerializableObject{
         Pointd  center()    const;
         double diag()       const;
         bool isStrictlyIntern(const Pointd& p)     const;
+        bool isStrictlyIntern(double px, double py, double pz)     const;
         bool isIntern(const Pointd& p)     const;
+        bool isIntern(double px, double py, double pz)     const;
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -258,9 +260,19 @@ inline bool BoundingBox::isStrictlyIntern(const Pointd &p) const {
             p.x() < max.x() && p.y() < max.y() && p.z() < max.z());
 }
 
+inline bool BoundingBox::isStrictlyIntern(double px, double py, double pz) const {
+    return (px > min.x() && py > min.y() && pz > min.z() &&
+            px < max.x() && py < max.y() && pz < max.z());
+}
+
 inline bool BoundingBox::isIntern(const Pointd &p) const {
     return (p.x() >= min.x() && p.y() >= min.y() && p.z() >= min.z() &&
             p.x() <= max.x() && p.y() <= max.y() && p.z() <= max.z());
+}
+
+inline bool BoundingBox::isIntern(double px, double py, double pz) const {
+    return (px >= min.x() && py >= min.y() && pz >= min.z() &&
+            px <= max.x() && py <= max.y() && pz <= max.z());
 }
 
 /**
