@@ -48,7 +48,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>326</width>
+        <width>333</width>
         <height>1276</height>
        </rect>
       </property>
@@ -471,10 +471,10 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="7" column="0">
-           <widget class="QPushButton" name="plusZButton">
+          <item row="9" column="2">
+           <widget class="QLabel" name="label_6">
             <property name="text">
-             <string>+Z</string>
+             <string>d:</string>
             </property>
            </widget>
           </item>
@@ -485,7 +485,21 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="2">
+          <item row="4" column="2">
+           <widget class="QRadioButton" name="c3RadioButton">
+            <property name="text">
+             <string>C3</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>w:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="2">
            <widget class="QDoubleSpinBox" name="dSpinBox">
             <property name="decimals">
              <number>4</number>
@@ -498,45 +512,43 @@
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
-           <widget class="QPushButton" name="minusXButton">
+          <item row="12" column="0">
+           <widget class="QPushButton" name="minimizePushButton">
             <property name="text">
-             <string>-X</string>
+             <string>Minimize</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="2">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>d:</string>
+          <item row="10" column="1">
+           <widget class="QDoubleSpinBox" name="hSpinBox">
+            <property name="decimals">
+             <number>4</number>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QRadioButton" name="c1RadioButton">
-            <property name="text">
-             <string>C1</string>
+          <item row="7" column="1">
+           <widget class="QDoubleSpinBox" name="stepSpinBox">
+            <property name="decimals">
+             <number>4</number>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.500000000000000</double>
             </property>
            </widget>
           </item>
-          <item row="4" column="2">
-           <widget class="QRadioButton" name="c3RadioButton">
+          <item row="11" column="0">
+           <widget class="QPushButton" name="energyBoxPushButton">
             <property name="text">
-             <string>C3</string>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="1" colspan="2">
-           <widget class="QLabel" name="energyLabel">
-            <property name="text">
-             <string>0.0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="11" column="1" colspan="2">
-           <widget class="QLabel" name="minimizedEnergyLabel">
-            <property name="text">
-             <string>0.0</string>
+             <string>Energy</string>
             </property>
            </widget>
           </item>
@@ -544,13 +556,6 @@
            <widget class="Line" name="line_2">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="1">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>h:</string>
             </property>
            </widget>
           </item>
@@ -564,10 +569,52 @@
             </property>
            </widget>
           </item>
-          <item row="11" column="0">
-           <widget class="QPushButton" name="minimizePushButton">
+          <item row="8" column="1">
+           <widget class="QPushButton" name="minusYButton">
             <property name="text">
-             <string>Minimize</string>
+             <string>-Y</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>h:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QPushButton" name="minusZButton">
+            <property name="text">
+             <string>-Z</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QPushButton" name="plusYButton">
+            <property name="text">
+             <string>+Y</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="deserializeBoxPushButton">
+            <property name="text">
+             <string>Deserialize</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1" colspan="2">
+           <widget class="QLabel" name="energyLabel">
+            <property name="text">
+             <string>0.0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QPushButton" name="minusXButton">
+            <property name="text">
+             <string>-X</string>
             </property>
            </widget>
           </item>
@@ -581,49 +628,14 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QPushButton" name="serializeBoxPushButton">
+          <item row="12" column="1" colspan="2">
+           <widget class="QLabel" name="minimizedEnergyLabel">
             <property name="text">
-             <string>Serialize</string>
+             <string>0.0</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>w:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="2">
-           <widget class="QPushButton" name="minusZButton">
-            <property name="text">
-             <string>-Z</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QPushButton" name="plusYButton">
-            <property name="text">
-             <string>+Y</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="1">
-           <widget class="QPushButton" name="minusYButton">
-            <property name="text">
-             <string>-Y</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="deserializeBoxPushButton">
-            <property name="text">
-             <string>Deserialize</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="0">
+          <item row="10" column="0">
            <widget class="QDoubleSpinBox" name="wSpinBox">
             <property name="decimals">
              <number>4</number>
@@ -636,16 +648,10 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="1">
-           <widget class="QDoubleSpinBox" name="hSpinBox">
-            <property name="decimals">
-             <number>4</number>
-            </property>
-            <property name="singleStep">
-             <double>0.500000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.000000000000000</double>
+          <item row="7" column="2">
+           <widget class="QPushButton" name="plusXButton">
+            <property name="text">
+             <string>+X</string>
             </property>
            </widget>
           </item>
@@ -656,32 +662,43 @@
             </property>
            </widget>
           </item>
-          <item row="10" column="0">
-           <widget class="QPushButton" name="energyBoxPushButton">
+          <item row="1" column="0">
+           <widget class="QPushButton" name="serializeBoxPushButton">
             <property name="text">
-             <string>Energy</string>
+             <string>Serialize</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
-           <widget class="QDoubleSpinBox" name="stepSpinBox">
-            <property name="decimals">
-             <number>4</number>
-            </property>
-            <property name="singleStep">
-             <double>0.500000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.500000000000000</double>
+          <item row="4" column="1">
+           <widget class="QRadioButton" name="c1RadioButton">
+            <property name="text">
+             <string>C1</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="2">
-           <widget class="QPushButton" name="plusXButton">
+          <item row="8" column="0">
+           <widget class="QPushButton" name="plusZButton">
             <property name="text">
-             <string>+X</string>
+             <string>+Z</string>
             </property>
            </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QRadioButton" name="allRadioButton">
+            <property name="text">
+             <string>All</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="setFromSolutionButton">
+            <property name="text">
+             <string>Set From Sol</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="setFromSolutionSpinBox"/>
           </item>
          </layout>
         </widget>

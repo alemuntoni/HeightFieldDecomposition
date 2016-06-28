@@ -82,6 +82,8 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
         ui->showAllSolutionsCheckBox->setEnabled(true);
         ui->solutionsSlider->setEnabled(true);
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->setFromSolutionSpinBox->setValue(0);
+        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
     }
 
     mainWindow->updateGlCanvas();
@@ -258,6 +260,15 @@ void EngineManager::on_plusXButton_clicked() {
                 c = b->getConstraint3();
                 b->setConstraint3(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
             }
+            if (ui->allRadioButton->isChecked()){
+                b->moveX(ui->stepSpinBox->value());
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+            }
         }
         mainWindow->updateGlCanvas();
     }
@@ -281,6 +292,15 @@ void EngineManager::on_minusXButton_clicked() {
                 c = b->getConstraint3();
                 b->setConstraint3(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
             }
+            if (ui->allRadioButton->isChecked()){
+                b->moveX(- ui->stepSpinBox->value());
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+            }
         }
         mainWindow->updateGlCanvas();
     }
@@ -301,6 +321,15 @@ void EngineManager::on_plusYButton_clicked() {
                 b->setConstraint2(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
             }
             if (ui->c3RadioButton->isChecked()){
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+            }
+            if (ui->allRadioButton->isChecked()){
+                b->moveY(ui->stepSpinBox->value());
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
                 c = b->getConstraint3();
                 b->setConstraint3(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
             }
@@ -328,6 +357,15 @@ void EngineManager::on_minusYButton_clicked() {
                 c = b->getConstraint3();
                 b->setConstraint3(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
             }
+            if (ui->allRadioButton->isChecked()){
+                b->moveY(- ui->stepSpinBox->value());
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+            }
 
         }
         mainWindow->updateGlCanvas();
@@ -352,6 +390,15 @@ void EngineManager::on_plusZButton_clicked() {
                 c = b->getConstraint3();
                 b->setConstraint3(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
             }
+            if (ui->allRadioButton->isChecked()){
+                b->moveZ(ui->stepSpinBox->value());
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+            }
 
         }
         mainWindow->updateGlCanvas();
@@ -373,6 +420,15 @@ void EngineManager::on_minusZButton_clicked() {
                 b->setConstraint2(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
             }
             if (ui->c3RadioButton->isChecked()){
+                c = b->getConstraint3();
+                b->setConstraint3(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+            }
+            if (ui->allRadioButton->isChecked()){
+                b->moveZ(- ui->stepSpinBox->value());
+                c = b->getConstraint1();
+                b->setConstraint1(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+                c = b->getConstraint2();
+                b->setConstraint2(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
                 c = b->getConstraint3();
                 b->setConstraint3(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
             }
@@ -475,11 +531,14 @@ void EngineManager::on_createBoxesPushButton_clicked() {
     if (d!=nullptr){
         deleteDrawableObject(solutions);
         solutions = new BoxList();
-        Engine::calculateInitialBoxes(*solutions, *d, Eigen::Matrix3d::Identity(), true, XYZ[ui->targetComboBox->currentIndex()]);
+        //Engine::calculateInitialBoxes(*solutions, *d, Eigen::Matrix3d::Identity(), true, XYZ[ui->targetComboBox->currentIndex()]);
         Engine::calculateInitialBoxes(*solutions, *d);
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
+        ui->solutionsSlider->setEnabled(true);
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->setFromSolutionSpinBox->setValue(0);
+        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow->pushObj(solutions, "Solutions");
         mainWindow->updateGlCanvas();
     }
@@ -504,6 +563,7 @@ void EngineManager::on_showAllSolutionsCheckBox_stateChanged(int arg1) {
 void EngineManager::on_solutionsSlider_valueChanged(int value) {
     if (ui->solutionsSlider->isEnabled()){
         solutions->setVisibleBox(value);
+        ui->setFromSolutionSpinBox->setValue(value);
         mainWindow->updateGlCanvas();
     }
 }
@@ -511,5 +571,19 @@ void EngineManager::on_solutionsSlider_valueChanged(int value) {
 void EngineManager::on_minimizeAllPushButton_clicked() {
     if (solutions != nullptr){
         Engine::expandBoxes(*solutions, *g);
+    }
+}
+
+void EngineManager::on_setFromSolutionButton_clicked() {
+    if (solutions != nullptr){
+        unsigned int value = ui->setFromSolutionSpinBox->value();
+        if (value < solutions->getNumberBoxes()){
+            deleteDrawableObject(b);
+            solutions->getBox(value);
+            b = new Box3D(solutions->getBox(value));
+            mainWindow->pushObj(b, "Box");
+            mainWindow->updateGlCanvas();
+        }
+
     }
 }

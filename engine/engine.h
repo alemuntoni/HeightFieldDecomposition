@@ -10,15 +10,19 @@
 #include "boxlist.h"
 #include "common.h"
 
-#define ORIENTATIONS 4
+#define ORIENTATIONS 1
 
 namespace Engine {
+
+    Vec3 getClosestTarget(const Vec3 &n);
+
+    void serializeAsEngineManager(std::ofstream &binaryfile, const Grid& g, const Dcel& d, const BoxList& bl);
+
+
 
     Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, int resolution = 50, int rot = 0);
 
     void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, const Vec3& target = Vec3(), bool heightfields = false);
-
-    Vec3 getClosestTarget(const Vec3 &n);
 
     void calculateInitialBoxes(BoxList &boxList, const Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
 

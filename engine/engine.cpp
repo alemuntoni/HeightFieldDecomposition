@@ -1,5 +1,19 @@
 #include "engine.h"
 
+Vec3 Engine::getClosestTarget(const Vec3& n) {
+    double angle = n.dot(XYZ[0]);
+    int k = 0;
+    for (unsigned int i = 1; i < 6; i++){
+        if (n.dot(XYZ[i]) > angle){
+            angle = n.dot(XYZ[i]);
+            k = i;
+        }
+    }
+    return XYZ[k];
+}
+
+
+
 Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, int rot) {
     BoundingBox bb = d.getBoundingBox();
     double maxl = std::max(bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
@@ -65,18 +79,6 @@ void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, const V
     std::remove("tmp.bin");
     std::remove("tmp.obj");
     std::remove("tmp.mtu");
-}
-
-Vec3 Engine::getClosestTarget(const Vec3& n) {
-    double angle = n.dot(XYZ[0]);
-    int k = 0;
-    for (unsigned int i = 1; i < 6; i++){
-        if (n.dot(XYZ[i]) > angle){
-            angle = n.dot(XYZ[i]);
-            k = i;
-        }
-    }
-    return XYZ[k];
 }
 
 void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen::Matrix3d &rot, bool onlyTarget, const Vec3& target) {
@@ -147,6 +149,14 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
             generateGrid(g[i], scaled[i], kernelDistance);
             calculateInitialBoxes(bl[i],scaled[i], m[i], false);
             expandBoxes(bl[i], g[i]);
+
+            //Salvataggio
+            std::stringstream ss;
+            ss << "Engine" << i << ".bin";
+            std::ofstream myfile;
+            myfile.open (ss.str(), std::ios::out | std::ios::binary);
+            serializeAsEngineManager(myfile, g[i], scaled[i], bl[i]);
+            myfile.close();
         }
         BoxList allBoxes;
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
@@ -159,4 +169,12 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
         myfile.close();
     }
 
+}
+
+void Engine::serializeAsEngineManager(std::ofstream& binaryfile, const Grid& g, const Dcel &d, const BoxList &bl) {
+    g.serialize(binaryfile);
+    d.serialize(binaryfile);
+    bool b = true;
+    Serializer::serialize(b, binaryfile);
+    bl.serialize(binaryfile);
 }
