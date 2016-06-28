@@ -21,6 +21,7 @@ class Energy{
         //Gradient Barrier
         double derivateGBarrier(double x, double s) const;
         double derivateFi(double x, double s) const;
+        void gradientBarrier(Eigen::VectorXd &gBarrier, const Eigen::VectorXd &x, const Pointd& c1, const Pointd& c2, const Pointd& c3, double s = S_BARRIER) const;
         void gradientBarrier(Eigen::VectorXd& gBarrier, const Box3D& b, double s = S_BARRIER) const;
 
         // Gradient
@@ -63,6 +64,8 @@ class Energy{
         double energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
 
     private:
+        void initializeMinMax(Pointd& min, Pointd& max, const Eigen::VectorXd &x) const;
+
         DrawableGrid* g;
 
 };
@@ -91,6 +94,16 @@ inline void Energy::gradientTricubicInterpolationEnergy(Eigen::VectorXd& gradien
     gradient(3) = gradientEvaluateXMaxComponent(x);
     gradient(4) = gradientEvaluateYMaxComponent(x);
     gradient(5) = gradientEvaluateZMaxComponent(x);
+}
+
+inline double Energy::derivateGBarrier(double x, double s) const {
+    return (3/(pow(s,3)))*pow(x,2) - (6/(pow(s,2)))*x + 3/s;
+}
+
+inline double Energy::derivateFi(double x, double s) const {
+    return x <= 0 ? 0 :
+                    x > s ?
+                        0 : -(derivateGBarrier(x,s)/pow(gBarrier(x,s), 2));
 }
 
 inline double Energy::lowConstraint(const Pointd& min, const Pointd& c, double s) const {
@@ -131,6 +144,33 @@ inline double Energy::energy(const Eigen::VectorXd &x, const Pointd& c1, const P
 inline double Energy::energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
     Box3D b(Pointd(minx, miny, minz), Pointd(maxx, maxy, maxz), c1, c2, c3);
     return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b);
+}
+
+inline void Energy::initializeMinMax(Pointd& min, Pointd&max, const Eigen::VectorXd& x) const{
+    double unit = g->getUnit();
+    const BoundingBox &bb = g->getBoundingBox();
+    if (bb.isStrictlyIntern(x(0), x(1), x(2))){
+        min = g->getNearestGridPoint(Pointd(x(0), x(1), x(2)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(0), x(1), x(2));
+        Pointd nu = d / unit;
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * unit;
+        min = c - Pointd(di.x(), di.y(), di.z());
+    }
+    if ((bb.isStrictlyIntern(x(3), x(4), x(5)))){
+        max = g->getNearestGridPoint(Pointd(x(3), x(4), x(5)));
+    }
+    else {
+        const Pointd &c = bb.getMin();
+        Pointd d = c-Pointd(x(3), x(4), x(5));
+        Pointd nu = d / unit;
+        Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
+        Pointi di = ni * unit;
+        max = c - Pointd(di.x(), di.y(), di.z());
+    }
 }
 
 #endif // ENERGY_H

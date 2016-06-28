@@ -95,7 +95,7 @@ inline double Grid::getUnit() const {
 
 inline Pointd Grid::getNearestGridPoint(const Pointd& p) {
     unsigned int ind = getIndex(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
-    return Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2));
+    return std::move(Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2)));
 }
 
 inline void Grid::getCoefficients(const double* &coeffs, unsigned int i, unsigned int j, unsigned int k) const {
@@ -116,7 +116,7 @@ inline double Grid::getFullBoxValue(const Pointd& p) const {
 
 inline Pointd Grid::getPoint(unsigned int i, unsigned int j, unsigned int k) const {
     unsigned int ind = getIndex(i,j,k);
-    return Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2));
+    return std::move(Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2)));
 }
 
 inline unsigned int Grid::getIndex(unsigned int i, unsigned int j, unsigned int k) const {
