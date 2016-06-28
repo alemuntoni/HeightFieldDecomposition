@@ -1,19 +1,14 @@
 #include "boxlist.h"
 
-BoxList::BoxList() : visible(true), n(-1), cylinder(true){
+BoxList::BoxList() : visible(true), visibleBox(-1), cylinder(true){
 
 }
 
-BoxList::BoxList(bool cylinders) : visible(true), n(-1), cylinder(cylinders){
+BoxList::BoxList(bool cylinders) : visible(true), visibleBox(-1), cylinder(cylinders){
 }
 
 void BoxList::addBox(const Box3D& b) {
     boxes.push_back(b);
-}
-
-void BoxList::setVisibleBox(int i) {
-    if (i>=-1 && i < (int)boxes.size())
-        n = i;
 }
 
 void BoxList::clearBoxes() {
@@ -35,24 +30,32 @@ void BoxList::setBox(unsigned int i, const Box3D& b) {
     boxes[i] = b;
 }
 
-void BoxList::setCylinders(bool b) {
-    cylinder = b;
+void BoxList::insert(const BoxList& o) {
+    boxes.insert(boxes.end(), o.boxes.begin(), o.boxes.end());
 }
 
 void BoxList::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(boxes, binaryFile);
-    Serializer::serialize(cylinder, binaryFile);
 }
 
 void BoxList::deserialize(std::ifstream& binaryFile) {
     Serializer::deserialize(boxes, binaryFile);
-    Serializer::deserialize(cylinder, binaryFile);
-    n = 0;
+    visibleBox = 0;
+    cylinder = false;
+}
+
+void BoxList::setVisibleBox(int i) {
+    if (i>=-1 && i < (int)boxes.size())
+        visibleBox = i;
+}
+
+void BoxList::setCylinders(bool b) {
+    cylinder = b;
 }
 
 void BoxList::draw() const {
     if (visible){
-        if (n < 0){
+        if (visibleBox < 0){
             if (!cylinder){
                 for (unsigned int i = 0; i < boxes.size(); i++)
                     boxes[i].draw();
@@ -63,7 +66,7 @@ void BoxList::draw() const {
             }
         }
         else
-            boxes[n].draw();
+            boxes[visibleBox].draw();
     }
 }
 

@@ -11,7 +11,11 @@
 #include <QApplication>
 #include <lib/common/comparators.h>
 
+#define USER_INTERFACE 1
+
 int main(int argc, char *argv[]) {
+
+    #if USER_INTERFACE==1
 
     QApplication app(argc, argv);
 
@@ -34,4 +38,16 @@ int main(int argc, char *argv[]) {
     gui.show();
 
     return app.exec();
+
+    #else
+    bool b = false;
+    if (argc > 1) {
+        Dcel d;
+        d.loadFromDcelFile(argv[1]);
+        Engine::largeScaleFabrication(d);
+    }
+
+    return !b;
+
+    #endif
 }
