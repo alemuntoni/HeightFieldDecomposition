@@ -4,8 +4,9 @@
 
 #include <time.h>
 #include <iostream>
+#include <sys/time.h>
 
-class Timer {
+/*class Timer {
     public:
         Timer (const std::string& _caption) : caption(_caption) {
             secs = 0.f;
@@ -14,25 +15,60 @@ class Timer {
 
         inline void start(){
             //DGP::logger << "[start]\t" << caption.toStdString() << DGP::endl;
-            _start = clock();
+            start = clock();
         }
 
         inline void stopAndPrint() {
-            _stop = clock();
-            float cycles = _stop - _start;
+            stop = clock();
+            float cycles = stop - start;
             secs = ((float)cycles) / ((float)CLOCKS_PER_SEC);
             std::cout << "[" << secs << " secs]\t" << caption << std::endl;
         }
 
         inline float delay() {
             float s = clock();
-            float cycles = s - _start;
+            float cycles = s - start;
             s = ((float)cycles) / ((float)CLOCKS_PER_SEC);
             return s;
         }
 
     private:
         std::string caption;
-        clock_t _start, _stop;
+        clock_t start, stop;
         float secs;
+};*/
+
+class Timer {
+    public:
+        Timer (const std::string& _caption) : caption(_caption) {
+            start();
+        }
+
+        inline void start(){
+            //DGP::logger << "[start]\t" << caption.toStdString() << DGP::endl;
+            gettimeofday(&begin, NULL);
+        }
+
+        inline void stopAndPrint() {
+            gettimeofday(&end, NULL);
+            double secs =
+                (end.tv_sec - begin.tv_sec) +
+                ((end.tv_usec - begin.tv_usec)/1000000.0);
+
+            std::cout << "[" << secs << " secs]\t" << caption << std::endl;
+        }
+
+        inline float delay() {
+            timeval s;
+            gettimeofday(&s, NULL);
+            double secs =
+                (s.tv_sec - begin.tv_sec) +
+                ((s.tv_usec - begin.tv_usec)/1000000.0);
+
+            return secs;
+        }
+
+    private:
+        std::string caption;
+        timeval begin, end;
 };

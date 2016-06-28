@@ -42,8 +42,9 @@ int main(int argc, char *argv[]) {
     #else
     bool b = false;
     if (argc > 1) {
+        b = true;
         Dcel d;
-        d.loadFromDcelFile(argv[1]);
+        d.loadFromObjFile(argv[1]);
         Engine::largeScaleFabrication(d);
     }
 

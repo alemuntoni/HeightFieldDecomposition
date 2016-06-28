@@ -97,7 +97,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
         deleteDrawableObject(g);
         g = new DrawableGrid();
 
-        Engine::scaleAndRotateDcel(*d,  ui->samplesSpinBox->value());
+        Engine::scaleAndRotateDcel(*d,  ui->samplesSpinBox->value(), 2);
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), XYZ[ui->targetComboBox->currentIndex()]);
 
         d->update();

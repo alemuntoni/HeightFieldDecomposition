@@ -16,8 +16,12 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, int rot) {
                 d.rotate(m);
                 break;
             case 2:
+                getRotationMatrix(Vec3(1,0,0), 0.785398, m);
+                d.rotate(m);
                 break;
             case 3:
+                getRotationMatrix(Vec3(0,1,0), 0.785398, m);
+                d.rotate(m);
                 break;
             default:
                 assert(0);

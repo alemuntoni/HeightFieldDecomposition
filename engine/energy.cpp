@@ -36,7 +36,7 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
             nIterations++;
             diff = new_x - x;
             norm = diff.norm();
-            /*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "\n";
+            //if (nIterations % 100 == 0) std::cerr << "It: " << nIterations << "; alfa: " << alfa << "\n";
             x = new_x;
             objValue = newObjValue;
             if (saveIt){
