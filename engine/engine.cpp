@@ -9,9 +9,9 @@ void Engine::generateGrid(Grid& g, Dcel& d, int resolution, const Vec3 &target, 
     BoundingBox nBB(-(bb.getMax()-bb.getMin())/av, (bb.getMax()-bb.getMin())/av);
     d.scale(nBB);
 
-    //double m[3][3];
-    //getRotationMatrix(Vec3(0,0,1), 0.785398, m);
-    //d->rotate(m);
+    /*Eigen::Matrix3d m;
+    getRotationMatrix(Vec3(0,0,1), 0.785398, m);
+    d.rotate(m);*/
 
     d.saveOnObjFile("tmp.obj");
     exec("./grid_generator tmp.obj");
@@ -35,6 +35,8 @@ void Engine::generateGrid(Grid& g, Dcel& d, int resolution, const Vec3 &target, 
     g = Grid(res, GV, S, nGmin, nGmax);
     g.setTarget(target);
     g.calculateWeightsAndFreezeKernel(d, kernelDistance, heightfields);
+    Energy e(g);
+    e.calculateFullBoxValues(g);
 
     std::remove("tmp.bin");
     std::remove("tmp.obj");
@@ -82,4 +84,27 @@ void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen:
             boxList.addBox(box);
         }
     }
+}
+
+void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
+    Energy e(g);
+    Timer total("Minimization All Boxes");
+    int np = boxList.getNumberBoxes();
+    # pragma omp parallel for if(np>10)
+    for (int i = 0; i < np; i++){
+        Box3D b = boxList.getBox(i);
+        std::stringstream ss;
+        ss << "Minimization " << i << " box";
+        Timer t(ss.str());
+        e.gradientDiscend(b);
+        t.stopAndPrint();
+        boxList.setBox(i, b);
+        std::cerr << "Total: " << total.delay() << "\n\n";
+    }
+    total.stopAndPrint();
+    std::ofstream myfile;
+    myfile.open ("solutions.bin", std::ios::out | std::ios::binary);
+    boxList.serialize(myfile);
+    myfile.close();
+
 }

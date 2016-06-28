@@ -34,7 +34,7 @@ class Grid : public SerializableObject{
         double getValue(const Pointd &p) const;
         double getUnit() const;
 
-        Pointd getNearestGridPoint(const Pointd& p);
+        Pointd getNearestGridPoint(const Pointd& p) const;
         void getCoefficients(const double*& coeffs, const Pointd& p) const;
         double getFullBoxValue(const Pointd&p) const;
 
@@ -93,7 +93,7 @@ inline double Grid::getUnit() const {
     return gridCoordinates(getIndex(1,0,0), (0)) - gridCoordinates(getIndex(0,0,0), (0));
 }
 
-inline Pointd Grid::getNearestGridPoint(const Pointd& p) {
+inline Pointd Grid::getNearestGridPoint(const Pointd& p) const{
     unsigned int ind = getIndex(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
     return std::move(Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2)));
 }

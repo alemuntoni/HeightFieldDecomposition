@@ -102,7 +102,6 @@ void EngineManager::on_generateGridPushButton_clicked() {
         d->update();
         g->setKernelDistance(ui->distanceSpinBox->value());
         e = Energy(*g);
-        e.calculateFullBoxValues();
         mainWindow->pushObj(g, "Grid");
         mainWindow->updateGlCanvas();
     }
@@ -510,25 +509,6 @@ void EngineManager::on_solutionsSlider_valueChanged(int value) {
 
 void EngineManager::on_minimizeAllPushButton_clicked() {
     if (solutions != nullptr){
-        Timer total("Minimization All Boxes");
-        int np = solutions->getNumberBoxes();
-        # pragma omp parallel for if(np>10)
-        for (int i = 0; i < np; i++){
-            Box3D b = solutions->getBox(i);
-            std::stringstream ss;
-            ss << "Minimization " << i << " box";
-            Timer t(ss.str());
-            e.gradientDiscend(b);
-            t.stopAndPrint();
-            solutions->setBox(i, b);
-            //solutions->setVisibleBox(i);
-            //mainWindow->updateGlCanvas();
-            std::cerr << "Total: " << total.delay() << "\n\n";
-        }
-        total.stopAndPrint();
-        std::ofstream myfile;
-        myfile.open ("solutions.bin", std::ios::out | std::ios::binary);
-        solutions->serialize(myfile);
-        myfile.close();
+        Engine::expandBoxes(*solutions, *g);
     }
 }

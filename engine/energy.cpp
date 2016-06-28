@@ -4,11 +4,11 @@
 Energy::Energy() {
 }
 
-Energy::Energy(DrawableGrid& g) : g(&g){
+Energy::Energy(const Grid& g) : g(&g){
 }
 
-void Energy::calculateFullBoxValues() {
-    this->g->calculateFullBoxValues(integralTricubicInterpolation);
+void Energy::calculateFullBoxValues(Grid &g) const {
+    g.calculateFullBoxValues(integralTricubicInterpolation);
 }
 
 int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {

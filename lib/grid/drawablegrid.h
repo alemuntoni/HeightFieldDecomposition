@@ -4,7 +4,6 @@
 #include "lib/common/drawable_object.h"
 #include "grid.h"
 #include "GUI/objects/sphere.h"
-#include "engine/engine.h"
 
 
 class DrawableGrid: public Grid, public DrawableObject

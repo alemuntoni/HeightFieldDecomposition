@@ -8,6 +8,7 @@
 #include "common.h"
 #include "engine/box.h"
 #include "engine/energy.h"
+#include "engine/engine.h"
 #include "lib/common/timer.h"
 
 namespace Ui {

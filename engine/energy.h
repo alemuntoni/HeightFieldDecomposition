@@ -2,7 +2,6 @@
 #define ENERGY_H
 
 #include "lib/grid/drawablegrid.h"
-#include "box.h"
 #include "boxlist.h"
 
 #define EPSILON_GRAD 1e-8
@@ -11,8 +10,8 @@
 class Energy{
     public:
         Energy();
-        Energy(DrawableGrid& g);
-        void calculateFullBoxValues();
+        Energy(const Grid& g);
+        void calculateFullBoxValues(Grid& g) const;
 
         // Gradient Discend
         int gradientDiscend(Box3D &b) const;
@@ -66,7 +65,7 @@ class Energy{
     private:
         void initializeMinMax(Pointd& min, Pointd& max, const Eigen::VectorXd &x) const;
 
-        DrawableGrid* g;
+        const Grid* g;
 
 };
 
