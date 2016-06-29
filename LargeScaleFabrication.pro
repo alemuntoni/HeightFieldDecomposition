@@ -68,7 +68,9 @@ HEADERS += \
     engine/box.h \
     engine/boxlist.h \
     engine/engine.h \
-    lib/common/timer.h
+    lib/common/timer.h \
+    lib/cgal_interface/cgalinterface.h \
+    lib/cgal_interface/aabbtree.h
 
 SOURCES += \
     lib/dcel/dcel_face.cpp \
@@ -91,7 +93,9 @@ SOURCES += \
     engine/energy.cpp \
     engine/box.cpp \
     engine/boxlist.cpp \
-    engine/engine.cpp
+    engine/engine.cpp \
+    lib/cgal_interface/cgalinterface.cpp \
+    lib/cgal_interface/aabbtree.cpp
 
 FORMS += \
     GUI/mainwindow.ui \
