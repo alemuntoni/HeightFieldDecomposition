@@ -2,20 +2,21 @@
 #define BOX_H
 
 #include "lib/common/drawable_object.h"
+#include "lib/common/bounding_box.h"
 #include "GUI/objects/cylinder.h"
 #include "GUI/objects/sphere.h"
 
-class Box3D : public DrawableObject, public SerializableObject{
+class Box3D : public BoundingBox, public DrawableObject{
     public:
         Box3D();
         Box3D(const Pointd &min, const Pointd &max, const Pointd &c1 = Pointd(), const Pointd &c2 = Pointd(), const Pointd &c3 = Pointd(), const QColor c = QColor(0,0,0));
         Box3D(const Pointd &min, const Pointd &max, const QColor c);
 
         void setColor(const QColor &c);
-        const Pointd& getMin() const;
+        /*const Pointd& getMin() const;
         void setMin(const Pointd& value);
         const Pointd& getMax() const;
-        void setMax(const Pointd& value);
+        void setMax(const Pointd& value);*/
 
         const Pointd& getConstraint1() const;
         const Pointd& getConstraint2() const;
@@ -47,7 +48,7 @@ class Box3D : public DrawableObject, public SerializableObject{
         void setTarget(const Vec3& value);
 
     protected:
-        Pointd min, max;
+        //Pointd min, max;
         Pointd c1, c2, c3;
         QColor color;
         bool visible;
@@ -59,7 +60,7 @@ inline void Box3D::setColor(const QColor& c) {
     color = c;
 }
 
-inline const Pointd& Box3D::getMin() const {
+/*inline const Pointd& Box3D::getMin() const {
     return min;
 }
 
@@ -73,7 +74,7 @@ inline const Pointd& Box3D::getMax() const {
 
 inline void Box3D::setMax(const Pointd& value) {
     max = value;
-}
+}*/
 
 inline const Pointd& Box3D::getConstraint1() const {
     return c1;

@@ -3,10 +3,10 @@
 Box3D::Box3D(): visible(true) {
 }
 
-Box3D::Box3D(const Pointd& min, const Pointd& max, const Pointd& c1, const Pointd& c2, const Pointd& c3, const QColor c) : min(min), max(max), c1(c1), c2(c2), c3(c3), color(c), visible(true){
+Box3D::Box3D(const Pointd& min, const Pointd& max, const Pointd& c1, const Pointd& c2, const Pointd& c3, const QColor c) : BoundingBox(min, max), c1(c1), c2(c2), c3(c3), color(c), visible(true){
 }
 
-Box3D::Box3D(const Pointd& min, const Pointd& max, const QColor c) : min(min), max(max), color(c), visible(true){
+Box3D::Box3D(const Pointd& min, const Pointd& max, const QColor c) :BoundingBox(min, max), color(c), visible(true){
 }
 
 void Box3D::setConstraint1(const Pointd& p) {
@@ -53,7 +53,8 @@ Pointd Box3D::sceneCenter() const {
 }
 
 double Box3D::sceneRadius() const {
-    return min.dist(max);
+    return -1;
+    //return min.dist(max);
 }
 
 bool Box3D::isVisible() const {
@@ -65,8 +66,9 @@ void Box3D::setVisible(bool b) {
 }
 
 void Box3D::serialize(std::ofstream& binaryFile) const {
-    min.serialize(binaryFile);
-    max.serialize(binaryFile);
+    BoundingBox::serialize(binaryFile);
+    //min.serialize(binaryFile);
+    //max.serialize(binaryFile);
     c1.serialize(binaryFile);
     c2.serialize(binaryFile);
     c3.serialize(binaryFile);
@@ -76,8 +78,9 @@ void Box3D::serialize(std::ofstream& binaryFile) const {
 }
 
 void Box3D::deserialize(std::ifstream& binaryFile) {
-    min.deserialize(binaryFile);
-    max.deserialize(binaryFile);
+    BoundingBox::deserialize(binaryFile);
+    //min.deserialize(binaryFile);
+    //max.deserialize(binaryFile);
     c1.deserialize(binaryFile);
     c2.deserialize(binaryFile);
     c3.deserialize(binaryFile);
