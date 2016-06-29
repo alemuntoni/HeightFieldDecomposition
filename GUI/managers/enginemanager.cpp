@@ -496,9 +496,11 @@ void EngineManager::on_serializeBoxPushButton_clicked() {
 }
 
 void EngineManager::on_deserializeBoxPushButton_clicked() {
-    deleteDrawableObject(b);
-    b = new Box3D();
-    mainWindow->pushObj(b, "Box");
+    if (b == nullptr){
+        b = new Box3D();
+        mainWindow->pushObj(b, "Box");
+    }
+
     std::ifstream myfile;
     myfile.open ("box.bin", std::ios::in | std::ios::binary);
     b->deserialize(myfile);

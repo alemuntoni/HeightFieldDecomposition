@@ -75,7 +75,7 @@ inline int Energy::gradientDiscend(Box3D& b) const {
 }
 
 inline void Energy::gradientTricubicInterpolationEnergy(Eigen::VectorXd& gradient, const Pointd& min, const Pointd& max) const {
-    Eigen::VectorXd x;
+    Eigen::VectorXd x(6);
     x << min.x(), min.y(), min.z(), max.x(), max.y(), max.z();
 
     gradient(0) = gradientEvaluateXMinComponent(x);

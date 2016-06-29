@@ -14,7 +14,7 @@ void Energy::calculateFullBoxValues(Grid &g) const {
 int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     int nIterations = 0;
     double objValue, newObjValue;
-    double alfa = 10;
+    double alfa = 1;
     Pointd c1 = b.getConstraint1();
     Pointd c2 = b.getConstraint2();
     Pointd c3 = b.getConstraint3();
@@ -22,10 +22,11 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
     Eigen::VectorXd new_x(6);
     Eigen::VectorXd gradient(6);
-    Eigen::VectorXd diff(6); diff = x;
+    //Eigen::VectorXd diff(6); diff = x;
+    double diff = 10;
     objValue = energy(x, c1, c2, c3);
     bool ng = true;
-    double norm = 1;
+    //double norm = 1;
     do{
         //gradientEnergyFiniteDifference(gradientFiniteDiffernece, x, c1, c2, c3);
         if (ng) gradientEnergy(gradient, x, c1, c2, c3);
@@ -34,10 +35,13 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
         newObjValue = energy(new_x, c1, c2, c3);
         if (newObjValue < objValue) {
             nIterations++;
-            diff = new_x - x;
-            norm = diff.norm();
-            //if (nIterations % 100 == 0) std::cerr << "It: " << nIterations << "; alfa: " << alfa << "\n";
+            diff = objValue - newObjValue;
+            //diff = new_x - x;
+            //norm = diff.norm();
+            //std::cerr.precision(17);
+            ///*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "; diff: " << diff << "\n";
             x = new_x;
+
             objValue = newObjValue;
             if (saveIt){
                 b.setMin(Pointd(x(0), x(1), x(2)));
@@ -45,13 +49,15 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
                 iterations.addBox(b);
             }
             alfa *= 2;
+            //alfa = 1;
             ng = true;
         }
         else{
             alfa /= 10;
             ng = false;
+            diff = 10;
         }
-    } while ((norm > 0.005 && alfa >1e-5) && nIterations < 1000);
+    } while (diff > 0.5 && nIterations < 500);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
