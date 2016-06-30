@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <QFileDialog>
 #include <omp.h>
+#include "lib/cgal_interface/aabbtree.h"
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -61,6 +62,9 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
     g->deserialize(binaryFile);
     d->deserialize(binaryFile);
     bool bb = false;
+    for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit)
+        (*fit)->setColor(QColor(128,128,128));
+
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
     mainWindow->pushObj(g, "Grid");
@@ -587,5 +591,55 @@ void EngineManager::on_setFromSolutionButton_clicked() {
             mainWindow->updateGlCanvas();
         }
 
+    }
+}
+
+void EngineManager::on_wireframeDcelCheckBox_stateChanged(int arg1) {
+    if (d!=nullptr){
+        d->setWireframe(arg1 == Qt::Checked);
+        mainWindow->updateGlCanvas();
+    }
+
+}
+
+void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
+    if (d!=nullptr){
+        if (checked){
+            d->setPointsShading();
+            mainWindow->updateGlCanvas();
+        }
+    }
+}
+
+void EngineManager::on_flatDcelRadioButton_toggled(bool checked) {
+    if (d!=nullptr){
+        if (checked){
+            d->setFlatShading();
+            mainWindow->updateGlCanvas();
+        }
+    }
+}
+
+void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
+    if (d!=nullptr){
+        if (checked){
+            d->setSmoothShading();
+            mainWindow->updateGlCanvas();
+        }
+    }
+}
+
+void EngineManager::on_trianglesCoveredPushButton_clicked() {
+    if (d!=nullptr && b != nullptr) {
+        CGALInterface::AABBTree t(*d);
+        std::list<const Dcel::Face*> covered;
+        t.getIntersectedPrimitives(covered, *b);
+        for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
+            const Dcel::Face* cf = *it;
+            Dcel::Face* f = d->getFace(cf->getId());
+            f->setColor(QColor(0,0,255));
+        }
+        d->update();
+        mainWindow->updateGlCanvas();
     }
 }

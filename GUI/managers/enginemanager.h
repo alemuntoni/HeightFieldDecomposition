@@ -93,6 +93,16 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_setFromSolutionButton_clicked();
 
+        void on_wireframeDcelCheckBox_stateChanged(int arg1);
+
+        void on_pointsDcelRadioButton_toggled(bool checked);
+
+        void on_flatDcelRadioButton_toggled(bool checked);
+
+        void on_smoothDcelRadioButton_toggled(bool checked);
+
+        void on_trianglesCoveredPushButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
