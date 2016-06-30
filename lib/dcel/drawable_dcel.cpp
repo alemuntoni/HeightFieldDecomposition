@@ -38,6 +38,10 @@ void DrawableDcel::init() {
     wireframeColor[0] = 0.1;
     wireframeColor[1] = 0.1;
     wireframeColor[2] = 0.1;
+    wireframeColor[3] = 1;
+    wireframe_colors.resize(colors.size());
+    for (unsigned int i = 0; i < colors.size(); ++i)
+        wireframe_colors[i] = 0.1;
     update();
 }
 
@@ -184,6 +188,9 @@ void DrawableDcel::update() {
         colors.push_back((*fit)->getColor().blueF());
     }
     #endif
+    wireframe_colors.resize(colors.size());
+    for (unsigned int i = 0; i < colors.size(); ++i)
+        wireframe_colors[i] = 0.1;
 }
 
 /**
@@ -245,20 +252,40 @@ void DrawableDcel::renderPass() const {
     }
 
     if (drawMode & DRAW_WIREFRAME) {
-        glEnableClientState(GL_VERTEX_ARRAY);
+        /*glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(3, GL_DOUBLE, 0, coords.data());
 
         glLineWidth(1);
-        float wireframeColor[3];
-        wireframeColor[0] = 0.1;
-        wireframeColor[1] = 0.1;
-        wireframeColor[2] = 0.1;
+
         glColor4fv(wireframeColor);
 
         glDrawElements(GL_TRIANGLES, tris.size(), GL_UNSIGNED_INT, tris.data());
 
-        glDisableClientState(GL_VERTEX_ARRAY);
+        glDisableClientState(GL_VERTEX_ARRAY);*/
+        int n_tris = tris.size()/3;
+        for(int tid=0; tid<n_tris; ++tid) {
+            int tid_ptr  = 3 * tid;
+            int vid0     = tris[tid_ptr + 0];
+            int vid1     = tris[tid_ptr + 1];
+            int vid2     = tris[tid_ptr + 2];
+            int vid0_ptr = 3 * vid0;
+            int vid1_ptr = 3 * vid1;
+
+            int vid2_ptr = 3 * vid2;
+
+
+            glBegin(GL_TRIANGLES);
+            glColor3fv(&(wireframe_colors[tid_ptr]));
+            glNormal3dv(&(v_norm[vid0_ptr]));
+            glVertex3dv(&(coords[vid0_ptr]));
+            glNormal3dv(&(v_norm[vid1_ptr]));
+            glVertex3dv(&(coords[vid1_ptr]));
+            glNormal3dv(&(v_norm[vid2_ptr]));
+            glVertex3dv(&(coords[vid2_ptr]));
+            glEnd();
+        }
     }
+
 }
 
 /**
@@ -267,6 +294,7 @@ void DrawableDcel::renderPass() const {
  * all'interno della canvas. è chiamato automaticamente dalla canvas ad ogni frame.
  */
 void DrawableDcel::draw() const {
+
     if (drawMode & DRAW_MESH)
     {
         if (drawMode & DRAW_WIREFRAME)
@@ -316,6 +344,7 @@ void DrawableDcel::draw() const {
                 glDepthFunc(GL_LESS);
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
+            check_gl_error();
         }
 
         else
@@ -390,3 +419,26 @@ void DrawableDcel::setWireframeColor(float r, float g, float b) {
 void DrawableDcel::setWireframeWidth(float width) {
     wireframeWidth = width;
 }
+
+void _check_gl_error(const char *file, int line)
+{
+  GLenum err (glGetError());
+
+  while(err!=GL_NO_ERROR)
+  {
+    std::string error;
+
+    switch(err)
+    {
+      case GL_INVALID_OPERATION:      error="INVALID_OPERATION";      break;
+      case GL_INVALID_ENUM:           error="INVALID_ENUM";           break;
+      case GL_INVALID_VALUE:          error="INVALID_VALUE";          break;
+      case GL_OUT_OF_MEMORY:          error="OUT_OF_MEMORY";          break;
+      case GL_INVALID_FRAMEBUFFER_OPERATION:  error="INVALID_FRAMEBUFFER_OPERATION";  break;
+    }
+
+    std::cerr << "GL_" << error.c_str() << " - " << file << ":" << line << std::endl;
+    err = glGetError();
+  }
+}
+

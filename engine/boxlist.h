@@ -11,10 +11,11 @@ class BoxList : public DrawableObject, public SerializableObject{
         void addBox(const Box3D &b);
 
         void clearBoxes();
-        unsigned int getNumberBoxes();
-        Box3D getBox(unsigned int i);
+        unsigned int getNumberBoxes() const;
+        Box3D getBox(unsigned int i) const;
         void setBox(unsigned int i, const Box3D &b);
         void insert(const BoxList &o);
+        void removeBox(unsigned int i);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;

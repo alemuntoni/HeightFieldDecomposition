@@ -78,6 +78,18 @@ Dcel::Face::~Face(void) {}
  * Public Methods *
  ******************/
 
+const Dcel::Vertex*Dcel::Face::getVertex1() const {
+    return outerHalfEdge->getFromVertex();
+}
+
+const Dcel::Vertex*Dcel::Face::getVertex2() const {
+    return outerHalfEdge->getToVertex();
+}
+
+const Dcel::Vertex*Dcel::Face::getVertex3() const {
+    return outerHalfEdge->getNext()->getToVertex();
+}
+
 /**
  * \~Italian
  * @brief Funzione che verifica se la faccia è un triangolo
@@ -363,6 +375,18 @@ Dcel::Face::ConstIncidentVertexIterator Dcel::Face::incidentVertexBegin(const Dc
     }
     qDebug() << "ERROR: end vertex " << end->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
     assert(0);
+}
+
+Dcel::Vertex*Dcel::Face::getVertex1() {
+    return outerHalfEdge->getFromVertex();
+}
+
+Dcel::Vertex*Dcel::Face::getVertex2() {
+    return outerHalfEdge->getToVertex();
+}
+
+Dcel::Vertex*Dcel::Face::getVertex3() {
+    return outerHalfEdge->getNext()->getToVertex();
 }
 
 /**

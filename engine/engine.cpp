@@ -135,6 +135,32 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
 
 }
 
+void Engine::deleteBoxes(BoxList& boxList, Dcel &d){
+    CGALInterface::AABBTree t(d);
+    for (unsigned int i = 0; i < boxList.getNumberBoxes(); ++i){
+        Box3D b = boxList.getBox(i);
+        std::list<const Dcel::Face*> covered;
+        t.getIntersectedPrimitives(covered, b);
+
+        std::list<const Dcel::Face*>::iterator it = covered.begin();
+        while (it != covered.end()) {
+            const Dcel::Face* f = *it;
+            Pointd p1 = f->getVertex1()->getCoordinate(), p2 = f->getVertex2()->getCoordinate(), p3 = f->getVertex3()->getCoordinate();
+
+            if (!b.isIntern(p1) || !b.isIntern(p2) || !b.isIntern(p3)) {
+                it =covered.erase(it);
+            }
+            else ++it;
+        }
+
+        for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
+            const Dcel::Face* cf = *it;
+            Dcel::Face* f = d.getFace(cf->getId());
+            f->setColor(QColor(0,0,255));
+        }
+    }
+}
+
 void Engine::largeScaleFabrication(const Dcel& input, int resolution, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];

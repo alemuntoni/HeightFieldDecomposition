@@ -3,6 +3,9 @@
  * @copyright Alessandro Muntoni 2016.
  */
 
+#define USER_INTERFACE 1
+
+#if USER_INTERFACE==1
 #include "GUI/mainwindow.h"
 #include "GUI/managers/dcelmanager.h"
 #include "GUI/managers/windowmanager.h"
@@ -10,8 +13,11 @@
 #include "common.h"
 #include <QApplication>
 #include <lib/common/comparators.h>
+#else
+#include "engine/engine.h"
+#endif
 
-#define USER_INTERFACE 1
+
 
 int main(int argc, char *argv[]) {
 

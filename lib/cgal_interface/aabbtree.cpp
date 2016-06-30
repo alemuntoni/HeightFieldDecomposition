@@ -4,7 +4,7 @@ CGALInterface::AABBTree::AABBTree() {
 }
 
 CGALInterface::AABBTree::AABBTree(const Dcel& d) {
-    std::list<CGALTriangle> triangles;
+
 
     for (Dcel::ConstVertexIterator vit = d.vertexBegin(); vit != d.vertexEnd(); ++vit){
         const Dcel::Vertex* v = *vit;
@@ -42,10 +42,9 @@ void CGALInterface::AABBTree::getIntersectedPrimitives(std::list<const Dcel::Fac
     CGALBoundingBox bb(b.getMinX(), b.getMinY(), b.getMinZ(), b.getMaxX(), b.getMaxY(), b.getMaxZ());
     std::list< Tree::Primitive_id > trianglesIds;
     tree.all_intersected_primitives(bb, std::back_inserter(trianglesIds));
-    std::vector<CGALTriangle> intersectedTriangles;
-    intersectedTriangles.reserve(trianglesIds.size());
-    for (std::list< Tree::Primitive_id >::iterator it = trianglesIds.begin(); it !=  trianglesIds.end(); ++it){
-        CGALTriangle t = **it;
+    for (std::list< Tree::Primitive_id >::const_iterator it = trianglesIds.begin(); it != trianglesIds.end(); ++it){
+        const Tree::Primitive_id id = *it;
+        const CGALTriangle t = *id;
         std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle>::iterator mit = triangles_faces.find(t);
         assert(mit != triangles_faces.end());
         outputList.push_back(mit->second);

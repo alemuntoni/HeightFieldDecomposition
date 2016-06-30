@@ -9,6 +9,7 @@
 #include "energy.h"
 #include "boxlist.h"
 #include "common.h"
+#include "lib/cgal_interface/aabbtree.h"
 
 #define ORIENTATIONS 1
 
@@ -27,6 +28,8 @@ namespace Engine {
     void calculateInitialBoxes(BoxList &boxList, const Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
 
     void expandBoxes(BoxList &boxList, const Grid &g);
+
+    void deleteBoxes(BoxList& boxList, Dcel &d);
 
     void largeScaleFabrication(const Dcel &input, int resolution = 50, double kernelDistance = 6, bool heightfields = false);
 

@@ -64,7 +64,8 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
     bool bb = false;
     for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit)
         (*fit)->setColor(QColor(128,128,128));
-
+    d->setWireframe(true);
+    d->setPointsShading();
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
     mainWindow->pushObj(g, "Grid");
@@ -634,12 +635,27 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
         CGALInterface::AABBTree t(*d);
         std::list<const Dcel::Face*> covered;
         t.getIntersectedPrimitives(covered, *b);
+
+        std::list<const Dcel::Face*>::iterator i = covered.begin();
+        while (i != covered.end()) {
+            const Dcel::Face* f = *i;
+            Pointd p1 = f->getVertex1()->getCoordinate(), p2 = f->getVertex2()->getCoordinate(), p3 = f->getVertex3()->getCoordinate();
+
+            if (!b->isIntern(p1) || !b->isIntern(p2) || !b->isIntern(p3)) {
+                i =covered.erase(i);
+            }
+            else ++i;
+        }
+
+
         for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
             const Dcel::Face* cf = *it;
             Dcel::Face* f = d->getFace(cf->getId());
             f->setColor(QColor(0,0,255));
         }
         d->update();
+
         mainWindow->updateGlCanvas();
+
     }
 }

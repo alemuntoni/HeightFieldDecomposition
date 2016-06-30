@@ -48,6 +48,7 @@ namespace CGALInterface {
             std::map<CGALPoint, const Dcel::Vertex*> points_vertices;
             std::map<const Dcel::Face*, CGALTriangle> faces_triangles;
             std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle> triangles_faces;
+            std::list<CGALTriangle> triangles;
     };
 }
 

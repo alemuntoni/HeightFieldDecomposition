@@ -15,11 +15,11 @@ void BoxList::clearBoxes() {
     boxes.clear();
 }
 
-unsigned int BoxList::getNumberBoxes() {
+unsigned int BoxList::getNumberBoxes() const{
     return boxes.size();
 }
 
-Box3D BoxList::getBox(unsigned int i) {
+Box3D BoxList::getBox(unsigned int i) const {
     if (i < boxes.size())
         return (boxes[i]);
     return Box3D();
@@ -32,6 +32,11 @@ void BoxList::setBox(unsigned int i, const Box3D& b) {
 
 void BoxList::insert(const BoxList& o) {
     boxes.insert(boxes.end(), o.boxes.begin(), o.boxes.end());
+}
+
+void BoxList::removeBox(unsigned int i) {
+    assert (i < boxes.size());
+    boxes.erase(boxes.begin()+i);
 }
 
 void BoxList::serialize(std::ofstream& binaryFile) const {

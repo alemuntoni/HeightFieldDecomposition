@@ -146,6 +146,9 @@ class Dcel::Face {
         * Public Methods *
         ******************/
 
+        const Dcel::Vertex* getVertex1()                                                                            const;
+        const Dcel::Vertex* getVertex2()                                                                            const;
+        const Dcel::Vertex* getVertex3()                                                                            const;
         bool isTriangle()                                                                                           const;
         int getNumberIncidentVertices()                                                                             const;
         int getNumberIncidentHalfEdges()                                                                            const;
@@ -164,6 +167,9 @@ class Dcel::Face {
         ConstIncidentVertexIterator incidentVertexBegin(const Dcel::Vertex* start)                                  const;
         ConstIncidentVertexIterator incidentVertexBegin(const Dcel::Vertex* start, const Dcel::Vertex* end)         const;
 
+        Dcel::Vertex* getVertex1();
+        Dcel::Vertex* getVertex2();
+        Dcel::Vertex* getVertex3();
         Vec3 updateNormal();
         float updateArea();
         void removeInnerHalfEdge(const InnerHalfEdgeIterator& iterator);
