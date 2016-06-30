@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
         b = true;
         Dcel d;
         d.loadFromObjFile(argv[1]);
-        Engine::largeScaleFabrication(d);
+        Engine::largeScaleFabrication(d, 15);
     }
 
     return !b;

@@ -135,8 +135,13 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
 
 }
 
-void Engine::deleteBoxes(BoxList& boxList, Dcel &d){
+int Engine::deleteBoxes(BoxList& boxList, const Dcel &d){
     CGALInterface::AABBTree t(d);
+
+
+    // creating vector of pairs
+    std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > vectorTriples;
+    vectorTriples.reserve(boxList.getNumberBoxes());
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); ++i){
         Box3D b = boxList.getBox(i);
         std::list<const Dcel::Face*> covered;
@@ -153,12 +158,72 @@ void Engine::deleteBoxes(BoxList& boxList, Dcel &d){
             else ++it;
         }
 
+        std::vector<unsigned int> v;
+        int n = covered.size();
+        v.resize(d.getNumberFaces(), 0);
         for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
-            const Dcel::Face* cf = *it;
-            Dcel::Face* f = d.getFace(cf->getId());
-            f->setColor(QColor(0,0,255));
+            const Dcel::Face* f = *it;
+            v[f->getId()] = 1;
+        }
+        std::tuple<int, Box3D, std::vector<unsigned int> > triple (n, boxList.getBox(i), v);
+        vectorTriples.push_back(triple);
+
+    }
+
+    //ordering vector of triples
+    struct triplesOrdering {
+        bool operator ()(const std::tuple<int, Box3D, std::vector<unsigned int> >& a, const std::tuple<int, Box3D, std::vector<unsigned int> >& b) {
+            if (std::get<0>(a) < std::get<0>(b))
+                return true;
+            if (std::get<0>(a) == std::get<0>(b))
+                return ((std::get<1>(a).getVolume()) < (std::get<1>(b).getVolume()));
+            return false;
+        }
+    };
+    std::sort(vectorTriples.begin(), vectorTriples.end(), triplesOrdering());
+
+
+    //create m
+    std::vector< std::vector<unsigned int>> m;
+    m.reserve(boxList.getNumberBoxes());
+    for (unsigned int i = 0; i < boxList.getNumberBoxes(); i++)
+        m.push_back(std::get<2>(vectorTriples[i]));
+
+    //create sums
+    std::vector<unsigned int> sums;
+    sums.resize(d.getNumberFaces(), 0);
+    for (unsigned j = 0; j < d.getNumberFaces(); j++){
+        for (unsigned int i = 0; i < boxList.getNumberBoxes(); i++){
+            sums[j] += m[i][j];
         }
     }
+
+    //calculating erasable elements
+    std::vector<unsigned int> eliminate;
+    for (unsigned int i = 0; i < boxList.getNumberBoxes(); i++){
+        bool b = true;
+        for (unsigned int j = 0; j < d.getNumberFaces(); j++)
+            if (sums[j]-m[i][j] < 1)
+                b = false;
+        if (b){
+            for (unsigned int j = 0; j < d.getNumberFaces(); j++)
+                sums[j]-=m[i][j];
+            eliminate.push_back(i);
+        }
+    }
+
+
+    //
+    for (int i = eliminate.size()-1; i >= 0; i--){
+        vectorTriples.erase(vectorTriples.begin() + eliminate[i]);
+    }
+    int n = boxList.getNumberBoxes();
+
+    boxList.clearBoxes();
+    for (unsigned int i = 0; i < vectorTriples.size(); i++){
+        boxList.addBox(std::get<1>(vectorTriples[i]));
+    }
+    return n-eliminate.size();
 }
 
 void Engine::largeScaleFabrication(const Dcel& input, int resolution, double kernelDistance, bool heightfields) {
@@ -192,6 +257,12 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
         std::ofstream myfile;
         myfile.open ("allSolutions.bin", std::ios::out | std::ios::binary);
         allBoxes.serialize(myfile);
+        myfile.close();
+
+        deleteBoxes(allBoxes, input);
+        myfile.open ("simplifiedSolutionsAndMesh.bin", std::ios::out | std::ios::binary);
+        allBoxes.serialize(myfile);
+        input.serialize(myfile);
         myfile.close();
     }
 

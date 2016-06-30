@@ -11,7 +11,7 @@
 #include "common.h"
 #include "lib/cgal_interface/aabbtree.h"
 
-#define ORIENTATIONS 1
+#define ORIENTATIONS 4
 
 namespace Engine {
 
@@ -29,7 +29,7 @@ namespace Engine {
 
     void expandBoxes(BoxList &boxList, const Grid &g);
 
-    void deleteBoxes(BoxList& boxList, Dcel &d);
+    int deleteBoxes(BoxList& boxList, const Dcel &d);
 
     void largeScaleFabrication(const Dcel &input, int resolution = 50, double kernelDistance = 6, bool heightfields = false);
 

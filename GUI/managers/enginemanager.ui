@@ -50,7 +50,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-274</y>
+        <y>0</y>
         <width>337</width>
         <height>1338</height>
        </rect>
@@ -157,7 +157,7 @@
           <item row="3" column="1">
            <widget class="QSpinBox" name="samplesSpinBox">
             <property name="minimum">
-             <number>20</number>
+             <number>5</number>
             </property>
             <property name="maximum">
              <number>200</number>
@@ -724,6 +724,13 @@
            <widget class="QPushButton" name="minimizeAllPushButton">
             <property name="text">
              <string>Minimize All</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="deleteBoxesPushButton">
+            <property name="text">
+             <string>Delete Boxes</string>
             </property>
            </widget>
           </item>

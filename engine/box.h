@@ -26,6 +26,8 @@ class Box3D : public BoundingBox, public DrawableObject{
         void setConstraint3(const Pointd &p);
         void setRotationMatrix(const Eigen::Matrix3d &rot);
 
+        double getVolume() const;
+
         void setW(double d);
         void setH(double d);
         void setD(double d);
@@ -86,6 +88,10 @@ inline const Pointd& Box3D::getConstraint2() const {
 
 inline const Pointd& Box3D::getConstraint3() const {
     return c3;
+}
+
+inline double Box3D::getVolume() const {
+    return (max.x()-min.x())*(max.y()-min.y())*(max.z()-min.z());
 }
 
 inline void Box3D::setW(double d) {
