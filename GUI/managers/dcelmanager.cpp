@@ -176,6 +176,9 @@ void DcelManager::on_loadDcelButton_clicked() {
             assert(0);
         }
         std::cout << "load: " << filename.toStdString() << std::endl;
+        drawableDcel->updateVertexNormals();
+        drawableDcel->setWireframe(true);
+        drawableDcel->setPointsShading();
         drawableDcel->update();
         mainWindow->pushObj(drawableDcel, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
         mainWindow->updateGlCanvas();

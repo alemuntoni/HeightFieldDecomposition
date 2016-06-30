@@ -33,7 +33,7 @@ DrawableDcel::~DrawableDcel() {
  * @brief Setta impostazioni di visualizzazione di default.
  */
 void DrawableDcel::init() {
-    drawMode          = DRAW_MESH | DRAW_WIREFRAME | DRAW_POINTS;
+    drawMode          = DRAW_MESH | DRAW_SMOOTH |  DRAW_FACECOLOR;
     wireframeWidth    = 3;
     wireframeColor[0] = 0.1;
     wireframeColor[1] = 0.1;
