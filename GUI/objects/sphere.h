@@ -21,7 +21,7 @@
 
 inline void sphere(const Pointd  & center,
                    float         radius,
-                   const QColor color,
+                   const QColor& color,
                    int precision = 4)
 {
     glEnable(GL_LIGHTING);

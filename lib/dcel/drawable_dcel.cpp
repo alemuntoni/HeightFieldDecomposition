@@ -267,9 +267,12 @@ void DrawableDcel::renderPass() const {
  * all'interno della canvas. è chiamato automaticamente dalla canvas ad ogni frame.
  */
 void DrawableDcel::draw() const {
-    if (drawMode & DRAW_MESH) {
-        if (drawMode & DRAW_WIREFRAME) {
-            if (drawMode & DRAW_POINTS) {
+    if (drawMode & DRAW_MESH)
+    {
+        if (drawMode & DRAW_WIREFRAME)
+        {
+            if (drawMode & DRAW_POINTS)
+            {
                 glDisable(GL_LIGHTING);
                 glShadeModel(GL_FLAT);
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -278,55 +281,65 @@ void DrawableDcel::draw() const {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
 
-            else if (drawMode & DRAW_FLAT) {
+            else
+
+            if (drawMode & DRAW_FLAT)
+            {
                 glEnable(GL_LIGHTING);
                 glShadeModel(GL_FLAT);
                 glDepthRange(0.01, 1.0);
                 renderPass();
 
-                if (drawMode & DRAW_WIREFRAME) {
-                    glDisable(GL_LIGHTING);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glDepthRange(0.0, 1.0);
-                    glDepthFunc(GL_LEQUAL);
-                    renderPass();
-                    glDepthFunc(GL_LESS);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                }
+                glDisable(GL_LIGHTING);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glDepthRange(0.0, 1.0);
+                glDepthFunc(GL_LEQUAL);
+                renderPass();
+                glDepthFunc(GL_LESS);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
 
-            else if (drawMode & DRAW_SMOOTH) {
+            else
+
+            if (drawMode & DRAW_SMOOTH)
+            {
                 glEnable(GL_LIGHTING);
                 glShadeModel(GL_SMOOTH);
                 glDepthRange(0.01, 1.0);
                 renderPass();
 
-                if (drawMode & DRAW_WIREFRAME) {
-                    glDisable(GL_LIGHTING);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glDepthRange(0.0, 1.0);
-                    glDepthFunc(GL_LEQUAL);
-                    renderPass();
-                    glDepthFunc(GL_LESS);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                }
+                glDisable(GL_LIGHTING);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glDepthRange(0.0, 1.0);
+                glDepthFunc(GL_LEQUAL);
+                renderPass();
+                glDepthFunc(GL_LESS);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
         }
 
-        else {
-            if (drawMode & DRAW_POINTS) {
+        else
+
+        {
+            if (drawMode & DRAW_POINTS)
+            {
                 glDisable(GL_LIGHTING);
-                //glPointSize(10);
                 renderPass();
             }
 
-            else if (drawMode & DRAW_FLAT) {
+            else
+
+            if (drawMode & DRAW_FLAT)
+            {
                 glEnable(GL_LIGHTING);
                 glShadeModel(GL_FLAT);
                 renderPass();
             }
 
-            else if (drawMode & DRAW_SMOOTH) {
+            else
+
+            if (drawMode & DRAW_SMOOTH)
+            {
                 glEnable(GL_LIGHTING);
                 glShadeModel(GL_SMOOTH);
                 renderPass();

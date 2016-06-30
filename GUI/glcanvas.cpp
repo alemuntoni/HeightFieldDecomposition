@@ -129,7 +129,7 @@ int GLcanvas::getNumberVisibleObjects() {
     int count = 0;
     for(int i=0; i<(int)drawlist.size(); ++i) {
         const DrawableObject * obj = drawlist[i];
-        if (obj->isVisible()) count++;
+        if (obj->isVisible() && obj->sceneRadius() > 0) count++;
     }
     return count;
 }

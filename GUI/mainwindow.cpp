@@ -234,7 +234,7 @@ void MainWindow::checkBoxClicked(int i) {
     DrawableObject * obj = mapObjects.left.at(i);
     if (cb->isChecked()) obj->setVisible(true);
     else obj->setVisible(false);
-    updateGlCanvas();
+    ui->glCanvas->updateGL();
 }
 
 void MainWindow::slotObjectClicked(int i) {

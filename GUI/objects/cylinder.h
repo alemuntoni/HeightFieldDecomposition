@@ -24,7 +24,7 @@ inline void cylinder(const Pointd  & a,
                      const Pointd  & b,
                      float         top_radius,
                      float         bottom_radius,
-                     const QColor color)
+                     const QColor& color)
 {
     Pointd dir     = b - a; dir.normalize();
     Pointd z       = Pointd(0,0,1);
@@ -43,6 +43,7 @@ inline void cylinder(const Pointd  & a,
     gluQuadricOrientation(cylinder, GLU_OUTSIDE);
     gluCylinder(cylinder, top_radius, bottom_radius, (a-b).getLength(), 500, 100);
     glPopMatrix();
+    glDisable(GL_CULL_FACE);
 }
 
 #endif // CYLINDER_H
