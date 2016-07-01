@@ -25,9 +25,58 @@ void Box3D::setRotationMatrix(const Eigen::Matrix3d& rot) {
     rotation = rot;
 }
 
+void Box3D::getRotatedExtremes(std::vector<Pointd>& v) const {
+    v.resize(8);
+    Pointd p = min;
+    p.rotate(rotation);
+    v[0] = p;
+    p.set(max.x(), min.y(), min.z());
+    p.rotate(rotation);
+    v[1] = p;
+    p.set(max.x(), min.y(), max.z());
+    p.rotate(rotation);
+    v[2] = p;
+    p.set(min.x(), min.y(), max.z());
+    p.rotate(rotation);
+    v[3] = p;
+    p.set(min.x(), max.y(), min.z());
+    p.rotate(rotation);
+    v[4] = p;
+    p.set(max.x(), max.y(), min.z());
+    p.rotate(rotation);
+    v[5] = p;
+    p = max;
+    p.rotate(rotation);
+    v[6] = p;
+    p.set(min.x(), max.y(), max.z());
+    p.rotate(rotation);
+    v[7] = p;
+}
+
 void Box3D::draw() const {
     if (visible){
-        cylinder(min, Pointd(max.x(), min.y(), min.z()), 0.05, 0.05, color);
+        Pointd c1 = this->c1, c2 = this->c2, c3 = this->c3;
+        c1.rotate(rotation);
+        c2.rotate(rotation);
+        c3.rotate(rotation);
+        std::vector<Pointd> p;
+        getRotatedExtremes(p);
+        cylinder(p[0], p[1], 0.05, 0.05, color);
+        cylinder(p[1], p[2], 0.05, 0.05, color);
+        cylinder(p[2], p[3], 0.05, 0.05, color);
+        cylinder(p[0], p[3], 0.05, 0.05, color);
+
+        cylinder(p[4], p[5], 0.05, 0.05, color);
+        cylinder(p[5], p[6], 0.05, 0.05, color);
+        cylinder(p[6], p[7], 0.05, 0.05, color);
+        cylinder(p[4], p[7], 0.05, 0.05, color);
+
+        cylinder(p[0], p[4], 0.05, 0.05, color);
+        cylinder(p[1], p[5], 0.05, 0.05, color);
+        cylinder(p[2], p[6], 0.05, 0.05, color);
+        cylinder(p[3], p[7], 0.05, 0.05, color);
+
+        /*cylinder(min, Pointd(max.x(), min.y(), min.z()), 0.05, 0.05, color);
         cylinder(Pointd(max.x(), min.y(), min.z()), Pointd(max.x(), max.y(), min.z()), 0.05, 0.05, color);
         cylinder(Pointd(max.x(), max.y(), min.z()), Pointd(min.x(), max.y(), min.z()), 0.05, 0.05, color);
         cylinder(Pointd(min.x(), max.y(), min.z()), min, 0.05, 0.05, color);
@@ -40,7 +89,7 @@ void Box3D::draw() const {
         cylinder(min, Pointd(min.x(), min.y(), max.z()), 0.05, 0.05, color);
         cylinder(Pointd(max.x(), min.y(), min.z()), Pointd(max.x(), min.y(), max.z()), 0.05, 0.05, color);
         cylinder(Pointd(max.x(), max.y(), min.z()), max, 0.05, 0.05, color);
-        cylinder(Pointd(min.x(), max.y(), min.z()), Pointd(min.x(), max.y(), max.z()), 0.05, 0.05, color);
+        cylinder(Pointd(min.x(), max.y(), min.z()), Pointd(min.x(), max.y(), max.z()), 0.05, 0.05, color);*/
 
         sphere(c1, 0.15, QColor(255,0,255));
         sphere(c2, 0.15, QColor(255,0,255));

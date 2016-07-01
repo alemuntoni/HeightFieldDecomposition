@@ -12,6 +12,7 @@
 #include "lib/cgal_interface/aabbtree.h"
 
 #define ORIENTATIONS 4
+#define TARGETS 6
 
 namespace Engine {
 
@@ -21,7 +22,7 @@ namespace Engine {
 
 
 
-    Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, int resolution = 50, int rot = 0);
+    Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, int resolution = 50, unsigned int rot = 0);
 
     void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, const Vec3& target = Vec3(), bool heightfields = false);
 
@@ -29,7 +30,13 @@ namespace Engine {
 
     void expandBoxes(BoxList &boxList, const Grid &g);
 
-    int deleteBoxes(BoxList& boxList, const Dcel &d);
+    void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<unsigned int> > >& vectorTriples, const BoxList& boxList, const Dcel &d);
+
+    int deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > &vectorTriples, unsigned int numberFaces);
+
+    void makePreprocessingAndSave(const Dcel &input, const std::string& filename, int resolution = 50, double kernelDistance = 6, bool heightfields = false);
+
+    void expandBoxesFromPreprocessing(const std::string &inputFile, const std::string &outputFile);
 
     void largeScaleFabrication(const Dcel &input, int resolution = 50, double kernelDistance = 6, bool heightfields = false);
 

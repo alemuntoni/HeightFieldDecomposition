@@ -100,38 +100,20 @@ void BoxList::drawLine(const Pointd &a, const Pointd &b) const {
 }
 
 void BoxList::drawCube(const Box3D& b) const {
-    Pointd to(b.getMin().x(), b.getMin().y(), b.getMax().z());
-    drawLine(b.getMin(), to);
-    to.set(b.getMin().x(), b.getMax().y(), b.getMin().z());
-    drawLine(b.getMin(), to);
-    to.set(b.getMax().x(), b.getMin().y(), b.getMin().z());
-    drawLine(b.getMin(), to);
+    std::vector<Pointd> p;
+    b.getRotatedExtremes(p);
+    drawLine(p[0], p[1]);
+    drawLine(p[1], p[2]);
+    drawLine(p[2], p[3]);
+    drawLine(p[0], p[3]);
 
-    to.set(b.getMax().x(), b.getMax().y(), b.getMin().z());
-    drawLine(b.getMax(), to);
-    to.set(b.getMax().x(), b.getMin().y(), b.getMax().z());
-    drawLine(b.getMax(), to);
-    to.set(b.getMin().x(), b.getMax().y(), b.getMax().z());
-    drawLine(b.getMax(), to);
+    drawLine(p[4], p[5]);
+    drawLine(p[5], p[6]);
+    drawLine(p[6], p[7]);
+    drawLine(p[4], p[7]);
 
-    Pointd from(b.getMin().x(), b.getMin().y(), b.getMax().z());
-    to.set(b.getMin().x(), b.getMax().y(), b.getMax().z());
-    drawLine(from, to);
-    from.set(b.getMin().x(), b.getMin().y(), b.getMax().z());
-    to.set(b.getMax().x(), b.getMin().y(), b.getMax().z());
-    drawLine(from, to);
-
-    from.set(b.getMin().x(), b.getMax().y(), b.getMin().z());
-    to.set(b.getMin().x(), b.getMax().y(), b.getMax().z());
-    drawLine(from, to);
-    from.set(b.getMin().x(), b.getMax().y(), b.getMin().z());
-    to.set(b.getMax().x(), b.getMax().y(), b.getMin().z());
-    drawLine(from, to);
-
-    from.set(b.getMax().x(), b.getMin().y(), b.getMin().z());
-    to.set(b.getMax().x(), b.getMax().y(), b.getMin().z());
-    drawLine(from, to);
-    from.set(b.getMax().x(), b.getMin().y(), b.getMin().z());
-    to.set(b.getMax().x(), b.getMin().y(), b.getMax().z());
-    drawLine(from, to);
+    drawLine(p[0], p[4]);
+    drawLine(p[1], p[5]);
+    drawLine(p[2], p[6]);
+    drawLine(p[3], p[7]);
 }

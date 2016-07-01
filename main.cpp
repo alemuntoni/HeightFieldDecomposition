@@ -3,7 +3,7 @@
  * @copyright Alessandro Muntoni 2016.
  */
 
-#define USER_INTERFACE 1
+#define USER_INTERFACE 0
 
 #if USER_INTERFACE==1
 #include "GUI/mainwindow.h"
@@ -46,15 +46,20 @@ int main(int argc, char *argv[]) {
     return app.exec();
 
     #else
-    bool b = false;
+    /*bool b = false;
     if (argc > 1) {
         b = true;
         Dcel d;
         d.loadFromObjFile(argv[1]);
-        Engine::largeScaleFabrication(d, 15);
+        Engine::largeScaleFabrication(d);
     }
 
-    return !b;
+    return !b;*/
+
+    Dcel d;
+    d.loadFromObjFile("models/bimba.obj");
+    Engine::makePreprocessingAndSave(d, "preprocessings/bimba_preprocessing_nh.bin");
+    //Engine::expandBoxesFromPreprocessing("preprocessings/bunny_preprocessing_nh.bin", "results/bunny_boxes_nh.bin");
 
     #endif
 }

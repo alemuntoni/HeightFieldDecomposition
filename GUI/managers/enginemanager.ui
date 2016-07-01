@@ -50,9 +50,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-274</y>
         <width>337</width>
-        <height>1338</height>
+        <height>1371</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
@@ -693,14 +693,14 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QPushButton" name="createBoxesPushButton">
             <property name="text">
              <string>Create Boxes</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QCheckBox" name="showAllSolutionsCheckBox">
             <property name="enabled">
              <bool>false</bool>
@@ -710,7 +710,7 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0" colspan="2">
+          <item row="4" column="0" colspan="2">
            <widget class="QSlider" name="solutionsSlider">
             <property name="enabled">
              <bool>false</bool>
@@ -720,18 +720,49 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QPushButton" name="minimizeAllPushButton">
             <property name="text">
              <string>Minimize All</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <widget class="QPushButton" name="deleteBoxesPushButton">
             <property name="text">
              <string>Delete Boxes</string>
             </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Orientation:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="orientationComboBox">
+            <item>
+             <property name="text">
+              <string>0</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>3</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>

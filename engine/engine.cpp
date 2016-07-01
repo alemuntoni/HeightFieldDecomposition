@@ -14,7 +14,7 @@ Vec3 Engine::getClosestTarget(const Vec3& n) {
 
 
 
-Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, int rot) {
+Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int rot) {
     BoundingBox bb = d.getBoundingBox();
     double maxl = std::max(bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
     maxl = std::max(maxl, bb.getMaxZ() - bb.getMinZ());
@@ -28,23 +28,22 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, int rot) {
             case 1:
                 getRotationMatrix(Vec3(0,0,1), 0.785398, m);
                 d.rotate(m);
+                getRotationMatrix(Vec3(0,0,-1), 0.785398, m);
                 break;
             case 2:
                 getRotationMatrix(Vec3(1,0,0), 0.785398, m);
                 d.rotate(m);
+                getRotationMatrix(Vec3(-1,0,0), 0.785398, m);
                 break;
             case 3:
                 getRotationMatrix(Vec3(0,1,0), 0.785398, m);
                 d.rotate(m);
+                getRotationMatrix(Vec3(0,-1,0), 0.785398, m);
                 break;
             default:
                 assert(0);
         }
     }
-    /**
-     * @todo is transpose right?
-     */
-    m.transpose();
     return m;
 }
 
@@ -135,12 +134,12 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
 
 }
 
-int Engine::deleteBoxes(BoxList& boxList, const Dcel &d){
+void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > &vectorTriples, const BoxList& boxList, const Dcel& d) {
     CGALInterface::AABBTree t(d);
 
 
     // creating vector of pairs
-    std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > vectorTriples;
+
     vectorTriples.reserve(boxList.getNumberBoxes());
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); ++i){
         Box3D b = boxList.getBox(i);
@@ -167,8 +166,10 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel &d){
         }
         std::tuple<int, Box3D, std::vector<unsigned int> > triple (n, boxList.getBox(i), v);
         vectorTriples.push_back(triple);
-
     }
+}
+
+int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > &vectorTriples, unsigned int numberFaces){
 
     //ordering vector of triples
     struct triplesOrdering {
@@ -184,15 +185,15 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel &d){
 
 
     //create m
-    std::vector< std::vector<unsigned int>> m;
+    std::vector<std::vector<unsigned int> > m;
     m.reserve(boxList.getNumberBoxes());
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); i++)
         m.push_back(std::get<2>(vectorTriples[i]));
 
     //create sums
     std::vector<unsigned int> sums;
-    sums.resize(d.getNumberFaces(), 0);
-    for (unsigned j = 0; j < d.getNumberFaces(); j++){
+    sums.resize(numberFaces, 0);
+    for (unsigned j = 0; j < numberFaces; j++){
         for (unsigned int i = 0; i < boxList.getNumberBoxes(); i++){
             sums[j] += m[i][j];
         }
@@ -202,11 +203,11 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel &d){
     std::vector<unsigned int> eliminate;
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); i++){
         bool b = true;
-        for (unsigned int j = 0; j < d.getNumberFaces(); j++)
+        for (unsigned int j = 0; j < numberFaces; j++)
             if (sums[j]-m[i][j] < 1)
                 b = false;
         if (b){
-            for (unsigned int j = 0; j < d.getNumberFaces(); j++)
+            for (unsigned int j = 0; j < numberFaces; j++)
                 sums[j]-=m[i][j];
             eliminate.push_back(i);
         }
@@ -226,9 +227,118 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel &d){
     return n-eliminate.size();
 }
 
+void Engine::makePreprocessingAndSave(const Dcel& input, const std::__cxx11::string& filename, int resolution, double kernelDistance, bool heightfields) {
+    Dcel scaled[ORIENTATIONS];
+    Eigen::Matrix3d m[ORIENTATIONS];
+    for (unsigned int i = 0; i < ORIENTATIONS; i++){
+        scaled[i] = input;
+        m[i] = scaleAndRotateDcel(scaled[i], resolution, i);
+    }
+
+    if (!heightfields){
+        Grid g[ORIENTATIONS];
+        BoxList bl[ORIENTATIONS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            generateGrid(g[i], scaled[i], kernelDistance);
+            calculateInitialBoxes(bl[i],scaled[i], m[i], false);
+        }
+        std::ofstream myfile;
+        myfile.open (filename, std::ios::out | std::ios::binary);
+        scaled[0].serialize(myfile);
+        Serializer::serialize(heightfields, myfile);
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            g[i].serialize(myfile);
+            bl[i].serialize(myfile);
+        }
+
+        myfile.close();
+
+    }
+    else {
+        Grid g[ORIENTATIONS][TARGETS];
+        BoxList bl[ORIENTATIONS][TARGETS];
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                generateGrid(g[i][j], scaled[i], kernelDistance, XYZ[j], true);
+                calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
+            }
+        }
+        std::ofstream myfile;
+        myfile.open (filename, std::ios::out | std::ios::binary);
+        scaled[0].serialize(myfile);
+        Serializer::serialize(heightfields, myfile);
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                g[i][j].serialize(myfile);
+                bl[i][j].serialize(myfile);
+            }
+        }
+        myfile.close();
+    }
+}
+
+void Engine::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile) {
+    Dcel d;
+    bool heightfields;
+
+    std::ifstream input;
+    input.open (inputFile, std::ios::in | std::ios::binary);
+    d.deserialize(input);
+    Serializer::deserialize(heightfields, input);
+    if (!heightfields){
+        Grid g[ORIENTATIONS];
+        BoxList bl[ORIENTATIONS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            g[i].deserialize(input);
+            bl[i].deserialize(input);
+        }
+        input.close();
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            expandBoxes(bl[i], g[i]);
+        }
+        std::ofstream myfile;
+        myfile.open (outputFile, std::ios::out | std::ios::binary);
+        d.serialize(myfile);
+        Serializer::serialize(heightfields, myfile);
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            g[i].serialize(myfile);
+            bl[i].serialize(myfile);
+        }
+        myfile.close();
+    }
+    else {
+        Grid g[ORIENTATIONS][TARGETS];
+        BoxList bl[ORIENTATIONS][TARGETS];
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                g[i][j].deserialize(input);
+                bl[i][j].deserialize(input);
+            }
+        }
+        input.close();
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                expandBoxes(bl[i][j], g[i][j]);
+            }
+        }
+        std::ofstream myfile;
+        myfile.open (outputFile, std::ios::out | std::ios::binary);
+        d.serialize(myfile);
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                g[i][j].serialize(myfile);
+                bl[i][j].serialize(myfile);
+            }
+        }
+        myfile.close();;
+    }
+}
+
 void Engine::largeScaleFabrication(const Dcel& input, int resolution, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
+    std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > allVectorTriples;
+    BoxList allBoxes;
     for (unsigned int i = 0; i < ORIENTATIONS; i++){
         scaled[i] = input;
         m[i] = scaleAndRotateDcel(scaled[i], resolution, i);
@@ -249,21 +359,68 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
             serializeAsEngineManager(myfile, g[i], scaled[i], bl[i]);
             myfile.close();
         }
-        BoxList allBoxes;
+
+        std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > vectorTriples[ORIENTATIONS];
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
             allBoxes.insert(bl[i]);
+            createVectorTriples(vectorTriples[i], bl[i], scaled[i]);
+            allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i].begin(), vectorTriples[i].end());
         }
+
+        deleteBoxes(allBoxes, allVectorTriples, input.getNumberFaces());
 
         std::ofstream myfile;
         myfile.open ("allSolutions.bin", std::ios::out | std::ios::binary);
         allBoxes.serialize(myfile);
         myfile.close();
 
-        deleteBoxes(allBoxes, input);
-        myfile.open ("simplifiedSolutionsAndMesh.bin", std::ios::out | std::ios::binary);
-        allBoxes.serialize(myfile);
-        input.serialize(myfile);
+
+        myfile.open ("engineManagerAllSolutions.bin", std::ios::out | std::ios::binary);
+        serializeAsEngineManager(myfile, g[0], scaled[0], allBoxes);
         myfile.close();
+
+
+    }
+    else {
+        Grid g[ORIENTATIONS][TARGETS];
+        BoxList bl[ORIENTATIONS][TARGETS];
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                generateGrid(g[i][j], scaled[i], kernelDistance, XYZ[j], true);
+                calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
+                expandBoxes(bl[i][j], g[i][j]);
+
+                //Salvataggio
+                std::stringstream ss;
+                ss << "Engine" << i << "Target" << j<<".bin";
+                std::ofstream myfile;
+                myfile.open (ss.str(), std::ios::out | std::ios::binary);
+                serializeAsEngineManager(myfile, g[i][j], scaled[i], bl[i][j]);
+                myfile.close();
+            }
+        }
+
+        std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > vectorTriples[ORIENTATIONS][TARGETS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            for (unsigned int j = 0; j < TARGETS; ++j){
+                allBoxes.insert(bl[i][j]);
+                createVectorTriples(vectorTriples[i][j], bl[i][j], scaled[i]);
+                allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i][j].begin(), vectorTriples[i][j].end());
+            }
+        }
+
+        deleteBoxes(allBoxes, allVectorTriples, input.getNumberFaces());
+
+        std::ofstream myfile;
+        myfile.open ("allSolutions.bin", std::ios::out | std::ios::binary);
+        allBoxes.serialize(myfile);
+        myfile.close();
+
+
+        myfile.open ("engineManagerAllSolutions.bin", std::ios::out | std::ios::binary);
+        serializeAsEngineManager(myfile, g[0][0], scaled[0], allBoxes);
+        myfile.close();
+
     }
 
 }

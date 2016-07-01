@@ -104,7 +104,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
         deleteDrawableObject(g);
         g = new DrawableGrid();
 
-        Engine::scaleAndRotateDcel(*d,  ui->samplesSpinBox->value(), 2);
+        Engine::scaleAndRotateDcel(*d,  ui->samplesSpinBox->value(), 0);
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), XYZ[ui->targetComboBox->currentIndex()]);
 
         d->update();
@@ -539,7 +539,48 @@ void EngineManager::on_createBoxesPushButton_clicked() {
         deleteDrawableObject(solutions);
         solutions = new BoxList();
         //Engine::calculateInitialBoxes(*solutions, *d, Eigen::Matrix3d::Identity(), true, XYZ[ui->targetComboBox->currentIndex()]);
-        Engine::calculateInitialBoxes(*solutions, *d);
+        Dcel copy = *d;
+        Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
+        int rot = ui->orientationComboBox->currentIndex();
+        if (rot > 0){
+            switch (rot){
+                case 1:
+                    getRotationMatrix(Vec3(0,0,1), 0.785398, m);
+                    copy.rotate(m);
+                    break;
+                case 2:
+                    getRotationMatrix(Vec3(1,0,0), 0.785398, m);
+                    copy.rotate(m);
+                    break;
+                case 3:
+                    getRotationMatrix(Vec3(0,1,0), 0.785398, m);
+                    copy.rotate(m);
+                    break;
+                default:
+                    assert(0);
+            }
+        }
+        /**
+         * @todo is transpose right?
+         */
+        if (rot > 0){
+            switch (rot){
+                case 1:
+                    getRotationMatrix(Vec3(0,0,-1), 0.785398, m);
+                    break;
+                case 2:
+                    getRotationMatrix(Vec3(-1,0,0), 0.785398, m);
+                    break;
+                case 3:
+                    getRotationMatrix(Vec3(0,-1,0), 0.785398, m);
+                    break;
+                default:
+                    assert(0);
+            }
+        }
+
+
+        Engine::calculateInitialBoxes(*solutions, copy, m);
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
         ui->solutionsSlider->setEnabled(true);
@@ -555,7 +596,7 @@ void EngineManager::on_showAllSolutionsCheckBox_stateChanged(int arg1) {
     if (arg1 == Qt::Checked){
         ui->solutionsSlider->setEnabled(false);
         ui->solutionsSlider->setValue(0);
-        solutions->setCylinders(true);
+        //solutions->setCylinders(true);
         solutions->setVisibleBox(-1);
     }
     else {
@@ -662,11 +703,11 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
 
 void EngineManager::on_deleteBoxesPushButton_clicked() {
     if (solutions!= nullptr && d != nullptr){
-        Engine::deleteBoxes(*solutions, *d);
+        /*Engine::deleteBoxes(*solutions, *d);
         solutions->setVisibleBox(0);
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow->updateGlCanvas();
+        mainWindow->updateGlCanvas();*/
     }
 }

@@ -27,6 +27,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         void setRotationMatrix(const Eigen::Matrix3d &rot);
 
         double getVolume() const;
+        void getRotatedExtremes(std::vector<Pointd> &v) const;
 
         void setW(double d);
         void setH(double d);
