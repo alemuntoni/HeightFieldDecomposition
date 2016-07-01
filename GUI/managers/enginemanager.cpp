@@ -673,9 +673,42 @@ void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
 
 void EngineManager::on_trianglesCoveredPushButton_clicked() {
     if (d!=nullptr && b != nullptr) {
-        CGALInterface::AABBTree t(*d);
+        Eigen::Matrix3d m[ORIENTATIONS];
+        Eigen::Matrix3d mb = b->getRotationMatrix();
+        m[0] = Eigen::Matrix3d::Identity();
+        getRotationMatrix(Vec3(0,0,-1), 0.785398, m[1]);
+        getRotationMatrix(Vec3(-1,0,0), 0.785398, m[2]);
+        getRotationMatrix(Vec3(0,-1,0), 0.785398, m[3]);
+        Dcel dd = *d;
         std::list<const Dcel::Face*> covered;
-        t.getIntersectedPrimitives(covered, *b);
+        if (mb == m[0]){
+            CGALInterface::AABBTree t(dd);
+            t.getIntersectedPrimitives(covered, *b);
+        }
+        else if (mb == m[1]){
+
+            Eigen::Matrix3d mm;
+            getRotationMatrix(Vec3(0,0,1), 0.785398, mm);
+            dd.rotate(mm);
+            CGALInterface::AABBTree t(dd);
+            t.getIntersectedPrimitives(covered, *b);
+        }
+        else if (mb == m[2]){
+            Eigen::Matrix3d mm;
+            getRotationMatrix(Vec3(1,0,0), 0.785398, mm);
+            dd.rotate(mm);
+            CGALInterface::AABBTree t(dd);
+            t.getIntersectedPrimitives(covered, *b);
+        }
+        else if (mb == m[3]){
+            Eigen::Matrix3d mm;
+            getRotationMatrix(Vec3(0,1,0), 0.785398, mm);
+            dd.rotate(mm);
+            CGALInterface::AABBTree t(dd);
+            t.getIntersectedPrimitives(covered, *b);
+        }
+        else assert(0);
+
 
         std::list<const Dcel::Face*>::iterator i = covered.begin();
         while (i != covered.end()) {
@@ -703,12 +736,12 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
 
 void EngineManager::on_deleteBoxesPushButton_clicked() {
     if (solutions!= nullptr && d != nullptr){
-        /*Engine::deleteBoxes(*solutions, *d);
+        Engine::deleteBoxes(*solutions, *d);
         solutions->setVisibleBox(0);
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow->updateGlCanvas();*/
+        mainWindow->updateGlCanvas();
     }
 }
 

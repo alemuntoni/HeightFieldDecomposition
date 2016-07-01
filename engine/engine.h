@@ -34,6 +34,8 @@ namespace Engine {
 
     int deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > &vectorTriples, unsigned int numberFaces);
 
+    int deleteBoxes(BoxList& boxList, const Dcel &d);
+
     void makePreprocessingAndSave(const Dcel &input, const std::string& filename, int resolution = 50, double kernelDistance = 6, bool heightfields = false);
 
     void expandBoxesFromPreprocessing(const std::string &inputFile, const std::string &outputFile);

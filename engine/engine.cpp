@@ -227,6 +227,68 @@ int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, st
     return n-eliminate.size();
 }
 
+int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
+    Dcel scaled0(d);
+    Eigen::Matrix3d m[ORIENTATIONS];
+    m[0] = Eigen::Matrix3d::Identity();
+    CGALInterface::AABBTree t0(scaled0);
+    getRotationMatrix(Vec3(0,0,1), 0.785398, m[1]);
+    Dcel scaled1(d);
+    scaled1.rotate(m[1]);
+    getRotationMatrix(Vec3(0,0,-1), 0.785398, m[1]);
+    CGALInterface::AABBTree t1(scaled1);
+    getRotationMatrix(Vec3(1,0,0), 0.785398, m[2]);
+    Dcel scaled2(d);
+    scaled2.rotate(m[2]);
+    getRotationMatrix(Vec3(-1,0,0), 0.785398, m[2]);
+    CGALInterface::AABBTree t2(scaled2);
+    getRotationMatrix(Vec3(0,1,0), 0.785398, m[3]);
+    Dcel scaled3(d);
+    scaled3.rotate(m[3]);
+    getRotationMatrix(Vec3(0,-1,0), 0.785398, m[3]);
+    CGALInterface::AABBTree t3(scaled3);
+
+    std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > vectorTriples;
+
+    vectorTriples.reserve(boxList.getNumberBoxes());
+    for (unsigned int i = 0; i < boxList.getNumberBoxes(); ++i){
+        Box3D b = boxList.getBox(i);
+        std::list<const Dcel::Face*> covered;
+        if (b.getRotationMatrix() == m[0])
+            t0.getIntersectedPrimitives(covered, b);
+        else if (b.getRotationMatrix() == m[1])
+            t1.getIntersectedPrimitives(covered, b);
+        else if (b.getRotationMatrix() == m[2])
+            t2.getIntersectedPrimitives(covered, b);
+        else if (b.getRotationMatrix() == m[3])
+            t3.getIntersectedPrimitives(covered, b);
+        else assert(0);
+
+        std::list<const Dcel::Face*>::iterator it = covered.begin();
+        while (it != covered.end()) {
+            const Dcel::Face* f = *it;
+            Pointd p1 = f->getVertex1()->getCoordinate(), p2 = f->getVertex2()->getCoordinate(), p3 = f->getVertex3()->getCoordinate();
+
+            if (!b.isIntern(p1) || !b.isIntern(p2) || !b.isIntern(p3)) {
+                it =covered.erase(it);
+            }
+            else ++it;
+        }
+
+        std::vector<unsigned int> v;
+        int n = covered.size();
+        v.resize(d.getNumberFaces(), 0);
+        for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
+            const Dcel::Face* f = *it;
+            v[f->getId()] = 1;
+        }
+        std::tuple<int, Box3D, std::vector<unsigned int> > triple (n, boxList.getBox(i), v);
+        vectorTriples.push_back(triple);
+    }
+
+    return deleteBoxes(boxList, vectorTriples, d.getNumberFaces());
+}
+
 void Engine::makePreprocessingAndSave(const Dcel& input, const std::__cxx11::string& filename, int resolution, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
