@@ -334,6 +334,40 @@ void Engine::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile,
     }
 }
 
+void Engine::afterExpandedBoxes(const std::__cxx11::string& inputFile) {
+    Dcel d;
+    bool heightfields;
+
+    std::ifstream input;
+    input.open (inputFile, std::ios::in | std::ios::binary);
+    d.deserialize(input);
+    Serializer::deserialize(heightfields, input);
+    if (!heightfields){
+        Grid g[ORIENTATIONS];
+        BoxList bl[ORIENTATIONS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            g[i].deserialize(input);
+            bl[i].deserialize(input);
+        }
+        input.close();
+
+
+    }
+    else {
+        Grid g[ORIENTATIONS][TARGETS];
+        BoxList bl[ORIENTATIONS][TARGETS];
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                g[i][j].deserialize(input);
+                bl[i][j].deserialize(input);
+            }
+        }
+        input.close();
+
+
+    }
+}
+
 void Engine::largeScaleFabrication(const Dcel& input, int resolution, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];

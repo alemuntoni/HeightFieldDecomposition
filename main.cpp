@@ -3,7 +3,7 @@
  * @copyright Alessandro Muntoni 2016.
  */
 
-#define USER_INTERFACE 0
+#define USER_INTERFACE 1
 
 #if USER_INTERFACE==1
 #include "GUI/mainwindow.h"
@@ -57,8 +57,8 @@ int main(int argc, char *argv[]) {
     return !b;*/
 
     //Dcel d;
-    //d.loadFromObjFile("models/bimba.obj");
-    //Engine::makePreprocessingAndSave(d, "preprocessings/bimba_preprocessing_nh.bin");
+    //d.loadFromObjFile(argv[1]);
+    //Engine::makePreprocessingAndSave(d, argv[2], 15);
     Engine::expandBoxesFromPreprocessing(argv[1], argv[2]);
 
     #endif

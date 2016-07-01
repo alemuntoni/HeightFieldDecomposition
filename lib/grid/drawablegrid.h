@@ -10,6 +10,7 @@ class DrawableGrid: public Grid, public DrawableObject
 {
     public:
         DrawableGrid();
+        DrawableGrid(const Grid &g);
         DrawableGrid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoordinates, const Eigen::VectorXd& signedDistances, const Eigen::RowVector3i& gMin, const Eigen::RowVector3i& gMax);
         virtual ~DrawableGrid();
 

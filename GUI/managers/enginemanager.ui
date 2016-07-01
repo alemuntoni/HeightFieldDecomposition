@@ -50,9 +50,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-274</y>
+        <y>0</y>
         <width>337</width>
-        <height>1371</height>
+        <height>1404</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
@@ -96,6 +96,13 @@
            <widget class="QPushButton" name="deserializePushButton">
             <property name="text">
              <string>Deserialize</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="deserializePreprocessingPushButton">
+            <property name="text">
+             <string>Deserialize Prepr.</string>
             </property>
            </widget>
           </item>

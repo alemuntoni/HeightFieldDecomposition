@@ -105,6 +105,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_deleteBoxesPushButton_clicked();
 
+        void on_deserializePreprocessingPushButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow

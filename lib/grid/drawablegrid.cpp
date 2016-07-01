@@ -4,6 +4,10 @@
 DrawableGrid::DrawableGrid() : visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0){
 }
 
+DrawableGrid::DrawableGrid(const Grid& g) : Grid(g), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0){
+
+}
+
 DrawableGrid::DrawableGrid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoordinates, const Eigen::VectorXd& signedDistances, const Eigen::RowVector3i& gMin, const Eigen::RowVector3i& gMax) :
     Grid(resolution, gridCoordinates, signedDistances, gMin, gMax), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0) {
 }

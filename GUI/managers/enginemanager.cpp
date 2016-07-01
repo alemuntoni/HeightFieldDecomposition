@@ -711,3 +711,97 @@ void EngineManager::on_deleteBoxesPushButton_clicked() {
         mainWindow->updateGlCanvas();*/
     }
 }
+
+void EngineManager::on_deserializePreprocessingPushButton_clicked() {
+    QString filename = QFileDialog::getOpenFileName(nullptr,
+                       "Deserialize",
+                       ".",
+                       "BIN(*.bin)");
+
+    if (!filename.isEmpty()) {
+        deleteDrawableObject(d);
+        d = new DrawableDcel();
+
+        std::ifstream myfile;
+        myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
+        bool heightfields;
+
+        d->deserialize(myfile);
+        for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit)
+            (*fit)->setColor(QColor(128,128,128));
+        d->setWireframe(true);
+        d->setPointsShading();
+        d->update();
+        mainWindow->pushObj(d, "Scaled Mesh");
+
+        Serializer::deserialize(heightfields, myfile);
+        if (!heightfields){
+            Grid g[ORIENTATIONS];
+            BoxList bl[ORIENTATIONS];
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                g[i].deserialize(myfile);
+                bl[i].deserialize(myfile);
+            }
+            myfile.close();
+
+            deleteDrawableObject(this->g);
+            this->g = new DrawableGrid();
+            *(this->g) = g[0];
+            mainWindow->pushObj(this->g, "Grid");
+
+            deleteDrawableObject(solutions);
+            solutions = new BoxList();
+
+            //caricamento solutions
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                solutions->insert(bl[i]);
+            }
+
+            solutions->setVisibleBox(0);
+            solutions->setCylinders(false);
+            mainWindow->pushObj(solutions, "Solutions");
+            ui->showAllSolutionsCheckBox->setEnabled(true);
+            ui->solutionsSlider->setEnabled(true);
+            ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+            ui->setFromSolutionSpinBox->setValue(0);
+            ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+
+        }
+        else {
+            Grid g[ORIENTATIONS][TARGETS];
+            BoxList bl[ORIENTATIONS][TARGETS];
+            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+                for (unsigned j = 0; j < TARGETS; ++j){
+                    g[i][j].deserialize(myfile);
+                    bl[i][j].deserialize(myfile);
+                }
+            }
+            myfile.close();
+
+            deleteDrawableObject(this->g);
+            this->g = new DrawableGrid();
+            *(this->g) = g[0][0];
+            mainWindow->pushObj(this->g, "Grid");
+
+            deleteDrawableObject(solutions);
+            solutions = new BoxList();
+
+            //caricamento solutions
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                for (unsigned int j = 0; j < TARGETS; ++j){
+                    solutions->insert(bl[i][j]);
+                }
+            }
+
+            solutions->setVisibleBox(0);
+            solutions->setCylinders(false);
+            mainWindow->pushObj(solutions, "Solutions");
+            ui->showAllSolutionsCheckBox->setEnabled(true);
+            ui->solutionsSlider->setEnabled(true);
+            ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+            ui->setFromSolutionSpinBox->setValue(0);
+            ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+        }
+    }
+    mainWindow->updateGlCanvas();
+}
