@@ -56,10 +56,10 @@ int main(int argc, char *argv[]) {
 
     return !b;*/
 
-    Dcel d;
-    d.loadFromObjFile("models/bimba.obj");
-    Engine::makePreprocessingAndSave(d, "preprocessings/bimba_preprocessing_nh.bin");
-    //Engine::expandBoxesFromPreprocessing("preprocessings/bunny_preprocessing_nh.bin", "results/bunny_boxes_nh.bin");
+    //Dcel d;
+    //d.loadFromObjFile("models/bimba.obj");
+    //Engine::makePreprocessingAndSave(d, "preprocessings/bimba_preprocessing_nh.bin");
+    Engine::expandBoxesFromPreprocessing(argv[1], argv[2]);
 
     #endif
 }
