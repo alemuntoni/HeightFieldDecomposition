@@ -20,11 +20,11 @@ namespace Engine {
 
     void serializeAsEngineManager(std::ofstream &binaryfile, const Grid& g, const Dcel& d, const BoxList& bl);
 
-
+    Eigen::Matrix3d rotateDcelAlreadyScaled(Dcel& d, unsigned int rot);
 
     Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, int resolution = 50, unsigned int rot = 0);
 
-    void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, const Vec3& target = Vec3(), bool heightfields = false);
+    void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3());
 
     void calculateInitialBoxes(BoxList &boxList, const Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
 

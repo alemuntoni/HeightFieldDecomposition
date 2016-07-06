@@ -2236,7 +2236,7 @@ std::string Dcel::loadFromOldOldDcelFile(const std::string& filename) {
  * @return La Dcel appena assegnata
  */
 Dcel& Dcel::operator = (const Dcel& dcel) {
-    this->~Dcel();
+    this->reset();
     vertices.clear();
     halfEdges.clear();
     faces.clear();

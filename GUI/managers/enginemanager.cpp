@@ -105,7 +105,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
         g = new DrawableGrid();
 
         Engine::scaleAndRotateDcel(*d,  ui->samplesSpinBox->value(), 0);
-        Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), XYZ[ui->targetComboBox->currentIndex()]);
+        Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()]);
 
         d->update();
         g->setKernelDistance(ui->distanceSpinBox->value());
@@ -147,12 +147,7 @@ void EngineManager::on_weigthsRadioButton_toggled(bool checked) {
 void EngineManager::on_freezeKernelPushButton_clicked() {
     if (g!=nullptr && d!=nullptr){
         double value = ui->distanceSpinBox->value();
-        g->calculateWeightsAndFreezeKernel(*d, value);
-        deleteDrawableObject(b);
-        Pointd p1(0,0,0);
-        Pointd p2(ui->wSpinBox->value(), ui->hSpinBox->value(), ui->dSpinBox->value());
-        b = new Box3D(p1, p2, QColor(0,0,0));
-        mainWindow->pushObj(b, "Box");
+        g->calculateWeightsAndFreezeKernel(*d, value, ui->heightfieldsCheckBox->isChecked());
         e = Energy(*g);
         mainWindow->updateGlCanvas();
     }
@@ -835,6 +830,65 @@ void EngineManager::on_deserializePreprocessingPushButton_clicked() {
             ui->setFromSolutionSpinBox->setValue(0);
             ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
         }
+        e = Energy(*g);
     }
     mainWindow->updateGlCanvas();
+}
+
+void EngineManager::on_serializePreprocessingPushButton_clicked() {
+    QString filename = QFileDialog::getSaveFileName(nullptr,
+                       "Serialize",
+                       ".",
+                       "BIN(*.bin)");
+    if (!filename.isEmpty()) {
+        Dcel scaled[ORIENTATIONS];
+        Eigen::Matrix3d m[ORIENTATIONS];
+        bool heightfields = ui->heightfieldsCheckBox->isChecked();
+        scaled[0] = (Dcel)*d;
+        m[0] = Eigen::Matrix3d::Identity();
+        for (unsigned int i = 1; i < ORIENTATIONS; i++){
+            scaled[i] = (Dcel)*d;
+            m[i] = Engine::rotateDcelAlreadyScaled(scaled[i], i);
+        }
+        if (! heightfields){
+            Grid g[ORIENTATIONS];
+            BoxList bl[ORIENTATIONS];
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                Engine::generateGrid(g[i], scaled[i], ui->distanceSpinBox->value(), false);
+                Engine::calculateInitialBoxes(bl[i],scaled[i], m[i], false);
+
+            }
+            std::ofstream myfile;
+            myfile.open (filename.toStdString(), std::ios::out | std::ios::binary);
+            scaled[0].serialize(myfile);
+            Serializer::serialize(heightfields, myfile);
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                g[i].serialize(myfile);
+                bl[i].serialize(myfile);
+            }
+
+            myfile.close();
+        }
+        else {
+            Grid g[ORIENTATIONS][TARGETS];
+            BoxList bl[ORIENTATIONS][TARGETS];
+            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+                for (unsigned j = 0; j < TARGETS; ++j){
+                    Engine::generateGrid(g[i][j], scaled[i], ui->distanceSpinBox->value(), true, XYZ[j]);
+                    Engine::calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
+                }
+            }
+            std::ofstream myfile;
+            myfile.open (filename.toStdString(), std::ios::out | std::ios::binary);
+            scaled[0].serialize(myfile);
+            Serializer::serialize(heightfields, myfile);
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                for (unsigned j = 0; j < TARGETS; ++j){
+                    g[i][j].serialize(myfile);
+                    bl[i][j].serialize(myfile);
+                }
+            }
+            myfile.close();
+        }
+    }
 }

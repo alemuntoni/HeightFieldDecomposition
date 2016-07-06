@@ -106,6 +106,13 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="serializePreprocessingPushButton">
+            <property name="text">
+             <string>Serialize Prepr</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -228,7 +235,7 @@
           <item row="5" column="1">
            <widget class="QDoubleSpinBox" name="distanceSpinBox">
             <property name="minimum">
-             <double>6.000000000000000</double>
+             <double>0.500000000000000</double>
             </property>
             <property name="maximum">
              <double>50.000000000000000</double>
@@ -302,6 +309,13 @@
               <string>+Z</string>
              </property>
             </item>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QCheckBox" name="heightfieldsCheckBox">
+            <property name="text">
+             <string>Heightfields</string>
+            </property>
            </widget>
           </item>
          </layout>

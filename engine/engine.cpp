@@ -12,7 +12,37 @@ Vec3 Engine::getClosestTarget(const Vec3& n) {
     return XYZ[k];
 }
 
-
+Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
+    Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
+    if (rot > 0){
+        switch (rot){
+            case 1:
+                getRotationMatrix(Vec3(0,0,1), 0.785398, m);
+                d.rotate(m);
+                d.updateFaceNormals();
+                d.updateVertexNormals();
+                getRotationMatrix(Vec3(0,0,-1), 0.785398, m);
+                break;
+            case 2:
+                getRotationMatrix(Vec3(1,0,0), 0.785398, m);
+                d.rotate(m);
+                d.updateFaceNormals();
+                d.updateVertexNormals();
+                getRotationMatrix(Vec3(-1,0,0), 0.785398, m);
+                break;
+            case 3:
+                getRotationMatrix(Vec3(0,1,0), 0.785398, m);
+                d.rotate(m);
+                d.updateFaceNormals();
+                d.updateVertexNormals();
+                getRotationMatrix(Vec3(0,-1,0), 0.785398, m);
+                break;
+            default:
+                assert(0);
+        }
+    }
+    return m;
+}
 
 Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int rot) {
     BoundingBox bb = d.getBoundingBox();
@@ -22,7 +52,7 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int
     BoundingBox nBB(-(bb.getMax()-bb.getMin())/av, (bb.getMax()-bb.getMin())/av);
     d.scale(nBB);
 
-    Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
+    /*Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
     if (rot > 0){
         switch (rot){
             case 1:
@@ -44,10 +74,11 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int
                 assert(0);
         }
     }
-    return m;
+    return m;*/
+    return rotateDcelAlreadyScaled(d, rot);
 }
 
-void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, const Vec3 &target, bool heightfields) {
+void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target) {
 
 
     d.saveOnObjFile("tmp.obj");
@@ -303,6 +334,7 @@ void Engine::makePreprocessingAndSave(const Dcel& input, const std::__cxx11::str
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
             generateGrid(g[i], scaled[i], kernelDistance);
             calculateInitialBoxes(bl[i],scaled[i], m[i], false);
+
         }
         std::ofstream myfile;
         myfile.open (filename, std::ios::out | std::ios::binary);
@@ -321,7 +353,7 @@ void Engine::makePreprocessingAndSave(const Dcel& input, const std::__cxx11::str
         BoxList bl[ORIENTATIONS][TARGETS];
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned j = 0; j < TARGETS; ++j){
-                generateGrid(g[i][j], scaled[i], kernelDistance, XYZ[j], true);
+                generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j]);
                 calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
             }
         }
@@ -357,6 +389,14 @@ void Engine::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile,
         input.close();
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
             expandBoxes(bl[i], g[i]);
+            std::stringstream ss;
+            ss << i << outputFile;
+            std::ofstream myfile;
+            myfile.open (ss.str(), std::ios::out | std::ios::binary);
+            d.serialize(myfile);
+            g[i].serialize(myfile);
+            bl[i].serialize(myfile);
+            myfile.close();
         }
         std::ofstream myfile;
         myfile.open (outputFile, std::ios::out | std::ios::binary);
@@ -381,6 +421,14 @@ void Engine::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile,
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned j = 0; j < TARGETS; ++j){
                 expandBoxes(bl[i][j], g[i][j]);
+                std::stringstream ss;
+                ss << i << j<< outputFile;
+                std::ofstream myfile;
+                myfile.open (ss.str(), std::ios::out | std::ios::binary);
+                d.serialize(myfile);
+                g[i][j].serialize(myfile);
+                bl[i][j].serialize(myfile);
+                myfile.close();
             }
         }
         std::ofstream myfile;
@@ -482,7 +530,7 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
         BoxList bl[ORIENTATIONS][TARGETS];
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned j = 0; j < TARGETS; ++j){
-                generateGrid(g[i][j], scaled[i], kernelDistance, XYZ[j], true);
+                generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j]);
                 calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
                 expandBoxes(bl[i][j], g[i][j]);
 
