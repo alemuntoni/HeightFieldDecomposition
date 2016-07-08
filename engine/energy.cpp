@@ -48,7 +48,7 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
             volume = volumeOfBox(x);
             ratiov = std::abs(newVolume / volume);
             std::cerr.precision(17);
-            /*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "; ratiov: " << ratiov << "\n";
+            ///*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "; ratiov: " << ratiov << "\n";
             x = new_x;
 
             objValue = newObjValue;
