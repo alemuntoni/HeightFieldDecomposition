@@ -26,21 +26,14 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     double diff = 10;
     double ratiov = 10;
     double volume = volumeOfBox(x), newVolume;
-    double sumgr = 0, sumint = 0;
     objValue = energy(x, c1, c2, c3);
     bool ng = true;
     do{
         if (ng) {
-            Timer gr("Calculating gradient");
             gradientEnergy(gradient, x, c1, c2, c3);
-            gr.stop();
-            sumgr += gr.delay();
         }
         new_x = x - alfa * gradient;
-        Timer integral("Calculating integral");
         newObjValue = energy(new_x, c1, c2, c3);
-        integral.stop();
-        sumint += integral.delay();
         if (newObjValue < objValue) {
             nIterations++;
             diff = objValue - newObjValue;
@@ -69,8 +62,6 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
-    std::cerr << "Gradient: " << sumgr << "\n";
-    std::cerr << "Integral: " << sumint << "\n";
     return nIterations;
 }
 
