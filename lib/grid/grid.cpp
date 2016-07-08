@@ -110,9 +110,26 @@ double Grid::getValue(const Pointd& p) const {
     if (n == p)
         return weights(xi,yi,zi);
     else{
-        n = (p - n) / 2; // n ora è un punto nell'intervallo 0 - 1
+        n = (p - n) / getUnit(); // n ora è un punto nell'intervallo 0 - 1
         const double* coef = coeffs(xi,yi,zi);
         return TricubicInterpolator::getValue(n, coef);
+    }
+}
+
+void Grid::getMinAndMax(double& min, double& max) {
+    min = MIN_PAY; max = MAX_PAY;
+    for (double xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=0.5){
+        for (double yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=0.5){
+            for (double zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=0.5){
+                double w = getValue(Pointd(xi,yi,zi));
+                if (w < min){
+                    min = w;
+                }
+                if (w > max){
+                    max = w;
+                }
+            }
+        }
     }
 }
 

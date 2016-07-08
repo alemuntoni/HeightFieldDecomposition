@@ -33,6 +33,7 @@ class Grid : public SerializableObject{
 
         double getValue(const Pointd &p) const;
         double getUnit() const;
+        void getMinAndMax(double &min, double &max);
 
         Pointd getNearestGridPoint(const Pointd& p) const;
         void getCoefficients(const double*& coeffs, const Pointd& p) const;

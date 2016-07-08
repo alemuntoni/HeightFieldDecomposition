@@ -24,6 +24,13 @@ class Energy{
         void gradientBarrier(Eigen::VectorXd& gBarrier, const Box3D& b, double s = S_BARRIER) const;
 
         // Gradient
+        static double gradientXMinComponentOld(const double* &a, double u1, double v1, double w1, double v2, double w2);
+        static double gradientYMinComponentOld(const double* &a, double u1, double v1, double w1, double u2, double w2);
+        static double gradientZMinComponentOld(const double* &a, double u1, double v1, double w1, double u2, double v2);
+        static double gradientXMaxComponentOld(const double* &a, double v1, double w1, double u2, double v2, double w2);
+        static double gradientYMaxComponentOld(const double* &a, double u1, double w1, double u2, double v2, double w2);
+        static double gradientZMaxComponentOld(const double* &a, double u1, double v1, double u2, double v2, double w2);
+
         static double gradientXMinComponent(const double* &a, double u1, double v1, double w1, double v2, double w2);
         static double gradientYMinComponent(const double* &a, double u1, double v1, double w1, double u2, double w2);
         static double gradientZMinComponent(const double* &a, double u1, double v1, double w1, double u2, double v2);
@@ -53,6 +60,7 @@ class Energy{
         double barrierEnergy(const Box3D &b, double s = S_BARRIER) const;
 
         // Integral
+        static double integralTricubicInterpolationOld(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
         static double integralTricubicInterpolation(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
         double integralTricubicInterpolationEnergy(const Pointd& min, const Pointd& max) const;
         double integralTricubicInterpolationEnergy(const Eigen::VectorXd &x) const;

@@ -92,6 +92,12 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
     }
 
     mainWindow->updateGlCanvas();
+
+    ////DEBUG
+    double min, max;
+    g->getMinAndMax(min, max);
+    std::cerr << "Min: " << min <<"; max: " << max << "\n";
+    //FINEDEBUG
 }
 
 void EngineManager::on_generateGridPushButton_clicked() {
@@ -147,6 +153,7 @@ void EngineManager::on_weigthsRadioButton_toggled(bool checked) {
 void EngineManager::on_freezeKernelPushButton_clicked() {
     if (g!=nullptr && d!=nullptr){
         double value = ui->distanceSpinBox->value();
+        g->setTarget(XYZ[ui->targetComboBox->currentIndex()]);
         g->calculateWeightsAndFreezeKernel(*d, value, ui->heightfieldsCheckBox->isChecked());
         e = Energy(*g);
         mainWindow->updateGlCanvas();
@@ -498,7 +505,7 @@ void EngineManager::on_serializeBoxPushButton_clicked() {
 void EngineManager::on_deserializeBoxPushButton_clicked() {
     if (b == nullptr){
         b = new Box3D();
-        mainWindow->pushObj(b, "Box");
+        mainWindow->pushObj(b, "Box", false);
     }
 
     std::ifstream myfile;
@@ -520,11 +527,8 @@ void EngineManager::on_energyIterationsButton_clicked() {
         Box3D b = iterations->getBox(ui->iterationsSlider->value());
         double energy = e.energy(b);
         Eigen::VectorXd gradient(6);
-        Eigen::VectorXd finiteGradient(6);
         e.gradientTricubicInterpolationEnergy(gradient, b.getMin(), b.getMax());
-        e.gradientEnergyFiniteDifference(finiteGradient, b);
         std::cerr << "Gradient: \n" << gradient << "\n";
-        std::cerr << "Finite Gradient: \n" << finiteGradient << "\n";
         updateLabel(energy, ui->energyIterationLabel);
     }
 }
@@ -889,6 +893,15 @@ void EngineManager::on_serializePreprocessingPushButton_clicked() {
                 }
             }
             myfile.close();
+        }
+    }
+}
+
+void EngineManager::on_stepDrawGridSpinBox_valueChanged(double arg1) {
+    if (g!=nullptr){
+        if (arg1 > 0){
+            g->setStepDrawGrid(arg1);
+            mainWindow->updateGlCanvas();
         }
     }
 }

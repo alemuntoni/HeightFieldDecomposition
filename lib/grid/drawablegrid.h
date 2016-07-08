@@ -23,7 +23,8 @@ class DrawableGrid: public Grid, public DrawableObject
         void setSlice(int value);
         void setSliceValue(int value);
 
-        double getHsvFactor(double w) const;
+        double getHsvHFactor(double w) const;
+        double getHsvVFactor(double w) const;
 
         // DrawableObject interface
         void draw() const;
@@ -34,6 +35,8 @@ class DrawableGrid: public Grid, public DrawableObject
 
         void addCube(const BoundingBox &bb);
         void deleteCubes();
+
+        void setStepDrawGrid(double value);
 
     private:
 
@@ -53,6 +56,7 @@ class DrawableGrid: public Grid, public DrawableObject
         int slice;
         int sliceValue;
         std::vector<BoundingBox> cubes;
+        double stepDrawGrid;
 };
 
 #endif // DRAWABLEGRID_H

@@ -7,6 +7,10 @@ CONFIG(debug, debug|release){
 CONFIG(release, debug|release){
     message(release)
     DEFINES += DEBUG
+    unix:!macx{
+        QMAKE_CXXFLAGS_RELEASE -= -g
+        QMAKE_CXXFLAGS += -O3 -DNDEBUG
+    }
 }
 
 unix:!macx{

@@ -40,7 +40,7 @@
 
 class Timer {
     public:
-        Timer (const std::string& _caption) : caption(_caption) {
+        Timer (const std::string& _caption) : caption(_caption), isStopped(false) {
             start();
         }
 
@@ -51,6 +51,7 @@ class Timer {
 
         inline void stopAndPrint() {
             gettimeofday(&end, NULL);
+            isStopped = true;
             double secs =
                 (end.tv_sec - begin.tv_sec) +
                 ((end.tv_usec - begin.tv_usec)/1000000.0);
@@ -58,12 +59,41 @@ class Timer {
             std::cout << "[" << secs << " secs]\t" << caption << std::endl;
         }
 
-        inline float delay() {
-            timeval s;
-            gettimeofday(&s, NULL);
-            double secs =
-                (s.tv_sec - begin.tv_sec) +
-                ((s.tv_usec - begin.tv_usec)/1000000.0);
+        inline void stop() {
+            gettimeofday(&end, NULL);
+            isStopped = true;
+        }
+
+        inline void print () {
+            double secs;
+            if (isStopped)
+                secs =
+                    (end.tv_sec - begin.tv_sec) +
+                    ((end.tv_usec - begin.tv_usec)/1000000.0);
+            else {
+                timeval s;
+                gettimeofday(&s, NULL);
+                secs =
+                    (s.tv_sec - begin.tv_sec) +
+                    ((s.tv_usec - begin.tv_usec)/1000000.0);
+            }
+
+            std::cout << "[" << secs << " secs]\t" << caption << std::endl;
+        }
+
+        inline double delay() {
+            double secs;
+            if (isStopped)
+                secs =
+                    (end.tv_sec - begin.tv_sec) +
+                    ((end.tv_usec - begin.tv_usec)/1000000.0);
+            else {
+                timeval s;
+                gettimeofday(&s, NULL);
+                secs =
+                    (s.tv_sec - begin.tv_sec) +
+                    ((s.tv_usec - begin.tv_usec)/1000000.0);
+            }
 
             return secs;
         }
@@ -71,4 +101,5 @@ class Timer {
     private:
         std::string caption;
         timeval begin, end;
+        bool isStopped;
 };

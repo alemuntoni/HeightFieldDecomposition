@@ -1,15 +1,15 @@
 #include "drawablegrid.h"
 #include <omp.h>
 
-DrawableGrid::DrawableGrid() : visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0){
+DrawableGrid::DrawableGrid() : visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(0.5){
 }
 
-DrawableGrid::DrawableGrid(const Grid& g) : Grid(g), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0){
+DrawableGrid::DrawableGrid(const Grid& g) : Grid(g), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(0.5){
 
 }
 
 DrawableGrid::DrawableGrid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoordinates, const Eigen::VectorXd& signedDistances, const Eigen::RowVector3i& gMin, const Eigen::RowVector3i& gMax) :
-    Grid(resolution, gridCoordinates, signedDistances, gMin, gMax), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0) {
+    Grid(resolution, gridCoordinates, signedDistances, gMin, gMax), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(0.5) {
 }
 
 DrawableGrid::~DrawableGrid(){
@@ -51,14 +51,31 @@ void DrawableGrid::setSliceValue(int value) {
     sliceValue = value;
 }
 
-double DrawableGrid::getHsvFactor(double w) const {
-    if (w>10) w = 10;
-    return 1-((w - MIN_PAY)/(10-MIN_PAY));
+double DrawableGrid::getHsvHFactor(double w) const {
+    if (w>MAX_PAY) w = MAX_PAY;
+    if (w<MIN_PAY) w = MIN_PAY;
+    double value;
+    if (w<0)
+        value =((w - MIN_PAY)/(0-MIN_PAY))/2;
+    else
+        value =((w - 0)/(MAX_PAY-0))/2 + 0.5;
+    return 1 - value;
+    return 1-((w - MIN_PAY)/(MAX_PAY-MIN_PAY));
+}
+
+double DrawableGrid::getHsvVFactor(double w) const {
+    if (w > MAX_PAY) {
+        return 1-(w - MAX_PAY)/(675-MAX_PAY);
+    }
+    else if (w < MIN_PAY) {
+        return 1-(w+140)/(MIN_PAY+140);
+    }
+    else return 1;
 }
 
 void DrawableGrid::draw() const {
     if (visible){
-        //double xi, yi, zi;
+        double xi, yi, zi;
         switch (drawMode){
             case DRAW_KERNEL:
                 switch (slice){
@@ -109,7 +126,7 @@ void DrawableGrid::draw() const {
                             for (unsigned int j = 0; j < getResY(); j+=2){
                                 for (unsigned int k = 0; k < getResZ(); k+=2){
                                     double w = getWeight(i,j,k);
-                                    QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
+                                    QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
                                     sphere(getPoint(i,j,k), 0.3, c);
                                 }
                             }
@@ -119,52 +136,64 @@ void DrawableGrid::draw() const {
                         for (unsigned int j = 0; j < getResY(); ++j){
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 double w = getWeight(sliceValue,j,k);
-                                QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
+                                QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
                                 sphere(getPoint(sliceValue,j,k), 0.4, c);
                             }
                         }
-                        /*xi = gridCoordinates(getIndex(sliceValue,0,0), 0);
-                        for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=0.5){
-                            for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=0.5){
+                        xi = gridCoordinates(getIndex(sliceValue,0,0), 0);
+                        for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
+                            for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
                                 double w = getValue(Pointd(xi,yi,zi));
-                                QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
+                                QColor c;
+                                //if (w >=MIN_PAY && w <= MAX_PAY)
+                                    c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
+                                //else
+                                    //c.setHsv(getHsvHFactor(w)*240,255,128);
                                 sphere(Pointd(xi,yi,zi), 0.2, c);
                             }
-                        }*/
+                        }
                         break;
                     case Y_SLICE:
                         for (unsigned int i = 0; i < getResX(); ++i){
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 double w = getWeight(i,sliceValue,k);
-                                QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
+                                QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
                                 sphere(getPoint(i,sliceValue,k), 0.4, c);
                             }
                         }
-                        /*yi = gridCoordinates(getIndex(0,sliceValue,0), 1);
-                        for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=0.5){
-                            for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=0.5){
+                        yi = gridCoordinates(getIndex(0,sliceValue,0), 1);
+                        for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
+                            for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
                                 double w = getValue(Pointd(xi,yi,zi));
-                                QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
+                                QColor c;
+                                //if (w >=MIN_PAY && w <= MAX_PAY)
+                                    c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
+                                //else
+                                    //c.setHsv(getHsvHFactor(w)*240,255,128);
                                 sphere(Pointd(xi,yi,zi), 0.2, c);
                             }
-                        }*/
+                        }
                         break;
                     case Z_SLICE:
                         for (unsigned int i = 0; i < getResX(); ++i){
                             for (unsigned int j = 0; j < getResY(); ++j){
                                 double w = getWeight(i,j,sliceValue);
-                                QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
+                                QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
                                 sphere(getPoint(i,j,sliceValue), 0.4, c);
                             }
                         }
-                        /*zi = gridCoordinates(getIndex(0,0,sliceValue), 2);
-                        for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=0.5){
-                            for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=0.5){
+                        zi = gridCoordinates(getIndex(0,0,sliceValue), 2);
+                        for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
+                            for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
                                 double w = getValue(Pointd(xi,yi,zi));
-                                QColor c; c.setHsv(getHsvFactor(w)*240,255,255);
+                                QColor c;
+                                //if (w >=MIN_PAY && w <= MAX_PAY)
+                                    c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
+                                //else
+                                    //c.setHsv(getHsvHFactor(w)*240,255,128);
                                 sphere(Pointd(xi,yi,zi), 0.2, c);
                             }
-                        }*/
+                        }
                         break;
                 }
                 break;
@@ -247,4 +276,9 @@ void DrawableGrid::drawCube(const BoundingBox &b) const
     from.set(b.getMaxX(), b.getMinY(), b.getMinZ());
     to.set(b.getMaxX(), b.getMinY(), b.getMaxZ());
     drawLine(from, to);
+}
+
+void DrawableGrid::setStepDrawGrid(double value)
+{
+    stepDrawGrid = value;
 }

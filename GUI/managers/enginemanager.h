@@ -109,6 +109,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_serializePreprocessingPushButton_clicked();
 
+        void on_stepDrawGridSpinBox_valueChanged(double arg1);
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow

@@ -52,7 +52,7 @@
         <x>0</x>
         <y>0</y>
         <width>337</width>
-        <height>1404</height>
+        <height>1409</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
@@ -243,6 +243,9 @@
             <property name="singleStep">
              <double>0.500000000000000</double>
             </property>
+            <property name="value">
+             <double>6.000000000000000</double>
+            </property>
            </widget>
           </item>
           <item row="6" column="0">
@@ -315,6 +318,19 @@
            <widget class="QCheckBox" name="heightfieldsCheckBox">
             <property name="text">
              <string>Heightfields</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QDoubleSpinBox" name="stepDrawGridSpinBox">
+            <property name="minimum">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.500000000000000</double>
             </property>
            </widget>
           </item>

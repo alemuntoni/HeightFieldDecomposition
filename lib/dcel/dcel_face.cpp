@@ -344,6 +344,7 @@ Dcel::Face::ConstIncidentVertexIterator Dcel::Face::incidentVertexBegin(const Dc
     }
     qDebug() << "ERROR: start vertex " << start->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
     assert(0);
+    return ConstIncidentVertexIterator();
 }
 
 /**
@@ -375,6 +376,7 @@ Dcel::Face::ConstIncidentVertexIterator Dcel::Face::incidentVertexBegin(const Dc
     }
     qDebug() << "ERROR: end vertex " << end->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
     assert(0);
+    return ConstIncidentVertexIterator();
 }
 
 Dcel::Vertex*Dcel::Face::getVertex1() {
@@ -677,6 +679,7 @@ Dcel::Face::IncidentVertexIterator Dcel::Face::incidentVertexBegin(Dcel::Vertex*
     }
     qDebug() << "ERROR: start vertex " << start->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
     assert(0);
+    return IncidentVertexIterator();
 }
 
 /**
@@ -708,6 +711,7 @@ Dcel::Face::IncidentVertexIterator Dcel::Face::incidentVertexBegin(Dcel::Vertex*
     }
     qDebug() << "ERROR: end vertex " << end->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
     assert(0);
+    return IncidentVertexIterator();
 }
 
 #ifdef CGAL_DEFINED

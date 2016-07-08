@@ -269,6 +269,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(cons
     }
     qDebug() << "ERROR: start vertex " << start->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
+    return ConstAdjacentVertexIterator();
 }
 
 /**
@@ -302,6 +303,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(cons
     }
     qDebug() << "ERROR: end vertex " << end->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
+    return ConstAdjacentVertexIterator();
 }
 
 /**
@@ -733,6 +735,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(Vertex* s
     }
     qDebug() << "ERROR: start vertex " << start->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
+    return AdjacentVertexIterator();
 }
 
 /**
@@ -766,6 +769,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(Vertex* s
     }
     qDebug() << "ERROR: end vertex " << end->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
+    return AdjacentVertexIterator();
 }
 
 /**
