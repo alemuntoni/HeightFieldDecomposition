@@ -72,6 +72,7 @@ class Energy{
 
     private:
         void initializeMinMax(Pointd& min, Pointd& max, const Eigen::VectorXd &x) const;
+        double volumeOfBox(const Eigen::VectorXd &x) const;
 
         const Grid* g;
 
@@ -178,6 +179,11 @@ inline void Energy::initializeMinMax(Pointd& min, Pointd&max, const Eigen::Vecto
         Pointi di = ni * unit;
         max = c - Pointd(di.x(), di.y(), di.z());
     }
+}
+
+inline double Energy::volumeOfBox(const Eigen::VectorXd& x) const {
+    return (x(3)-x(0))*(x(4)-x(1))*(x(5)-x(2));
+
 }
 
 #endif // ENERGY_H
