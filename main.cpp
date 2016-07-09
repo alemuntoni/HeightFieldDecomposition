@@ -3,7 +3,7 @@
  * @copyright Alessandro Muntoni 2016.
  */
 
-#define USER_INTERFACE 0
+#define USER_INTERFACE 1
 
 #if USER_INTERFACE==1
 #include "GUI/mainwindow.h"

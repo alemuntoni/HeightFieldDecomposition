@@ -434,6 +434,7 @@ void Engine::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile,
         std::ofstream myfile;
         myfile.open (outputFile, std::ios::out | std::ios::binary);
         d.serialize(myfile);
+        Serializer::serialize(heightfields, myfile);
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned j = 0; j < TARGETS; ++j){
                 g[i][j].serialize(myfile);
