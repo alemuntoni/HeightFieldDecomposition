@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "lib/igl/iglinterface.h"
 
 Vec3 Engine::getClosestTarget(const Vec3& n) {
     double angle = n.dot(XYZ[0]);
@@ -82,7 +83,8 @@ void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool he
 
 
     d.saveOnObjFile("tmp.obj");
-    exec("./grid_generator tmp.obj");
+    IGLInterface::generateGridAndDistanceField("tmp.obj");
+    //exec("./grid_generator tmp.obj");
 
 
     Eigen::RowVector3i nGmin;
@@ -319,6 +321,11 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
 
     return deleteBoxes(boxList, vectorTriples, d.getNumberFaces());
 }
+
+int Engine::deleteBoxesMemorySafe(BoxList& boxList, const Dcel& d) {
+
+}
+
 
 void Engine::makePreprocessingAndSave(const Dcel& input, const std::__cxx11::string& filename, int resolution, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];

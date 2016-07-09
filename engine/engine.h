@@ -36,6 +36,8 @@ namespace Engine {
 
     int deleteBoxes(BoxList& boxList, const Dcel &d);
 
+    int deleteBoxesMemorySafe(BoxList& boxList, const Dcel &d);
+
     void makePreprocessingAndSave(const Dcel &input, const std::string& filename, int resolution = 50, double kernelDistance = 6, bool heightfields = false);
 
     void expandBoxesFromPreprocessing(const std::string &inputFile, const std::string &outputFile);

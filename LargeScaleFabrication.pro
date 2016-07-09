@@ -1,12 +1,10 @@
 QT += core gui opengl xml widgets
 
 CONFIG(debug, debug|release){
-    message(debug)
     DEFINES += DEBUG
 }
 CONFIG(release, debug|release){
-    message(release)
-    DEFINES += DEBUG
+    DEFINES -= DEBUG
     unix:!macx{
         QMAKE_CXXFLAGS_RELEASE -= -g
         QMAKE_CXXFLAGS += -O3 -DNDEBUG
@@ -109,3 +107,5 @@ FORMS += \
 
 DISTFILES += \
     README.txt
+
+include(lib/igl/igl.pri)
