@@ -1,5 +1,5 @@
 #include "engine.h"
-#include "lib/igl/iglinterface.h"
+//#include "lib/igl/iglinterface.h"
 
 Vec3 Engine::getClosestTarget(const Vec3& n) {
     double angle = n.dot(XYZ[0]);
@@ -83,8 +83,8 @@ void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool he
 
 
     d.saveOnObjFile("tmp.obj");
-    IGLInterface::generateGridAndDistanceField("tmp.obj");
-    //exec("./grid_generator tmp.obj");
+    //IGLInterface::generateGridAndDistanceField("tmp.obj");
+    exec("./grid_generator tmp.obj");
 
 
     Eigen::RowVector3i nGmin;
