@@ -5,6 +5,31 @@
 #include <assert.h>
 #include "serialize.h"
 
+template <class T> class Array2D : public SerializableObject{
+
+    public:
+        Array2D();
+        Array2D(size_t sizeX, size_t sizeY, const T& value = 0);
+        T& operator () (size_t i, size_t j);
+        T operator () (size_t i, size_t j) const;
+        const T* operator () (size_t i) const;
+
+        size_t getSizeX() const;
+        size_t getSizeY() const;
+
+        void setConstant(const T& c);
+
+        // SerializableObject interface
+        void serialize(std::ofstream& binaryFile) const;
+        void deserialize(std::ifstream& binaryFile);
+
+    private:
+        size_t getIndex(size_t i, size_t j) const;
+
+        size_t sizeX, sizeY;
+        std::vector<T> v;
+};
+
 template <class T> class Array3D : public SerializableObject{
 
     public:
@@ -57,6 +82,75 @@ template <class T> class Array4D : public SerializableObject{
         size_t sizeX, sizeY, sizeZ, sizeW;
         std::vector<T> v;
 };
+
+///
+/// Array2D
+///
+
+template <class T>
+inline Array2D<T>::Array2D() : sizeX(0), sizeY(0) {
+    v.resize(0);
+}
+
+template <class T>
+inline Array2D<T>::Array2D(size_t sizeX, size_t sizeY, const T& value) : sizeX(sizeX), sizeY(sizeY) {
+    v.resize(sizeX*sizeY, value);
+}
+
+template <class T>
+inline T& Array2D<T>::operator ()(size_t i, size_t j) {
+    return v[getIndex(i,j)];
+}
+
+template <class T>
+inline T Array2D<T>::operator ()(size_t i, size_t j) const {
+    return v[getIndex(i,j)];
+}
+
+template <class T>
+inline const T* Array2D<T>::operator ()(size_t i) const{
+    assert (i < sizeX);
+    return &(v[sizeY*i]);
+}
+
+template <class T>
+inline size_t Array2D<T>::getSizeX() const {
+    return sizeX;
+}
+
+template <class T>
+inline size_t Array2D<T>::getSizeY() const{
+    return sizeY;
+}
+
+template <class T>
+inline void Array2D<T>::setConstant(const T& c) {
+    std::fill(v.begin(), v.end(), c);
+}
+
+template <class T>
+inline void Array2D<T>::serialize(std::ofstream& binaryFile) const {
+    Serializer::serialize(sizeX, binaryFile);
+    Serializer::serialize(sizeY, binaryFile);
+    for (unsigned int i = 0; i < v.size(); ++i)
+        Serializer::serialize(v[i], binaryFile);
+}
+
+template <class T>
+inline void Array2D<T>::deserialize(std::ifstream& binaryFile) {
+    Serializer::deserialize(sizeX, binaryFile);
+    Serializer::deserialize(sizeY, binaryFile);
+    v.resize(sizeX*sizeY);
+    for (unsigned int i = 0; i < v.size(); ++i)
+        Serializer::deserialize(v[i], binaryFile);
+}
+
+template <class T>
+inline size_t Array2D<T>::getIndex(size_t i, size_t j) const {
+    assert (i < sizeX);
+    assert (j < sizeY);
+    return j + sizeY*i;
+}
 
 ///
 /// Array3D

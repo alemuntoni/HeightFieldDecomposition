@@ -167,7 +167,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
 
 }
 
-void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > &vectorTriples, const BoxList& boxList, const Dcel& d) {
+void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, const BoxList& boxList, const Dcel& d) {
     CGALInterface::AABBTree t(d);
 
 
@@ -190,23 +190,23 @@ void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector
             else ++it;
         }
 
-        std::vector<unsigned int> v;
+        std::vector<bool> v;
         int n = covered.size();
-        v.resize(d.getNumberFaces(), 0);
+        v.resize(d.getNumberFaces(), false);
         for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
             const Dcel::Face* f = *it;
-            v[f->getId()] = 1;
+            v[f->getId()] = true;
         }
-        std::tuple<int, Box3D, std::vector<unsigned int> > triple (n, boxList.getBox(i), v);
+        std::tuple<int, Box3D, std::vector<bool> > triple (n, boxList.getBox(i), v);
         vectorTriples.push_back(triple);
     }
 }
 
-int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > &vectorTriples, unsigned int numberFaces){
+int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces){
 
     //ordering vector of triples
     struct triplesOrdering {
-        bool operator ()(const std::tuple<int, Box3D, std::vector<unsigned int> >& a, const std::tuple<int, Box3D, std::vector<unsigned int> >& b) {
+        bool operator ()(const std::tuple<int, Box3D, std::vector<bool> >& a, const std::tuple<int, Box3D, std::vector<bool> >& b) {
             if (std::get<0>(a) < std::get<0>(b))
                 return true;
             if (std::get<0>(a) == std::get<0>(b))
@@ -218,7 +218,7 @@ int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, st
 
 
     //create m
-    std::vector<std::vector<unsigned int> > m;
+    std::vector<std::vector<bool> > m;
     m.reserve(boxList.getNumberBoxes());
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); i++)
         m.push_back(std::get<2>(vectorTriples[i]));
@@ -237,7 +237,7 @@ int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, st
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); i++){
         bool b = true;
         for (unsigned int j = 0; j < numberFaces; j++)
-            if (sums[j]-m[i][j] < 1)
+            if (sums[j]-m[i][j] < 1 && sums[j]!=0)
                 b = false;
         if (b){
             for (unsigned int j = 0; j < numberFaces; j++)
@@ -281,7 +281,7 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
     getRotationMatrix(Vec3(0,-1,0), 0.785398, m[3]);
     CGALInterface::AABBTree t3(scaled3);
 
-    std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > vectorTriples;
+    std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples;
 
     vectorTriples.reserve(boxList.getNumberBoxes());
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); ++i){
@@ -308,14 +308,14 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
             else ++it;
         }
 
-        std::vector<unsigned int> v;
+        std::vector<bool> v;
         int n = covered.size();
-        v.resize(d.getNumberFaces(), 0);
+        v.resize(d.getNumberFaces(), false);
         for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
             const Dcel::Face* f = *it;
-            v[f->getId()] = 1;
+            v[f->getId()] = true;
         }
-        std::tuple<int, Box3D, std::vector<unsigned int> > triple (n, boxList.getBox(i), v);
+        std::tuple<int, Box3D, std::vector<bool> > triple (n, boxList.getBox(i), v);
         vectorTriples.push_back(triple);
     }
 
@@ -489,7 +489,7 @@ void Engine::afterExpandedBoxes(const std::__cxx11::string& inputFile) {
 void Engine::largeScaleFabrication(const Dcel& input, int resolution, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
-    std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > allVectorTriples;
+    std::vector< std::tuple<int, Box3D, std::vector<bool> > > allVectorTriples;
     BoxList allBoxes;
     for (unsigned int i = 0; i < ORIENTATIONS; i++){
         scaled[i] = input;
@@ -512,7 +512,7 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
             myfile.close();
         }
 
-        std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > vectorTriples[ORIENTATIONS];
+        std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS];
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
             allBoxes.insert(bl[i]);
             createVectorTriples(vectorTriples[i], bl[i], scaled[i]);
@@ -552,7 +552,7 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
             }
         }
 
-        std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > vectorTriples[ORIENTATIONS][TARGETS];
+        std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS][TARGETS];
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
             for (unsigned int j = 0; j < TARGETS; ++j){
                 allBoxes.insert(bl[i][j]);

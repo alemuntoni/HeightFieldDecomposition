@@ -66,8 +66,9 @@ void BoxList::draw() const {
                     boxes[i].draw();
             }
             else {
-                for (unsigned int i = 0; i < boxes.size(); i++)
-                    drawCube(boxes[i]);
+                for (unsigned int i = 0; i < boxes.size(); i++){
+                    drawCube(boxes[i], boxes[i].getColor());
+                }
             }
         }
         else
@@ -91,29 +92,30 @@ void BoxList::setVisible(bool b) {
     visible = b;
 }
 
-void BoxList::drawLine(const Pointd &a, const Pointd &b) const {
+void BoxList::drawLine(const Pointd &a, const Pointd &b, const QColor& c) const {
     glBegin(GL_LINES);
-    glColor3f(0.0, 0.0, 0.0);
+    glColor3f(c.redF(), c.greenF(), c.blueF());
+    glLineWidth(3);
     glVertex3f(a.x(), a.y(), a.z());
     glVertex3f(b.x(), b.y(), b.z());
     glEnd();
 }
 
-void BoxList::drawCube(const Box3D& b) const {
+void BoxList::drawCube(const Box3D& b, const QColor &c) const {
     std::vector<Pointd> p;
     b.getRotatedExtremes(p);
-    drawLine(p[0], p[1]);
-    drawLine(p[1], p[2]);
-    drawLine(p[2], p[3]);
-    drawLine(p[0], p[3]);
+    drawLine(p[0], p[1], c);
+    drawLine(p[1], p[2], c);
+    drawLine(p[2], p[3], c);
+    drawLine(p[0], p[3], c);
 
-    drawLine(p[4], p[5]);
-    drawLine(p[5], p[6]);
-    drawLine(p[6], p[7]);
-    drawLine(p[4], p[7]);
+    drawLine(p[4], p[5], c);
+    drawLine(p[5], p[6], c);
+    drawLine(p[6], p[7], c);
+    drawLine(p[4], p[7], c);
 
-    drawLine(p[0], p[4]);
-    drawLine(p[1], p[5]);
-    drawLine(p[2], p[6]);
-    drawLine(p[3], p[7]);
+    drawLine(p[0], p[4], c);
+    drawLine(p[1], p[5], c);
+    drawLine(p[2], p[6], c);
+    drawLine(p[3], p[7], c);
 }

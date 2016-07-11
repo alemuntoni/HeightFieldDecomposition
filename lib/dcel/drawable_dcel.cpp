@@ -344,7 +344,7 @@ void DrawableDcel::draw() const {
                 glDepthFunc(GL_LESS);
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
-            check_gl_error();
+            //check_gl_error();
         }
 
         else

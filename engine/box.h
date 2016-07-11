@@ -13,6 +13,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         Box3D(const Pointd &min, const Pointd &max, const QColor c);
 
         void setColor(const QColor &c);
+        QColor getColor() const;
         /*const Pointd& getMin() const;
         void setMin(const Pointd& value);
         const Pointd& getMax() const;
@@ -62,6 +63,10 @@ class Box3D : public BoundingBox, public DrawableObject{
 
 inline void Box3D::setColor(const QColor& c) {
     color = c;
+}
+
+inline QColor Box3D::getColor() const {
+    return color;
 }
 
 /*inline const Pointd& Box3D::getMin() const {

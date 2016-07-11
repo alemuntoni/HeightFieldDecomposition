@@ -595,7 +595,7 @@ void EngineManager::on_showAllSolutionsCheckBox_stateChanged(int arg1) {
     if (arg1 == Qt::Checked){
         ui->solutionsSlider->setEnabled(false);
         ui->solutionsSlider->setValue(0);
-        //solutions->setCylinders(true);
+        solutions->setCylinders(true);
         solutions->setVisibleBox(-1);
     }
     else {

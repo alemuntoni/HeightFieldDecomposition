@@ -30,9 +30,9 @@ namespace Engine {
 
     void expandBoxes(BoxList &boxList, const Grid &g);
 
-    void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<unsigned int> > >& vectorTriples, const BoxList& boxList, const Dcel &d);
+    void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<bool> > >& vectorTriples, const BoxList& boxList, const Dcel &d);
 
-    int deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<unsigned int> > > &vectorTriples, unsigned int numberFaces);
+    int deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);
 
     int deleteBoxes(BoxList& boxList, const Dcel &d);
 

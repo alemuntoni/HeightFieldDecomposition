@@ -23,9 +23,9 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
     Eigen::VectorXd new_x(6);
     Eigen::VectorXd gradient(6);
-    double diff = 10;
-    double ratiov = 10;
-    double volume = volumeOfBox(x), newVolume;
+    //double diff = 10;
+    //double ratiov = 10;
+    //double volume = volumeOfBox(x), newVolume;
     objValue = energy(x, c1, c2, c3);
     bool ng = true;
     do{
@@ -36,10 +36,10 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
         newObjValue = energy(new_x, c1, c2, c3);
         if (newObjValue < objValue) {
             nIterations++;
-            diff = objValue - newObjValue;
-            newVolume = volumeOfBox(new_x);
-            volume = volumeOfBox(x);
-            ratiov = std::abs(newVolume / volume);
+            //diff = objValue - newObjValue;
+            //newVolume = volumeOfBox(new_x);
+            //volume = volumeOfBox(x);
+            //ratiov = std::abs(newVolume / volume);
             std::cerr.precision(17);
             ///*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "; ratiov: " << ratiov << "\n";
             x = new_x;
@@ -56,9 +56,9 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
         else{
             alfa /= 10;
             ng = false;
-            diff = 10;
+            //diff = 10;
         }
-    } while ((ratiov < 0.99999 || ratiov > 1.00001) && nIterations < 500 && alfa > 1e-7);
+    } while (/*(ratiov < 0.99999 || ratiov > 1.00001) &&*/ nIterations < 500 && alfa > 1e-7);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
