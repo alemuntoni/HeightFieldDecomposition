@@ -108,4 +108,4 @@ FORMS += \
 DISTFILES += \
     README.txt
 
-#include(lib/igl/igl.pri)
+include(lib/igl/igl.pri)

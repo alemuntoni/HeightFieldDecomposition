@@ -1,5 +1,5 @@
 #include "engine.h"
-//#include "lib/igl/iglinterface.h"
+#include "lib/igl/iglinterface.h"
 
 Vec3 Engine::getClosestTarget(const Vec3& n) {
     double angle = n.dot(XYZ[0]);
@@ -82,8 +82,8 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target) {
 
 
-    d.saveOnObjFile("tmp.obj");
-    //IGLInterface::generateGridAndDistanceField("tmp.obj");
+    //d.saveOnObjFile("tmp.obj");
+    IGLInterface::generateGridAndDistanceField("tmp.obj");
     exec("./grid_generator tmp.obj");
 
 
