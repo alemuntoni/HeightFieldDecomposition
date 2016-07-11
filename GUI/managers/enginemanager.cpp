@@ -735,7 +735,7 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
 
 void EngineManager::on_deleteBoxesPushButton_clicked() {
     if (solutions!= nullptr && d != nullptr){
-        Engine::deleteBoxes(*solutions, *d);
+        Engine::deleteBoxesMemorySafe(*solutions, *d);
         solutions->setVisibleBox(0);
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);

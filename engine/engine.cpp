@@ -82,9 +82,9 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target) {
 
 
-    //d.saveOnObjFile("tmp.obj");
+    d.saveOnObjFile("tmp.obj");
     IGLInterface::generateGridAndDistanceField("tmp.obj");
-    exec("./grid_generator tmp.obj");
+    //exec("./grid_generator tmp.obj");
 
 
     Eigen::RowVector3i nGmin;
@@ -323,7 +323,16 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
 }
 
 int Engine::deleteBoxesMemorySafe(BoxList& boxList, const Dcel& d) {
-
+    std::vector<BoxList> boxLists;
+    boxList.getSubBoxLists(boxLists, d.getNumberFaces());
+    for (unsigned int i = 0; i < boxLists.size(); i++){
+        deleteBoxes(boxLists[i], d);
+    }
+    boxList.clearBoxes();
+    for (unsigned int i = 0; i < boxLists.size(); i++){
+        boxList.insert(boxLists[i]);
+    }
+    return deleteBoxes(boxList, d);
 }
 
 

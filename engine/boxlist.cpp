@@ -39,6 +39,17 @@ void BoxList::removeBox(unsigned int i) {
     boxes.erase(boxes.begin()+i);
 }
 
+void BoxList::getSubBoxLists(std::vector<BoxList>& v, int nPerBoxList) {
+    int nBoxLists = getNumberBoxes() / nPerBoxList;
+    if (getNumberBoxes() % nPerBoxList != 0) v.reserve(nBoxLists+1);
+    else v.reserve(nBoxLists);
+    for (unsigned int i = 0; i < getNumberBoxes(); i++){
+        if (i % nPerBoxList == 0) v.push_back(BoxList());
+        unsigned int j = i / nPerBoxList;
+        v[j].addBox(getBox(i));
+    }
+}
+
 void BoxList::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(boxes, binaryFile);
 }

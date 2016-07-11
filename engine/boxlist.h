@@ -16,6 +16,7 @@ class BoxList : public DrawableObject, public SerializableObject{
         void setBox(unsigned int i, const Box3D &b);
         void insert(const BoxList &o);
         void removeBox(unsigned int i);
+        void getSubBoxLists(std::vector<BoxList> &v, int nPerBoxList);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
