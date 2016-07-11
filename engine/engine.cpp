@@ -394,17 +394,11 @@ void Engine::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile,
             bl[i].deserialize(input);
         }
         input.close();
+        Timer t("Total Time Entire Process");
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
             expandBoxes(bl[i], g[i]);
-            std::stringstream ss;
-            ss << i << outputFile;
-            std::ofstream myfile;
-            myfile.open (ss.str(), std::ios::out | std::ios::binary);
-            d.serialize(myfile);
-            g[i].serialize(myfile);
-            bl[i].serialize(myfile);
-            myfile.close();
         }
+        t.stopAndPrint();
         std::ofstream myfile;
         myfile.open (outputFile, std::ios::out | std::ios::binary);
         d.serialize(myfile);
@@ -425,19 +419,13 @@ void Engine::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile,
             }
         }
         input.close();
+        Timer t("Total Time Entire Process");
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned j = 0; j < TARGETS; ++j){
                 expandBoxes(bl[i][j], g[i][j]);
-                std::stringstream ss;
-                ss << i << j<< outputFile;
-                std::ofstream myfile;
-                myfile.open (ss.str(), std::ios::out | std::ios::binary);
-                d.serialize(myfile);
-                g[i][j].serialize(myfile);
-                bl[i][j].serialize(myfile);
-                myfile.close();
             }
         }
+        t.stopAndPrint();
         std::ofstream myfile;
         myfile.open (outputFile, std::ios::out | std::ios::binary);
         d.serialize(myfile);
