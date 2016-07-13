@@ -766,8 +766,8 @@ void EngineManager::on_deserializePreprocessingPushButton_clicked() {
         d->update();
         mainWindow->pushObj(d, "Scaled Mesh");
 
-        //Serializer::deserialize(heightfields, myfile);
-        heightfields = true;
+        Serializer::deserialize(heightfields, myfile);
+        //heightfields = true;
         if (!heightfields){
             Grid g[ORIENTATIONS];
             BoxList bl[ORIENTATIONS];

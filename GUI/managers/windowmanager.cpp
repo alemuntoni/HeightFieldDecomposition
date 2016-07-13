@@ -7,7 +7,6 @@
 #include "windowmanager.h"
 #include "ui_windowmanager.h"
 
-#include "GUI/mainwindow.h"
 #include <QColorDialog>
 
 WindowManager::WindowManager(QWidget *parent) : QFrame(parent), ui(new Ui::WindowManager), mainwindow((MainWindow*)parent) {

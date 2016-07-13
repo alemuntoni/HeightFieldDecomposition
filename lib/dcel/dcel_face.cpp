@@ -342,7 +342,7 @@ Dcel::Face::ConstIncidentVertexIterator Dcel::Face::incidentVertexBegin(const Dc
     {
         if ((*heit)->getFace() == this) return ConstIncidentVertexIterator(*heit, *heit, this);
     }
-    qDebug() << "ERROR: start vertex " << start->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
+    std::cerr << "ERROR: start vertex " << start->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
     assert(0);
     return ConstIncidentVertexIterator();
 }
@@ -374,7 +374,7 @@ Dcel::Face::ConstIncidentVertexIterator Dcel::Face::incidentVertexBegin(const Dc
     for (heit= end->incomingHalfEdgeBegin(); heit!= end->incomingHalfEdgeEnd(); ++heit){
         if ((*heit)->getFace() == this) return ConstIncidentVertexIterator(s, *heit, this);
     }
-    qDebug() << "ERROR: end vertex " << end->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
+    std::cerr << "ERROR: end vertex " << end->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
     assert(0);
     return ConstIncidentVertexIterator();
 }
@@ -455,9 +455,11 @@ float Dcel::Face::updateArea() {
         Pointd v3 = outerHalfEdge->getPrev()->getFromVertex()->getCoordinate();
         area = (((v3 - v1).cross(v2 - v1)).getLength() / 2);
     }
+    #ifdef CGAL_DEFINED
     else {
         area = 0;
         std::vector<std::tuple<const Dcel::Vertex*, const Dcel::Vertex*, const Dcel::Vertex*> > t;
+
         getTriangulation(t);
         for (unsigned int i = 0; i <t.size(); ++i){
             std::tuple<const Dcel::Vertex*, const Dcel::Vertex*, const Dcel::Vertex*> tr =  t[i];
@@ -467,6 +469,7 @@ float Dcel::Face::updateArea() {
             area += (((v3 - v1).cross(v2 - v1)).getLength() / 2);
         }
     }
+    #endif
     return area;
 }
 
@@ -677,7 +680,7 @@ Dcel::Face::IncidentVertexIterator Dcel::Face::incidentVertexBegin(Dcel::Vertex*
     {
         if ((*heit)->getFace() == this) return IncidentVertexIterator(*heit, *heit, this);
     }
-    qDebug() << "ERROR: start vertex " << start->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
+    std::cerr << "ERROR: start vertex " << start->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
     assert(0);
     return IncidentVertexIterator();
 }
@@ -709,7 +712,7 @@ Dcel::Face::IncidentVertexIterator Dcel::Face::incidentVertexBegin(Dcel::Vertex*
     for (heit= end->incomingHalfEdgeBegin(); heit!= end->incomingHalfEdgeEnd(); ++heit){
         if ((*heit)->getFace() == this) return IncidentVertexIterator(s, *heit, this);
     }
-    qDebug() << "ERROR: end vertex " << end->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
+    std::cerr << "ERROR: end vertex " << end->getId() << " hasn't this face " << this->getId() << " as incident face.\n";
     assert(0);
     return IncidentVertexIterator();
 }

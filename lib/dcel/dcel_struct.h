@@ -15,7 +15,7 @@
 #include <array>
 #include <omp.h>
 
-#include "lib/common/bounding_box.h"
+#include "../common/bounding_box.h"
 
 /**
  * \~Italian

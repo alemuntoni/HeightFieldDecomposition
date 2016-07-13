@@ -10,6 +10,7 @@
 #include "boxlist.h"
 #include "common.h"
 #include "lib/cgal_interface/aabbtree.h"
+#include "lib/igl_interface/iglinterface.h"
 
 #define ORIENTATIONS 4
 #define TARGETS 6

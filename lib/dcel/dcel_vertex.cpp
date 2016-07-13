@@ -267,7 +267,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(cons
     for (heit = start->incomingHalfEdgeBegin(); heit != start->incomingHalfEdgeEnd(); ++heit){
         if ((*heit)->getFromVertex() == this) return ConstAdjacentVertexIterator(*heit, *heit, this);
     }
-    qDebug() << "ERROR: start vertex " << start->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
+    std::cerr << "ERROR: start vertex " << start->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
     return ConstAdjacentVertexIterator();
 }
@@ -301,7 +301,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(cons
     for (heit = end->incomingHalfEdgeBegin(); heit != end->incomingHalfEdgeEnd(); ++heit){
         if ((*heit)->getFromVertex() == this) return ConstAdjacentVertexIterator(s, *heit, this);
     }
-    qDebug() << "ERROR: end vertex " << end->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
+    std::cerr << "ERROR: end vertex " << end->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
     return ConstAdjacentVertexIterator();
 }
@@ -733,7 +733,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(Vertex* s
     for (heit= start->incomingHalfEdgeBegin(); heit!= start->incomingHalfEdgeEnd(); ++heit){
         if ((*heit)->getFromVertex() == this) return AdjacentVertexIterator(*heit, *heit, this);
     }
-    qDebug() << "ERROR: start vertex " << start->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
+    std::cerr << "ERROR: start vertex " << start->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
     return AdjacentVertexIterator();
 }
@@ -767,7 +767,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(Vertex* s
     for (heit= end->incomingHalfEdgeBegin(); heit!= end->incomingHalfEdgeEnd(); ++heit){
         if ((*heit)->getFromVertex() == this) return AdjacentVertexIterator(s, *heit, this);
     }
-    qDebug() << "ERROR: end vertex " << end->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
+    std::cerr << "ERROR: end vertex " << end->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
     return AdjacentVertexIterator();
 }

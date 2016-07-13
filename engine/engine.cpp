@@ -1,5 +1,4 @@
 #include "engine.h"
-#include "lib/igl/iglinterface.h"
 
 Vec3 Engine::getClosestTarget(const Vec3& n) {
     double angle = n.dot(XYZ[0]);

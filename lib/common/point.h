@@ -8,7 +8,6 @@
 
 #include <sstream>
 #include <assert.h>
-#include <QDebug>
 #include <string>
 #include <iostream>
 #include <math.h>

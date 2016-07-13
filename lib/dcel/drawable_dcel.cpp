@@ -175,7 +175,7 @@ void DrawableDcel::update() {
             /***********************************************************************/
         }
     }
-    #elif
+    #else
     for (ConstFaceIterator fit = faceBegin(); fit != faceEnd(); ++fit) {
         Dcel::Face::ConstIncidentVertexIterator vit = (*fit)->incidentVertexBegin();
         tris.push_back(v_ids[(*vit)->getId()]);

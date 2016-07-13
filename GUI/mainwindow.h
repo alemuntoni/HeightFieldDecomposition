@@ -17,7 +17,7 @@
 
 #include "lib/common/drawable_object.h"
 #include "lib/common/bounding_box.h"
-#include "lib/common/drawabledebugobjects.h"
+#include "objects/drawabledebugobjects.h"
 
 namespace Ui {
     class MainWindow;

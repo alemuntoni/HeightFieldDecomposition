@@ -21,10 +21,8 @@ class PickableDcel : public DrawableDcel, public PickableObject
         void drawWithNames() const;
 
     protected:
-        #ifdef CGAL_DEFINED
         void drawFace(const Face* f) const;
         std::vector<int> obtainFaceTriangles(const Face* f) const;
-        #endif
 };
 
 #endif // PICKABLEDCEL_H

@@ -1303,7 +1303,7 @@ std::string Dcel::loadFromObjFile(const std::string& filename, bool regular) {
 
     if(!file.is_open())
     {
-        qDebug() << "ERROR : read() : could not open input file " << filename.c_str() << "\n";
+        std::cerr << "ERROR : read() : could not open input file " << filename.c_str() << "\n";
         assert(0);
     }
 
@@ -1363,7 +1363,7 @@ std::string Dcel::loadFromObjFile(const std::string& filename, bool regular) {
 
         else if (strcmp(header.c_str(), face.c_str()) == 0)
         {
-            QVector<std::string> dummy;
+            std::vector<std::string> dummy;
             int i=-1;
             token++;
             while (token != spaceTokenizer.end()) {
@@ -1373,7 +1373,7 @@ std::string Dcel::loadFromObjFile(const std::string& filename, bool regular) {
             }
 
             std::vector<Tokenizer> slashTokenizer;
-            for (int i=0; i<dummy.size(); i++){
+            for (unsigned int i=0; i<dummy.size(); i++){
                 Tokenizer t(dummy[i], slashSeparator);
                 slashTokenizer.push_back(t);
             }
@@ -1475,7 +1475,7 @@ std::string Dcel::loadFromPlyFile(const std::string& filename, bool regular) {
     std::ifstream file(filename.c_str());
     std::string   line;
 
-    QVector<Vertex*> vertices;
+    std::vector<Vertex*> vertices;
 
     int nVer = -1, nFac = -1;
     int nv=0, nf=0;
@@ -1487,7 +1487,7 @@ std::string Dcel::loadFromPlyFile(const std::string& filename, bool regular) {
 
     if(!file.is_open())
     {
-        qDebug() << "ERROR : read() : could not open input file " << filename.c_str() << "\n";
+        std::cerr << "ERROR : read() : could not open input file " << filename.c_str() << "\n";
         assert(0);
     }
 
@@ -2108,7 +2108,7 @@ std::string Dcel::loadFromOldOldDcelFile(const std::string& filename) {
 
     if(!file.is_open())
     {
-        qDebug() << "ERROR : read() : could not open input file " << filename.c_str() << "\n";
+        std::cerr << "ERROR : read() : could not open input file " << filename.c_str() << "\n";
         assert(0);
     }
 

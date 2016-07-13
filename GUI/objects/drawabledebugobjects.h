@@ -1,8 +1,8 @@
 #ifndef DRAWABLEDEBUGOBJECTS_H
 #define DRAWABLEDEBUGOBJECTS_H
 
-#include "drawable_object.h"
-#include "bounding_box.h"
+#include "lib/common/drawable_object.h"
+#include "lib/common/bounding_box.h"
 
 
 class DrawableDebugObjects : public DrawableObject{

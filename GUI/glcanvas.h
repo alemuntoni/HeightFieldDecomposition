@@ -20,7 +20,6 @@
 
 #include "lib/common/bounding_box.h"
 #include "lib/common/pickable_object.h"
-#include <QGLViewer/qglviewer.h>
 #include <qmessagebox.h>
 
 //using namespace std;

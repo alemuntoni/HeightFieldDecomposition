@@ -24,8 +24,7 @@ inline void cylinder(const Pointd  & a,
                      const Pointd  & b,
                      float         top_radius,
                      float         bottom_radius,
-                     const QColor& color)
-{
+                     const QColor& color) {
     Pointd dir     = b - a; dir.normalize();
     Pointd z       = Pointd(0,0,1);
     Vec3 normal  = dir.cross(z);

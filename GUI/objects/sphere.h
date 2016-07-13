@@ -22,8 +22,7 @@
 inline void sphere(const Pointd  & center,
                    float         radius,
                    const QColor& color,
-                   int precision = 4)
-{
+                   int precision = 4) {
     glEnable(GL_LIGHTING);
     glShadeModel(GL_SMOOTH);
     glColor3f(color.redF(), color.greenF(), color.blueF());

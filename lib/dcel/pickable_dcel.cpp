@@ -42,7 +42,7 @@ void PickableDcel::drawWithNames() const{
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-#ifdef CGAL_DEFINED
+
 /**
  * \~Italian
  * @brief DrawableDcel::drawFace Metodo che si occupa di effettuare il rendering di una faccia
@@ -77,4 +77,3 @@ std::vector<int> PickableDcel::obtainFaceTriangles(const Face* f) const{
     return face_triangles;
 }
 /************************************************************************/
-#endif
