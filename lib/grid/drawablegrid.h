@@ -1,9 +1,9 @@
 #ifndef DRAWABLEGRID_H
 #define DRAWABLEGRID_H
 
-#include "lib/common/drawable_object.h"
+#include "common/drawable_object.h"
 #include "grid.h"
-#include "GUI/objects/sphere.h"
+#include "viewer/objects/sphere.h"
 
 
 class DrawableGrid: public Grid, public DrawableObject

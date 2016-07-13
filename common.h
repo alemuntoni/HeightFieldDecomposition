@@ -6,8 +6,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "lib/common/common.h"
-#include "lib/dcel/dcel.h"
+#include "common/common.h"
+#include "dcel/dcel.h"
 #include <set>
 #include <Eigen/Core>
 #include <memory>

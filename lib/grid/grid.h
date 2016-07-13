@@ -1,9 +1,9 @@
 #ifndef GRID_H
 #define GRID_H
 
-#include "lib/common/bounding_box.h"
-#include "lib/common/arrays.h"
-#include "lib/dcel/dcel.h"
+#include "common/bounding_box.h"
+#include "common/arrays.h"
+#include "dcel/dcel.h"
 #include "engine/tricubic.h"
 
 #define BORDER_PAY 5

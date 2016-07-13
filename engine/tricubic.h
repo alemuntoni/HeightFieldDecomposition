@@ -2,8 +2,8 @@
 #define TRI_CUBIC_INTERPOLATOR_H
 
 #include <Eigen/Core>
-#include "lib/common/arrays.h"
-#include "lib/common/point.h"
+#include "common/arrays.h"
+#include "common/point.h"
 
 namespace TricubicInterpolator {
 

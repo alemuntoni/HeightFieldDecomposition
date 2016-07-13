@@ -1,5 +1,3 @@
-QT += core gui opengl xml widgets
-
 CONFIG(debug, debug|release){
     DEFINES += DEBUG
 }
@@ -11,26 +9,29 @@ CONFIG(release, debug|release){
     }
 }
 
-unix:!macx{
-    QMAKE_CXXFLAGS += -std=c++11  -fopenmp
-    QMAKE_LFLAGS +=  -fopenmp
-    LIBS += /usr/lib/x86_64-linux-gnu/libGLU.so
-    LIBS += -lboost_system -DBOOST_LOG_DYN_LINK -lboost_log -lboost_thread -lpthread
-    LIBS += -lQGLViewer    
-    INCLUDEPATH += -I /usr/include/eigen3    
-}
+#Add or remove all the modules you need
 
-macx{
-    CONFIG += c++11
-    DEFINES += CGAL_DEFINED
-    #QMAKE_CXXFLAGS += -stdlib=libc++
-    INCLUDEPATH += -I /libs/include/boost/
-    INCLUDEPATH += /libs/frameworks/QGLViewer/QGLViewer.framework/Headers
-    LIBS += -F/libs/frameworks/QGLViewer -framework QGLViewer
-}
+#Common module: contains classes and common functions used on all the other modules
+#Requires: Eigen
+include (common/common.pri)
+
+#Viewer module: contains classes for a simple viewer
+#Requires: Common module, libQGLViewer, boost
+include (viewer/viewer.pri)
+
+#Dcel module: contains a Double Connected-Edge List data structure
+#Requires: Common module, boost; Optional: Cgal module, viewer module
+include (dcel/dcel.pri)
+
+#Cgal module: contains an interface to some functionalities of CGAL library
+#Requires: Common module, libCgal; Optional: Dcel module
+include (cgal/cgal.pri)
+
+#Igl module: coontaint an intergace to some functionalities of libIGL
+#Requires: Common module, libIGL (an environment variable named LIBIGL containing the root directory of the library must be setted)
+include (igl/igl.pri)
 
 HEADERS += \
-    GUI/managers/dcelmanager.h \
     common.h \
     lib/grid/grid.h \
     GUI/managers/enginemanager.h \
@@ -43,7 +44,6 @@ HEADERS += \
 
 SOURCES += \
     main.cpp \
-    GUI/managers/dcelmanager.cpp \
     common.cpp \
     lib/grid/grid.cpp \
     GUI/managers/enginemanager.cpp \
@@ -55,18 +55,7 @@ SOURCES += \
     engine/engine.cpp
 
 FORMS += \
-    GUI/managers/dcelmanager.ui \
     GUI/managers/enginemanager.ui
 
 DISTFILES += \
     README.txt
-
-include(lib/common/common.pri)
-
-include(lib/cgal_interface/cgal.pri)
-
-include(lib/igl_interface/igl.pri)
-
-include (lib/dcel/dcel.pri)
-
-include(GUI/viewer.pri)

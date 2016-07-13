@@ -6,13 +6,13 @@
 #define USER_INTERFACE 1
 
 #if USER_INTERFACE==1
-#include "GUI/mainwindow.h"
+#include "viewer/mainwindow.h"
 #include "GUI/managers/dcelmanager.h"
 #include "GUI/managers/windowmanager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
 #include <QApplication>
-#include <lib/common/comparators.h>
+#include <common/comparators.h>
 #else
 #include "engine/engine.h"
 #endif

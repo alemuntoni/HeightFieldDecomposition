@@ -3,14 +3,14 @@
 
 #include <omp.h>
 
-#include "lib/dcel/dcel.h"
+#include "dcel/dcel.h"
 #include "lib/grid/grid.h"
-#include "lib/common/timer.h"
+#include "common/timer.h"
 #include "energy.h"
 #include "boxlist.h"
 #include "common.h"
-#include "lib/cgal_interface/aabbtree.h"
-#include "lib/igl_interface/iglinterface.h"
+#include "cgal/aabbtree.h"
+#include "igl/iglinterface.h"
 
 #define ORIENTATIONS 4
 #define TARGETS 6

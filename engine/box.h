@@ -1,10 +1,10 @@
 #ifndef BOX_H
 #define BOX_H
 
-#include "lib/common/drawable_object.h"
-#include "lib/common/bounding_box.h"
-#include "GUI/objects/cylinder.h"
-#include "GUI/objects/sphere.h"
+#include "common/drawable_object.h"
+#include "common/bounding_box.h"
+#include "viewer/objects/cylinder.h"
+#include "viewer/objects/sphere.h"
 
 class Box3D : public BoundingBox, public DrawableObject{
     public:

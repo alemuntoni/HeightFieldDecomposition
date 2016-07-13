@@ -1,6 +1,6 @@
 #include "energy.h"
 
-#include "lib/common/timer.h"
+#include "common/timer.h"
 
 Energy::Energy() {
 }

@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <QFileDialog>
 #include <omp.h>
-#include "lib/cgal_interface/aabbtree.h"
+#include "cgal/aabbtree.h"
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),

@@ -8,7 +8,7 @@
 
 #include <QFrame>
 #include <QColor>
-#include "dcel/drawable_dcel.h"
+#include "../drawable_dcel.h"
 #include "viewer/mainwindow.h"
 
 namespace Ui {
