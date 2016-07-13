@@ -15,6 +15,7 @@ HEADERS += \
     $$PWD/comparators.h \
     $$PWD/drawable_object.h \
     $$PWD/point.h \
+    $$PWD/point2d.h \
     $$PWD/common.h \
     $$PWD/serialize.h \
     $$PWD/pickable_object.h \

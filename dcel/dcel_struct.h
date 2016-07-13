@@ -17,6 +17,10 @@
 
 #include "../common/bounding_box.h"
 
+#ifdef CGAL_DEFINED
+#include "../cgal/cgalinterface.h"
+#endif
+
 /**
  * \~Italian
  * @class Dcel

@@ -5,7 +5,9 @@
 
 #include "dcel_face_iterators.h"
 #include "dcel_vertex_iterators.h"
-#include "../common/common.h"
+#ifdef CGAL_DEFINED
+#include "../cgal/cgalinterface.h"
+#endif
 
 /****************
  * Constructors *
@@ -458,14 +460,14 @@ float Dcel::Face::updateArea() {
     #ifdef CGAL_DEFINED
     else {
         area = 0;
-        std::vector<std::tuple<const Dcel::Vertex*, const Dcel::Vertex*, const Dcel::Vertex*> > t;
+        std::vector<std::array<const Dcel::Vertex*, 3> > t;
 
         getTriangulation(t);
         for (unsigned int i = 0; i <t.size(); ++i){
-            std::tuple<const Dcel::Vertex*, const Dcel::Vertex*, const Dcel::Vertex*> tr =  t[i];
-            Pointd v1 = std::get<0>(tr)->getCoordinate();
-            Pointd v2 = std::get<1>(tr)->getCoordinate();
-            Pointd v3 = std::get<2>(tr)->getCoordinate();
+            std::array<const Dcel::Vertex*, 3> tr =  t[i];
+            Pointd v1 = tr[0]->getCoordinate();
+            Pointd v2 = tr[1]->getCoordinate();
+            Pointd v3 = tr[2]->getCoordinate();
             area += (((v3 - v1).cross(v2 - v1)).getLength() / 2);
         }
     }
@@ -723,16 +725,17 @@ Dcel::Face::IncidentVertexIterator Dcel::Face::incidentVertexBegin(Dcel::Vertex*
  * @brief Dcel::Face::getTriangulation
  * @param triangles
  */
-void Dcel::Face::getTriangulation(std::vector<std::tuple<const Dcel::Vertex*, const Dcel::Vertex*, const Dcel::Vertex*> > &triangles) const {
+void Dcel::Face::getTriangulation(std::vector<std::array<const Dcel::Vertex*, 3> > &triangles) const {
     // Taking all the coordinates on vectors
-    std::vector<const Dcel::Vertex*> borderCoordinates;
-    std::vector< std::vector<const Dcel::Vertex*> > innerBorderCoordinates;
-    std::map<CGALPoint, const Dcel::Vertex*> pointsVerticesMap;
+    std::vector<Pointd> borderCoordinates;
+    std::vector< std::vector<Pointd> > innerBorderCoordinates;
+    std::map<Pointd, const Dcel::Vertex*> pointsVerticesMap;
     for (Dcel::Face::ConstIncidentHalfEdgeIterator heit = incidentHalfEdgeBegin(); heit != incidentHalfEdgeEnd(); ++heit){
-        borderCoordinates.push_back((*heit)->getFromVertex());
+        borderCoordinates.push_back((*heit)->getFromVertex()->getCoordinate());
         std::pair<const Dcel::Vertex*, const Dcel::Vertex*> pp;
         pp.first = (*heit)->getFromVertex();
         pp.second = (*heit)->getToVertex();
+        pointsVerticesMap[(*heit)->getFromVertex()->getCoordinate()] = (*heit)->getFromVertex();
     }
 
     if (hasHoles()){
@@ -740,86 +743,34 @@ void Dcel::Face::getTriangulation(std::vector<std::tuple<const Dcel::Vertex*, co
         int i = 0;
         for (Dcel::Face::ConstInnerHalfEdgeIterator ihe = innerHalfEdgeBegin(); ihe != innerHalfEdgeEnd(); ++ihe, ++i){
             const Dcel::HalfEdge* he = *ihe;
-            std::vector<const Dcel::Vertex*> inner;
+            std::vector<Pointd> inner;
             for (Dcel::Face::ConstIncidentHalfEdgeIterator heit = incidentHalfEdgeBegin(he); heit != incidentHalfEdgeEnd(); ++heit){
-                inner.push_back((*heit)->getFromVertex());
+                inner.push_back((*heit)->getFromVertex()->getCoordinate());
                 std::pair<const Dcel::Vertex*, const Dcel::Vertex*> pp;
                 pp.first = (*heit)->getFromVertex();
                 pp.second = (*heit)->getToVertex();
+                pointsVerticesMap[(*heit)->getFromVertex()->getCoordinate()] = (*heit)->getFromVertex();
             }
             innerBorderCoordinates.push_back(inner);
         }
     }
 
-    //Rotation of the coordinates
-    Vec3 faceNormal = normal;
-    Vec3 zAxis(0,0,1);
-    Vec3 v = -(faceNormal.cross(zAxis));
-    v.normalize();
-    double dot = faceNormal.dot(zAxis);
-    double angle = acos(dot);
-
-    double r[3][3] = {0};
-    if (faceNormal != zAxis){
-        if (faceNormal == -zAxis){
-            v = Vec3(1,0,0);
-        }
-        getRotationMatrix(v, angle, r);
-    }
-    else {
-        r[0][0] = r[1][1] = r[2][2] = 1;
-    }
-
-    //rotate points and make 2D polygon
-    Polygon_2 polygon1;
-    std::vector<Polygon_2> innerPolygons;
-    for (unsigned int i = 0; i < borderCoordinates.size(); ++i){
-        Pointd a = borderCoordinates[i]->getCoordinate();
-        Pointd p1(a.x() * r[0][0] + a.y() * r[1][0] +a.z() * r[2][0], a.x() * r[0][1] + a.y() * r[1][1] +a.z() * r[2][1], a.x() * r[0][2] + a.y() * r[1][2] +a.z() * r[2][2]);
-        CGALPoint p(p1.x(), p1.y());
-        polygon1.push_back(p);
-        pointsVerticesMap[p] = borderCoordinates[i];
-    }
-    if (hasHoles()){
-        for (unsigned int i = 0; i < innerBorderCoordinates.size(); ++i) {
-            Polygon_2 innerPolygon;
-            for (unsigned j = 0; j < innerBorderCoordinates[i].size(); ++j) {
-                Pointd a = innerBorderCoordinates[i][j]->getCoordinate();
-                Pointd p1(a.x() * r[0][0] + a.y() * r[1][0] + a.z() * r[2][0],
-                          a.x() * r[0][1] + a.y() * r[1][1] + a.z() * r[2][1],
-                          a.x() * r[0][2] + a.y() * r[1][2] + a.z() * r[2][2]);
-                CGALPoint p(p1.x(), p1.y());
-                innerPolygon.push_back(p);
-                pointsVerticesMap[p] = innerBorderCoordinates[i][j];
-            }
-            innerPolygons.push_back(innerPolygon);
-        }
-    }
-
-    ///TRIANGULATION
-
-    CDT cdt;
-    cdt.insert_constraint(polygon1.vertices_begin(), polygon1.vertices_end(), true);
-    for (unsigned int i = 0; i < innerPolygons.size(); ++i)
-        cdt.insert_constraint(innerPolygons[i].vertices_begin(), innerPolygons[i].vertices_end(), true);
-    markDomains(cdt);
+    std::vector<std::array<Pointd, 3> > trianglesP;
+    CGALInterface::Triangulation::triangulate(trianglesP, normal, borderCoordinates, innerBorderCoordinates);
 
     triangles.clear();
-    for (CDT::Finite_faces_iterator fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end();++fit) {
-        if ( fit->info().in_domain() ) {
-            Triangle triangle = *fit;
-            CDT::Vertex_handle v = triangle.vertex(0);
-            const CGALPoint p1 = v->point();
-            v = triangle.vertex(1);
-            const CGALPoint p2 = v->point();
-            v = triangle.vertex(2);
-            const CGALPoint p3 = v->point();
+    for (unsigned int i = 0; i < trianglesP.size(); ++i) {
+
+            std::array<Pointd, 3> triangle = trianglesP[i];
+
+            Pointd p1 = triangle[0];
+            Pointd p2 = triangle[1];
+            Pointd p3 = triangle[2];
             const Dcel::Vertex* a = pointsVerticesMap[p1];
             const Dcel::Vertex* b = pointsVerticesMap[p2];
             const Dcel::Vertex* c = pointsVerticesMap[p3];
-            std::tuple<const Dcel::Vertex*, const Dcel::Vertex*, const Dcel::Vertex*> tuple(a, b, c);
+            std::array<const Dcel::Vertex*, 3> tuple = {a, b, c};
             triangles.push_back(tuple);
-        }
     }
 }
 #endif

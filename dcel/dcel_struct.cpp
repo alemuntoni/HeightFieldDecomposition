@@ -1038,17 +1038,18 @@ unsigned int Dcel::triangulateFace(Dcel::Face* f) {
     else {
         // Taking all the coordinates on vectors
         Dcel::HalfEdge* firstHalfEdge = *(f->incidentHalfEdgeBegin());
-        std::vector<Dcel::Vertex*> borderCoordinates;
-        std::vector< std::vector<Dcel::Vertex*> > innerBorderCoordinates;
+        std::vector<Pointd> borderCoordinates;
+        std::vector< std::vector<Pointd> > innerBorderCoordinates;
         std::map<std::pair<Dcel::Vertex*, Dcel::Vertex*> , Dcel::HalfEdge*> verticesEdgeMap;
         std::map<std::pair<Dcel::Vertex*, Dcel::Vertex*> , Dcel::HalfEdge*> twinsEdgeMap;
-        std::map<CGALPoint, Dcel::Vertex*> pointsVerticesMap;
+        std::map<Pointd, Dcel::Vertex*> pointsVerticesMap;
         for (Dcel::Face::IncidentHalfEdgeIterator heit = f->incidentHalfEdgeBegin(); heit != f->incidentHalfEdgeEnd(); ++heit){
-            borderCoordinates.push_back((*heit)->getFromVertex());
+            borderCoordinates.push_back((*heit)->getFromVertex()->getCoordinate());
             std::pair<Dcel::Vertex*, Dcel::Vertex*> pp;
             pp.first = (*heit)->getFromVertex();
             pp.second = (*heit)->getToVertex();
             verticesEdgeMap[pp] = *heit;
+            pointsVerticesMap[(*heit)->getFromVertex()->getCoordinate()] = (*heit)->getFromVertex();
         }
 
         if (f->hasHoles()){
@@ -1056,9 +1057,9 @@ unsigned int Dcel::triangulateFace(Dcel::Face* f) {
             int i = 0;
             for (Dcel::Face::InnerHalfEdgeIterator ihe = f->innerHalfEdgeBegin(); ihe != f->innerHalfEdgeEnd(); ++ihe, ++i){
                 Dcel::HalfEdge* he = *ihe;
-                std::vector<Dcel::Vertex*> inner;
+                std::vector<Pointd> inner;
                 for (Dcel::Face::IncidentHalfEdgeIterator heit = f->incidentHalfEdgeBegin(he); heit != f->incidentHalfEdgeEnd(); ++heit){
-                    inner.push_back((*heit)->getFromVertex());
+                    inner.push_back((*heit)->getFromVertex()->getCoordinate());
                     std::pair<Dcel::Vertex*, Dcel::Vertex*> pp;
                     pp.first = (*heit)->getFromVertex();
                     pp.second = (*heit)->getToVertex();
@@ -1068,77 +1069,20 @@ unsigned int Dcel::triangulateFace(Dcel::Face* f) {
             }
         }
 
-        //Rotation of the coordinates
-        Vec3 faceNormal = f->getNormal();
-        faceNormal.normalize();
-        Vec3 zAxis(0,0,1);
-        Vec3 v = -(faceNormal.cross(zAxis));
-        Vec3 v2 = faceNormal.cross(zAxis);
-        v.normalize();
-        double dot = faceNormal.dot(zAxis);
-        double angle = acos(dot);
-
-        double r[3][3] = {0};
-        double r2[3][3] = {0};
-        if (faceNormal != zAxis){
-            if (faceNormal == -zAxis){
-                v = Vec3(1,0,0);
-                v2 = Vec3(-1,0,0);
-            }
-            getRotationMatrix(v, angle, r);
-            getRotationMatrix(v2, angle, r2);
-        }
-        else {
-            r[0][0] = r[1][1] = r[2][2] = 1;
-            r2[0][0] = r2[1][1] = r2[2][2] = 1;
-        }
-
-        //rotate points and make 2D polygon
-        Polygon_2 polygon1;
-        std::vector<Polygon_2> innerPolygons;
-        for (unsigned int i = 0; i < borderCoordinates.size(); ++i){
-            Pointd a = borderCoordinates[i]->getCoordinate();
-            Pointd p1(a.x() * r[0][0] + a.y() * r[1][0] +a.z() * r[2][0], a.x() * r[0][1] + a.y() * r[1][1] +a.z() * r[2][1], a.x() * r[0][2] + a.y() * r[1][2] +a.z() * r[2][2]);
-            CGALPoint p(p1.x(), p1.y());
-            polygon1.push_back(p);
-            pointsVerticesMap[p] = borderCoordinates[i];
-        }
-        if (f->hasHoles()){
-            for (unsigned int i = 0; i < innerBorderCoordinates.size(); ++i) {
-                Polygon_2 innerPolygon;
-                for (unsigned j = 0; j < innerBorderCoordinates[i].size(); ++j) {
-                    Pointd a = innerBorderCoordinates[i][j]->getCoordinate();
-                    Pointd p1(a.x() * r[0][0] + a.y() * r[1][0] + a.z() * r[2][0],
-                              a.x() * r[0][1] + a.y() * r[1][1] + a.z() * r[2][1],
-                              a.x() * r[0][2] + a.y() * r[1][2] + a.z() * r[2][2]);
-                    CGALPoint p(p1.x(), p1.y());
-                    innerPolygon.push_back(p);
-                    pointsVerticesMap[p] = innerBorderCoordinates[i][j];
-                }
-                innerPolygons.push_back(innerPolygon);
-            }
-            f->removeAllInnerHalfEdges();
-        }
-
         ///TRIANGULATION
 
-        CDT cdt;
-        cdt.insert_constraint(polygon1.vertices_begin(), polygon1.vertices_end(), true);
-        for (unsigned int i = 0; i < innerPolygons.size(); ++i)
-            cdt.insert_constraint(innerPolygons[i].vertices_begin(), innerPolygons[i].vertices_end(), true);
-        markDomains(cdt);
+        std::vector<std::array<Pointd, 3>> triangulation;
+        CGALInterface::Triangulation::triangulate(triangulation, f->getNormal(), borderCoordinates, innerBorderCoordinates);
+        ///
 
 
         ///RECONSTRUCTION
-        for (CDT::Finite_faces_iterator fit=cdt.finite_faces_begin(); fit!=cdt.finite_faces_end();++fit) {
-            if ( fit->info().in_domain() ) {
-                Triangle triangle = *fit;
-                CDT::Vertex_handle v = triangle.vertex(0);
-                const CGALPoint p1 = v->point();
-                v = triangle.vertex(1);
-                const CGALPoint p2 = v->point();
-                v = triangle.vertex(2);
-                const CGALPoint p3 = v->point();
+        for (unsigned int i = 0; i < triangulation.size(); i++) {
+            std::array<Pointd, 3> triangle = triangulation[i];
+
+                Pointd p1 = triangle[0];
+                Pointd p2 = triangle[1];
+                Pointd p3 = triangle[2];
 
                 Dcel::HalfEdge* e1, *e2, *e3;
                 std::pair<Dcel::Vertex*, Dcel::Vertex*> pp;
@@ -1233,7 +1177,6 @@ unsigned int Dcel::triangulateFace(Dcel::Face* f) {
                 f->setColor(firstHalfEdge->getFace()->getColor());
 
                 ++count;
-            }
         }
 
     }

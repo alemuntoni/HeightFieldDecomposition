@@ -189,7 +189,7 @@ class Dcel::Face {
         IncidentVertexIterator incidentVertexBegin(Dcel::Vertex* start, Dcel::Vertex* end);
 
         #ifdef CGAL_DEFINED
-        void getTriangulation(std::vector<std::tuple<const Vertex*, const Vertex*, const Vertex*> >& triangles) const;
+        void getTriangulation(std::vector<std::array<const Dcel::Vertex*, 3> >& triangles) const;
         #endif
 
     protected:

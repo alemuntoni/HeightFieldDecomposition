@@ -150,14 +150,14 @@ void DrawableDcel::update() {
             /*******************************Andreas*********************************/
             //Si ottiene la triangolazione della faccia e si inseriscono i triangoli
             //prodotti nell'array tris.
-            std::vector<std::tuple<const Dcel::Vertex*, const Dcel::Vertex*, const Dcel::Vertex*> > face_triangles;
+            std::vector<std::array<const Dcel::Vertex*, 3> > face_triangles;
             (*fit)->getTriangulation(face_triangles);
-            std::tuple<const Dcel::Vertex*, const Dcel::Vertex*, const Dcel::Vertex*> t;
+            std::array<const Dcel::Vertex*, 3> t;
             for(unsigned int i = 0; i<face_triangles.size(); ++i){
                 t = face_triangles[i];
-                const Dcel::Vertex* v1 = std::get<0>(t);
-                const Dcel::Vertex* v2 = std::get<1>(t);
-                const Dcel::Vertex* v3 = std::get<2>(t);
+                const Dcel::Vertex* v1 = t[0];
+                const Dcel::Vertex* v2 = t[1];
+                const Dcel::Vertex* v3 = t[2];
                 tris.push_back(v_ids[v1->getId()]);
                 tris.push_back(v_ids[v2->getId()]);
                 tris.push_back(v_ids[v3->getId()]);

@@ -147,6 +147,8 @@ typedef Point<int>    Pointi; /**< \~English @brief Point composed of integer co
                                    \~Italian @brief Point composto da componenti int */
 typedef Point<double> Vec3;   /**< \~English @brief Point composed of double components, sinctactic sugar for discriminate points from vectors
                                    \~Italian @brief Point composto da componenti double, zucchero sintattico per distinguere punti da vettori */
+template<typename T>
+using Point3D = Point<T>;
 
 /****************
  * Constructors *
