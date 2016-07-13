@@ -3,7 +3,7 @@
 
 #include <QFrame>
 #include <QLabel>
-#include "dcelmanager.h"
+#include "dcel/gui/dcelmanager.h"
 #include "lib/grid/drawablegrid.h"
 #include "common.h"
 #include "engine/box.h"

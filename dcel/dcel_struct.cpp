@@ -997,7 +997,7 @@ void Dcel::resetFaceColors() {
  * @par Complessità:
  *      \e O(numVertices \e + \e NumHalfEdges \e + \e NumFaces)
  */
-void Dcel::reset()	{
+void Dcel::clear()	{
     for (unsigned int i=0; i<vertices.size(); i++)
         if (vertices[i] != nullptr)
             delete vertices[i];
@@ -1220,7 +1220,7 @@ void Dcel::triangulate() {
  * @return Una stringa indicante da quanti vertici, half edge e facce è composta la mesh caricata
  */
 std::string Dcel::loadFromObjFile(const std::string& filename, bool regular) {
-    reset();
+    clear();
     typedef boost::char_separator<char>     CharSeparator;
     typedef boost::tokenizer<CharSeparator> Tokenizer;
     typedef Tokenizer::iterator             TokenizerIterator;
@@ -1405,7 +1405,7 @@ std::string Dcel::loadFromObjFile(const std::string& filename, bool regular) {
  * @return Una stringa indicante da quanti vertici, half edge e facce è composta la mesh caricata
  */
 std::string Dcel::loadFromPlyFile(const std::string& filename, bool regular) {
-    reset();
+    clear();
     typedef boost::char_separator<char>     CharSeparator;
     typedef boost::tokenizer<CharSeparator> Tokenizer;
     typedef Tokenizer::iterator             TokenizerIterator;
@@ -1798,7 +1798,7 @@ std::string Dcel::loadFromDcelFile(const std::string& filename) {
  */
 void Dcel::deserialize(std::ifstream &binaryFile) {
     //BB
-    reset();
+    clear();
     boundingBox.deserialize(binaryFile);
     //N
     Serializer::deserialize(nVertices, binaryFile);
@@ -1896,7 +1896,7 @@ void Dcel::deserialize(std::ifstream &binaryFile) {
 }
 
 std::__cxx11::string Dcel::loadFromOldDcelFile(const std::__cxx11::string& filename) {
-    reset();
+    clear();
 
     std::ifstream myfile;
     myfile.open (filename, std::ios::in | std::ios::binary);
@@ -2036,7 +2036,7 @@ std::__cxx11::string Dcel::loadFromOldDcelFile(const std::__cxx11::string& filen
 }
 
 std::string Dcel::loadFromOldOldDcelFile(const std::string& filename) {
-    reset();
+    clear();
     typedef boost::char_separator<char>     CharSeparator;
     typedef boost::tokenizer<CharSeparator> Tokenizer;
     typedef Tokenizer::iterator             TokenizerIterator;
@@ -2176,7 +2176,7 @@ std::string Dcel::loadFromOldOldDcelFile(const std::string& filename) {
  * @return La Dcel appena assegnata
  */
 Dcel& Dcel::operator = (const Dcel& dcel) {
-    this->reset();
+    this->clear();
     vertices.clear();
     halfEdges.clear();
     faces.clear();

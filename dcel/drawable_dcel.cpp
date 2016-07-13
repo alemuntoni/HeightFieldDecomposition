@@ -50,7 +50,7 @@ void DrawableDcel::init() {
  * @brief esegue una clear della Dcel e della DrawableDcel
  */
 void DrawableDcel::clear() {
-    Dcel::reset();
+    Dcel::clear();
     init();
     coords.clear();
     v_norm.clear();

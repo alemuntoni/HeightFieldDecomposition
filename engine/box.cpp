@@ -53,6 +53,29 @@ void Box3D::getRotatedExtremes(std::vector<Pointd>& v) const {
     v[7] = p;
 }
 
+void Box3D::getIGLMesh(IGLMesh& box) const {
+    box.clear();
+    std::vector<Pointd> extremes;
+    getRotatedExtremes(extremes);
+    box.resizeVertices(8);
+    for (unsigned int i = 0; i < 8; i++){
+        box.setVertex(i, extremes[i].x(), extremes[i].y(), extremes[i].z());
+    }
+    box.resizeFaces(12);
+    box.setFace(0, 0,1,2);
+    box.setFace(1, 0,2,3);
+    box.setFace(2, 2,1,5);
+    box.setFace(3, 2,5,6);
+    box.setFace(4, 5,1,0);
+    box.setFace(5, 5,0,4);
+    box.setFace(6, 6,5,4);
+    box.setFace(7, 6,4,7);
+    box.setFace(8, 7,4,0);
+    box.setFace(9, 7,0,3);
+    box.setFace(10, 7,3,2);
+    box.setFace(11, 7,2,6);
+}
+
 void Box3D::draw() const {
     if (visible){
         Pointd c1 = this->c1, c2 = this->c2, c3 = this->c3;

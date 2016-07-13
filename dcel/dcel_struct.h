@@ -151,7 +151,7 @@ class Dcel : public SerializableObject {
         void rotate(double matrix[3][3], const Pointd& centroid = Pointd());
         void recalculateIds();
         void resetFaceColors();
-        void reset();
+        void clear();
         #ifdef CGAL_DEFINED
         unsigned int triangulateFace(Dcel::Face* f);
         void triangulate();
