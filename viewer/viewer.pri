@@ -1,5 +1,9 @@
 DEFINES += VIEWER_DEFINED
 
+!contains(DEFINES, COMMON_DEFINED){
+    error(Viewer module requires common module!)
+}
+
 QT += core gui opengl xml widgets
 
 unix:!macx{

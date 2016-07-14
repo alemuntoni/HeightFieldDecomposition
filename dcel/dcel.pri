@@ -1,5 +1,10 @@
 DEFINES += DCEL_DEFINED
 
+!contains(DEFINES, COMMON_DEFINED){
+    error(Dcel module requires common module!)
+}
+
+
 HEADERS += \
     $$PWD/dcel.h \
     $$PWD/dcel_face.h \
@@ -23,5 +28,5 @@ SOURCES += \
 
 contains(DEFINES, VIEWER_DEFINED){
     #WARNING: BUG on qmake: comment the following line if viewer is not included
-    #include ($$PWD/gui/dcelmanager.pri)
+    include ($$PWD/gui/dcelmanager.pri)
 }

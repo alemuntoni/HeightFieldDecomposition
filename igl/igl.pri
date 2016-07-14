@@ -1,18 +1,7 @@
 DEFINES += IGL_DEFINED
 
-contains(DEFINES, CGAL_DEFINED){
-} else {
-unix:!macx{
-    LIBS += -lmpfr -lgmp -lCGAL -frounding-math
-}
-
-macx{
-    DEFINES += CGAL_DEFINED
-    INCLUDEPATH += -I /libs/include/CGAL/
-    LIBS += -frounding-math
-    LIBS += -L/libs/lib/gmp -lgmp
-    LIBS += -L/libs/lib/CGAL -lCGAL
-}
+!contains(DEFINES, COMMON_DEFINED){
+    error(Igl module requires common module!)
 }
 
 unix:!macx{

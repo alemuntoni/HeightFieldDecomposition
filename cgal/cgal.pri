@@ -1,5 +1,9 @@
 DEFINES += CGAL_DEFINED
 
+!contains(DEFINES, COMMON_DEFINED){
+    error(Cgal module requires common module!)
+}
+
 unix:!macx{
     LIBS += -lmpfr -lgmp -lCGAL -frounding-math
     LIBS += -lboost_system -DBOOST_LOG_DYN_LINK -lboost_log -lboost_thread -lpthread

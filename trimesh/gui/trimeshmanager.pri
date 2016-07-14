@@ -1,3 +1,7 @@
+!contains(DEFINES, VIEWER_DEFINED){
+    error(TrimeshManager module requires Viewer module!)
+}
+
 FORMS += \
     $$PWD/trimeshmanager.ui
 

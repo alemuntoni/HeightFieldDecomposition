@@ -1,3 +1,7 @@
+!contains(DEFINES, VIEWER_DEFINED){
+    error(IglMeshManager module requires Viewer module!)
+}
+
 FORMS += \
     $$PWD/iglmeshmanager.ui
 
