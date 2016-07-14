@@ -3,10 +3,12 @@
 
 #include <Eigen/Core>
 #include <igl/read_triangle_mesh.h>
+#include <igl/per_vertex_normals.h>
+#include <igl/per_face_normals.h>
 #include "../common/serialize.h"
 
 #ifdef DCEL_DEFINED
-#include "../dcel/dcel.h"
+class Dcel;
 #endif
 
 class IGLMesh : public SerializableObject {
@@ -26,9 +28,13 @@ class IGLMesh : public SerializableObject {
         void resizeFaces(unsigned int nf);
         bool readFromFile(const std::string &filename);
         void updateBoundingBox();
+        void updateVertexNormals();
+        void updateFaceNormals();
+        void updateVertexAndFaceNormals();
         void clear();
 
         #ifdef DCEL_DEFINED
+
         IGLMesh& operator= (const Dcel& dcel);
         #endif
 
@@ -103,6 +109,19 @@ inline void IGLMesh::resizeFaces(unsigned int nf) {
 inline void IGLMesh::updateBoundingBox() {
     BBmin = V.colwise().minCoeff();
     BBmax = V.colwise().maxCoeff();
+}
+
+inline void IGLMesh::updateVertexNormals() {
+    igl::per_vertex_normals(V,F,NV);
+}
+
+inline void IGLMesh::updateFaceNormals() {
+    igl::per_face_normals(V,F,NF);
+}
+
+inline void IGLMesh::updateVertexAndFaceNormals() {
+    updateFaceNormals();
+    updateVertexNormals();
 }
 
 inline void IGLMesh::clear() {

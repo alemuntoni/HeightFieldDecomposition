@@ -5,6 +5,7 @@
 
 #include "dcel_face_iterators.h"
 #include "dcel_vertex_iterators.h"
+#include "../common/common.h"
 #ifdef CGAL_DEFINED
 #include "../cgal/cgalinterface.h"
 #endif

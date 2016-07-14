@@ -4,7 +4,6 @@ QT += core gui opengl xml widgets
 
 unix:!macx{
     QMAKE_CXXFLAGS += -std=c++11 
-    LIBS += -lboost_system -DBOOST_LOG_DYN_LINK -lboost_log -lboost_thread -lpthread
     LIBS += /usr/lib/x86_64-linux-gnu/libGLU.so
     LIBS += -lQGLViewer    
 }

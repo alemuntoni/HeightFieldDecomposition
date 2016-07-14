@@ -9,8 +9,6 @@
 
 #include "../common/pickable_object.h"
 #include "../common/common.h"
-#include "viewer/objects/sphere.h"
-#include "viewer/objects/cylinder.h"
 #include "dcel.h"
 
 // From: https://blog.nobel-joergensen.com/2013/01/29/debugging-opengl-using-glgeterror/

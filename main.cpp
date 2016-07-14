@@ -8,6 +8,7 @@
 #if USER_INTERFACE==1
 #include "viewer/mainwindow.h"
 #include "dcel/gui/dcelmanager.h"
+#include "igl/gui/iglmeshmanager.h"
 #include "viewer/managers/windowmanager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
@@ -37,6 +38,9 @@ int main(int argc, char *argv[]) {
 
     EngineManager e(&gui);
     ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
+
+    IGLMeshManager mm(&gui);
+    gui.addManager(&mm, "IGL Mesh Manager");
 
 
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default

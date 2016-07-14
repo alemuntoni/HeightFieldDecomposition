@@ -10,11 +10,15 @@ DrawableIGLMesh::DrawableIGLMesh() {
     init();
 }
 
+DrawableIGLMesh::DrawableIGLMesh(const IGLMesh& m) : IGLMesh(m){
+    init();
+}
+
 DrawableIGLMesh::~DrawableIGLMesh(){
 }
 
 void DrawableIGLMesh::init() {
-    drawMode          = DRAW_MESH | DRAW_SMOOTH |  DRAW_FACECOLOR;
+    drawMode          = DRAW_MESH | DRAW_SMOOTH | DRAW_FACECOLOR;
 }
 
 void DrawableIGLMesh::update() {
@@ -147,6 +151,29 @@ bool DrawableIGLMesh::isVisible() const {
 void DrawableIGLMesh::setVisible(bool b) {
     if (b) drawMode |=  DRAW_MESH;
     else   drawMode &= ~DRAW_MESH;
+}
+
+void DrawableIGLMesh::setWireframe(bool b) {
+    if (b) drawMode |=  DRAW_WIREFRAME;
+    else   drawMode &= ~DRAW_WIREFRAME;
+}
+
+void DrawableIGLMesh::setFlatShading() {
+    drawMode |=  DRAW_FLAT;
+    drawMode &= ~DRAW_SMOOTH;
+    drawMode &= ~DRAW_POINTS;
+}
+
+void DrawableIGLMesh::setSmoothShading() {
+    drawMode |=  DRAW_SMOOTH;
+    drawMode &= ~DRAW_FLAT;
+    drawMode &= ~DRAW_POINTS;
+}
+
+void DrawableIGLMesh::setPointsShading() {
+    drawMode |=  DRAW_POINTS;
+    drawMode &= ~DRAW_FLAT;
+    drawMode &= ~DRAW_SMOOTH;
 }
 
 void DrawableIGLMesh::renderPass() const {

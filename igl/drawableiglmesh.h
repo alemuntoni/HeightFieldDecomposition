@@ -7,6 +7,7 @@
 class DrawableIGLMesh : public IGLMesh, public DrawableObject {
     public:
         DrawableIGLMesh();
+        DrawableIGLMesh(const IGLMesh &m);
         virtual ~DrawableIGLMesh();
 
         void init();
@@ -18,6 +19,13 @@ class DrawableIGLMesh : public IGLMesh, public DrawableObject {
         double sceneRadius() const;
         bool isVisible() const;
         void setVisible(bool);
+
+        // rendering options
+        //
+        void setWireframe(bool b);
+        void setFlatShading();
+        void setSmoothShading();
+        void setPointsShading();
 
     protected:
 

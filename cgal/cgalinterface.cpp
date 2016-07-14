@@ -1,6 +1,5 @@
 #include "cgalinterface.h"
 
-#ifdef CGAL_DEFINED
 namespace CGALInterface{
     namespace Triangulation{
         void markDomains(CDT& ct, CDT::Face_handle start, int index, std::list<CDT::Edge>& border) {
@@ -245,4 +244,3 @@ namespace CGALInterface{
     }
 
 }
-#endif //CGAL_DEFINED

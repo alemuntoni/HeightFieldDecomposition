@@ -5,7 +5,6 @@
 #include "../common/point.h"
 #include "../common/point2d.h"
 
-#ifdef CGAL_DEFINED
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
@@ -13,12 +12,10 @@
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Boolean_set_operations_2.h>
-#endif //CGAL_DEFINED
 
 /**
   CGAL Triangulation
   */
-#ifdef CGAL_DEFINED
 namespace CGALInterface {
 
     namespace Triangulation{
@@ -75,6 +72,5 @@ namespace CGALInterface {
 
 
 }
-#endif //CGAL_DEFINED
 
 #endif // CGALINTERFACE_H

@@ -1,12 +1,18 @@
 #include "iglmesh.h"
 
+#ifdef DCEL_DEFINED
+#include "../dcel/dcel.h"
+#endif
+
 IGLMesh::IGLMesh() {
 }
 
 IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F) {
-    C.resize(F.rows(), 3);
+    C = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
     NV.resize(V.rows(), 3);
     NF.resize(F.rows(), 3);
+    igl::per_face_normals(V,F,NF);
+    igl::per_vertex_normals(V,F,NV);
     BBmin = V.colwise().minCoeff();
     BBmax = V.colwise().maxCoeff();
 }
@@ -14,6 +20,8 @@ IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F
 IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen::MatrixXd& C) : V(V), F(F), C(C) {
     NV.resize(V.rows(), 3);
     NF.resize(F.rows(), 3);
+    igl::per_face_normals(V,F,NF);
+    igl::per_vertex_normals(V,F,NV);
     BBmin = V.colwise().minCoeff();
     BBmax = V.colwise().maxCoeff();
 }
@@ -21,9 +29,11 @@ IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen
 bool IGLMesh::readFromFile(const std::__cxx11::string& filename) {
     bool b = igl::read_triangle_mesh(filename, V, F);
     if (b){
-        C.resize(F.rows(), 3);
+        C = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
+        igl::per_face_normals(V,F,NF);
+        igl::per_vertex_normals(V,F,NV);
         BBmin = V.colwise().minCoeff();
         BBmax = V.colwise().maxCoeff();
     }
@@ -35,7 +45,7 @@ IGLMesh& IGLMesh::operator=(const Dcel& dcel) {
     clear();
     V.resize(dcel.getNumberVertices(), 3);
     F.resize(dcel.getNumberFaces(), 3);
-    C.resize(F.rows(), 3);
+    C = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
     NV.resize(V.rows(), 3);
     NF.resize(F.rows(), 3);
     std::map<int, int> vids;

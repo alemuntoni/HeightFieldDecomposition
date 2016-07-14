@@ -2,6 +2,7 @@ DEFINES += CGAL_DEFINED
 
 unix:!macx{
     LIBS += -lmpfr -lgmp -lCGAL -frounding-math
+    LIBS += -lboost_system -DBOOST_LOG_DYN_LINK -lboost_log -lboost_thread -lpthread
 }
 
 macx{
