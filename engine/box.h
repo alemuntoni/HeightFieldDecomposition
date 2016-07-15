@@ -38,7 +38,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         void moveX(double d);
         void moveY(double d);
         void moveZ(double d);
-        void getIGLMesh(IGLMesh &box) const;
+        void getIGLMesh(SimpleIGLMesh& box) const;
 
         // DrawableObject interface
         void draw() const;

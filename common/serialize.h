@@ -14,7 +14,9 @@
 #include <map>
 #include <QColor>
 #include <typeinfo>
+#ifdef COMMON_WITH_EIGEN
 #include <Eigen/Core>
+#endif //COMMON_WITH_EIGEN
 #include <array>
 
 #include <type_traits> // To use 'std::integral_constant'.
@@ -122,9 +124,11 @@ namespace Serializer {
 
     template <typename T1, typename T2, typename ...A> void deserialize(const std::map<T1, T2, A...> &m, std::ifstream& binaryFile);
 
+    #ifdef COMMON_WITH_EIGEN
     template <typename T, int ...A> void serialize(const Eigen::Matrix<T, A...> &m, std::ofstream& binaryFile);
 
     template <typename T, int ...A> void deserialize(Eigen::Matrix<T, A...> &m, std::ifstream& binaryFile);
+    #endif //COMMON_WITH_EIGEN
 
     template <typename T, size_t ...A> void serialize(const std::array<T, A...> &a, std::ofstream& binaryFile);
 
@@ -349,6 +353,7 @@ inline void Serializer::deserialize(const std::map<T1, T2, A...> &m, std::ifstre
     }
 }
 
+#ifdef COMMON_WITH_EIGEN
 /**
  * \~English
  * @brief Serializer::serialize
@@ -387,6 +392,7 @@ inline void Serializer::deserialize(Eigen::Matrix<T, A...> &m, std::ifstream& bi
         }
     }
 }
+#endif //COMMON_WITH_EIGEN
 
 /**
  * \~English

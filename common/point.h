@@ -84,7 +84,9 @@ template <class T> class Point : SerializableObject {
         void setZ(const T& z);
         void set(const T& x, const T& y, const T& z);
         double normalize();
+        #ifdef COMMON_WITH_EIGEN
         void rotate(const Eigen::Matrix3d &matrix, const Point<T>& centroid = Point<T>());
+        #endif //COMMON_WITH_EIGEN
         void rotate(double matrix[3][3], const Point<T>& centroid = Point<T>());
 
         // SerializableObject interface
@@ -129,8 +131,10 @@ Point<T> operator * (const T& scalar, const Point<T>& point);
 template <class T>
 Point<T> mul(const T m[][3], const Point<T>& point);
 
+#ifdef COMMON_WITH_EIGEN
 template <class T>
 Point<T> mul(const Eigen::Matrix3d &m, const Point<T>& point);
+#endif //COMMON_WITH_EIGEN
 
 template <class T>
 std::ostream& operator<< (std::ostream& inputStream, const Point<T>& p);
@@ -583,12 +587,14 @@ inline double Point<T>::normalize() {
     return len;
 }
 
+#ifdef COMMON_WITH_EIGEN
 template <class T>
 void Point<T>::rotate(const Eigen::Matrix3d& matrix, const Point<T>& centroid) {
     *this -= centroid;
     *this = mul(matrix, *this);
     *this += centroid;
 }
+#endif //COMMON_WITH_EIGEN
 
 /**
  * \~Italian
@@ -760,6 +766,7 @@ inline Point<T> mul(const T m[][3], const Point<T>& point) {
     return std::move(tmp);
 }
 
+#ifdef COMMON_WITH_EIGEN
 template <class T>
 inline Point<T> mul(const Eigen::Matrix3d &m, const Point<T>& point) {
     Point<T> tmp = point;
@@ -768,6 +775,7 @@ inline Point<T> mul(const Eigen::Matrix3d &m, const Point<T>& point) {
     tmp.setZ(m(2,0)*point.x() + m(2,1)*point.y() + m(2,2)*point.z());
     return std::move(tmp);
 }
+#endif //COMMON_WITH_EIGEN
 
 /**
  * \~Italian

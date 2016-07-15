@@ -7,6 +7,7 @@
 class DrawableIGLMesh : public IGLMesh, public DrawableObject {
     public:
         DrawableIGLMesh();
+        DrawableIGLMesh(const SimpleIGLMesh &m);
         DrawableIGLMesh(const IGLMesh &m);
         virtual ~DrawableIGLMesh();
 

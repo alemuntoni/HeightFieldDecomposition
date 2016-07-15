@@ -53,7 +53,7 @@ void Box3D::getRotatedExtremes(std::vector<Pointd>& v) const {
     v[7] = p;
 }
 
-void Box3D::getIGLMesh(IGLMesh& box) const {
+void Box3D::getIGLMesh(SimpleIGLMesh& box) const {
     box.clear();
     std::vector<Pointd> extremes;
     getRotatedExtremes(extremes);

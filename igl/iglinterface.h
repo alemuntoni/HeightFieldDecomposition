@@ -6,8 +6,7 @@
 #include <igl/signed_distance.h>
 #include <igl/read_triangle_mesh.h>
 
-#include <igl/copyleft/cgal/CSGTree.h>
-#include <igl/jet.h>
+#include "iglmesh.h"
 
 #include <Eigen/Core>
 #include <iostream>

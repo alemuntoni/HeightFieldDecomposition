@@ -14,9 +14,13 @@ EngineManager::EngineManager(QWidget *parent) :
     d(nullptr),
     b(nullptr),
     iterations(nullptr),
-    solutions(nullptr){
+    solutions(nullptr),
+    baseComplex(nullptr){
     ui->setupUi(this);
     ui->iterationsSlider->setMaximum(0);
+
+    ui->frame_2->setVisible(false);
+    ui->frame_5->setVisible(false);
 }
 
 void EngineManager::deleteDrawableObject(DrawableObject* d) {
@@ -30,6 +34,12 @@ void EngineManager::deleteDrawableObject(DrawableObject* d) {
 
 EngineManager::~EngineManager() {
     delete ui;
+    deleteDrawableObject(g);
+    deleteDrawableObject(d);
+    deleteDrawableObject(b);
+    deleteDrawableObject(iterations);
+    deleteDrawableObject(solutions);
+    deleteDrawableObject(baseComplex);
 }
 
 void EngineManager::updateLabel(double value, QLabel* label) {
@@ -611,6 +621,7 @@ void EngineManager::on_solutionsSlider_valueChanged(int value) {
     if (ui->solutionsSlider->isEnabled()){
         solutions->setVisibleBox(value);
         ui->setFromSolutionSpinBox->setValue(value);
+        ui->solutionNumberLabel->setText(QString::number(value));
         mainWindow->updateGlCanvas();
     }
 }
@@ -636,35 +647,57 @@ void EngineManager::on_setFromSolutionButton_clicked() {
 }
 
 void EngineManager::on_wireframeDcelCheckBox_stateChanged(int arg1) {
-    if (d!=nullptr){
+    if (d!=nullptr && ui->inputMeshRadioButton->isChecked()){
         d->setWireframe(arg1 == Qt::Checked);
+        mainWindow->updateGlCanvas();
+    }
+    if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
+        baseComplex->setWireframe(arg1 == Qt::Checked);
         mainWindow->updateGlCanvas();
     }
 
 }
 
 void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
-    if (d!=nullptr){
+    if (d!=nullptr && ui->inputMeshRadioButton->isChecked()){
         if (checked){
             d->setPointsShading();
+            mainWindow->updateGlCanvas();
+        }
+    }
+    if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
+        if (checked){
+            baseComplex->setPointsShading();
             mainWindow->updateGlCanvas();
         }
     }
 }
 
 void EngineManager::on_flatDcelRadioButton_toggled(bool checked) {
-    if (d!=nullptr){
+    if (d!=nullptr && ui->inputMeshRadioButton->isChecked()){
         if (checked){
             d->setFlatShading();
+            mainWindow->updateGlCanvas();
+        }
+    }
+    if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
+        if (checked){
+            baseComplex->setFlatShading();
             mainWindow->updateGlCanvas();
         }
     }
 }
 
 void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
-    if (d!=nullptr){
+    if (d!=nullptr && ui->inputMeshRadioButton->isChecked()){
         if (checked){
             d->setSmoothShading();
+            mainWindow->updateGlCanvas();
+        }
+    }
+    if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
+        if (checked){
+            baseComplex->setSmoothShading();
             mainWindow->updateGlCanvas();
         }
     }
@@ -904,5 +937,41 @@ void EngineManager::on_stepDrawGridSpinBox_valueChanged(double arg1) {
             g->setStepDrawGrid(arg1);
             mainWindow->updateGlCanvas();
         }
+    }
+}
+
+void EngineManager::on_baseComplexPushButton_clicked() {
+    if (d != nullptr){
+        IGLMesh m = (Dcel)*d;
+        baseComplex = new DrawableIGLMesh(m);
+        baseComplex->update();
+        mainWindow->pushObj(baseComplex, "Base Complex");
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_subtractPushButton_clicked() {
+    if (solutions!= nullptr && baseComplex != nullptr){
+        SimpleIGLMesh bc((SimpleIGLMesh)*baseComplex);
+        for (int i = solutions->getNumberBoxes()-1; i >= 0 ; i--){
+            SimpleIGLMesh box;
+            solutions->getBox(i).getIGLMesh(box);
+            SimpleIGLMesh::difference(bc, bc, box);
+            std::cerr << i << "\n";
+//            mainWindow->deleteObj(baseComplex);
+//            delete baseComplex;
+//            baseComplex = new DrawableIGLMesh(bc);
+//            baseComplex->update();
+//            mainWindow->pushObj(baseComplex, "Base Complex");
+//            mainWindow->updateGlCanvas();
+        }
+        mainWindow->deleteObj(baseComplex);
+        delete baseComplex;
+        baseComplex = new DrawableIGLMesh(bc);
+        baseComplex->update();
+        mainWindow->pushObj(baseComplex, "Base Complex");
+        mainWindow->updateGlCanvas();
+        baseComplex->saveOnObj("BaseComplex.obj");
+
     }
 }

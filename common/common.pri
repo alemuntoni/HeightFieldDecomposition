@@ -2,12 +2,18 @@ DEFINES += COMMON_DEFINED
 
 unix:!macx{
     QMAKE_CXXFLAGS += -std=c++11
-    INCLUDEPATH += -I /usr/include/eigen3
+    exists(/usr/include/eigen3){
+        DEFINES += COMMON_WITH_EIGEN
+        INCLUDEPATH += -I /usr/include/eigen3
+    }
 }
 
 macx{
     CONFIG += c++11
-    INCLUDEPATH += -I /libs/include/eigen3/
+    exists(/libs/include/eigen3){
+        DEFINES += COMMON_WITH_EIGEN
+        INCLUDEPATH += -I /libs/include/eigen3/
+    }
 }
 
 HEADERS += \

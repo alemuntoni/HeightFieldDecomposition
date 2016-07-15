@@ -10,6 +10,7 @@
 #include "engine/energy.h"
 #include "engine/engine.h"
 #include "common/timer.h"
+#include "igl/drawableiglmesh.h"
 
 namespace Ui {
     class EngineManager;
@@ -111,6 +112,10 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_stepDrawGridSpinBox_valueChanged(double arg1);
 
+        void on_baseComplexPushButton_clicked();
+
+        void on_subtractPushButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
@@ -119,6 +124,7 @@ class EngineManager : public QFrame, public SerializableObject {
         Box3D* b;
         BoxList* iterations;
         BoxList* solutions;
+        DrawableIGLMesh* baseComplex;
         Energy e;
 };
 

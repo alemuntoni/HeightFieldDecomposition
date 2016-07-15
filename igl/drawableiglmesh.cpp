@@ -10,6 +10,10 @@ DrawableIGLMesh::DrawableIGLMesh() {
     init();
 }
 
+DrawableIGLMesh::DrawableIGLMesh(const SimpleIGLMesh& m) : IGLMesh(m) {
+    init();
+}
+
 DrawableIGLMesh::DrawableIGLMesh(const IGLMesh& m) : IGLMesh(m){
     init();
 }
