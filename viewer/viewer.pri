@@ -1,4 +1,6 @@
 DEFINES += VIEWER_DEFINED
+CONFIG += VIEWER_DEFINED
+MODULES += VIEWER
 
 !contains(DEFINES, COMMON_DEFINED){
     error(Viewer module requires common module!)

@@ -9,65 +9,97 @@ CONFIG(release, debug|release){
     }
 }
 
-#Add or remove all the modules you need
-#Before pushing the project with your new module, please double check that everything works keeping uncommentend
-#only the modules that are required by your module. Also please write here required and optional modules for your module
+#CONFIG += ALL
+CONFIG += SERVER_MODE_GRADIENT_DESCENT
 
-#Common module: contains classes and common functions used on all the other modules
-#Optional: Eigen
-include (common/common.pri)
+ALL {
+    #Add or remove all the modules you need
+    #Before pushing the project with your new module, please double check that everything works keeping uncommentend
+    #only the modules that are required by your module. Also please write here required and optional modules for your module
 
-#Viewer module: contains classes for a simple viewer
-#Requires: Common module, libQGLViewer, boost
-include (viewer/viewer.pri)
+    #Common module: contains classes and common functions used on all the other modules
+    #Optional: Eigen
+    include (common/common.pri)
 
-#Dcel module: contains a Double Connected-Edge List data structure
-#Requires: Common module, boost;
-#Optional: Cgal module, viewer module
-#WARNING: to use the dcel module without the viewer, double check the dcel.pri file (qmake bug, sorry!)
-include (dcel/dcel.pri)
+    #Viewer module: contains classes for a simple viewer
+    #Requires: Common module, libQGLViewer, boost
+    include (viewer/viewer.pri)
 
-#Cgal module: contains an interface to some functionalities of CGAL library
-#Requires: Common module, libCgal; Optional: Dcel module
-include (cgal/cgal.pri)
+    #Dcel module: contains a Double Connected-Edge List data structure
+    #Requires: Common module, boost;
+    #Optional: Cgal module, viewer module
+    #WARNING: to use the dcel module without the viewer, double check the dcel.pri file (qmake bug, sorry!)
+    include (dcel/dcel.pri)
 
-#Trimesh module: contains a Trimesh data structure
-#Requires: Common module
-#Optional: Viewer module
-#WARNING: to use the trimesh module without the viewer, double check the trimesh.pri file (qmake bug, sorry!)
-include (trimesh/trimesh.pri)
+    #Cgal module: contains an interface to some functionalities of CGAL library
+    #Requires: Common module, libCgal; Optional: Dcel module
+    include (cgal/cgal.pri)
 
-#Igl module: coontaint an intergace to some functionalities of libIGL
-#Requires: Common module, libIGL (an environment variable named LIBIGL containing the root directory of the library must be setted)
-#Optional: Viewer module
-#WARNING: to use the igl module without the viewer, double check the igl.pri file (qmake bug, sorry!)
-include (igl/igl.pri)
+    #Trimesh module: contains a Trimesh data structure
+    #Requires: Common module
+    #Optional: Viewer module
+    #WARNING: to use the trimesh module without the viewer, double check the trimesh.pri file (qmake bug, sorry!)
+    include (trimesh/trimesh.pri)
 
-HEADERS += \
-    common.h \
-    lib/grid/grid.h \
-    GUI/managers/enginemanager.h \
-    lib/grid/drawablegrid.h \
-    engine/tricubic.h \
-    engine/energy.h \
-    engine/box.h \
-    engine/boxlist.h \
-    engine/engine.h
+    #Igl module: coontaint an intergace to some functionalities of libIGL
+    #Requires: Common module, libIGL (an environment variable named LIBIGL containing the root directory of the library must be setted)
+    #Optional: Viewer module
+    #WARNING: to use the igl module without the viewer, double check the igl.pri file (qmake bug, sorry!)
+    include (igl/igl.pri)
 
-SOURCES += \
-    main.cpp \
-    common.cpp \
-    lib/grid/grid.cpp \
-    GUI/managers/enginemanager.cpp \
-    lib/grid/drawablegrid.cpp \
-    engine/tricubic.cpp \
-    engine/energy.cpp \
-    engine/box.cpp \
-    engine/boxlist.cpp \
-    engine/engine.cpp
+    HEADERS += \
+        common.h \
+        lib/grid/grid.h \
+        GUI/managers/enginemanager.h \
+        lib/grid/drawablegrid.h \
+        engine/tricubic.h \
+        engine/energy.h \
+        engine/box.h \
+        engine/boxlist.h \
+        engine/engine.h
 
-FORMS += \
-    GUI/managers/enginemanager.ui
+    SOURCES += \
+        main.cpp \
+        common.cpp \
+        lib/grid/grid.cpp \
+        GUI/managers/enginemanager.cpp \
+        lib/grid/drawablegrid.cpp \
+        engine/tricubic.cpp \
+        engine/energy.cpp \
+        engine/box.cpp \
+        engine/boxlist.cpp \
+        engine/engine.cpp
 
-DISTFILES += \
-    README.txt
+    FORMS += \
+        GUI/managers/enginemanager.ui
+
+    DISTFILES += \
+        README.txt
+}
+
+SERVER_MODE_GRADIENT_DESCENT {
+    DEFINES += "SERVER_MODE=1"
+    include (common/common.pri)
+    include (dcel/dcel.pri)
+
+    HEADERS += \
+        common.h \
+        lib/grid/grid.h \
+        engine/tricubic.h \
+        engine/energy.h \
+        engine/box.h \
+        engine/boxlist.h \
+        engine/engine.h
+
+    SOURCES += \
+        main.cpp \
+        common.cpp \
+        lib/grid/grid.cpp \
+        engine/tricubic.cpp \
+        engine/energy.cpp \
+        engine/box.cpp \
+        engine/boxlist.cpp \
+        engine/engine.cpp
+}
+
+message(Included modules: $$MODULES)

@@ -3,9 +3,7 @@
  * @copyright Alessandro Muntoni 2016.
  */
 
-#define USER_INTERFACE 0
-
-#if USER_INTERFACE==1
+#ifndef SERVER_MODE
 #include "viewer/mainwindow.h"
 #include "dcel/gui/dcelmanager.h"
 #include "igl/gui/iglmeshmanager.h"
@@ -22,7 +20,7 @@
 
 int main(int argc, char *argv[]) {
 
-    #if USER_INTERFACE==1
+    #ifndef SERVER_MODE
 
     QApplication app(argc, argv);
 

@@ -1,4 +1,6 @@
 DEFINES += DCEL_DEFINED
+CONFIG += DCEL_DEFINED
+MODULES +=  DCEL
 
 !contains(DEFINES, COMMON_DEFINED){
     error(Dcel module requires common module!)
@@ -26,7 +28,7 @@ SOURCES += \
     $$PWD/drawable_dcel.cpp \
     $$PWD/pickable_dcel.cpp
 
-contains(DEFINES, VIEWER_DEFINED){
-    #WARNING: BUG on qmake: comment the following line if viewer is not included
+#Note: QtCreator always shows this module included, however files included in it are compiled only if Viewer module is included
+VIEWER_DEFINED{
     include ($$PWD/gui/dcelmanager.pri)
 }

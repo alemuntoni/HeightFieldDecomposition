@@ -5,7 +5,9 @@
 #include "common/bounding_box.h"
 #include "viewer/objects/cylinder.h"
 #include "viewer/objects/sphere.h"
+#ifndef SERVER_MODE
 #include "igl/iglmesh.h"
+#endif
 
 class Box3D : public BoundingBox, public DrawableObject{
     public:
@@ -38,7 +40,9 @@ class Box3D : public BoundingBox, public DrawableObject{
         void moveX(double d);
         void moveY(double d);
         void moveZ(double d);
+        #ifndef SERVER_MODE
         void getIGLMesh(SimpleIGLMesh& box) const;
+        #endif
 
         // DrawableObject interface
         void draw() const;

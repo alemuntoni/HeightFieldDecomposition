@@ -1,3 +1,5 @@
+MODULES += TRIMESH_MANAGER
+
 !contains(DEFINES, VIEWER_DEFINED){
     error(TrimeshManager module requires Viewer module!)
 }

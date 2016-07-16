@@ -1,4 +1,6 @@
 DEFINES += CGAL_DEFINED
+CONFIG += CGAL_DEFINED
+MODULES += CGAL
 
 !contains(DEFINES, COMMON_DEFINED){
     error(Cgal module requires common module!)

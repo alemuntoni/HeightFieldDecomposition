@@ -1,3 +1,5 @@
+MODULES +=  IGL_MESH_MANAGER
+
 !contains(DEFINES, VIEWER_DEFINED){
     error(IglMeshManager module requires Viewer module!)
 }

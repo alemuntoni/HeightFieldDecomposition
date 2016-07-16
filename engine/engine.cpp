@@ -86,6 +86,7 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int
     return rotateDcelAlreadyScaled(d, rot);
 }
 
+#ifndef SERVER_MODE
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target) {
 
 
@@ -150,7 +151,7 @@ void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen:
         }
     }
 }
-
+#endif
 void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
     Energy e(g);
     Timer total("Minimization All Boxes");
@@ -174,6 +175,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
 
 }
 
+#ifndef SERVER_MODE
 void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, const BoxList& boxList, const Dcel& d) {
     CGALInterface::AABBTree t(d);
 
@@ -208,6 +210,7 @@ void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector
         vectorTriples.push_back(triple);
     }
 }
+
 
 int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces){
 
@@ -328,6 +331,7 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
 
     return deleteBoxes(boxList, vectorTriples, d.getNumberFaces());
 }
+
 
 int Engine::deleteBoxesMemorySafe(BoxList& boxList, const Dcel& d) {
     std::vector<BoxList> boxLists;
@@ -484,6 +488,7 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
     }
 
 }
+#endif
 
 void Engine::Server::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile) {
     Dcel d;

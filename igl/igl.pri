@@ -1,4 +1,6 @@
 DEFINES += IGL_DEFINED
+CONFIG += IGL_DEFINED
+MODULES += IGL
 
 !contains(DEFINES, COMMON_DEFINED){
     error(Igl module requires common module!)
@@ -25,8 +27,7 @@ SOURCES += \
     $$PWD/iglmesh.cpp \
     $$PWD/drawableiglmesh.cpp
 
-
-contains(DEFINES, VIEWER_DEFINED){
-    #WARNING: BUG on qmake: comment the following line if viewer is not included
+#Note: QtCreator always shows this module included, however files included in it are compiled only if Viewer module is included
+VIEWER_DEFINED{
     include ($$PWD/gui/iglmeshmanager.pri)
 }
