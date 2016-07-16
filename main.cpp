@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     //Dcel d;
     //d.loadFromObjFile(argv[1]);
     //Engine::makePreprocessingAndSave(d, argv[2], 15);
-    Engine::expandBoxesFromPreprocessing(argv[1], argv[2]);
+    Engine::Server::expandBoxesFromPreprocessing(argv[1], argv[2]);
 
     #endif
 }

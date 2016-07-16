@@ -975,3 +975,38 @@ void EngineManager::on_subtractPushButton_clicked() {
 
     }
 }
+
+void EngineManager::on_serializeBCPushButton_clicked() {
+    if (baseComplex != nullptr && solutions != nullptr){
+        QString filename = QFileDialog::getSaveFileName(nullptr,
+                           "Serialize",
+                           ".",
+                           "BIN(*.bin)");
+        if (!filename.isEmpty()) {
+            std::ofstream myfile;
+            myfile.open (filename.toStdString(), std::ios::out | std::ios::binary);
+            solutions->serialize(myfile);
+            baseComplex->serialize(myfile);
+            std::vector<IGLMesh> hf;
+            Serializer::serialize(hf, myfile);
+            myfile.close();
+        }
+    }
+
+}
+
+void EngineManager::on_deserializeBCPushButton_clicked() {
+    QString filename = QFileDialog::getOpenFileName(nullptr,
+                       "Deserialize",
+                       ".",
+                       "BIN(*.bin)");
+
+    if (!filename.isEmpty()) {
+        std::ifstream myfile;
+        myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
+        solutions->deserialize(myfile);
+        baseComplex->deserialize(myfile);
+        //manca gestione heightfields
+        myfile.close();
+    }
+}

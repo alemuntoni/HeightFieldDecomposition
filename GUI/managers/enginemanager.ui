@@ -16,6 +16,12 @@
     <height>0</height>
    </size>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>375</width>
+    <height>16777215</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Frame</string>
   </property>
@@ -50,7 +56,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-224</y>
+        <y>-209</y>
         <width>339</width>
         <height>1316</height>
        </rect>
@@ -967,10 +973,24 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="7" column="0">
            <widget class="QPushButton" name="subtractPushButton">
             <property name="text">
              <string>Subtract</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QPushButton" name="serializeBCPushButton">
+            <property name="text">
+             <string>Serialize BC</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="2">
+           <widget class="QPushButton" name="deserializeBCPushButton">
+            <property name="text">
+             <string>Deserialize BC</string>
             </property>
            </widget>
           </item>

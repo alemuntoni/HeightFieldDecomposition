@@ -12,6 +12,14 @@ Vec3 Engine::getClosestTarget(const Vec3& n) {
     return XYZ[k];
 }
 
+void Engine::serializeAsEngineManager(std::ofstream& binaryfile, const Grid& g, const Dcel &d, const BoxList &bl) {
+    g.serialize(binaryfile);
+    d.serialize(binaryfile);
+    bool b = true;
+    Serializer::serialize(b, binaryfile);
+    bl.serialize(binaryfile);
+}
+
 Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
     Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
     if (rot > 0){
@@ -386,102 +394,6 @@ void Engine::makePreprocessingAndSave(const Dcel& input, const std::__cxx11::str
     }
 }
 
-void Engine::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile) {
-    Dcel d;
-    bool heightfields;
-
-    std::ifstream input;
-    input.open (inputFile, std::ios::in | std::ios::binary);
-    d.deserialize(input);
-    Serializer::deserialize(heightfields, input);
-    if (!heightfields){
-        Grid g[ORIENTATIONS];
-        BoxList bl[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            g[i].deserialize(input);
-            bl[i].deserialize(input);
-        }
-        input.close();
-        Timer t("Total Time Entire Process");
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            expandBoxes(bl[i], g[i]);
-        }
-        t.stopAndPrint();
-        std::ofstream myfile;
-        myfile.open (outputFile, std::ios::out | std::ios::binary);
-        d.serialize(myfile);
-        Serializer::serialize(heightfields, myfile);
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            g[i].serialize(myfile);
-            bl[i].serialize(myfile);
-        }
-        myfile.close();
-    }
-    else {
-        Grid g[ORIENTATIONS][TARGETS];
-        BoxList bl[ORIENTATIONS][TARGETS];
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                g[i][j].deserialize(input);
-                bl[i][j].deserialize(input);
-            }
-        }
-        input.close();
-        Timer t("Total Time Entire Process");
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                expandBoxes(bl[i][j], g[i][j]);
-            }
-        }
-        t.stopAndPrint();
-        std::ofstream myfile;
-        myfile.open (outputFile, std::ios::out | std::ios::binary);
-        d.serialize(myfile);
-        Serializer::serialize(heightfields, myfile);
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                g[i][j].serialize(myfile);
-                bl[i][j].serialize(myfile);
-            }
-        }
-        myfile.close();;
-    }
-}
-
-void Engine::afterExpandedBoxes(const std::__cxx11::string& inputFile) {
-    Dcel d;
-    bool heightfields;
-
-    std::ifstream input;
-    input.open (inputFile, std::ios::in | std::ios::binary);
-    d.deserialize(input);
-    Serializer::deserialize(heightfields, input);
-    if (!heightfields){
-        Grid g[ORIENTATIONS];
-        BoxList bl[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            g[i].deserialize(input);
-            bl[i].deserialize(input);
-        }
-        input.close();
-
-
-    }
-    else {
-        Grid g[ORIENTATIONS][TARGETS];
-        BoxList bl[ORIENTATIONS][TARGETS];
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                g[i][j].deserialize(input);
-                bl[i][j].deserialize(input);
-            }
-        }
-        input.close();
-
-
-    }
-}
-
 void Engine::largeScaleFabrication(const Dcel& input, int resolution, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
@@ -573,10 +485,64 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
 
 }
 
-void Engine::serializeAsEngineManager(std::ofstream& binaryfile, const Grid& g, const Dcel &d, const BoxList &bl) {
-    g.serialize(binaryfile);
-    d.serialize(binaryfile);
-    bool b = true;
-    Serializer::serialize(b, binaryfile);
-    bl.serialize(binaryfile);
+void Engine::Server::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile) {
+    Dcel d;
+    bool heightfields;
+
+    std::ifstream input;
+    input.open (inputFile, std::ios::in | std::ios::binary);
+    d.deserialize(input);
+    Serializer::deserialize(heightfields, input);
+    if (!heightfields){
+        Grid g[ORIENTATIONS];
+        BoxList bl[ORIENTATIONS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            g[i].deserialize(input);
+            bl[i].deserialize(input);
+        }
+        input.close();
+        Timer t("Total Time Entire Process");
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            Engine::expandBoxes(bl[i], g[i]);
+        }
+        t.stopAndPrint();
+        std::ofstream myfile;
+        myfile.open (outputFile, std::ios::out | std::ios::binary);
+        d.serialize(myfile);
+        Serializer::serialize(heightfields, myfile);
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            g[i].serialize(myfile);
+            bl[i].serialize(myfile);
+        }
+        myfile.close();
+    }
+    else {
+        Grid g[ORIENTATIONS][TARGETS];
+        BoxList bl[ORIENTATIONS][TARGETS];
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                g[i][j].deserialize(input);
+                bl[i][j].deserialize(input);
+            }
+        }
+        input.close();
+        Timer t("Total Time Entire Process");
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                Engine::expandBoxes(bl[i][j], g[i][j]);
+            }
+        }
+        t.stopAndPrint();
+        std::ofstream myfile;
+        myfile.open (outputFile, std::ios::out | std::ios::binary);
+        d.serialize(myfile);
+        Serializer::serialize(heightfields, myfile);
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                g[i][j].serialize(myfile);
+                bl[i][j].serialize(myfile);
+            }
+        }
+        myfile.close();;
+    }
 }
