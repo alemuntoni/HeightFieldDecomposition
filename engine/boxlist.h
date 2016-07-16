@@ -43,10 +43,10 @@ class BoxList : public DrawableObject, public SerializableObject{
         bool visible;
         int visibleBox;
         bool cylinder;
-#ifndef SERVER_MODE
+        #ifdef VIEWER_DEFINED
         void drawLine(const Pointd& a, const Pointd& b, const QColor& c) const;
         void drawCube(const Box3D& b, const QColor& c) const;
-#endif
+        #endif
 };
 
 #endif // BOXLIST_H

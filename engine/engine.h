@@ -9,7 +9,7 @@
 #include "energy.h"
 #include "boxlist.h"
 #include "common.h"
-#ifndef SERVER_MODE
+#if SERVER_MODE!=1
 #include "cgal/aabbtree.h"
 #include "igl/iglinterface.h"
 #endif
@@ -26,13 +26,13 @@ namespace Engine {
     Eigen::Matrix3d rotateDcelAlreadyScaled(Dcel& d, unsigned int rot);
 
     Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, int resolution = 50, unsigned int rot = 0);
-    #ifndef SERVER_MODE
+    #if SERVER_MODE!=1
     void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3());
 
     void calculateInitialBoxes(BoxList &boxList, const Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
     #endif
     void expandBoxes(BoxList &boxList, const Grid &g);
-    #ifndef SERVER_MODE
+    #if SERVER_MODE!=1
     void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<bool> > >& vectorTriples, const BoxList& boxList, const Dcel &d);
 
     int deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);

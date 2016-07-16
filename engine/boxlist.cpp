@@ -70,7 +70,7 @@ void BoxList::setCylinders(bool b) {
 }
 
 void BoxList::draw() const {
-    #ifndef SERVER_MODE
+    #ifdef VIEWER_DEFINED
     if (visible){
         if (visibleBox < 0){
             if (!cylinder){
@@ -86,7 +86,7 @@ void BoxList::draw() const {
         else
             boxes[visibleBox].draw();
     }
-#endif
+    #endif
 }
 
 Pointd BoxList::sceneCenter() const {
@@ -105,7 +105,7 @@ void BoxList::setVisible(bool b) {
     visible = b;
 }
 
-#ifndef SERVER_MODE
+#ifdef VIEWER_DEFINED
 void BoxList::drawLine(const Pointd &a, const Pointd &b, const QColor& c) const {
     glBegin(GL_LINES);
     glColor3f(c.redF(), c.greenF(), c.blueF());

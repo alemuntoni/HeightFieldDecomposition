@@ -86,7 +86,7 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int
     return rotateDcelAlreadyScaled(d, rot);
 }
 
-#ifndef SERVER_MODE
+#if SERVER_MODE!=1
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target) {
 
 
@@ -175,7 +175,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
 
 }
 
-#ifndef SERVER_MODE
+#if SERVER_MODE!=1
 void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, const BoxList& boxList, const Dcel& d) {
     CGALInterface::AABBTree t(d);
 

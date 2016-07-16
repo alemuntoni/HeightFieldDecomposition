@@ -9,8 +9,9 @@ CONFIG(release, debug|release){
     }
 }
 
-#CONFIG += ALL
-CONFIG += SERVER_MODE_GRADIENT_DESCENT
+CONFIG += ALL
+#CONFIG += SERVER_MODE_GRADIENT_DESCENT
+#CONFIG += SERVER_MODE_BOOLEAN_OPERATIONS
 
 ALL {
     #Add or remove all the modules you need
@@ -39,7 +40,7 @@ ALL {
     #Requires: Common module
     #Optional: Viewer module
     #WARNING: to use the trimesh module without the viewer, double check the trimesh.pri file (qmake bug, sorry!)
-    include (trimesh/trimesh.pri)
+    #include (trimesh/trimesh.pri)
 
     #Igl module: coontaint an intergace to some functionalities of libIGL
     #Requires: Common module, libIGL (an environment variable named LIBIGL containing the root directory of the library must be setted)
@@ -78,6 +79,8 @@ ALL {
 }
 
 SERVER_MODE_GRADIENT_DESCENT {
+    QMAKE_CXXFLAGS += -std=c++11  -fopenmp
+    QMAKE_LFLAGS +=  -fopenmp
     DEFINES += "SERVER_MODE=1"
     include (common/common.pri)
     include (dcel/dcel.pri)
@@ -97,6 +100,25 @@ SERVER_MODE_GRADIENT_DESCENT {
         lib/grid/grid.cpp \
         engine/tricubic.cpp \
         engine/energy.cpp \
+        engine/box.cpp \
+        engine/boxlist.cpp \
+        engine/engine.cpp
+}
+
+SERVER_MODE_BOOLEAN_OPERATIONS {
+    DEFINES += "SERVER_MODE=2"
+    include (common/common.pri)
+    include (igl/igl.pri)
+
+    HEADERS += \
+        common.h \
+        engine/box.h \
+        engine/boxlist.h \
+        engine/engine.h
+
+    SOURCES += \
+        main.cpp \
+        common.cpp \
         engine/box.cpp \
         engine/boxlist.cpp \
         engine/engine.cpp
