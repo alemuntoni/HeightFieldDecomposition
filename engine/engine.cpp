@@ -571,13 +571,13 @@ void Engine::Server::booleanOperationsFromSolutions(const std::__cxx11::string& 
     std::ifstream ifile;
     ifile.open (inputFile, std::ios::in | std::ios::binary);
     BoxList bl;
-    SimpleIGLMesh bc;
+    IGLMesh tbc;
     std::vector<SimpleIGLMesh> hf;
     bl.deserialize(ifile);
-    bc.deserialize(ifile);
+    tbc.deserialize(ifile);
     Serializer::deserialize(hf, ifile);
     ifile.close();
-
+    SimpleIGLMesh bc(tbc);
     hf.clear();
     hf.resize(bl.getNumberBoxes());
     Timer t("Boolean Operations");

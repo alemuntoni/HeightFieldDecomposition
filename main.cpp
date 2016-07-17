@@ -65,4 +65,5 @@ int main(int argc, char *argv[]) {
     #elif SERVER_MODE==2
     Engine::Server::booleanOperationsFromSolutions(argv[1], argv[2]);
     #endif
+    return 0;
 }

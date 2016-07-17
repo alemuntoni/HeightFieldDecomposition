@@ -1002,11 +1002,19 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
                        "BIN(*.bin)");
 
     if (!filename.isEmpty()) {
+        deleteDrawableObject(solutions);
+        deleteDrawableObject(baseComplex);
+        solutions = new BoxList();
+        baseComplex = new DrawableIGLMesh();
         std::ifstream myfile;
         myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
         solutions->deserialize(myfile);
         baseComplex->deserialize(myfile);
+        baseComplex->update();
         //manca gestione heightfields
         myfile.close();
+        mainWindow->pushObj(solutions, "Solutions");
+        mainWindow->pushObj(baseComplex, "Base Complex");
+        mainWindow->updateGlCanvas();
     }
 }
