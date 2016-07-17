@@ -29,7 +29,6 @@ ALL {
     #Dcel module: contains a Double Connected-Edge List data structure
     #Requires: Common module, boost;
     #Optional: Cgal module, viewer module
-    #WARNING: to use the dcel module without the viewer, double check the dcel.pri file (qmake bug, sorry!)
     include (dcel/dcel.pri)
 
     #Cgal module: contains an interface to some functionalities of CGAL library
@@ -39,13 +38,11 @@ ALL {
     #Trimesh module: contains a Trimesh data structure
     #Requires: Common module
     #Optional: Viewer module
-    #WARNING: to use the trimesh module without the viewer, double check the trimesh.pri file (qmake bug, sorry!)
     #include (trimesh/trimesh.pri)
 
     #Igl module: coontaint an intergace to some functionalities of libIGL
     #Requires: Common module, libIGL (an environment variable named LIBIGL containing the root directory of the library must be setted)
-    #Optional: Viewer module
-    #WARNING: to use the igl module without the viewer, double check the igl.pri file (qmake bug, sorry!)
+    #Optional: Viewer module, Cgal module
     include (igl/igl.pri)
 
     HEADERS += \
@@ -84,6 +81,7 @@ SERVER_MODE_GRADIENT_DESCENT {
     DEFINES += "SERVER_MODE=1"
     include (common/common.pri)
     include (dcel/dcel.pri)
+    include (igl/igl.pri)
 
     HEADERS += \
         common.h \
@@ -108,6 +106,7 @@ SERVER_MODE_GRADIENT_DESCENT {
 SERVER_MODE_BOOLEAN_OPERATIONS {
     DEFINES += "SERVER_MODE=2"
     include (common/common.pri)
+    include (cgal/cgal.pri)
     include (igl/igl.pri)
 
     HEADERS += \

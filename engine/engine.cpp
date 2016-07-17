@@ -1,5 +1,6 @@
 #include "engine.h"
 
+#if SERVER_MODE != 2
 Vec3 Engine::getClosestTarget(const Vec3& n) {
     double angle = n.dot(XYZ[0]);
     int k = 0;
@@ -86,7 +87,6 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int
     return rotateDcelAlreadyScaled(d, rot);
 }
 
-#if SERVER_MODE!=1
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target) {
 
 
@@ -151,7 +151,7 @@ void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen:
         }
     }
 }
-#endif
+
 void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
     Energy e(g);
     Timer total("Minimization All Boxes");
@@ -174,8 +174,9 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
     myfile.close();
 
 }
+#endif
 
-#if SERVER_MODE!=1
+#ifndef SERVER_MODE
 void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, const BoxList& boxList, const Dcel& d) {
     CGALInterface::AABBTree t(d);
 
@@ -346,58 +347,6 @@ int Engine::deleteBoxesMemorySafe(BoxList& boxList, const Dcel& d) {
     return deleteBoxes(boxList, d);
 }
 
-
-void Engine::makePreprocessingAndSave(const Dcel& input, const std::__cxx11::string& filename, int resolution, double kernelDistance, bool heightfields) {
-    Dcel scaled[ORIENTATIONS];
-    Eigen::Matrix3d m[ORIENTATIONS];
-    for (unsigned int i = 0; i < ORIENTATIONS; i++){
-        scaled[i] = input;
-        m[i] = scaleAndRotateDcel(scaled[i], resolution, i);
-    }
-
-    if (!heightfields){
-        Grid g[ORIENTATIONS];
-        BoxList bl[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            generateGrid(g[i], scaled[i], kernelDistance);
-            calculateInitialBoxes(bl[i],scaled[i], m[i], false);
-
-        }
-        std::ofstream myfile;
-        myfile.open (filename, std::ios::out | std::ios::binary);
-        scaled[0].serialize(myfile);
-        Serializer::serialize(heightfields, myfile);
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            g[i].serialize(myfile);
-            bl[i].serialize(myfile);
-        }
-
-        myfile.close();
-
-    }
-    else {
-        Grid g[ORIENTATIONS][TARGETS];
-        BoxList bl[ORIENTATIONS][TARGETS];
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j]);
-                calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
-            }
-        }
-        std::ofstream myfile;
-        myfile.open (filename, std::ios::out | std::ios::binary);
-        scaled[0].serialize(myfile);
-        Serializer::serialize(heightfields, myfile);
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                g[i][j].serialize(myfile);
-                bl[i][j].serialize(myfile);
-            }
-        }
-        myfile.close();
-    }
-}
-
 void Engine::largeScaleFabrication(const Dcel& input, int resolution, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
@@ -490,6 +439,69 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
 }
 #endif
 
+#if SERVER_MODE==1
+void Engine::Server::expandBoxesFromFile(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile, int resolution, double kernelDistance, bool heightfields) {
+    Dcel scaled[ORIENTATIONS];
+    Eigen::Matrix3d m[ORIENTATIONS];
+    for (unsigned int i = 0; i < ORIENTATIONS; i++){
+        scaled[i].loadFromObjFile(inputFile);
+        m[i] = scaleAndRotateDcel(scaled[i], resolution, i);
+    }
+
+    if (!heightfields){
+        Grid g[ORIENTATIONS];
+        BoxList bl[ORIENTATIONS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            generateGrid(g[i], scaled[i], kernelDistance);
+            calculateInitialBoxes(bl[i],scaled[i], m[i], false);
+        }
+        Timer t("Total Time Entire Process");
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            Engine::expandBoxes(bl[i], g[i]);
+        }
+        t.stopAndPrint();
+        std::ofstream myfile;
+        myfile.open (outputFile, std::ios::out | std::ios::binary);
+        scaled[0].serialize(myfile);
+        Serializer::serialize(heightfields, myfile);
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            g[i].serialize(myfile);
+            bl[i].serialize(myfile);
+        }
+
+        myfile.close();
+
+    }
+    else {
+        Grid g[ORIENTATIONS][TARGETS];
+        BoxList bl[ORIENTATIONS][TARGETS];
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j]);
+                calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
+            }
+        }
+        Timer t("Total Time Entire Process");
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                Engine::expandBoxes(bl[i][j], g[i][j]);
+            }
+        }
+        t.stopAndPrint();
+        std::ofstream myfile;
+        myfile.open (outputFile, std::ios::out | std::ios::binary);
+        scaled[0].serialize(myfile);
+        Serializer::serialize(heightfields, myfile);
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            for (unsigned j = 0; j < TARGETS; ++j){
+                g[i][j].serialize(myfile);
+                bl[i][j].serialize(myfile);
+            }
+        }
+        myfile.close();
+    }
+}
+
 void Engine::Server::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile) {
     Dcel d;
     bool heightfields;
@@ -551,3 +563,40 @@ void Engine::Server::expandBoxesFromPreprocessing(const std::__cxx11::string& in
         myfile.close();;
     }
 }
+#endif
+
+#if SERVER_MODE==2
+void Engine::Server::booleanOperationsFromSolutions(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile) {
+
+    std::ifstream ifile;
+    ifile.open (inputFile, std::ios::in | std::ios::binary);
+    BoxList bl;
+    SimpleIGLMesh bc;
+    std::vector<SimpleIGLMesh> hf;
+    bl.deserialize(ifile);
+    bc.deserialize(ifile);
+    Serializer::deserialize(hf, ifile);
+    ifile.close();
+
+    hf.clear();
+    hf.resize(bl.getNumberBoxes());
+    Timer t("Boolean Operations");
+    for (int i = bl.getNumberBoxes()-1; i >= 0 ; i--){
+        SimpleIGLMesh box;
+        SimpleIGLMesh intersection;
+        bl.getBox(i).getIGLMesh(box);
+        SimpleIGLMesh::difference(intersection, bc, box);
+        SimpleIGLMesh::difference(bc, bc, box);
+        hf[i] = intersection;
+        std::cerr << "Difference and intersection: " << i << "\n";
+    }
+    t.stopAndPrint();
+
+    std::ofstream ofile;
+    ofile.open (outputFile, std::ios::out | std::ios::binary);
+    bl.serialize(ofile);
+    bc.serialize(ofile);
+    Serializer::serialize(hf, ofile);
+    ofile.close();
+}
+#endif

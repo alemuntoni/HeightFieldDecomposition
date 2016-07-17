@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
     return app.exec();
 
-    #else
+    #elif SERVER_MODE==1
     /*bool b = false;
     if (argc > 1) {
         b = true;
@@ -61,7 +61,8 @@ int main(int argc, char *argv[]) {
     //Dcel d;
     //d.loadFromObjFile(argv[1]);
     //Engine::makePreprocessingAndSave(d, argv[2], 15);
-    Engine::Server::expandBoxesFromPreprocessing(argv[1], argv[2]);
-
+    Engine::Server::expandBoxesFromFile(argv[1], argv[2], std::stoi(argv[3]), std::stod(argv[4]), (bool)std::stoi(argv[5]));
+    #elif SERVER_MODE==2
+    Engine::Server::booleanOperationsFromSolutions(argv[1], argv[2]);
     #endif
 }

@@ -97,6 +97,4 @@ QColor colorOfNormal(const Vec3 &normal);
 
 std::string exec(const char* cmd);
 
-void getEigenVerteicesFacesFromDcel(Eigen::MatrixXd &V, Eigen::MatrixXi &F, Eigen::MatrixXd& C, Eigen::MatrixXd& NV, Eigen::MatrixXd& NF, Eigen::MatrixXd& BB, const Dcel &d);
-
 #endif // COMMON_H

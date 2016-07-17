@@ -103,6 +103,7 @@ bool SimpleIGLMesh::saveOnPly(const std::__cxx11::string& filename) const {
     return igl::writePLY(filename, V, F);
 }
 
+#ifdef CGAL_DEFINED
 void SimpleIGLMesh::intersection(SimpleIGLMesh& result, const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
     igl::copyleft::cgal::CSGTree M;
     M = {{m1.V,m1.F},{m2.V,m2.F},"i"};
@@ -116,6 +117,7 @@ void SimpleIGLMesh::difference(SimpleIGLMesh& result, const SimpleIGLMesh& m1, c
     result.V = M.cast_V<Eigen::MatrixXd>();
     result.F = M.F();
 }
+#endif
 
 void SimpleIGLMesh::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(V, binaryFile);
@@ -127,7 +129,7 @@ void SimpleIGLMesh::deserialize(std::ifstream& binaryFile) {
     Serializer::deserialize(F, binaryFile);
 }
 
-
+#ifdef CGAL_DEFINED
 void IGLMesh::intersection(IGLMesh& result, const IGLMesh& m1, const IGLMesh& m2) {
     SimpleIGLMesh sres;
     SimpleIGLMesh::intersection(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
@@ -147,6 +149,7 @@ void IGLMesh::difference(IGLMesh& result, const IGLMesh& m1, const IGLMesh& m2) 
     result.NF.resize(result.F.rows(), 3);
     result.updateVertexAndFaceNormals();
 }
+#endif
 
 #ifdef DCEL_DEFINED
 IGLMesh& IGLMesh::operator=(const Dcel& dcel) {

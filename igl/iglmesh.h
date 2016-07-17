@@ -5,8 +5,12 @@
 #include <igl/read_triangle_mesh.h>
 #include <igl/per_vertex_normals.h>
 #include <igl/per_face_normals.h>
+#include <igl/writeOBJ.h>
+#include <igl/writePLY.h>
 
+#ifdef CGAL_DEFINED
 #include <igl/copyleft/cgal/CSGTree.h>
+#endif
 #include <igl/jet.h>
 #include "../common/serialize.h"
 
@@ -32,8 +36,10 @@ class SimpleIGLMesh : public SerializableObject {
         bool saveOnObj(const std::string &filename) const;
         bool saveOnPly(const std::string &filename) const;
         void clear();
+        #ifdef CGAL_DEFINED
         static void intersection(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
         static void difference(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
+        #endif
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -59,8 +65,10 @@ class IGLMesh : public SimpleIGLMesh {
         void clear();
         bool readFromFile(const std::string &filename);
 
+        #ifdef CGAL_DEFINED
         static void intersection(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);
         static void difference(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);
+        #endif
 
         #ifdef DCEL_DEFINED
         IGLMesh& operator= (const Dcel& dcel);
