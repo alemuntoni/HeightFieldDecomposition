@@ -7,7 +7,7 @@
 #include "dcel_vertex_iterators.h"
 #include "dcel_iterators.h"
 #include "../common/comparators.h"
-#include "../common/common.h"
+#include "../common/utils.h"
 
 /****************
  * Constructors *

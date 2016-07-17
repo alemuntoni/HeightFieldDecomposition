@@ -31,8 +31,8 @@ HEADERS += \
     $$PWD/drawable_object.h \
     $$PWD/point.h \
     $$PWD/point2d.h \
-    $$PWD/common.h \
     $$PWD/serialize.h \
     $$PWD/pickable_object.h \
     $$PWD/arrays.h \
-    $$PWD/timer.h
+    $$PWD/timer.h \
+    $$PWD/utils.h

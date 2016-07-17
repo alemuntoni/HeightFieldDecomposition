@@ -6,7 +6,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "common/common.h"
+#include "common/utils.h"
 #include "dcel/dcel.h"
 #include <set>
 #include <Eigen/Core>
@@ -35,7 +35,7 @@ extern int WINDOW_MANAGER_ID;
 extern int DCEL_MANAGER_ID;
 extern int ENGINE_MANAGER_ID;
 
-static std::vector<Vec3> XYZ = {
+static const std::vector<Vec3> XYZ = {
     Vec3( 1.0f,  0.0f,  0.0f),                         //    +X : label  0
     Vec3( 0.0f,  1.0f,  0.0f),                         //    +Y : label  1
     Vec3( 0.0f,  0.0f,  1.0f),                         //    +Z : label  2
@@ -64,7 +64,7 @@ static std::vector<Vec3> XYZ = {
     Vec3(-ONE_ON_SQRT3,  ONE_ON_SQRT3, -ONE_ON_SQRT3)  //-X+Y-Z : label 25
 };
 
-static std::vector<QColor> colors = {
+static const std::vector<QColor> colors = {
     QColor(255, 0, 0),    //     Red: label 0
     QColor(0, 255, 0),    //   Green: label 1
     QColor(0, 0, 255),    //    Blue: label 2
@@ -94,7 +94,5 @@ static std::vector<QColor> colors = {
 };
 
 QColor colorOfNormal(const Vec3 &normal);
-
-std::string exec(const char* cmd);
 
 #endif // COMMON_H

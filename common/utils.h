@@ -16,12 +16,13 @@
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
 
-#ifndef LIB_COMMON_H
-#define LIB_COMMON_H
+#ifndef LIB_UTILS_H
+#define LIB_UTILS_H
 
 #define EPSILON 0.0000001
 
 #include <vector>
+#include <memory>
 #include "point.h"
 
 /**
@@ -106,5 +107,17 @@ inline void getRotationMatrix(Vec3 axis, double angle, double m[][3]) {
     m[2][2] = cosa + (axis.z() * axis.z())*(1-cosa);
 }
 
-#endif // LIB_COMMON_H
+inline std::string executeCommand(const char* cmd) {
+    std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) return "ERROR";
+    char buffer[128];
+    std::string result = "";
+    while (!feof(pipe.get())) {
+        if (fgets(buffer, 128, pipe.get()) != NULL)
+            result += buffer;
+    }
+    return result;
+}
+
+#endif // LIB_UTILS_H
 

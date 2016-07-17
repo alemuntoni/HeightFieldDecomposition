@@ -1,7 +1,7 @@
 #ifndef CGALINTERFACE_H
 #define CGALINTERFACE_H
 
-#include "../common/common.h"
+#include "../common/utils.h"
 #include "../common/point.h"
 #include "../common/point2d.h"
 

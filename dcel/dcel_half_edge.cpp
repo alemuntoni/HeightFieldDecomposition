@@ -5,7 +5,7 @@
 
 #include "dcel_face_iterators.h"
 #include "dcel_vertex_iterators.h"
-#include "../common/common.h"
+#include "../common/utils.h"
 
 /****************
  * Constructors *
