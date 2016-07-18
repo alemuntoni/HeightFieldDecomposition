@@ -550,44 +550,6 @@ void EngineManager::on_createBoxesPushButton_clicked() {
         //Engine::calculateInitialBoxes(*solutions, *d, Eigen::Matrix3d::Identity(), true, XYZ[ui->targetComboBox->currentIndex()]);
         Dcel copy = *d;
         Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
-        int rot = ui->orientationComboBox->currentIndex();
-        if (rot > 0){
-            switch (rot){
-                case 1:
-                    getRotationMatrix(Vec3(0,0,1), 0.785398, m);
-                    copy.rotate(m);
-                    break;
-                case 2:
-                    getRotationMatrix(Vec3(1,0,0), 0.785398, m);
-                    copy.rotate(m);
-                    break;
-                case 3:
-                    getRotationMatrix(Vec3(0,1,0), 0.785398, m);
-                    copy.rotate(m);
-                    break;
-                default:
-                    assert(0);
-            }
-        }
-        /**
-         * @todo is transpose right?
-         */
-        if (rot > 0){
-            switch (rot){
-                case 1:
-                    getRotationMatrix(Vec3(0,0,-1), 0.785398, m);
-                    break;
-                case 2:
-                    getRotationMatrix(Vec3(-1,0,0), 0.785398, m);
-                    break;
-                case 3:
-                    getRotationMatrix(Vec3(0,-1,0), 0.785398, m);
-                    break;
-                default:
-                    assert(0);
-            }
-        }
-
 
         Engine::calculateInitialBoxes(*solutions, copy, m);
         ui->showAllSolutionsCheckBox->setEnabled(true);
@@ -958,12 +920,6 @@ void EngineManager::on_subtractPushButton_clicked() {
             solutions->getBox(i).getIGLMesh(box);
             SimpleIGLMesh::difference(bc, bc, box);
             std::cerr << i << "\n";
-//            mainWindow->deleteObj(baseComplex);
-//            delete baseComplex;
-//            baseComplex = new DrawableIGLMesh(bc);
-//            baseComplex->update();
-//            mainWindow->pushObj(baseComplex, "Base Complex");
-//            mainWindow->updateGlCanvas();
         }
         mainWindow->deleteObj(baseComplex);
         delete baseComplex;
@@ -1020,5 +976,63 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+    }
+}
+
+void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
+    if (d!=nullptr){
+        deleteDrawableObject(solutions);
+        solutions = new BoxList();
+        mainWindow->pushObj(solutions, "Solutions");
+        double kernelDistance = ui->distanceSpinBox->value();
+        Dcel scaled[ORIENTATIONS];
+        Eigen::Matrix3d m[ORIENTATIONS];
+        std::vector< std::tuple<int, Box3D, std::vector<bool> > > allVectorTriples;
+
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            scaled[i] = *d;
+            m[i] = Engine::scaleAndRotateDcel(scaled[i], ui->samplesSpinBox->value(), i);
+        }
+        if (!ui->heightfieldsCheckBox->isChecked()){
+            Grid g[ORIENTATIONS];
+            BoxList bl[ORIENTATIONS];
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                Engine::generateGrid(g[i], scaled[i], kernelDistance);
+                Engine::calculateInitialBoxes(bl[i],scaled[i], m[i], false);
+                Engine::expandBoxes(bl[i], g[i]);
+            }
+
+            std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS];
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                solutions->insert(bl[i]);
+                Engine::createVectorTriples(vectorTriples[i], bl[i], scaled[i]);
+                allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i].begin(), vectorTriples[i].end());
+            }
+
+            Engine::deleteBoxes(*solutions, allVectorTriples, d->getNumberFaces());
+        }
+        else {
+            Grid g[ORIENTATIONS][TARGETS];
+            BoxList bl[ORIENTATIONS][TARGETS];
+            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+                for (unsigned j = 0; j < TARGETS; ++j){
+                    Engine::generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j]);
+                    Engine::calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
+                    Engine::expandBoxes(bl[i][j], g[i][j]);
+                }
+            }
+
+            std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS][TARGETS];
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                for (unsigned int j = 0; j < TARGETS; ++j){
+                    solutions->insert(bl[i][j]);
+                    Engine::createVectorTriples(vectorTriples[i][j], bl[i][j], scaled[i]);
+                    allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i][j].begin(), vectorTriples[i][j].end());
+                }
+            }
+
+            Engine::deleteBoxes(*solutions, allVectorTriples, d->getNumberFaces());
+        }
+        mainWindow->updateGlCanvas();
     }
 }

@@ -120,6 +120,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_deserializeBCPushButton_clicked();
 
+        void on_createAndMinimizeAllPushButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow

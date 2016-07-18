@@ -56,7 +56,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-209</y>
+        <y>0</y>
         <width>339</width>
         <height>1316</height>
        </rect>
@@ -704,6 +704,13 @@
             </property>
            </widget>
           </item>
+          <item row="10" column="1">
+           <widget class="QPushButton" name="createAndMinimizeAllPushButton">
+            <property name="text">
+             <string>Create and Minimize All</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -873,27 +880,10 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_12">
+          <item row="7" column="1">
+           <widget class="QPushButton" name="serializeBCPushButton">
             <property name="text">
-             <string>Orientation:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0" colspan="3">
-           <widget class="QSlider" name="solutionsSlider">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QPushButton" name="deleteBoxesPushButton">
-            <property name="text">
-             <string>Delete Boxes</string>
+             <string>Serialize BC</string>
             </property>
            </widget>
           </item>
@@ -904,59 +894,49 @@
             </property>
            </widget>
           </item>
+          <item row="7" column="0">
+           <widget class="QPushButton" name="deserializeBCPushButton">
+            <property name="text">
+             <string>Deserialize BC</string>
+            </property>
+           </widget>
+          </item>
           <item row="6" column="0">
-           <widget class="QPushButton" name="minimizeAllPushButton">
-            <property name="text">
-             <string>Minimize All</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QPushButton" name="createBoxesPushButton">
-            <property name="text">
-             <string>Create Boxes</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QLabel" name="solutionNumberLabel">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="orientationComboBox">
-            <item>
-             <property name="text">
-              <string>0</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>2</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>3</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="6" column="2">
            <widget class="QPushButton" name="baseComplexPushButton">
             <property name="text">
              <string>Base Complex</string>
             </property>
            </widget>
           </item>
+          <item row="6" column="1">
+           <widget class="QPushButton" name="subtractPushButton">
+            <property name="text">
+             <string>Subtract</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="solutionNumberLabel">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="createBoxesPushButton">
+            <property name="text">
+             <string>Create Boxes</string>
+            </property>
+           </widget>
+          </item>
           <item row="4" column="1">
+           <widget class="QPushButton" name="deleteBoxesPushButton">
+            <property name="text">
+             <string>Delete Boxes</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
            <widget class="QCheckBox" name="showAllSolutionsCheckBox">
             <property name="enabled">
              <bool>false</bool>
@@ -966,31 +946,27 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0" colspan="3">
-           <widget class="Line" name="line_3">
+          <item row="3" column="0">
+           <widget class="QSlider" name="solutionsSlider">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
-           <widget class="QPushButton" name="subtractPushButton">
+          <item row="4" column="0">
+           <widget class="QPushButton" name="minimizeAllPushButton">
             <property name="text">
-             <string>Subtract</string>
+             <string>Minimize All</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
-           <widget class="QPushButton" name="serializeBCPushButton">
-            <property name="text">
-             <string>Serialize BC</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="2">
-           <widget class="QPushButton" name="deserializeBCPushButton">
-            <property name="text">
-             <string>Deserialize BC</string>
+          <item row="0" column="0" colspan="2">
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
