@@ -585,7 +585,7 @@ void Engine::Server::booleanOperationsFromSolutions(const std::__cxx11::string& 
         SimpleIGLMesh box;
         SimpleIGLMesh intersection;
         bl.getBox(i).getIGLMesh(box);
-        SimpleIGLMesh::difference(intersection, bc, box);
+        SimpleIGLMesh::intersection(intersection, bc, box);
         SimpleIGLMesh::difference(bc, bc, box);
         hf[i] = intersection;
         std::cerr << "Difference and intersection: " << i << "\n";

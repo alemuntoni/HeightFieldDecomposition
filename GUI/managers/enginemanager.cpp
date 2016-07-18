@@ -614,6 +614,7 @@ void EngineManager::on_showAllSolutionsCheckBox_stateChanged(int arg1) {
         solutions->setCylinders(false);
         solutions->setVisibleBox(0);
     }
+    ui->solutionNumberLabel->setNum((int)solutions->getNumberBoxes());
     mainWindow->updateGlCanvas();
 }
 
@@ -1016,5 +1017,11 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         mainWindow->pushObj(solutions, "Solutions");
         mainWindow->pushObj(baseComplex, "Base Complex");
         mainWindow->updateGlCanvas();
+        ui->showAllSolutionsCheckBox->setEnabled(true);
+        solutions->setVisibleBox(0);
+        ui->solutionsSlider->setEnabled(true);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->setFromSolutionSpinBox->setValue(0);
+        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
     }
 }

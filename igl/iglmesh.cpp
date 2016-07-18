@@ -200,4 +200,5 @@ void IGLMesh::deserialize(std::ifstream& binaryFile) {
     Serializer::deserialize(C, binaryFile);
     Serializer::deserialize(NV, binaryFile);
     Serializer::deserialize(NF, binaryFile);
+    updateBoundingBox();
 }
