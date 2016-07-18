@@ -25,38 +25,6 @@ void DrawableIGLMesh::init() {
     drawMode          = DRAW_MESH | DRAW_SMOOTH | DRAW_FACECOLOR;
 }
 
-void DrawableIGLMesh::update() {
-    coords.clear();
-    v_norm.clear();
-    tris.clear();
-    colors.clear();
-    coords.resize(V.rows()*3);
-    v_norm.resize(V.rows()*3);
-    tris.resize(F.rows()*3);
-    colors.resize(F.rows()*3);
-    wireframe_colors.resize(F.rows()*3);
-    for (unsigned int i = 0; i < V.rows(); i++){
-        coords[i*3] = V(i,0);
-        coords[i*3+1] = V(i,1);
-        coords[i*3+2] = V(i,2);
-        v_norm[i*3] = NV(i,0);
-        v_norm[i*3+1] = NV(i,1);
-        v_norm[i*3+2] = NV(i,2);
-    }
-    for (unsigned int i = 0; i < F.rows(); i++){
-        tris[i*3] = F(i,0);
-        tris[i*3+1] = F(i,1);
-        tris[i*3+2] = F(i,2);
-        colors[i*3] = C(i,0);
-        colors[i*3+1] = C(i,1);
-        colors[i*3+2] = C(i,2);
-        wireframe_colors[i*3] = 0.1;
-        wireframe_colors[i*3+1] = 0.1;
-        wireframe_colors[i*3+2] = 0.1;
-    }
-
-}
-
 void DrawableIGLMesh::draw() const {
     if (drawMode & DRAW_MESH)
     {
@@ -183,7 +151,7 @@ void DrawableIGLMesh::setPointsShading() {
 void DrawableIGLMesh::renderPass() const {
     if (drawMode & DRAW_POINTS) {
         glEnableClientState(GL_VERTEX_ARRAY);
-        glVertexPointer(3, GL_DOUBLE, 0, coords.data());
+        glVertexPointer(3, GL_DOUBLE, 0, V.data());
 
         glDrawArrays(GL_POINTS, 0, V.rows());
 
@@ -194,37 +162,31 @@ void DrawableIGLMesh::renderPass() const {
         //
         if (drawMode & DRAW_FACECOLOR) {
 
-            int n_tris = tris.size()/3;
+            int n_tris = F.rows();
             for(int tid=0; tid<n_tris; ++tid) {
-                int tid_ptr  = 3 * tid;
-                int vid0     = tris[tid_ptr + 0];
-                int vid1     = tris[tid_ptr + 1];
-                int vid2     = tris[tid_ptr + 2];
-                int vid0_ptr = 3 * vid0;
-                int vid1_ptr = 3 * vid1;
-
-                int vid2_ptr = 3 * vid2;
-
+                int vid0     = F(tid, 0);
+                int vid1     = F(tid, 1);
+                int vid2     = F(tid, 2);
                 glBegin(GL_TRIANGLES);
-                glColor3fv(&(colors[tid_ptr]));
-                glNormal3dv(&(v_norm[vid0_ptr]));
-                glVertex3dv(&(coords[vid0_ptr]));
-                glNormal3dv(&(v_norm[vid1_ptr]));
-                glVertex3dv(&(coords[vid1_ptr]));
-                glNormal3dv(&(v_norm[vid2_ptr]));
-                glVertex3dv(&(coords[vid2_ptr]));
+                glColor3dv((C.row(tid).data()));
+                glNormal3dv((NV.row(vid0).data()));
+                glVertex3dv((V.row(vid0).data()));
+                glNormal3dv((NV.row(vid1).data()));
+                glVertex3dv((V.row(vid1).data()));
+                glNormal3dv((NV.row(vid2).data()));
+                glVertex3dv((V.row(vid2).data()));
                 glEnd();
             }
         }
         else {
 
             glEnableClientState(GL_VERTEX_ARRAY);
-            glVertexPointer(3, GL_DOUBLE, 0, coords.data());
+            glVertexPointer(3, GL_DOUBLE, 0, V.data());
 
             glEnableClientState(GL_NORMAL_ARRAY);
-            glNormalPointer(GL_DOUBLE, 0, v_norm.data());
+            glNormalPointer(GL_DOUBLE, 0, NV.data());
 
-            glDrawElements(GL_TRIANGLES, tris.size(), GL_UNSIGNED_INT, tris.data());
+            glDrawElements(GL_TRIANGLES, F.rows()*3, GL_UNSIGNED_INT, F.data());
 
             glDisableClientState(GL_NORMAL_ARRAY);
             glDisableClientState(GL_VERTEX_ARRAY);
@@ -232,27 +194,22 @@ void DrawableIGLMesh::renderPass() const {
     }
 
     if (drawMode & DRAW_WIREFRAME) {
-        int n_tris = tris.size()/3;
+        float wirframecolor[3] = {0.1, 0.1, 0.1};
+        int n_tris = F.rows();
         for(int tid=0; tid<n_tris; ++tid) {
-            int tid_ptr  = 3 * tid;
-            int vid0     = tris[tid_ptr + 0];
-            int vid1     = tris[tid_ptr + 1];
-            int vid2     = tris[tid_ptr + 2];
-            int vid0_ptr = 3 * vid0;
-            int vid1_ptr = 3 * vid1;
-
-            int vid2_ptr = 3 * vid2;
-
+            int vid0     = F(tid, 0);
+            int vid1     = F(tid, 1);
+            int vid2     = F(tid, 2);
 
             glBegin(GL_TRIANGLES);
 
-            glColor3fv(&(wireframe_colors[tid_ptr]));
-            glNormal3dv(&(v_norm[vid0_ptr]));
-            glVertex3dv(&(coords[vid0_ptr]));
-            glNormal3dv(&(v_norm[vid1_ptr]));
-            glVertex3dv(&(coords[vid1_ptr]));
-            glNormal3dv(&(v_norm[vid2_ptr]));
-            glVertex3dv(&(coords[vid2_ptr]));
+            glColor3fv(wirframecolor);
+            glNormal3dv((NV.row(vid0).data()));
+            glVertex3dv((V.row(vid0).data()));
+            glNormal3dv((NV.row(vid1).data()));
+            glVertex3dv((V.row(vid1).data()));
+            glNormal3dv((NV.row(vid2).data()));
+            glVertex3dv((V.row(vid2).data()));
             glEnd();
         }
     }

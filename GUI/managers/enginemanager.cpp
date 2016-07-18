@@ -945,7 +945,6 @@ void EngineManager::on_baseComplexPushButton_clicked() {
     if (d != nullptr){
         IGLMesh m = (Dcel)*d;
         baseComplex = new DrawableIGLMesh(m);
-        baseComplex->update();
         mainWindow->pushObj(baseComplex, "Base Complex");
         mainWindow->updateGlCanvas();
     }
@@ -969,7 +968,6 @@ void EngineManager::on_subtractPushButton_clicked() {
         mainWindow->deleteObj(baseComplex);
         delete baseComplex;
         baseComplex = new DrawableIGLMesh(bc);
-        baseComplex->update();
         mainWindow->pushObj(baseComplex, "Base Complex");
         mainWindow->updateGlCanvas();
         baseComplex->saveOnObj("BaseComplex.obj");
@@ -1011,7 +1009,6 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
         solutions->deserialize(myfile);
         baseComplex->deserialize(myfile);
-        baseComplex->update();
         //manca gestione heightfields
         myfile.close();
         mainWindow->pushObj(solutions, "Solutions");

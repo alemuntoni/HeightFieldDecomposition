@@ -45,8 +45,8 @@ class SimpleIGLMesh : public SerializableObject {
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);
     protected:
-        Eigen::MatrixXd V;
-        Eigen::MatrixXi F;
+        Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> V;
+        Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> F;
 };
 
 class IGLMesh : public SimpleIGLMesh {
@@ -79,9 +79,9 @@ class IGLMesh : public SimpleIGLMesh {
 
     protected:
 
-        Eigen::MatrixXd C;
-        Eigen::MatrixXd NV;
-        Eigen::MatrixXd NF;
+        Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> C;
+        Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NV;
+        Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
         Eigen::RowVector3d BBmin, BBmax;
 };
 

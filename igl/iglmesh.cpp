@@ -27,8 +27,8 @@ IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : SimpleIGL
     C = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
     NV.resize(V.rows(), 3);
     NF.resize(F.rows(), 3);
-    igl::per_face_normals(V,F,NF);
-    igl::per_vertex_normals(V,F,NV);
+    igl::per_face_normals(this->V,this->F,NF);
+    igl::per_vertex_normals(this->V,this->F,NV);
     BBmin = V.colwise().minCoeff();
     BBmax = V.colwise().maxCoeff();
 }
@@ -36,8 +36,8 @@ IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : SimpleIGL
 IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen::MatrixXd& C) : SimpleIGLMesh(V,F), C(C) {
     NV.resize(V.rows(), 3);
     NF.resize(F.rows(), 3);
-    igl::per_face_normals(V,F,NF);
-    igl::per_vertex_normals(V,F,NV);
+    igl::per_face_normals(this->V,this->F,NF);
+    igl::per_vertex_normals(this->V,this->F,NV);
     BBmin = V.colwise().minCoeff();
     BBmax = V.colwise().maxCoeff();
 }

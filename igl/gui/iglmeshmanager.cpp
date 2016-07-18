@@ -52,7 +52,6 @@ void IGLMeshManager::on_loadIGLMeshButton_clicked() {
     {
         mesh = new DrawableIGLMesh();
         mesh->readFromFile(filename.toStdString());
-        mesh->update();
         mainWindow->pushObj(mesh, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
         setButtonsMeshLoaded(true);
         mainWindow->updateGlCanvas();

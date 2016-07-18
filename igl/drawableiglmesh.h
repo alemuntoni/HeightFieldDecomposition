@@ -12,7 +12,6 @@ class DrawableIGLMesh : public IGLMesh, public DrawableObject {
         virtual ~DrawableIGLMesh();
 
         void init();
-        void update();
 
         // DrawableObject interface
         void draw() const;
@@ -42,11 +41,6 @@ class DrawableIGLMesh : public IGLMesh, public DrawableObject {
         };
 
         int   drawMode; /** \~Italian @brief intero interpretato come stringa di bit rappresentante la modalità di visualizzazione della dcel*/
-        std::vector<double> coords; /** \~Italian @brief vettore di coordinate usate per la visualizzazione: per aggiornare utilizzare metodo update() */
-        std::vector<double> v_norm; /** \~Italian @brief vettore di normali ai vertici usate per la visualizzazione: per aggiornare utilizzare il metodo update() */
-        std::vector<int> tris; /** \~Italian @brief vettore di triangoli (da considerare a triple di indici) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */
-        std::vector<float> colors; /** \~Italian @brief vettore di colori associati ai triangoli (da considerare come triple rgb float) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */
-        std::vector<float> wireframe_colors;
 
 };
 
