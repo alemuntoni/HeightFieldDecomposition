@@ -90,6 +90,19 @@ bool IGLMesh::readFromFile(const std::__cxx11::string& filename) {
     return b;
 }
 
+void IGLMesh::setColor(double red, double green, double blue, int f) {
+    if (f < 0){
+        C.resize(F.rows(), 3);
+        for (unsigned int i = 0; i < C.rows(); i++)
+            C.row(i) << red, green, blue;
+    }
+    else{
+        assert(f < F.rows());
+        C.row(f) << red, green, blue;
+    }
+
+}
+
 bool SimpleIGLMesh::readFromFile(const std::__cxx11::string& filename) {
     bool b = igl::read_triangle_mesh(filename, V, F);
     return b;

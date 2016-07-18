@@ -172,3 +172,9 @@ const Vec3& Box3D::getTarget() const {
 void Box3D::setTarget(const Vec3& value) {
     target = value;
 }
+
+Vec3 Box3D::getRotatedTarget() const {
+    Vec3 r = target;
+    r.rotate(rotation);
+    return std::move(r);
+}

@@ -57,6 +57,7 @@ class Box3D : public BoundingBox, public DrawableObject{
 
         const Vec3& getTarget() const;
         void setTarget(const Vec3& value);
+        Vec3 getRotatedTarget() const;
 
     protected:
         //Pointd min, max;

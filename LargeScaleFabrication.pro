@@ -54,7 +54,8 @@ ALL {
         engine/energy.h \
         engine/box.h \
         engine/boxlist.h \
-        engine/engine.h
+        engine/engine.h \
+        engine/heightfieldslist.h
 
     SOURCES += \
         main.cpp \
@@ -66,7 +67,8 @@ ALL {
         engine/energy.cpp \
         engine/box.cpp \
         engine/boxlist.cpp \
-        engine/engine.cpp
+        engine/engine.cpp \
+        engine/heightfieldslist.cpp
 
     FORMS += \
         GUI/managers/enginemanager.ui
@@ -113,14 +115,16 @@ SERVER_MODE_BOOLEAN_OPERATIONS {
         common.h \
         engine/box.h \
         engine/boxlist.h \
-        engine/engine.h
+        engine/engine.h \
+        engine/heightfieldslist.h
 
     SOURCES += \
         main.cpp \
         common.cpp \
         engine/box.cpp \
         engine/boxlist.cpp \
-        engine/engine.cpp
+        engine/engine.cpp \
+        engine/heightfieldslist.cpp
 }
 
 message(Included modules: $$MODULES)

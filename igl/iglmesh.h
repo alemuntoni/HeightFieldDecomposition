@@ -64,6 +64,7 @@ class IGLMesh : public SimpleIGLMesh {
         void updateVertexAndFaceNormals();
         void clear();
         bool readFromFile(const std::string &filename);
+        void setColor(double red, double green, double blue, int f = -1);
 
         #ifdef CGAL_DEFINED
         static void intersection(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);

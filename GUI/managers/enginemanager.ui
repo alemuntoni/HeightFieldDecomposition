@@ -56,9 +56,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-324</y>
         <width>339</width>
-        <height>1316</height>
+        <height>1388</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
@@ -749,7 +749,7 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QFrame" name="frame3">
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
@@ -787,7 +787,7 @@
             </layout>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QFrame" name="frame2">
             <layout class="QGridLayout" name="gridLayout_14">
              <item row="3" column="0">
@@ -845,21 +845,45 @@
             </layout>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QRadioButton" name="inputMeshRadioButton">
-            <property name="text">
-             <string>Input Mesh</string>
+          <item row="2" column="0" colspan="2">
+           <widget class="QFrame" name="frame_7">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
             </property>
-            <property name="checked">
-             <bool>true</bool>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
             </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QRadioButton" name="baseComplexRadioButton">
-            <property name="text">
-             <string>Base Complex</string>
-            </property>
+            <layout class="QFormLayout" name="formLayout">
+             <item row="0" column="0">
+              <widget class="QRadioButton" name="inputMeshRadioButton">
+               <property name="text">
+                <string>Input Mesh</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QRadioButton" name="baseComplexRadioButton">
+               <property name="text">
+                <string>Base Complex</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QRadioButton" name="heightfieldsRadioButton">
+               <property name="text">
+                <string>Heightfields</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+            <zorder>inputMeshRadioButton</zorder>
+            <zorder>baseComplexRadioButton</zorder>
+            <zorder>baseComplexRadioButton</zorder>
+            <zorder>inputMeshRadioButton</zorder>
+            <zorder>heightfieldsRadioButton</zorder>
            </widget>
           </item>
          </layout>
@@ -967,6 +991,23 @@
            <widget class="Line" name="line_3">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QSlider" name="heightfieldsSlider">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QCheckBox" name="allHeightfieldsCheckBox">
+            <property name="text">
+             <string>All</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

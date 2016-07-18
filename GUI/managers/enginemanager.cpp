@@ -15,7 +15,8 @@ EngineManager::EngineManager(QWidget *parent) :
     b(nullptr),
     iterations(nullptr),
     solutions(nullptr),
-    baseComplex(nullptr){
+    baseComplex(nullptr),
+    he(nullptr) {
     ui->setupUi(this);
     ui->iterationsSlider->setMaximum(0);
 
@@ -618,7 +619,9 @@ void EngineManager::on_wireframeDcelCheckBox_stateChanged(int arg1) {
         baseComplex->setWireframe(arg1 == Qt::Checked);
         mainWindow->updateGlCanvas();
     }
+    if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
 
+    }
 }
 
 void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
@@ -633,6 +636,9 @@ void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
             baseComplex->setPointsShading();
             mainWindow->updateGlCanvas();
         }
+    }
+    if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
+
     }
 }
 
@@ -649,6 +655,9 @@ void EngineManager::on_flatDcelRadioButton_toggled(bool checked) {
             mainWindow->updateGlCanvas();
         }
     }
+    if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
+
+    }
 }
 
 void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
@@ -663,6 +672,9 @@ void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
             baseComplex->setSmoothShading();
             mainWindow->updateGlCanvas();
         }
+    }
+    if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
+
     }
 }
 
@@ -914,20 +926,28 @@ void EngineManager::on_baseComplexPushButton_clicked() {
 
 void EngineManager::on_subtractPushButton_clicked() {
     if (solutions!= nullptr && baseComplex != nullptr){
+        he = new HeightfieldsList();
+        mainWindow->pushObj(he, "Heightfields");
+        mainWindow->updateGlCanvas();
+        he->resize(solutions->getNumberBoxes());
         SimpleIGLMesh bc((SimpleIGLMesh)*baseComplex);
         for (int i = solutions->getNumberBoxes()-1; i >= 0 ; i--){
             SimpleIGLMesh box;
+            SimpleIGLMesh intersection;
             solutions->getBox(i).getIGLMesh(box);
+            SimpleIGLMesh::intersection(intersection, bc, box);
             SimpleIGLMesh::difference(bc, bc, box);
+            DrawableIGLMesh dim(intersection);
+            he->addHeightfield(dim, solutions->getBox(i).getRotatedTarget(), i);
             std::cerr << i << "\n";
         }
+        ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
         mainWindow->deleteObj(baseComplex);
         delete baseComplex;
         baseComplex = new DrawableIGLMesh(bc);
         mainWindow->pushObj(baseComplex, "Base Complex");
         mainWindow->updateGlCanvas();
         baseComplex->saveOnObj("BaseComplex.obj");
-
     }
 }
 
@@ -1034,5 +1054,30 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
             Engine::deleteBoxes(*solutions, allVectorTriples, d->getNumberFaces());
         }
         mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_allHeightfieldsCheckBox_stateChanged(int arg1) {
+    if (arg1 == Qt::Checked){
+        if (he != nullptr){
+            he->setVisibleHeightfield(-1);
+            mainWindow->updateGlCanvas();
+        }
+    }
+    else {
+        if (he != nullptr){
+            he->setVisibleHeightfield(ui->heightfieldsSlider->value());
+            mainWindow->updateGlCanvas();
+        }
+    }
+}
+
+void EngineManager::on_heightfieldsSlider_valueChanged(int value) {
+    if (he != nullptr){
+        if (!ui->allHeightfieldsCheckBox->isChecked()){
+            ui->solutionsSlider->setValue(value);
+            he->setVisibleHeightfield(value);
+            mainWindow->updateGlCanvas();
+        }
     }
 }

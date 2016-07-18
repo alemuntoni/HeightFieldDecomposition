@@ -11,6 +11,7 @@
 #include "engine/engine.h"
 #include "common/timer.h"
 #include "igl/drawableiglmesh.h"
+#include "engine/heightfieldslist.h"
 
 namespace Ui {
     class EngineManager;
@@ -122,6 +123,10 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_createAndMinimizeAllPushButton_clicked();
 
+        void on_allHeightfieldsCheckBox_stateChanged(int arg1);
+
+        void on_heightfieldsSlider_valueChanged(int value);
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
@@ -132,6 +137,7 @@ class EngineManager : public QFrame, public SerializableObject {
         BoxList* solutions;
         DrawableIGLMesh* baseComplex;
         Energy e;
+        HeightfieldsList *he;
 };
 
 #endif // ENGINEMANAGER_H
