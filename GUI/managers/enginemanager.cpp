@@ -121,7 +121,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
         deleteDrawableObject(g);
         g = new DrawableGrid();
 
-        Engine::scaleAndRotateDcel(*d, 0);
+        Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()]);
 
         d->update();
@@ -957,7 +957,14 @@ void EngineManager::on_subtractPushButton_clicked() {
                 solutions->removeBox(i);
             }
         }
+        ui->showAllSolutionsCheckBox->setEnabled(true);
+        solutions->setVisibleBox(0);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
+        ui->allHeightfieldsCheckBox->setChecked(true);
+        ui->solutionsSlider->setEnabled(true);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->setFromSolutionSpinBox->setValue(0);
+        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow->deleteObj(baseComplex);
         delete baseComplex;
         baseComplex = new DrawableIGLMesh(bc);
@@ -1019,6 +1026,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         //manca gestione heightfields
         myfile.close();
         d->update();
+        d->saveOnObjFile("sphere_sim3.obj");
         d->setPointsShading();
         d->setWireframe(true);
         mainWindow->pushObj(d, "Input Mesh");
@@ -1049,7 +1057,7 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
 
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
             scaled[i] = *d;
-            m[i] = Engine::scaleAndRotateDcel(scaled[i], i);
+            m[i] = Engine::rotateDcelAlreadyScaled(scaled[i], i);
         }
         if (!ui->heightfieldsCheckBox->isChecked()){
             Grid g[ORIENTATIONS];
@@ -1091,6 +1099,12 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
 
             Engine::deleteBoxes(*solutions, allVectorTriples, d->getNumberFaces());
         }
+        ui->showAllSolutionsCheckBox->setEnabled(true);
+        solutions->setVisibleBox(0);
+        ui->solutionsSlider->setEnabled(true);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->setFromSolutionSpinBox->setValue(0);
+        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow->updateGlCanvas();
     }
 }

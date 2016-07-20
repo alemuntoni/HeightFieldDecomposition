@@ -53,7 +53,7 @@ Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
     return m;
 }
 
-Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, unsigned int rot) {
+Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, unsigned int rot, int factor) {
     BoundingBox bb = d.getBoundingBox();
     double avg = 0;
     for (Dcel::HalfEdgeIterator heit = d.halfEdgeBegin(); heit != d.halfEdgeEnd(); ++heit){
@@ -62,7 +62,7 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, unsigned int rot) {
     avg /= d.getNumberHalfEdges();
     double maxl = std::max(bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
     maxl = std::max(maxl, bb.getMaxZ() - bb.getMinZ());
-    int resolution = maxl / avg + 1;
+    int resolution = (maxl / avg + 1)*factor;
     double av = maxl / resolution;
     BoundingBox nBB(-(bb.getMax()-bb.getMin())/av, (bb.getMax()-bb.getMin())/av);
     d.scale(nBB);

@@ -33,7 +33,7 @@ namespace Engine {
 
     Eigen::Matrix3d rotateDcelAlreadyScaled(Dcel& d, unsigned int rot);
 
-    Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, unsigned int rot = 0);
+    Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, unsigned int rot = 0, int factor = 1);
 
     void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3());
 

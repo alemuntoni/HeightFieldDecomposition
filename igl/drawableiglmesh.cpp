@@ -169,11 +169,11 @@ void DrawableIGLMesh::renderPass() const {
                 int vid2     = F(tid, 2);
                 glBegin(GL_TRIANGLES);
                 glColor3dv((C.row(tid).data()));
-                glNormal3dv((NV.row(vid0).data()));
+                glNormal3dv((NF.row(tid).data()));
                 glVertex3dv((V.row(vid0).data()));
-                glNormal3dv((NV.row(vid1).data()));
+                glNormal3dv((NF.row(tid).data()));
                 glVertex3dv((V.row(vid1).data()));
-                glNormal3dv((NV.row(vid2).data()));
+                glNormal3dv((NF.row(tid).data()));
                 glVertex3dv((V.row(vid2).data()));
                 glEnd();
             }
@@ -204,11 +204,11 @@ void DrawableIGLMesh::renderPass() const {
             glBegin(GL_TRIANGLES);
 
             glColor3fv(wirframecolor);
-            glNormal3dv((NV.row(vid0).data()));
+            glNormal3dv((NF.row(tid).data()));
             glVertex3dv((V.row(vid0).data()));
-            glNormal3dv((NV.row(vid1).data()));
+            glNormal3dv((NF.row(tid).data()));
             glVertex3dv((V.row(vid1).data()));
-            glNormal3dv((NV.row(vid2).data()));
+            glNormal3dv((NF.row(tid).data()));
             glVertex3dv((V.row(vid2).data()));
             glEnd();
         }

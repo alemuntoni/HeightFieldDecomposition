@@ -58,7 +58,7 @@
         <x>0</x>
         <y>0</y>
         <width>339</width>
-        <height>1404</height>
+        <height>1413</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
@@ -989,6 +989,16 @@
            <widget class="QLabel" name="label_3">
             <property name="text">
              <string>Target:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="factorSpinBox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>1</number>
             </property>
            </widget>
           </item>
