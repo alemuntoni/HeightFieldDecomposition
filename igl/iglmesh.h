@@ -13,6 +13,7 @@
 #endif
 #include <igl/jet.h>
 #include "../common/serialize.h"
+#include "../common/point.h"
 
 #ifdef DCEL_DEFINED
 class Dcel;
@@ -36,6 +37,8 @@ class SimpleIGLMesh : public SerializableObject {
         bool saveOnObj(const std::string &filename) const;
         bool saveOnPly(const std::string &filename) const;
         void clear();
+        int getNumberFaces() const;
+        int getNumberVertices() const;
         #ifdef CGAL_DEFINED
         static void intersection(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
         static void difference(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
@@ -65,6 +68,7 @@ class IGLMesh : public SimpleIGLMesh {
         void clear();
         bool readFromFile(const std::string &filename);
         void setColor(double red, double green, double blue, int f = -1);
+        Vec3 getNormal(unsigned int f) const;
 
         #ifdef CGAL_DEFINED
         static void intersection(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);

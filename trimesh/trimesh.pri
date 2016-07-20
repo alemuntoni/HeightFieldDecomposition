@@ -1,4 +1,6 @@
 DEFINES += TRIMESH_DEFINED
+CONFIG += TRIMESH_DEFINED
+MODULES += TRIMESH
 
 !contains(DEFINES, COMMON_DEFINED){
     error(Trimesh module requires common module!)
@@ -13,7 +15,7 @@ SOURCES += \
     $$PWD/load_save_trimesh.cpp \
     $$PWD/drawable_trimesh.cpp
 
-contains(DEFINES, VIEWER_DEFINED){
-    #WARNING: BUG on qmake: comment the following line if viewer is not included
+#Note: QtCreator always shows this module included, however files included in it are compiled only if Viewer module is included
+VIEWER_DEFINED{
     include ($$PWD/gui/trimeshmanager.pri)
 }

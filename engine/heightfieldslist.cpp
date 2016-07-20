@@ -34,13 +34,42 @@ void HeightfieldsList::setVisible(bool b) {
 }
 
 void HeightfieldsList::setVisibleHeightfield(int i) {
-    assert (i < heightfields.size());
+    assert (i < (int)heightfields.size());
     nVisible = i;
 }
 
 void HeightfieldsList::resize(int n) {
     heightfields.resize(n);
     targets.resize(n);
+}
+
+int HeightfieldsList::getNumberVerticesHeightfield(int i) {
+    assert (i < (int)heightfields.size());
+    return heightfields[i].getNumberVertices();
+}
+
+void HeightfieldsList::setWireframe(bool b) {
+    for (unsigned int i = 0; i < heightfields.size(); ++i){
+        heightfields[i].setWireframe(b);
+    }
+}
+
+void HeightfieldsList::setPointShading() {
+    for (unsigned int i = 0; i < heightfields.size(); ++i){
+        heightfields[i].setPointShading();
+    }
+}
+
+void HeightfieldsList::setFlatShading() {
+    for (unsigned int i = 0; i < heightfields.size(); ++i){
+        heightfields[i].setFlatShading();
+    }
+}
+
+void HeightfieldsList::setSmoothShading() {
+    for (unsigned int i = 0; i < heightfields.size(); ++i){
+        heightfields[i].setSmoothShading();
+    }
 }
 
 void HeightfieldsList::addHeightfield(const DrawableIGLMesh& m, const Vec3& target, int i) {
@@ -60,4 +89,21 @@ void HeightfieldsList::addHeightfield(const DrawableIGLMesh& m, const Vec3& targ
 
 unsigned int HeightfieldsList::getNumHeightfields() const {
     return heightfields.size();
+}
+
+void HeightfieldsList::removeHeightfield(int i) {
+    assert (i < heightfields.size());
+    heightfields.erase(heightfields.begin()+i);
+    targets.erase(targets.begin()+i);
+}
+
+void HeightfieldsList::serialize(std::ofstream& binaryFile) const {
+    Serializer::serialize(heightfields, binaryFile);
+    Serializer::serialize(targets, binaryFile);
+}
+
+void HeightfieldsList::deserialize(std::ifstream& binaryFile) {
+    Serializer::deserialize(heightfields, binaryFile);
+    Serializer::deserialize(targets, binaryFile);
+    nVisible = -1;
 }

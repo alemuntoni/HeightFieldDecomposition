@@ -4,7 +4,7 @@
 #include "igl/drawableiglmesh.h"
 #include "common/drawable_object.h"
 
-class HeightfieldsList : public DrawableObject{
+class HeightfieldsList : public DrawableObject, public SerializableObject{
     public:
         HeightfieldsList();
         // DrawableObject interface
@@ -15,9 +15,20 @@ class HeightfieldsList : public DrawableObject{
         void setVisible(bool b);
         void setVisibleHeightfield(int i);
         void resize(int n);
+        int getNumberVerticesHeightfield(int i);
+        void setWireframe(bool b);
+        void setPointShading();
+        void setFlatShading();
+        void setSmoothShading();
 
         void addHeightfield(const DrawableIGLMesh &m, const Vec3 &target, int i = -1);
         unsigned int getNumHeightfields() const;
+
+        void removeHeightfield(int i);
+
+        // SerializableObject interface
+        void serialize(std::ofstream& binaryFile) const;
+        void deserialize(std::ifstream& binaryFile);
 
     private:
         std::vector<DrawableIGLMesh> heightfields;

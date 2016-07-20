@@ -19,7 +19,7 @@
 #ifndef LIB_UTILS_H
 #define LIB_UTILS_H
 
-#define EPSILON 0.0000001
+#define EPSILON 0.000001
 
 #include <vector>
 #include <memory>

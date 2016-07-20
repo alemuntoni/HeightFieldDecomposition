@@ -62,7 +62,7 @@ void TrimeshManager::on_butSaveTrimesh_clicked() {
 
     std::cout << "save: " << filename.toStdString() << std::endl;
     //Trimesh Save missing!!
-    //saveObj(filename.toStdString().c_str());
+    saveObj(filename.toStdString().c_str(), trimesh->vectorCoords(), trimesh->vectorTriangles());
 
 }
 

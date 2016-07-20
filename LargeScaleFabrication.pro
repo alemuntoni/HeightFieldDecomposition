@@ -3,9 +3,14 @@ CONFIG(debug, debug|release){
 }
 CONFIG(release, debug|release){
     DEFINES -= DEBUG
-    unix:!macx{ #just uncomment next lines if you want to ignore asserts and got a more optimized binary
-        QMAKE_CXXFLAGS_RELEASE -= -g
-        QMAKE_CXXFLAGS += -O3 -DNDEBUG
+    #just uncomment next lines if you want to ignore asserts and got a more optimized binary
+    CONFIG += FINAL_RELEASE
+}
+
+FINAL_RELEASE {
+    unix:!macx{
+        QMAKE_CXXFLAGS_RELEASE -= -g -O2
+        QMAKE_CXXFLAGS += -Os -DNDEBUG
     }
 }
 

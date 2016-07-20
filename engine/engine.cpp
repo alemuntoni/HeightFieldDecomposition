@@ -53,10 +53,16 @@ Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
     return m;
 }
 
-Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, int resolution, unsigned int rot) {
+Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, unsigned int rot) {
     BoundingBox bb = d.getBoundingBox();
+    double avg = 0;
+    for (Dcel::HalfEdgeIterator heit = d.halfEdgeBegin(); heit != d.halfEdgeEnd(); ++heit){
+        avg += (*heit)->getLength();
+    }
+    avg /= d.getNumberHalfEdges();
     double maxl = std::max(bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
     maxl = std::max(maxl, bb.getMaxZ() - bb.getMinZ());
+    int resolution = maxl / avg + 1;
     double av = maxl / resolution;
     BoundingBox nBB(-(bb.getMax()-bb.getMin())/av, (bb.getMax()-bb.getMin())/av);
     d.scale(nBB);
@@ -347,14 +353,14 @@ int Engine::deleteBoxesMemorySafe(BoxList& boxList, const Dcel& d) {
     return deleteBoxes(boxList, d);
 }
 
-void Engine::largeScaleFabrication(const Dcel& input, int resolution, double kernelDistance, bool heightfields) {
+void Engine::largeScaleFabrication(const Dcel& input, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
     std::vector< std::tuple<int, Box3D, std::vector<bool> > > allVectorTriples;
     BoxList allBoxes;
     for (unsigned int i = 0; i < ORIENTATIONS; i++){
         scaled[i] = input;
-        m[i] = scaleAndRotateDcel(scaled[i], resolution, i);
+        m[i] = scaleAndRotateDcel(scaled[i], i);
     }
     if (!heightfields){
         Grid g[ORIENTATIONS];
@@ -440,12 +446,12 @@ void Engine::largeScaleFabrication(const Dcel& input, int resolution, double ker
 #endif
 
 #if SERVER_MODE==1
-void Engine::Server::expandBoxesFromFile(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile, int resolution, double kernelDistance, bool heightfields) {
+void Engine::Server::expandBoxesFromFile(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
     for (unsigned int i = 0; i < ORIENTATIONS; i++){
         scaled[i].loadFromObjFile(inputFile);
-        m[i] = scaleAndRotateDcel(scaled[i], resolution, i);
+        m[i] = scaleAndRotateDcel(scaled[i], i);
     }
 
     if (!heightfields){

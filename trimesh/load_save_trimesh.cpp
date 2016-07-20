@@ -56,3 +56,31 @@ void loadObj(const char     * filename,
     }
     file.close();
 }
+
+void saveObj(const char *filename, const std::vector<double> &xyz, const std::vector<int> &tri)
+{
+    std::ofstream fp;
+    fp.open (filename);
+    fp.precision(6);
+    fp.setf( std::ios::fixed, std:: ios::floatfield ); // floatfield set to fixed
+
+    if(!fp)
+    {
+        std::cerr << "ERROR : " << __FILE__ << ", line " << __LINE__ << " : save_OBJ() : couldn't open output file " << filename << std::endl;
+        exit(-1);
+    }
+
+    //cout << "v " << xyz[3] << " " << xyz[4] << " " << xyz[5] << endl;
+
+    for(int i=0; i<(int)xyz.size(); i+=3)
+    {
+        fp << "v " << xyz[i] << " " << xyz[i+1] << " " << xyz[i+2] << std::endl;
+    }
+
+    for(int i=0; i<(int)tri.size(); i+=3)
+    {
+        fp << "f " << tri[i]+1 << " " << tri[i+1]+1 << " " << tri[i+2]+1 << std::endl;
+    }
+
+    fp.close();
+}

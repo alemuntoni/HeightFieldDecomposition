@@ -24,10 +24,9 @@ macx{
 HEADERS += \
     $$PWD/glcanvas.h \
     $$PWD/mainwindow.h \
-    $$PWD/objects/cylinder.h \
-    $$PWD/objects/sphere.h \
     $$PWD/objects/drawabledebugobjects.h \
-    $$PWD/managers/windowmanager.h
+    $$PWD/managers/windowmanager.h \
+    $$PWD/objects/objects.h
 
 SOURCES += \
     $$PWD/glcanvas.cpp \

@@ -25,7 +25,7 @@ class DrawableIGLMesh : public IGLMesh, public DrawableObject {
         void setWireframe(bool b);
         void setFlatShading();
         void setSmoothShading();
-        void setPointsShading();
+        void setPointShading();
 
     protected:
 

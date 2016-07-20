@@ -142,7 +142,7 @@ void DrawableIGLMesh::setSmoothShading() {
     drawMode &= ~DRAW_POINTS;
 }
 
-void DrawableIGLMesh::setPointsShading() {
+void DrawableIGLMesh::setPointShading() {
     drawMode |=  DRAW_POINTS;
     drawMode &= ~DRAW_FLAT;
     drawMode &= ~DRAW_SMOOTH;

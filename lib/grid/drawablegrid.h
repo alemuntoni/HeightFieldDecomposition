@@ -3,7 +3,7 @@
 
 #include "common/drawable_object.h"
 #include "grid.h"
-#include "viewer/objects/sphere.h"
+#include "viewer/objects/objects.h"
 
 
 class DrawableGrid: public Grid, public DrawableObject

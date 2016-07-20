@@ -84,7 +84,7 @@ void DrawableGrid::draw() const {
                             for (unsigned int j = 0; j < getResY(); ++j){
                                 for (unsigned int k = 0; k < getResZ(); ++k){
                                     if (getSignedDistance(i,j,k) < -kernelDistance){
-                                        sphere(getPoint(i,j,k), 0.3, QColor(255,0,0));
+                                        drawSphere(getPoint(i,j,k), 0.3, QColor(255,0,0));
                                     }
                                 }
                             }
@@ -94,7 +94,7 @@ void DrawableGrid::draw() const {
                         for (unsigned int j = 0; j < getResY(); ++j){
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 if (getSignedDistance(sliceValue,j,k) < -kernelDistance){
-                                    sphere(getPoint(sliceValue,j,k), 0.3, QColor(255,0,0));
+                                    drawSphere(getPoint(sliceValue,j,k), 0.3, QColor(255,0,0));
                                 }
                             }
                         }
@@ -103,7 +103,7 @@ void DrawableGrid::draw() const {
                         for (unsigned int i = 0; i < getResX(); ++i){
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 if (getSignedDistance(i,sliceValue,k) < -kernelDistance){
-                                    sphere(getPoint(i,sliceValue,k), 0.3, QColor(255,0,0));
+                                    drawSphere(getPoint(i,sliceValue,k), 0.3, QColor(255,0,0));
                                 }
                             }
                         }
@@ -112,7 +112,7 @@ void DrawableGrid::draw() const {
                         for (unsigned int i = 0; i < getResX(); ++i){
                             for (unsigned int j = 0; j < getResY(); ++j){
                                 if (getSignedDistance(i,j,sliceValue) < -kernelDistance){
-                                    sphere(getPoint(i,j,sliceValue), 0.3, QColor(255,0,0));
+                                    drawSphere(getPoint(i,j,sliceValue), 0.3, QColor(255,0,0));
                                 }
                             }
                         }
@@ -127,7 +127,7 @@ void DrawableGrid::draw() const {
                                 for (unsigned int k = 0; k < getResZ(); k+=2){
                                     double w = getWeight(i,j,k);
                                     QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                    sphere(getPoint(i,j,k), 0.3, c);
+                                    drawSphere(getPoint(i,j,k), 0.3, c);
                                 }
                             }
                         }
@@ -137,7 +137,7 @@ void DrawableGrid::draw() const {
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 double w = getWeight(sliceValue,j,k);
                                 QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                sphere(getPoint(sliceValue,j,k), 0.4, c);
+                                drawSphere(getPoint(sliceValue,j,k), 0.4, c);
                             }
                         }
                         xi = gridCoordinates(getIndex(sliceValue,0,0), 0);
@@ -149,7 +149,7 @@ void DrawableGrid::draw() const {
                                     c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
                                 //else
                                     //c.setHsv(getHsvHFactor(w)*240,255,128);
-                                sphere(Pointd(xi,yi,zi), 0.2, c);
+                                drawSphere(Pointd(xi,yi,zi), 0.2, c);
                             }
                         }
                         break;
@@ -158,7 +158,7 @@ void DrawableGrid::draw() const {
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 double w = getWeight(i,sliceValue,k);
                                 QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                sphere(getPoint(i,sliceValue,k), 0.4, c);
+                                drawSphere(getPoint(i,sliceValue,k), 0.4, c);
                             }
                         }
                         yi = gridCoordinates(getIndex(0,sliceValue,0), 1);
@@ -170,7 +170,7 @@ void DrawableGrid::draw() const {
                                     c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
                                 //else
                                     //c.setHsv(getHsvHFactor(w)*240,255,128);
-                                sphere(Pointd(xi,yi,zi), 0.2, c);
+                                drawSphere(Pointd(xi,yi,zi), 0.2, c);
                             }
                         }
                         break;
@@ -179,7 +179,7 @@ void DrawableGrid::draw() const {
                             for (unsigned int j = 0; j < getResY(); ++j){
                                 double w = getWeight(i,j,sliceValue);
                                 QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                sphere(getPoint(i,j,sliceValue), 0.4, c);
+                                drawSphere(getPoint(i,j,sliceValue), 0.4, c);
                             }
                         }
                         zi = gridCoordinates(getIndex(0,0,sliceValue), 2);
@@ -191,7 +191,7 @@ void DrawableGrid::draw() const {
                                     c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
                                 //else
                                     //c.setHsv(getHsvHFactor(w)*240,255,128);
-                                sphere(Pointd(xi,yi,zi), 0.2, c);
+                                drawSphere(Pointd(xi,yi,zi), 0.2, c);
                             }
                         }
                         break;

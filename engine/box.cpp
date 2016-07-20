@@ -85,22 +85,7 @@ void Box3D::draw() const {
         c1.rotate(rotation);
         c2.rotate(rotation);
         c3.rotate(rotation);
-        std::vector<Pointd> p;
-        getRotatedExtremes(p);
-        cylinder(p[0], p[1], 0.05, 0.05, color);
-        cylinder(p[1], p[2], 0.05, 0.05, color);
-        cylinder(p[2], p[3], 0.05, 0.05, color);
-        cylinder(p[0], p[3], 0.05, 0.05, color);
-
-        cylinder(p[4], p[5], 0.05, 0.05, color);
-        cylinder(p[5], p[6], 0.05, 0.05, color);
-        cylinder(p[6], p[7], 0.05, 0.05, color);
-        cylinder(p[4], p[7], 0.05, 0.05, color);
-
-        cylinder(p[0], p[4], 0.05, 0.05, color);
-        cylinder(p[1], p[5], 0.05, 0.05, color);
-        cylinder(p[2], p[6], 0.05, 0.05, color);
-        cylinder(p[3], p[7], 0.05, 0.05, color);
+        drawCube();
 
         /*cylinder(min, Pointd(max.x(), min.y(), min.z()), 0.05, 0.05, color);
         cylinder(Pointd(max.x(), min.y(), min.z()), Pointd(max.x(), max.y(), min.z()), 0.05, 0.05, color);
@@ -117,9 +102,9 @@ void Box3D::draw() const {
         cylinder(Pointd(max.x(), max.y(), min.z()), max, 0.05, 0.05, color);
         cylinder(Pointd(min.x(), max.y(), min.z()), Pointd(min.x(), max.y(), max.z()), 0.05, 0.05, color);*/
 
-        sphere(c1, 0.15, QColor(255,0,255));
-        sphere(c2, 0.15, QColor(255,0,255));
-        sphere(c3, 0.15, QColor(255,0,255));
+        drawSphere(c1, 0.15, QColor(255,0,255));
+        drawSphere(c2, 0.15, QColor(255,0,255));
+        drawSphere(c3, 0.15, QColor(255,0,255));
     }
     #endif
 }
@@ -176,5 +161,36 @@ void Box3D::setTarget(const Vec3& value) {
 Vec3 Box3D::getRotatedTarget() const {
     Vec3 r = target;
     r.rotate(rotation);
+    r.normalize();
     return std::move(r);
 }
+
+#ifdef VIEWER_DEFINED
+void Box3D::drawLine(const Pointd &a, const Pointd &b, const QColor& c) const {
+    glBegin(GL_LINES);
+    glColor3f(c.redF(), c.greenF(), c.blueF());
+    glLineWidth(3);
+    glVertex3f(a.x(), a.y(), a.z());
+    glVertex3f(b.x(), b.y(), b.z());
+    glEnd();
+}
+
+void Box3D::drawCube() const {
+    std::vector<Pointd> p;
+    getRotatedExtremes(p);
+    drawLine(p[0], p[1], color);
+    drawLine(p[1], p[2], color);
+    drawLine(p[2], p[3], color);
+    drawLine(p[0], p[3], color);
+
+    drawLine(p[4], p[5], color);
+    drawLine(p[5], p[6], color);
+    drawLine(p[6], p[7], color);
+    drawLine(p[4], p[7], color);
+
+    drawLine(p[0], p[4], color);
+    drawLine(p[1], p[5], color);
+    drawLine(p[2], p[6], color);
+    drawLine(p[3], p[7], color);
+}
+#endif

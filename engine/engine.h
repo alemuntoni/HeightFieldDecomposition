@@ -33,7 +33,7 @@ namespace Engine {
 
     Eigen::Matrix3d rotateDcelAlreadyScaled(Dcel& d, unsigned int rot);
 
-    Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, int resolution = 50, unsigned int rot = 0);
+    Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, unsigned int rot = 0);
 
     void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3());
 
@@ -51,11 +51,11 @@ namespace Engine {
 
     int deleteBoxesMemorySafe(BoxList& boxList, const Dcel &d);
 
-    void largeScaleFabrication(const Dcel &input, int resolution = 50, double kernelDistance = 6, bool heightfields = false);
+    void largeScaleFabrication(const Dcel &input, double kernelDistance = 6, bool heightfields = false);
      #endif
     namespace Server {
         #if SERVER_MODE==1
-        void expandBoxesFromFile(const std::string& inputFile, const std::string& outputFile, int resolution = 50, double kernelDistance = 6, bool heightfields = false);
+        void expandBoxesFromFile(const std::string& inputFile, const std::string& outputFile, double kernelDistance = 6, bool heightfields = false);
 
         void expandBoxesFromPreprocessing(const std::string &inputFile, const std::string &outputFile);
         #endif

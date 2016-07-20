@@ -1,6 +1,5 @@
 #include "drawabledebugobjects.h"
-#include "../objects/cylinder.h"
-#include "../objects/sphere.h"
+#include "../objects/objects.h"
 
 DrawableDebugObjects::DrawableDebugObjects() : visible(true) {
 
@@ -12,10 +11,10 @@ DrawableDebugObjects::~DrawableDebugObjects(){
 void DrawableDebugObjects::draw() const {
     if (visible){
         for (unsigned int i = 0; i < debugSpheres.size(); i++){
-            sphere(debugSpheres[i].center, debugSpheres[i].radius, debugSpheres[i].color, debugSpheres[i].precision);
+            drawSphere(debugSpheres[i].center, debugSpheres[i].radius, debugSpheres[i].color, debugSpheres[i].precision);
         }
         for (unsigned int i = 0; i < debugCylinders.size(); i++){
-            cylinder(debugCylinders[i].a, debugCylinders[i].b, debugCylinders[i].radius, debugCylinders[i].radius, debugCylinders[i].color);
+            drawCylinder(debugCylinders[i].a, debugCylinders[i].b, debugCylinders[i].radius, debugCylinders[i].radius, debugCylinders[i].color);
         }
     }
 }

@@ -3,8 +3,7 @@
 
 #include "common/drawable_object.h"
 #include "common/bounding_box.h"
-#include "viewer/objects/cylinder.h"
-#include "viewer/objects/sphere.h"
+#include "viewer/objects/objects.h"
 #ifdef IGL_DEFINED
 #include "igl/iglmesh.h"
 #endif
@@ -59,6 +58,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         void setTarget(const Vec3& value);
         Vec3 getRotatedTarget() const;
 
+
     protected:
         //Pointd min, max;
         Pointd c1, c2, c3;
@@ -66,6 +66,9 @@ class Box3D : public BoundingBox, public DrawableObject{
         bool visible;
         Vec3 target;
         Eigen::Matrix3d rotation;
+
+        void drawLine(const Pointd& a, const Pointd& b, const QColor& c) const;
+        void drawCube() const;
 };
 
 inline void Box3D::setColor(const QColor& c) {

@@ -121,7 +121,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
         deleteDrawableObject(g);
         g = new DrawableGrid();
 
-        Engine::scaleAndRotateDcel(*d,  ui->samplesSpinBox->value(), 0);
+        Engine::scaleAndRotateDcel(*d, 0);
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()]);
 
         d->update();
@@ -620,7 +620,8 @@ void EngineManager::on_wireframeDcelCheckBox_stateChanged(int arg1) {
         mainWindow->updateGlCanvas();
     }
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
-
+        he->setWireframe(arg1 == Qt::Checked);
+        mainWindow->updateGlCanvas();
     }
 }
 
@@ -633,12 +634,15 @@ void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
     }
     if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
         if (checked){
-            baseComplex->setPointsShading();
+            baseComplex->setPointShading();
             mainWindow->updateGlCanvas();
         }
     }
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
-
+        if (checked){
+            he->setPointShading();
+            mainWindow->updateGlCanvas();
+        }
     }
 }
 
@@ -656,7 +660,10 @@ void EngineManager::on_flatDcelRadioButton_toggled(bool checked) {
         }
     }
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
-
+        if (checked){
+            he->setFlatShading();
+            mainWindow->updateGlCanvas();
+        }
     }
 }
 
@@ -674,7 +681,10 @@ void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
         }
     }
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
-
+        if (checked){
+            he->setSmoothShading();
+            mainWindow->updateGlCanvas();
+        }
     }
 }
 
@@ -937,14 +947,27 @@ void EngineManager::on_subtractPushButton_clicked() {
             solutions->getBox(i).getIGLMesh(box);
             SimpleIGLMesh::intersection(intersection, bc, box);
             SimpleIGLMesh::difference(bc, bc, box);
-            DrawableIGLMesh dim(intersection);
-            he->addHeightfield(dim, solutions->getBox(i).getRotatedTarget(), i);
+            DrawableIGLMesh dimm(intersection);
+            he->addHeightfield(dimm, solutions->getBox(i).getRotatedTarget(), i);
             std::cerr << i << "\n";
+        }
+        for (int i = he->getNumHeightfields()-1; i >= 0 ; i--){
+            if (he->getNumberVerticesHeightfield(i) == 0){
+                he->removeHeightfield(i);
+                solutions->removeBox(i);
+            }
         }
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
         mainWindow->deleteObj(baseComplex);
         delete baseComplex;
         baseComplex = new DrawableIGLMesh(bc);
+        baseComplex->updateFaceNormals();
+        for (int i = 0; i < baseComplex->getNumberFaces(); ++i){
+            Vec3 n = baseComplex->getNormal(i);
+            n.normalize();
+            QColor c = colorOfNearestNormal(n);
+            baseComplex->setColor(c.redF(), c.greenF(), c.blueF(), i);
+        }
         mainWindow->pushObj(baseComplex, "Base Complex");
         mainWindow->updateGlCanvas();
         baseComplex->saveOnObj("BaseComplex.obj");
@@ -952,7 +975,7 @@ void EngineManager::on_subtractPushButton_clicked() {
 }
 
 void EngineManager::on_serializeBCPushButton_clicked() {
-    if (baseComplex != nullptr && solutions != nullptr){
+    if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr){
         QString filename = QFileDialog::getSaveFileName(nullptr,
                            "Serialize",
                            ".",
@@ -960,8 +983,10 @@ void EngineManager::on_serializeBCPushButton_clicked() {
         if (!filename.isEmpty()) {
             std::ofstream myfile;
             myfile.open (filename.toStdString(), std::ios::out | std::ios::binary);
+            d->serialize(myfile);
             solutions->serialize(myfile);
             baseComplex->serialize(myfile);
+            he->serialize(myfile);
             std::vector<IGLMesh> hf;
             Serializer::serialize(hf, myfile);
             myfile.close();
@@ -977,21 +1002,34 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
                        "BIN(*.bin)");
 
     if (!filename.isEmpty()) {
+        deleteDrawableObject(d);
         deleteDrawableObject(solutions);
         deleteDrawableObject(baseComplex);
+        deleteDrawableObject(he);
+        d = new DrawableDcel();
         solutions = new BoxList();
         baseComplex = new DrawableIGLMesh();
+        he = new HeightfieldsList();
         std::ifstream myfile;
         myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
+        d->deserialize(myfile);
         solutions->deserialize(myfile);
         baseComplex->deserialize(myfile);
+        he->deserialize(myfile);
         //manca gestione heightfields
         myfile.close();
-        mainWindow->pushObj(solutions, "Solutions");
+        d->update();
+        d->setPointsShading();
+        d->setWireframe(true);
+        mainWindow->pushObj(d, "Input Mesh");
+        mainWindow->pushObj(solutions, "Boxes");
         mainWindow->pushObj(baseComplex, "Base Complex");
+        mainWindow->pushObj(he, "Heightfields");
         mainWindow->updateGlCanvas();
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
+        ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
+        ui->allHeightfieldsCheckBox->setChecked(true);
         ui->solutionsSlider->setEnabled(true);
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);
@@ -1011,7 +1049,7 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
 
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
             scaled[i] = *d;
-            m[i] = Engine::scaleAndRotateDcel(scaled[i], ui->samplesSpinBox->value(), i);
+            m[i] = Engine::scaleAndRotateDcel(scaled[i], i);
         }
         if (!ui->heightfieldsCheckBox->isChecked()){
             Grid g[ORIENTATIONS];

@@ -94,5 +94,7 @@ static const std::vector<QColor> colors = {
 };
 
 QColor colorOfNormal(const Vec3 &normal);
+Vec3 nearestNormal(const Vec3& normal);
+QColor colorOfNearestNormal(const Vec3& normal);
 
 #endif // COMMON_H
