@@ -92,6 +92,7 @@ class DrawableDcel : public Dcel, public DrawableObject {
         std::vector<float> colors; /** \~Italian @brief vettore di colori associati ai triangoli (da considerare come triple rgb float) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */
         std::vector<float> wireframe_colors;
         std::vector<unsigned int> triangles_face; /** \~Italian @brief vettore di mappatura triangoli->facce (ogni entrata ha posizione corrispondente a un terzo della posizione della tripla in tris e presenta l'identificativo di una faccia */
+        std::vector<double> t_norm; /** \~Italian @brief vettore di normali ai triangoli usate per la visualizzazione: per aggiornare utilizzare il metodo update() */
 };
 
 #endif // DRAWABLE_DCEL_H

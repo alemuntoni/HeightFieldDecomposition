@@ -112,10 +112,12 @@ void DrawableDcel::update() {
     v_norm.clear();
     tris.clear();
     colors.clear();
+    t_norm.clear();
     coords.reserve(getNumberVertices()*3);
     v_norm.reserve(getNumberVertices()*3);
     tris.reserve(getNumberFaces()*3);
     colors.reserve(getNumberFaces()*3);
+    t_norm.reserve(getNumberFaces()*3);
     std::map<int, int> v_ids;
     int vi = 0;
 
@@ -145,6 +147,9 @@ void DrawableDcel::update() {
             colors.push_back((*fit)->getColor().redF());
             colors.push_back((*fit)->getColor().greenF());
             colors.push_back((*fit)->getColor().blueF());
+            t_norm.push_back((*fit)->getNormal().x());
+            t_norm.push_back((*fit)->getNormal().y());
+            t_norm.push_back((*fit)->getNormal().z());
         }
         else {
             /*******************************Andreas*********************************/
@@ -171,6 +176,9 @@ void DrawableDcel::update() {
                 colors.push_back((*fit)->getColor().redF());
                 colors.push_back((*fit)->getColor().greenF());
                 colors.push_back((*fit)->getColor().blueF());
+                t_norm.push_back((*fit)->getNormal().x());
+                t_norm.push_back((*fit)->getNormal().y());
+                t_norm.push_back((*fit)->getNormal().z());
             }
             /***********************************************************************/
         }
@@ -186,6 +194,9 @@ void DrawableDcel::update() {
         colors.push_back((*fit)->getColor().redF());
         colors.push_back((*fit)->getColor().greenF());
         colors.push_back((*fit)->getColor().blueF());
+        t_norm.push_back((*fit)->getNormal().x());
+        t_norm.push_back((*fit)->getNormal().y());
+        t_norm.push_back((*fit)->getNormal().z());
     }
     #endif
     wireframe_colors.resize(colors.size());
@@ -227,11 +238,11 @@ void DrawableDcel::renderPass() const {
 
                 glBegin(GL_TRIANGLES);
                 glColor3fv(&(colors[tid_ptr]));
-                glNormal3dv(&(v_norm[vid0_ptr]));
+                glNormal3dv(&(t_norm[tid_ptr]));
                 glVertex3dv(&(coords[vid0_ptr]));
-                glNormal3dv(&(v_norm[vid1_ptr]));
+                glNormal3dv(&(t_norm[tid_ptr]));
                 glVertex3dv(&(coords[vid1_ptr]));
-                glNormal3dv(&(v_norm[vid2_ptr]));
+                glNormal3dv(&(t_norm[tid_ptr]));
                 glVertex3dv(&(coords[vid2_ptr]));
                 glEnd();
             }
@@ -276,11 +287,11 @@ void DrawableDcel::renderPass() const {
 
             glBegin(GL_TRIANGLES);
             glColor3fv(&(wireframe_colors[tid_ptr]));
-            glNormal3dv(&(v_norm[vid0_ptr]));
+            glNormal3dv(&(t_norm[tid_ptr]));
             glVertex3dv(&(coords[vid0_ptr]));
-            glNormal3dv(&(v_norm[vid1_ptr]));
+            glNormal3dv(&(t_norm[tid_ptr]));
             glVertex3dv(&(coords[vid1_ptr]));
-            glNormal3dv(&(v_norm[vid2_ptr]));
+            glNormal3dv(&(t_norm[tid_ptr]));
             glVertex3dv(&(coords[vid2_ptr]));
             glEnd();
         }

@@ -31,11 +31,13 @@ inline edge uniqueEdge(int v0, int v1)
     return e;
 }
 
+#ifdef DEBUG
 template<typename C>
 inline void checkBounds(const C & container, int index)
 {
     assert(index < (int)container.size());
 }
+#endif
 
 /*-------------- INLINE UTILITY FUNCTIONS --------------*/
 
@@ -240,54 +242,71 @@ template<typename real> class Trimesh
         inline int numVertices()  const { return coords.size()/3; }
         inline int numTriangles() const { return tris.size()/3;   }
 
-        inline std::vector<int> adj_vtx2tri(int vid) const { checkBounds(vtx2tri, vid); return vtx2tri[vid]; }
-        inline std::vector<int> adj_vtx2vtx(int vid) const { checkBounds(vtx2vtx, vid); return vtx2vtx[vid]; }
-        inline std::vector<int> adj_tri2tri(int tid) const { checkBounds(tri2tri, tid); return tri2tri[tid]; }
+        inline std::vector<int> adj_vtx2tri(int vid) const {
+            #ifdef DEBUG
+            checkBounds(vtx2tri, vid);
+            #endif
+            return vtx2tri[vid];
+        }
+        inline std::vector<int> adj_vtx2vtx(int vid) const {
+            #ifdef DEBUG
+            checkBounds(vtx2vtx, vid);
+            #endif
+            return vtx2vtx[vid];
+        }
+        inline std::vector<int> adj_tri2tri(int tid) const {
+            #ifdef DEBUG
+            checkBounds(tri2tri, tid);
+            #endif
+            return tri2tri[tid];
+        }
 
-        inline Point<real> triangleNormal(int tid) const
-        {
+        inline Point<real> triangleNormal(int tid) const {
             int tid_ptr = tid * 3;
+            #ifdef DEBUG
             checkBounds(triangleNormals, tid_ptr+2);
+            #endif
             return Point<real>(triangleNormals[tid_ptr + 0],
                               triangleNormals[tid_ptr + 1],
                               triangleNormals[tid_ptr + 2]);
         }
 
-        inline Point<real> vertexNormal(int vid) const
-        {
+        inline Point<real> vertexNormal(int vid) const {
             int vid_ptr = vid * 3;
+            #ifdef DEBUG
             checkBounds(vertexNormals, vid_ptr+2);
+            #endif
             return Point<real>(vertexNormals[vid_ptr + 0],
                               vertexNormals[vid_ptr + 1],
                               vertexNormals[vid_ptr + 2]);
         }
 
-        inline Point<real> vertex(int vid) const
-        {
+        inline Point<real> vertex(int vid) const {
             int vid_ptr = vid * 3;
+            #ifdef DEBUG
             checkBounds(coords, vid_ptr+2);
+            #endif
             return Point<real>(coords[vid_ptr + 0],
                               coords[vid_ptr + 1],
                               coords[vid_ptr + 2]);
         }
 
-        inline void setVertex(int vid, Point<real> pos)
-        {
+        inline void setVertex(int vid, Point<real> pos) {
             int vid_ptr = vid * 3;
+            #ifdef DEBUG
             checkBounds(coords, vid_ptr+2);
+            #endif
             coords[vid_ptr + 0] = pos.x();
             coords[vid_ptr + 1] = pos.y();
             coords[vid_ptr + 2] = pos.z();
         }
 
-        void updateNormals()
-        {
+        void updateNormals() {
             updateTriangleNormals();
             updateVertexNormals();
         }
 
-        void updateBbox()
-        {
+        void updateBbox() {
             bbox.reset();
             for(int vid=0; vid<numVertices(); ++vid)
             {

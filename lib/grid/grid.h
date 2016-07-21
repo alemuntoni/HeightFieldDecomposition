@@ -6,6 +6,8 @@
 #include "dcel/dcel.h"
 #include "engine/tricubic.h"
 
+#include "cgal/aabbtree.h"
+
 #define BORDER_PAY 5
 #define STD_PAY 0
 #define MIN_PAY -10
@@ -55,6 +57,8 @@ class Grid : public SerializableObject{
         void setNeighboroudWeigth(const Pointd&p, double w);
         void getCoefficients(const double*& coeffs, unsigned int i, unsigned int j, unsigned int k) const;
 
+        void setWeightOnCube(unsigned int i, unsigned int j, unsigned int k, double w);
+
         BoundingBox bb;
         unsigned int resX, resY, resZ;
         Eigen::MatrixXd gridCoordinates;
@@ -101,6 +105,20 @@ inline Pointd Grid::getNearestGridPoint(const Pointd& p) const{
 
 inline void Grid::getCoefficients(const double* &coeffs, unsigned int i, unsigned int j, unsigned int k) const {
     coeffs = this->coeffs(i, j, k);
+}
+
+inline void Grid::setWeightOnCube(unsigned int i, unsigned int j, unsigned int k, double w) {
+    assert(i+1 < resX);
+    assert(j+1 < resY);
+    assert(k+1 < resZ);
+    weights(i  ,j  ,k  ) = w;
+    weights(i  ,j  ,k+1) = w;
+    weights(i  ,j+1,k  ) = w;
+    weights(i  ,j+1,k+1) = w;
+    weights(i+1,j  ,k  ) = w;
+    weights(i+1,j  ,k+1) = w;
+    weights(i+1,j+1,k  ) = w;
+    weights(i+1,j+1,k+1) = w;
 }
 
 inline void Grid::getCoefficients(const double* &coeffs, const Pointd& p) const {

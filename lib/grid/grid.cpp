@@ -28,7 +28,7 @@ Grid::Grid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoor
  * @param d
  */
 void Grid::calculateBorderWeights(const Dcel& d, bool heightfields) {
-    for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
+    /*for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
         const Dcel::Face* f = *fit;
         Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
         Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
@@ -52,6 +52,44 @@ void Grid::calculateBorderWeights(const Dcel& d, bool heightfields) {
                 setNeighboroudWeigth(p3, MAX_PAY);
             }
 
+        }
+    }*/
+    CGALInterface::AABBTree aabb(d);
+    double unit = getUnit();
+    std::vector<Pointi> flipped;
+    for (unsigned int i = 0; i < resX-1; i++){
+        for (unsigned int j = 0; j < resY-1; j++){
+            for (unsigned int k = 0; k < resZ-1; k++){
+                Pointd bbmin = getPoint(i,j,k);
+                Pointd bbmax(bbmin.x()+unit, bbmin.y()+unit, bbmin.z()+unit);
+                BoundingBox bb(bbmin, bbmax);
+                std::list<const Dcel::Face*> l;
+                aabb.getIntersectedPrimitives(l, bb);
+                if (l.size() != 0){
+                    if (heightfields){
+                        bool b = true;
+                        for (std::list<const Dcel::Face*>::iterator it = l.begin(); it != l.end(); ++it){
+                            const Dcel::Face* f = *it;
+                            if (f->getNormal().dot(target) < 0){
+                                Pointi p(i,j,k);
+                                flipped.push_back(p);
+                                b = false;
+                            }
+                        }
+                        if (b){
+                            setWeightOnCube(i,j,k, MIN_PAY);
+                        }
+                    }
+                    else {
+                        setWeightOnCube(i,j,k, MIN_PAY);
+                    }
+                }
+            }
+        }
+    }
+    if (heightfields){
+        for (unsigned int i = 0; i < flipped.size(); ++i){
+            setWeightOnCube(flipped[i].x(),flipped[i].y(),flipped[i].z(), MAX_PAY);
         }
     }
 }
