@@ -1126,10 +1126,43 @@ void EngineManager::on_allHeightfieldsCheckBox_stateChanged(int arg1) {
 
 void EngineManager::on_heightfieldsSlider_valueChanged(int value) {
     if (he != nullptr){
-        if (!ui->allHeightfieldsCheckBox->isChecked()){
-            ui->solutionsSlider->setValue(value);
-            he->setVisibleHeightfield(value);
-            mainWindow->updateGlCanvas();
+        ui->solutionsSlider->setValue(value);
+        he->setVisibleHeightfield(value);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_stickPushButton_clicked() {
+    if (d!=nullptr && baseComplex != nullptr && he != nullptr && solutions != nullptr){
+        CGALInterface::AABBTree aabb(*d, true);
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            bool b = true;
+            for (unsigned int j = 0; j < he->getNumberVerticesHeightfield(i); j++) {
+                Pointd p = he->getVertexOfHeightfield(i,j);
+                double dist = aabb.getSquaredDistance(p);
+                if (dist == 0) b = false;
+            }
+            if (b) {
+                std::cerr << "Heightfield eliminabile\n";
+                IGLMesh::unionn(*baseComplex, *baseComplex, he->getHeightfield(i));
+                he->removeHeightfield(i);
+                solutions->removeBox(i);
+                i--;
+            }
         }
     }
+    for (int i = 0; i < baseComplex->getNumberFaces(); ++i){
+        Vec3 n = baseComplex->getNormal(i);
+        n.normalize();
+        QColor c = colorOfNearestNormal(n);
+        baseComplex->setColor(c.redF(), c.greenF(), c.blueF(), i);
+    }
+    ui->showAllSolutionsCheckBox->setEnabled(true);
+    solutions->setVisibleBox(0);
+    ui->solutionsSlider->setEnabled(true);
+    ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+    ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
+    ui->setFromSolutionSpinBox->setValue(0);
+    ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+    mainWindow->updateGlCanvas();
 }

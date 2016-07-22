@@ -54,7 +54,7 @@ namespace CGALInterface {
         void triangulate(std::vector<std::array<Pointd, 3> >& triangles, const Vec3 &normal, const std::vector<Pointd>& polygon, const std::vector<std::vector<Pointd> >& holes = dummy_holes);
     }
 
-    namespace BooleanOperations{
+    namespace BooleanOperations2D{
 
         typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
         typedef Kernel::Point_2                                   Point_2;

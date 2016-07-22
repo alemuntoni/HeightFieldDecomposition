@@ -15,7 +15,8 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         void setVisible(bool b);
         void setVisibleHeightfield(int i);
         void resize(int n);
-        int getNumberVerticesHeightfield(int i);
+        unsigned int getNumberVerticesHeightfield(int i) const;
+        Pointd getVertexOfHeightfield(int he, int v) const;
         void setWireframe(bool b);
         void setPointShading();
         void setFlatShading();
@@ -25,6 +26,7 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         unsigned int getNumHeightfields() const;
 
         void removeHeightfield(int i);
+        const IGLMesh& getHeightfield(unsigned int i) const;
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;

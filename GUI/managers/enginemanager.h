@@ -127,6 +127,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_heightfieldsSlider_valueChanged(int value);
 
+        void on_stickPushButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow

@@ -43,9 +43,14 @@ void HeightfieldsList::resize(int n) {
     targets.resize(n);
 }
 
-int HeightfieldsList::getNumberVerticesHeightfield(int i) {
+unsigned int HeightfieldsList::getNumberVerticesHeightfield(int i) const {
     assert (i < (int)heightfields.size());
     return heightfields[i].getNumberVertices();
+}
+
+Pointd HeightfieldsList::getVertexOfHeightfield(int he, int v) const {
+    assert (i < (int)heightfields.size());
+    return heightfields[he].getVertex(v);
 }
 
 void HeightfieldsList::setWireframe(bool b) {
@@ -95,6 +100,11 @@ void HeightfieldsList::removeHeightfield(int i) {
     assert (i < heightfields.size());
     heightfields.erase(heightfields.begin()+i);
     targets.erase(targets.begin()+i);
+}
+
+const IGLMesh&HeightfieldsList::getHeightfield(unsigned int i) const {
+    assert (i < heightfields.size());
+    return heightfields[i];
 }
 
 void HeightfieldsList::serialize(std::ofstream& binaryFile) const {

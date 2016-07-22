@@ -131,6 +131,11 @@ int SimpleIGLMesh::getNumberVertices() const {
     return V.rows();
 }
 
+Pointd SimpleIGLMesh::getVertex(unsigned int i) const {
+    assert(i < V.rows());
+    return std::move(Pointd(V(i,0), V(i,1), V(i,2)));
+}
+
 #ifdef CGAL_DEFINED
 void SimpleIGLMesh::intersection(SimpleIGLMesh& result, const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
     igl::copyleft::cgal::CSGTree M;
@@ -142,6 +147,13 @@ void SimpleIGLMesh::intersection(SimpleIGLMesh& result, const SimpleIGLMesh& m1,
 void SimpleIGLMesh::difference(SimpleIGLMesh& result, const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
     igl::copyleft::cgal::CSGTree M;
     M = {{m1.V,m1.F},{m2.V,m2.F},"m"};
+    result.V = M.cast_V<Eigen::MatrixXd>();
+    result.F = M.F();
+}
+
+void SimpleIGLMesh::unionn(SimpleIGLMesh& result, const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
+    igl::copyleft::cgal::CSGTree M;
+    M = {{m1.V,m1.F},{m2.V,m2.F},"u"};
     result.V = M.cast_V<Eigen::MatrixXd>();
     result.F = M.F();
 }
@@ -171,6 +183,16 @@ void IGLMesh::intersection(IGLMesh& result, const IGLMesh& m1, const IGLMesh& m2
 void IGLMesh::difference(IGLMesh& result, const IGLMesh& m1, const IGLMesh& m2) {
     SimpleIGLMesh sres;
     SimpleIGLMesh::difference(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
+    result = IGLMesh(sres);
+    result.C = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+    result.NV.resize(result.V.rows(), 3);
+    result.NF.resize(result.F.rows(), 3);
+    result.updateVertexAndFaceNormals();
+}
+
+void IGLMesh::unionn(IGLMesh& result, const IGLMesh& m1, const IGLMesh& m2) {
+    SimpleIGLMesh sres;
+    SimpleIGLMesh::unionn(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
     result = IGLMesh(sres);
     result.C = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
     result.NV.resize(result.V.rows(), 3);

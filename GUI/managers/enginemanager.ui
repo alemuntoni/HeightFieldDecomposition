@@ -56,9 +56,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-343</y>
         <width>339</width>
-        <height>1413</height>
+        <height>1435</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
@@ -674,17 +674,41 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="7" column="1">
-           <widget class="QPushButton" name="serializeBCPushButton">
-            <property name="text">
-             <string>Serialize BC</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="label_9">
             <property name="text">
              <string>Solution Manager</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QPushButton" name="subtractPushButton">
+            <property name="text">
+             <string>Subtract</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="2">
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="solutionNumberLabel">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="showAllSolutionsCheckBox">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Show All</string>
             </property>
            </widget>
           </item>
@@ -702,17 +726,17 @@
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
-           <widget class="QPushButton" name="subtractPushButton">
+          <item row="4" column="0">
+           <widget class="QPushButton" name="minimizeAllPushButton">
             <property name="text">
-             <string>Subtract</string>
+             <string>Minimize All</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="solutionNumberLabel">
-            <property name="text">
-             <string>0</string>
+          <item row="8" column="0">
+           <widget class="QSlider" name="heightfieldsSlider">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -720,23 +744,6 @@
            <widget class="QPushButton" name="createBoxesPushButton">
             <property name="text">
              <string>Create Boxes</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QPushButton" name="deleteBoxesPushButton">
-            <property name="text">
-             <string>Delete Boxes</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QCheckBox" name="showAllSolutionsCheckBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Show All</string>
             </property>
            </widget>
           </item>
@@ -750,24 +757,10 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QPushButton" name="minimizeAllPushButton">
+          <item row="4" column="1">
+           <widget class="QPushButton" name="deleteBoxesPushButton">
             <property name="text">
-             <string>Minimize All</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="Line" name="line_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="0">
-           <widget class="QSlider" name="heightfieldsSlider">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <string>Delete Boxes</string>
             </property>
            </widget>
           </item>
@@ -778,6 +771,20 @@
             </property>
             <property name="checked">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QPushButton" name="serializeBCPushButton">
+            <property name="text">
+             <string>Serialize BC</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QPushButton" name="stickPushButton">
+            <property name="text">
+             <string>Stick</string>
             </property>
            </widget>
           </item>
@@ -911,6 +918,9 @@
             <property name="text">
              <string>Heightfields</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="2" column="0">
@@ -998,7 +1008,7 @@
              <number>1</number>
             </property>
             <property name="value">
-             <number>1</number>
+             <number>3</number>
             </property>
            </widget>
           </item>

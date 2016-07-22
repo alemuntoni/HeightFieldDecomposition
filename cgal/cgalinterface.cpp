@@ -153,7 +153,7 @@ namespace CGALInterface{
         }
     }
 
-    namespace BooleanOperations {
+    namespace BooleanOperations2D {
 
         void getCoordinates(const Point_2& p, double& x, double& y) {
             std::stringstream ss1;

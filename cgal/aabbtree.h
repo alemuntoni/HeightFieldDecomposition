@@ -14,16 +14,25 @@
 #include <CGAL/AABB_triangle_primitive.h>
 
 namespace CGALInterface {
-    #ifdef DCEL_DEFINED
+
     class AABBTree
     {
         public:
+
             AABBTree();
-            AABBTree(const Dcel &d);
+            #ifdef DCEL_DEFINED
+            AABBTree(const Dcel &d, bool forDistanceQueries = false);
+            #endif
 
             int getNumberIntersectedPrimitives(const Pointd& p1, const Pointd &p2);
             int getNumberIntersectedPrimitives(const BoundingBox& b);
+            double getSquaredDistance(const Pointd &p);
+            Pointd getNearestPoint(const Pointd &p);
+            #ifdef DCEL_DEFINED
             void getIntersectedPrimitives(std::list<const Dcel::Face*> &outputList, const BoundingBox &b);
+
+            const Dcel::Face* getNearestPrimitive(const Pointd &p);
+            #endif
 
         protected:
             typedef CGAL::Simple_cartesian<double> K;
@@ -48,13 +57,13 @@ namespace CGALInterface {
             };
 
             Tree tree;
+            #ifdef DCEL_DEFINED
             std::map<const Dcel::Vertex*, CGALPoint> vertices_points;
-            std::map<CGALPoint, const Dcel::Vertex*> points_vertices;
-            std::map<const Dcel::Face*, CGALTriangle> faces_triangles;
             std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle> triangles_faces;
+            #endif
             std::list<CGALTriangle> triangles;
     };
-    #endif
+
 }
 
 #endif // AABBTREE_H

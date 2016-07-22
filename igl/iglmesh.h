@@ -39,9 +39,11 @@ class SimpleIGLMesh : public SerializableObject {
         void clear();
         int getNumberFaces() const;
         int getNumberVertices() const;
+        Pointd getVertex(unsigned int i) const;
         #ifdef CGAL_DEFINED
         static void intersection(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
         static void difference(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
+        static void unionn(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
         #endif
 
         // SerializableObject interface
@@ -73,6 +75,7 @@ class IGLMesh : public SimpleIGLMesh {
         #ifdef CGAL_DEFINED
         static void intersection(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);
         static void difference(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);
+        static void unionn(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);
         #endif
 
         #ifdef DCEL_DEFINED
