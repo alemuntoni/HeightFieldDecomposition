@@ -42,6 +42,9 @@ template <class T> class Point : SerializableObject {
          ****************/
 
         Point(T xCoord = 0.0, T yCoord = 0.0, T zCoord = 0.0);
+        #ifdef COMMON_WITH_EIGEN
+        Point(const Eigen::VectorXd &v);
+        #endif
         virtual ~Point(void){}
 
         /*************************
@@ -174,6 +177,12 @@ using Point3D = Point<T>;
 template <class T>
 inline Point<T>::Point(T x, T y, T z) : xCoord(x), yCoord(y), zCoord(z) {
 }
+
+#ifdef COMMON_WITH_EIGEN
+template <class T>
+Point<T>::Point(const Eigen::VectorXd& v) : xCoord(v(0)), yCoord(v(1)), zCoord(v(2)) {
+}
+#endif
 
 /*************************
 * Public Inline Methods *

@@ -66,65 +66,22 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, unsigned int rot, int factor
     double av = maxl / resolution;
     BoundingBox nBB(-(bb.getMax()-bb.getMin())/av, (bb.getMax()-bb.getMin())/av);
     d.scale(nBB);
-
-    /*Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
-    if (rot > 0){
-        switch (rot){
-            case 1:
-                getRotationMatrix(Vec3(0,0,1), 0.785398, m);
-                d.rotate(m);
-                getRotationMatrix(Vec3(0,0,-1), 0.785398, m);
-                break;
-            case 2:
-                getRotationMatrix(Vec3(1,0,0), 0.785398, m);
-                d.rotate(m);
-                getRotationMatrix(Vec3(-1,0,0), 0.785398, m);
-                break;
-            case 3:
-                getRotationMatrix(Vec3(0,1,0), 0.785398, m);
-                d.rotate(m);
-                getRotationMatrix(Vec3(0,-1,0), 0.785398, m);
-                break;
-            default:
-                assert(0);
-        }
-    }
-    return m;*/
     return rotateDcelAlreadyScaled(d, rot);
 }
 
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target) {
-
-
-    d.saveOnObjFile("tmp.obj");
-    IGLInterface::generateGridAndDistanceField("tmp.obj");
-    //exec("./grid_generator tmp.obj");
-
-
-    Eigen::RowVector3i nGmin;
-    Eigen::RowVector3i nGmax;
-    Eigen::VectorXd S;
-    Eigen::MatrixXd GV;
-    Eigen::RowVector3i res;
-
-    std::ifstream file;
-    file.open ("tmp.bin", std::ios::in | std::ios::binary);
-    Serializer::deserialize(nGmin, file);
-    Serializer::deserialize(nGmax, file);
-    Serializer::deserialize(res, file);
-    Serializer::deserialize(GV, file);
-    Serializer::deserialize(S, file);
-    file.close();
-
-    g = Grid(res, GV, S, nGmin, nGmax);
+    SimpleIGLMesh m(d);
+    Array3D<Pointd> grid;
+    Array3D<double> distanceField;
+    IGLInterface::generateGridAndDistanceField(grid, distanceField, m);
+    Pointi res(grid.getSizeX(), grid.getSizeY(), grid.getSizeZ());
+    Pointd nGmin(grid(0,0,0));
+    Pointd nGmax(grid(res.x()-1, res.y()-1, res.z()-1));
+    g = Grid(res, grid, distanceField, nGmin, nGmax);
     g.setTarget(target);
     g.calculateWeightsAndFreezeKernel(d, kernelDistance, heightfields);
     Energy e(g);
     e.calculateFullBoxValues(g);
-
-    std::remove("tmp.bin");
-    std::remove("tmp.obj");
-    std::remove("tmp.mtu");
 }
 
 void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen::Matrix3d &rot, bool onlyTarget, const Vec3& target) {

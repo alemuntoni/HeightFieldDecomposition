@@ -7,6 +7,7 @@
 #include <igl/per_face_normals.h>
 #include <igl/writeOBJ.h>
 #include <igl/writePLY.h>
+#include <igl/signed_distance.h>
 
 #ifdef CGAL_DEFINED
 #include <igl/copyleft/cgal/CSGTree.h>
@@ -23,6 +24,9 @@ class SimpleIGLMesh : public SerializableObject {
     public:
         SimpleIGLMesh();
         SimpleIGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F);
+        #ifdef DCEL_DEFINED
+        SimpleIGLMesh(const Dcel& dcel);
+        #endif
         void setVertex(unsigned int i, const Eigen::VectorXd &p);
         void setVertex(unsigned int i, double x, double y, double z);
         void addVertex(const Eigen::VectorXd &p);
@@ -40,6 +44,7 @@ class SimpleIGLMesh : public SerializableObject {
         int getNumberFaces() const;
         int getNumberVertices() const;
         Pointd getVertex(unsigned int i) const;
+        void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
         #ifdef CGAL_DEFINED
         static void intersection(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
         static void difference(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
@@ -49,6 +54,8 @@ class SimpleIGLMesh : public SerializableObject {
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);
+
+        Eigen::VectorXd getSignedDistance(const Eigen::MatrixXd &points) const;
     protected:
         Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> V;
         Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> F;
@@ -71,6 +78,7 @@ class IGLMesh : public SimpleIGLMesh {
         bool readFromFile(const std::string &filename);
         void setColor(double red, double green, double blue, int f = -1);
         Vec3 getNormal(unsigned int f) const;
+        void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
 
         #ifdef CGAL_DEFINED
         static void intersection(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);
@@ -145,9 +153,49 @@ inline void SimpleIGLMesh::resizeFaces(unsigned int nf) {
     F.resize(nf,3);
 }
 
+inline bool SimpleIGLMesh::readFromFile(const std::__cxx11::string& filename) {
+    return igl::read_triangle_mesh(filename, V, F);
+}
+
+inline bool SimpleIGLMesh::saveOnObj(const std::__cxx11::string& filename) const {
+    return igl::writeOBJ(filename, V, F);
+}
+
+inline bool SimpleIGLMesh::saveOnPly(const std::__cxx11::string& filename) const {
+    return igl::writePLY(filename, V, F);
+}
+
 inline void SimpleIGLMesh::clear() {
     V.resize(0,3);
     F.resize(0,3);
+}
+
+inline int SimpleIGLMesh::getNumberFaces() const {
+    return F.rows();
+}
+
+inline int SimpleIGLMesh::getNumberVertices() const {
+    return V.rows();
+}
+
+inline Pointd SimpleIGLMesh::getVertex(unsigned int i) const {
+    assert(i < V.rows());
+    return std::move(Pointd(V(i,0), V(i,1), V(i,2)));
+}
+
+inline void SimpleIGLMesh::getBoundingBox(Eigen::RowVector3d& BBmin, Eigen::RowVector3d& BBmax) const {
+    BBmin = V.colwise().minCoeff();
+    BBmax = V.colwise().maxCoeff();
+}
+
+inline void SimpleIGLMesh::serialize(std::ofstream& binaryFile) const {
+    Serializer::serialize(V, binaryFile);
+    Serializer::serialize(F, binaryFile);
+}
+
+inline void SimpleIGLMesh::deserialize(std::ifstream& binaryFile) {
+    Serializer::deserialize(V, binaryFile);
+    Serializer::deserialize(F, binaryFile);
 }
 
 inline void IGLMesh::updateBoundingBox() {
@@ -174,6 +222,16 @@ inline void IGLMesh::clear() {
     C.resize(0,3);
     NV.resize(0,3);
     NF.resize(0,3);
+}
+
+inline Vec3 IGLMesh::getNormal(unsigned int f) const {
+    assert (f < F.rows());
+    return std::move(Vec3(NF(f,0), NF(f,1), NF(f,2)));
+}
+
+inline void IGLMesh::getBoundingBox(Eigen::RowVector3d& BBmin, Eigen::RowVector3d& BBmax) const {
+    BBmin = this->BBmin;
+    BBmax = this->BBmax;
 }
 
 #endif // IGLMESH_H

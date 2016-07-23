@@ -19,6 +19,8 @@ template <class T> class Array2D : public SerializableObject{
 
         void setConstant(const T& c);
 
+        void resize (size_t x, size_t y);
+
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);
@@ -44,6 +46,8 @@ template <class T> class Array3D : public SerializableObject{
         size_t getSizeZ() const;
 
         void setConstant(const T& c);
+
+        void resize (size_t x, size_t y, size_t z);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -71,6 +75,8 @@ template <class T> class Array4D : public SerializableObject{
         size_t getSizeW() const;
 
         void setConstant(const T& c);
+
+        void resize (size_t x, size_t y, size_t z, size_t w);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -126,6 +132,13 @@ inline size_t Array2D<T>::getSizeY() const{
 template <class T>
 inline void Array2D<T>::setConstant(const T& c) {
     std::fill(v.begin(), v.end(), c);
+}
+
+template <class T>
+inline void Array2D<T>::resize(size_t x, size_t y) {
+    v.resize(x*y);
+    sizeX = x;
+    sizeY = y;
 }
 
 template <class T>
@@ -204,6 +217,14 @@ inline void Array3D<T>::setConstant(const T& c) {
 }
 
 template <class T>
+inline void Array3D<T>::resize(size_t x, size_t y, size_t z) {
+    v.resize(x*y*z);
+    sizeX = x;
+    sizeY = y;
+    sizeZ = z;
+}
+
+template <class T>
 inline void Array3D<T>::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(sizeX, binaryFile);
     Serializer::serialize(sizeY, binaryFile);
@@ -254,21 +275,12 @@ inline T Array4D<T>::operator ()(size_t i, size_t j, size_t k, size_t l) const {
     return v[getIndex(i,j,k,l)];
 }
 
-/*template <class T>
-inline std::vector<T> Array4D<T>::operator ()(size_t i, size_t j, size_t k) const {
-    assert (i < sizeX);
-    assert (j < sizeY);
-    assert (k < sizeZ);
-    return std::vector<T>(v.begin()+ sizeW*(k + sizeZ*(j + sizeY*i)), v.begin()+ sizeW*((k+1) + sizeZ*(j + sizeY*i)));
-}*/
-
 template <class T>
 inline const T* Array4D<T>::operator ()(size_t i, size_t j, size_t k) const {
     assert (i < sizeX);
     assert (j < sizeY);
     assert (k < sizeZ);
     return &(v[sizeW*(k + sizeZ*(j + sizeY*i))]);
-    //return std::vector<T>(v.begin()+ sizeW*(k + sizeZ*(j + sizeY*i)), v.begin()+ sizeW*((k+1) + sizeZ*(j + sizeY*i)));
 }
 
 template <class T>
@@ -294,6 +306,15 @@ inline size_t Array4D<T>::getSizeW() const {
 template <class T>
 inline void Array4D<T>::setConstant(const T& c) {
     std::fill(v.begin(), v.end(), c);
+}
+
+template <class T>
+inline void Array4D<T>::resize(size_t x, size_t y, size_t z, size_t w) {
+    v.resize(x*y*z*w);
+    sizeX = x;
+    sizeY = y;
+    sizeZ = z;
+    sizeW = w;
 }
 
 template <class T>

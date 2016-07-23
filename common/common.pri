@@ -35,4 +35,5 @@ HEADERS += \
     $$PWD/pickable_object.h \
     $$PWD/arrays.h \
     $$PWD/timer.h \
-    $$PWD/utils.h
+    $$PWD/utils.h \
+    $$PWD/hashlib.h

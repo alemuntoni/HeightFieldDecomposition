@@ -25,7 +25,7 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         void addHeightfield(const DrawableIGLMesh &m, const Vec3 &target, int i = -1);
         unsigned int getNumHeightfields() const;
 
-        void removeHeightfield(int i);
+        void removeHeightfield(unsigned int i);
         const IGLMesh& getHeightfield(unsigned int i) const;
 
         // SerializableObject interface

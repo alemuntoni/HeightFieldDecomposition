@@ -2,6 +2,7 @@
 #define FUNCTIONS_H
 
 #include "../common/serialize.h"
+#include "../common/arrays.h"
 #include <igl/copyleft/marching_cubes.h>
 #include <igl/signed_distance.h>
 #include <igl/read_triangle_mesh.h>
@@ -14,7 +15,7 @@
 #include <iostream>
 
 namespace IGLInterface {
-    bool generateGridAndDistanceField(const std::string &s);
+    void generateGridAndDistanceField(Array3D<Pointd>& grid, Array3D<double> &distanceField, const SimpleIGLMesh &m, double gridUnit = 2, bool integer= true);
 }
 
 

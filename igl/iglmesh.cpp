@@ -10,6 +10,29 @@ SimpleIGLMesh::SimpleIGLMesh() {
 SimpleIGLMesh::SimpleIGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F) {
 }
 
+#ifdef DCEL_DEFINED
+SimpleIGLMesh::SimpleIGLMesh(const Dcel& dcel) {
+    clear();
+    V.resize(dcel.getNumberVertices(), 3);
+    F.resize(dcel.getNumberFaces(), 3);
+    std::map<int, int> vids;
+    unsigned int i = 0;
+    for (Dcel::ConstVertexIterator vit = dcel.vertexBegin(); vit != dcel.vertexEnd(); ++vit){
+        const Dcel::Vertex* v = *vit;
+        vids[v->getId()] = i;
+        Pointd p = v->getCoordinate();
+        V(i,0) = p.x(); V(i,1) = p.y(); V(i,2) = p.z();
+        i++;
+    }
+    i = 0;
+    for (Dcel::ConstFaceIterator fit = dcel.faceBegin(); fit != dcel.faceEnd(); ++fit){
+        const Dcel::Face* f = *fit;
+        F(i, 0) = vids[f->getVertex1()->getId()]; F(i, 1) = vids[f->getVertex2()->getId()]; F(i, 2) = vids[f->getVertex3()->getId()];
+        i++;
+    }
+}
+#endif
+
 IGLMesh::IGLMesh() {
 }
 
@@ -102,38 +125,6 @@ void IGLMesh::setColor(double red, double green, double blue, int f) {
         assert(f < F.rows());
         C.row(f) << red, green, blue;
     }
-
-}
-
-Vec3 IGLMesh::getNormal(unsigned int f) const {
-    assert (f < F.rows());
-    return std::move(Vec3(NF(f,0), NF(f,1), NF(f,2)));
-}
-
-bool SimpleIGLMesh::readFromFile(const std::__cxx11::string& filename) {
-    bool b = igl::read_triangle_mesh(filename, V, F);
-    return b;
-}
-
-bool SimpleIGLMesh::saveOnObj(const std::__cxx11::string& filename) const {
-    return igl::writeOBJ(filename, V, F);
-}
-
-bool SimpleIGLMesh::saveOnPly(const std::__cxx11::string& filename) const {
-    return igl::writePLY(filename, V, F);
-}
-
-int SimpleIGLMesh::getNumberFaces() const {
-    return F.rows();
-}
-
-int SimpleIGLMesh::getNumberVertices() const {
-    return V.rows();
-}
-
-Pointd SimpleIGLMesh::getVertex(unsigned int i) const {
-    assert(i < V.rows());
-    return std::move(Pointd(V(i,0), V(i,1), V(i,2)));
 }
 
 #ifdef CGAL_DEFINED
@@ -157,17 +148,15 @@ void SimpleIGLMesh::unionn(SimpleIGLMesh& result, const SimpleIGLMesh& m1, const
     result.V = M.cast_V<Eigen::MatrixXd>();
     result.F = M.F();
 }
+
+Eigen::VectorXd SimpleIGLMesh::getSignedDistance(const Eigen::MatrixXd& points) const{
+    Eigen::VectorXd S;
+    Eigen::VectorXi I;
+    Eigen::MatrixXd C,N;
+    igl::signed_distance(points,V,F,igl::SIGNED_DISTANCE_TYPE_PSEUDONORMAL,S,I,C,N);
+    return std::move(S);
+}
 #endif
-
-void SimpleIGLMesh::serialize(std::ofstream& binaryFile) const {
-    Serializer::serialize(V, binaryFile);
-    Serializer::serialize(F, binaryFile);
-}
-
-void SimpleIGLMesh::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserialize(V, binaryFile);
-    Serializer::deserialize(F, binaryFile);
-}
 
 #ifdef CGAL_DEFINED
 void IGLMesh::intersection(IGLMesh& result, const IGLMesh& m1, const IGLMesh& m2) {

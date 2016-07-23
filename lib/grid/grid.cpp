@@ -3,13 +3,13 @@
 Grid::Grid() {
 }
 
-Grid::Grid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoordinates, const Eigen::VectorXd& signedDistances, const Eigen::RowVector3i& gMin, const Eigen::RowVector3i& gMax) :
-    gridCoordinates(gridCoordinates), signedDistances(signedDistances), target(0,0,0){
-    bb.setMin(Pointd(gMin(0), gMin(1), gMin(2)));
-    bb.setMax(Pointd(gMax(0), gMax(1), gMax(2)));
-    resX = resolution(0);
-    resY = resolution(1);
-    resZ = resolution(2);
+Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<double>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
+    gridCoordinates(gridCoordinates), signedDistances(signedDistances), target(0,0,0) {
+    bb.setMin(gMin);
+    bb.setMax(gMax);
+    resX = resolution.x();
+    resY = resolution.y();
+    resZ = resolution.z();
     weights = Array3D<double>(resX,resY,resZ, BORDER_PAY);
     for (unsigned int i = 2; i < resX-2; i++){
         for (unsigned int j = 2; j < resY-2; j++){
@@ -28,32 +28,6 @@ Grid::Grid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoor
  * @param d
  */
 void Grid::calculateBorderWeights(const Dcel& d, bool heightfields) {
-    /*for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
-        const Dcel::Face* f = *fit;
-        Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
-        Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
-        Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
-
-        setNeighboroudWeigth(p1, MIN_PAY);
-        setNeighboroudWeigth(p2, MIN_PAY);
-        setNeighboroudWeigth(p3, MIN_PAY);
-
-    }
-    if (heightfields) {
-        for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
-            const Dcel::Face* f = *fit;
-            if (f->getNormal().dot(target) < 0){
-                Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
-                Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
-                Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
-
-                setNeighboroudWeigth(p1, MAX_PAY);
-                setNeighboroudWeigth(p2, MAX_PAY);
-                setNeighboroudWeigth(p3, MAX_PAY);
-            }
-
-        }
-    }*/
     CGALInterface::AABBTree aabb(d);
     double unit = getUnit();
     std::vector<Pointi> flipped;
@@ -143,8 +117,9 @@ void Grid::calculateFullBoxValues(double (*integralTricubicInterpolation)(const 
 double Grid::getValue(const Pointd& p) const {
     if (! bb.isStrictlyIntern(p)) return BORDER_PAY;
     unsigned int xi = getIndexOfCoordinateX(p.x()), yi = getIndexOfCoordinateY(p.y()), zi = getIndexOfCoordinateZ(p.z());
-    unsigned int gridIndex = getIndex(xi,yi,zi);
-    Pointd n(gridCoordinates(gridIndex,0), gridCoordinates(gridIndex,1), gridCoordinates(gridIndex,2));
+    //unsigned int gridIndex = getIndex(xi,yi,zi);
+    //Pointd n(gridCoordinates(gridIndex,0), gridCoordinates(gridIndex,1), gridCoordinates(gridIndex,2));
+    Pointd n(gridCoordinates(xi,yi,zi));
     if (n == p)
         return weights(xi,yi,zi);
     else{
@@ -176,8 +151,10 @@ void Grid::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(resX, binaryFile);
     Serializer::serialize(resY, binaryFile);
     Serializer::serialize(resZ, binaryFile);
-    Serializer::serialize(gridCoordinates, binaryFile);
-    Serializer::serialize(signedDistances, binaryFile);
+    gridCoordinates.serialize(binaryFile);
+    //Serializer::serialize(gridCoordinates, binaryFile);
+    signedDistances.serialize(binaryFile);
+    //Serializer::serialize(signedDistances, binaryFile);
     weights.serialize(binaryFile);
     coeffs.serialize(binaryFile);
     fullBoxValues.serialize(binaryFile);
@@ -190,8 +167,10 @@ void Grid::deserialize(std::ifstream& binaryFile) {
     Serializer::deserialize(resX, binaryFile);
     Serializer::deserialize(resY, binaryFile);
     Serializer::deserialize(resZ, binaryFile);
-    Serializer::deserialize(gridCoordinates, binaryFile);
-    Serializer::deserialize(signedDistances, binaryFile);
+    gridCoordinates.deserialize(binaryFile);
+    //Serializer::deserialize(gridCoordinates, binaryFile);
+    signedDistances.deserialize(binaryFile);
+    //Serializer::deserialize(signedDistances, binaryFile);
     weights.deserialize(binaryFile);
     coeffs.deserialize(binaryFile);
     fullBoxValues.deserialize(binaryFile);
@@ -202,9 +181,9 @@ void Grid::setNeighboroudWeigth(const Pointd& p, double w) {
     unsigned int i = getIndexOfCoordinateX(p.x());
     unsigned int j = getIndexOfCoordinateY(p.y());
     unsigned int k = getIndexOfCoordinateZ(p.z());
-    double dx = gridCoordinates(getIndex(i,j,k),0);
-    double dy = gridCoordinates(getIndex(i,j,k),1);
-    double dz = gridCoordinates(getIndex(i,j,k),2);
+    double dx = gridCoordinates(i,j,k).x();
+    double dy = gridCoordinates(i,j,k).y();
+    double dz = gridCoordinates(i,j,k).z();
 
     // point in a grid point
     if (dx == p.x() &&

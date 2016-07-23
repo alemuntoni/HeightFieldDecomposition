@@ -8,7 +8,7 @@ DrawableGrid::DrawableGrid(const Grid& g) : Grid(g), visible(true), drawMode(DRA
 
 }
 
-DrawableGrid::DrawableGrid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoordinates, const Eigen::VectorXd& signedDistances, const Eigen::RowVector3i& gMin, const Eigen::RowVector3i& gMax) :
+DrawableGrid::DrawableGrid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<double>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
     Grid(resolution, gridCoordinates, signedDistances, gMin, gMax), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(0.5) {
 }
 
@@ -140,15 +140,12 @@ void DrawableGrid::draw() const {
                                 drawSphere(getPoint(sliceValue,j,k), 0.4, c);
                             }
                         }
-                        xi = gridCoordinates(getIndex(sliceValue,0,0), 0);
+                        xi = gridCoordinates(sliceValue,0,0).x();
                         for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
                             for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
                                 double w = getValue(Pointd(xi,yi,zi));
                                 QColor c;
-                                //if (w >=MIN_PAY && w <= MAX_PAY)
-                                    c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                                //else
-                                    //c.setHsv(getHsvHFactor(w)*240,255,128);
+                                c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
                                 drawSphere(Pointd(xi,yi,zi), 0.2, c);
                             }
                         }
@@ -161,15 +158,12 @@ void DrawableGrid::draw() const {
                                 drawSphere(getPoint(i,sliceValue,k), 0.4, c);
                             }
                         }
-                        yi = gridCoordinates(getIndex(0,sliceValue,0), 1);
+                        yi = gridCoordinates(0,sliceValue,0).y();
                         for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
                             for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
                                 double w = getValue(Pointd(xi,yi,zi));
                                 QColor c;
-                                //if (w >=MIN_PAY && w <= MAX_PAY)
-                                    c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                                //else
-                                    //c.setHsv(getHsvHFactor(w)*240,255,128);
+                                c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
                                 drawSphere(Pointd(xi,yi,zi), 0.2, c);
                             }
                         }
@@ -182,15 +176,12 @@ void DrawableGrid::draw() const {
                                 drawSphere(getPoint(i,j,sliceValue), 0.4, c);
                             }
                         }
-                        zi = gridCoordinates(getIndex(0,0,sliceValue), 2);
+                        zi = gridCoordinates(0,0,sliceValue).z();
                         for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
                             for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
                                 double w = getValue(Pointd(xi,yi,zi));
                                 QColor c;
-                                //if (w >=MIN_PAY && w <= MAX_PAY)
-                                    c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                                //else
-                                    //c.setHsv(getHsvHFactor(w)*240,255,128);
+                                c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
                                 drawSphere(Pointd(xi,yi,zi), 0.2, c);
                             }
                         }

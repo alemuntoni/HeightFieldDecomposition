@@ -17,7 +17,7 @@
 class Grid : public SerializableObject{
     public:
         Grid();
-        Grid(const Eigen::RowVector3i& resolution, const Eigen::MatrixXd& gridCoordinates, const Eigen::VectorXd& signedDistances, const Eigen::RowVector3i& gMin, const Eigen::RowVector3i& gMax);
+        Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<double>& signedDistances, const Pointd& gMin, const Pointd& gMax);
 
         unsigned int getResX() const;
         unsigned int getResY() const;
@@ -61,8 +61,8 @@ class Grid : public SerializableObject{
 
         BoundingBox bb;
         unsigned int resX, resY, resZ;
-        Eigen::MatrixXd gridCoordinates;
-        Eigen::VectorXd signedDistances;
+        Array3D<Pointd> gridCoordinates;
+        Array3D<double> signedDistances;
         Array3D<double> weights;
         Array4D<double> coeffs;
         Array3D<double> fullBoxValues;
@@ -95,12 +95,11 @@ inline void Grid::setTarget(const Vec3& value) {
 }
 
 inline double Grid::getUnit() const {
-    return gridCoordinates(getIndex(1,0,0), (0)) - gridCoordinates(getIndex(0,0,0), (0));
+    return gridCoordinates(1,0,0).x() - gridCoordinates(0,0,0).x();
 }
 
 inline Pointd Grid::getNearestGridPoint(const Pointd& p) const{
-    unsigned int ind = getIndex(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
-    return std::move(Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2)));
+    return gridCoordinates(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
 }
 
 inline void Grid::getCoefficients(const double* &coeffs, unsigned int i, unsigned int j, unsigned int k) const {
@@ -134,20 +133,18 @@ inline double Grid::getFullBoxValue(const Pointd& p) const {
 }
 
 inline Pointd Grid::getPoint(unsigned int i, unsigned int j, unsigned int k) const {
-    unsigned int ind = getIndex(i,j,k);
-    return std::move(Pointd(gridCoordinates(ind,0), gridCoordinates(ind,1), gridCoordinates(ind,2)));
+    return gridCoordinates(i,j,k);
 }
 
 inline unsigned int Grid::getIndex(unsigned int i, unsigned int j, unsigned int k) const {
     assert (i < resX);
     assert (j < resY);
     assert (k < resZ);
-    //return i+resX*(j + resY*k);
     return k+resZ*(j + resY*i);
 }
 
 inline double Grid::getSignedDistance(unsigned int i, unsigned int j, unsigned int k) const {
-    return signedDistances(getIndex(i,j,k));
+    return signedDistances(i,j,k);
 }
 
 inline double Grid::getWeight(unsigned int i, unsigned int j, unsigned int k) const {

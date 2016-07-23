@@ -49,7 +49,7 @@ unsigned int HeightfieldsList::getNumberVerticesHeightfield(int i) const {
 }
 
 Pointd HeightfieldsList::getVertexOfHeightfield(int he, int v) const {
-    assert (i < (int)heightfields.size());
+    assert (he < (int)heightfields.size());
     return heightfields[he].getVertex(v);
 }
 
@@ -96,7 +96,7 @@ unsigned int HeightfieldsList::getNumHeightfields() const {
     return heightfields.size();
 }
 
-void HeightfieldsList::removeHeightfield(int i) {
+void HeightfieldsList::removeHeightfield(unsigned int i) {
     assert (i < heightfields.size());
     heightfields.erase(heightfields.begin()+i);
     targets.erase(targets.begin()+i);
