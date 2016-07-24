@@ -3,7 +3,7 @@
 
 #include <QFrame>
 #include "viewer/mainwindow.h"
-#include "../drawableiglmesh.h"
+#include "drawableiglmesh.h"
 
 namespace Ui {
     class IGLMeshManager;

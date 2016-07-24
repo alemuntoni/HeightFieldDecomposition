@@ -1,7 +1,7 @@
 #ifndef BOX_H
 #define BOX_H
 
-#include "common/drawable_object.h"
+#include "viewer/interfaces/drawable_object.h"
 #include "common/bounding_box.h"
 #include "viewer/objects/objects.h"
 #ifdef IGL_DEFINED

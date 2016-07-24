@@ -3,7 +3,7 @@
 
 #include <QFrame>
 #include "../../viewer/mainwindow.h"
-#include "../drawable_trimesh.h"
+#include "drawable_trimesh.h"
 
 namespace Ui {
     class TrimeshManager;

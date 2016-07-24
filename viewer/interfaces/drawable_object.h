@@ -8,7 +8,7 @@
 #define DRAWABLE_OBJECT_H
 
 #include <float.h>
-#include "point.h"
+#include "../../common/point.h"
 
 /**
  * \~English

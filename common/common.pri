@@ -28,11 +28,9 @@ macx{
 HEADERS += \
     $$PWD/bounding_box.h \
     $$PWD/comparators.h \
-    $$PWD/drawable_object.h \
     $$PWD/point.h \
     $$PWD/point2d.h \
     $$PWD/serialize.h \
-    $$PWD/pickable_object.h \
     $$PWD/arrays.h \
     $$PWD/timer.h \
     $$PWD/utils.h \

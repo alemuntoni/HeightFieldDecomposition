@@ -1,8 +1,8 @@
 #ifndef HEIGHTFIELDSLIST_H
 #define HEIGHTFIELDSLIST_H
 
-#include "igl/drawableiglmesh.h"
-#include "common/drawable_object.h"
+#include "igl/gui/drawableiglmesh.h"
+#include "viewer/interfaces/drawable_object.h"
 
 class HeightfieldsList : public DrawableObject, public SerializableObject{
     public:

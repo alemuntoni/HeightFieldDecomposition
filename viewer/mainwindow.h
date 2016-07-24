@@ -16,7 +16,7 @@
 #include <boost/bimap.hpp>
 #include <QApplication>
 
-#include "../common/drawable_object.h"
+#include "interfaces/drawable_object.h"
 #include "../common/bounding_box.h"
 #include "objects/drawabledebugobjects.h"
 

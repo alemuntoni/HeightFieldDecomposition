@@ -935,20 +935,45 @@ void EngineManager::on_baseComplexPushButton_clicked() {
 }
 
 void EngineManager::on_subtractPushButton_clicked() {
-    if (solutions!= nullptr && baseComplex != nullptr){
+    if (solutions!= nullptr && baseComplex != nullptr && d != nullptr){
+        CGALInterface::AABBTree aabb(*d, true);
         he = new HeightfieldsList();
         mainWindow->pushObj(he, "Heightfields");
         mainWindow->updateGlCanvas();
         he->resize(solutions->getNumberBoxes());
         SimpleIGLMesh bc((SimpleIGLMesh)*baseComplex);
         for (int i = solutions->getNumberBoxes()-1; i >= 0 ; i--){
+            bool b = true;
+            for (unsigned int j = 0; j < bc.getNumberVertices(); j++) {
+                Pointd p = bc.getVertex(j);
+                double dist = aabb.getSquaredDistance(p);
+                if (dist == 0) {
+                    b = false;
+                    break;
+                }
+            }
+            if (b){
+                std::cerr << "Finished! \n";
+                break;
+            }
             SimpleIGLMesh box;
             SimpleIGLMesh intersection;
             solutions->getBox(i).getIGLMesh(box);
             SimpleIGLMesh::intersection(intersection, bc, box);
-            SimpleIGLMesh::difference(bc, bc, box);
-            DrawableIGLMesh dimm(intersection);
-            he->addHeightfield(dimm, solutions->getBox(i).getRotatedTarget(), i);
+            b = true;
+            for (unsigned int j = 0; j < intersection.getNumberVertices(); j++) {
+                Pointd p = intersection.getVertex(j);
+                double dist = aabb.getSquaredDistance(p);
+                if (dist == 0) {
+                    b = false;
+                    break;
+                }
+            }
+            if (!b) {
+                SimpleIGLMesh::difference(bc, bc, box);
+                DrawableIGLMesh dimm(intersection);
+                he->addHeightfield(dimm, solutions->getBox(i).getRotatedTarget(), i);
+            }
             std::cerr << i << "\n";
         }
         for (int i = he->getNumHeightfields()-1; i >= 0 ; i--){
@@ -969,7 +994,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         delete baseComplex;
         baseComplex = new DrawableIGLMesh(bc);
         baseComplex->updateFaceNormals();
-        for (int i = 0; i < baseComplex->getNumberFaces(); ++i){
+        for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
             Vec3 n = baseComplex->getNormal(i);
             n.normalize();
             QColor c = colorOfNearestNormal(n);
@@ -979,6 +1004,41 @@ void EngineManager::on_subtractPushButton_clicked() {
         mainWindow->updateGlCanvas();
         baseComplex->saveOnObj("BaseComplex.obj");
     }
+}
+
+void EngineManager::on_stickPushButton_clicked() {
+    if (d!=nullptr && baseComplex != nullptr && he != nullptr && solutions != nullptr){
+        CGALInterface::AABBTree aabb(*d, true);
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            bool b = true;
+            for (unsigned int j = 0; j < he->getNumberVerticesHeightfield(i); j++) {
+                Pointd p = he->getVertexOfHeightfield(i,j);
+                double dist = aabb.getSquaredDistance(p);
+                if (dist == 0) b = false;
+            }
+            if (b) {
+                std::cerr << "Heightfield eliminabile\n";
+                IGLMesh::unionn(*baseComplex, *baseComplex, he->getHeightfield(i));
+                he->removeHeightfield(i);
+                solutions->removeBox(i);
+                i--;
+            }
+        }
+    }
+    for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
+        Vec3 n = baseComplex->getNormal(i);
+        n.normalize();
+        QColor c = colorOfNearestNormal(n);
+        baseComplex->setColor(c.redF(), c.greenF(), c.blueF(), i);
+    }
+    ui->showAllSolutionsCheckBox->setEnabled(true);
+    solutions->setVisibleBox(0);
+    ui->solutionsSlider->setEnabled(true);
+    ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+    ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
+    ui->setFromSolutionSpinBox->setValue(0);
+    ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+    mainWindow->updateGlCanvas();
 }
 
 void EngineManager::on_serializeBCPushButton_clicked() {
@@ -1130,39 +1190,4 @@ void EngineManager::on_heightfieldsSlider_valueChanged(int value) {
         he->setVisibleHeightfield(value);
         mainWindow->updateGlCanvas();
     }
-}
-
-void EngineManager::on_stickPushButton_clicked() {
-    if (d!=nullptr && baseComplex != nullptr && he != nullptr && solutions != nullptr){
-        CGALInterface::AABBTree aabb(*d, true);
-        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            bool b = true;
-            for (unsigned int j = 0; j < he->getNumberVerticesHeightfield(i); j++) {
-                Pointd p = he->getVertexOfHeightfield(i,j);
-                double dist = aabb.getSquaredDistance(p);
-                if (dist == 0) b = false;
-            }
-            if (b) {
-                std::cerr << "Heightfield eliminabile\n";
-                IGLMesh::unionn(*baseComplex, *baseComplex, he->getHeightfield(i));
-                he->removeHeightfield(i);
-                solutions->removeBox(i);
-                i--;
-            }
-        }
-    }
-    for (int i = 0; i < baseComplex->getNumberFaces(); ++i){
-        Vec3 n = baseComplex->getNormal(i);
-        n.normalize();
-        QColor c = colorOfNearestNormal(n);
-        baseComplex->setColor(c.redF(), c.greenF(), c.blueF(), i);
-    }
-    ui->showAllSolutionsCheckBox->setEnabled(true);
-    solutions->setVisibleBox(0);
-    ui->solutionsSlider->setEnabled(true);
-    ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-    ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
-    ui->setFromSolutionSpinBox->setValue(0);
-    ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-    mainWindow->updateGlCanvas();
 }

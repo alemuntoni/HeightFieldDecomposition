@@ -8,7 +8,9 @@ FORMS += \
     $$PWD/trimeshmanager.ui
 
 HEADERS += \
-    $$PWD/trimeshmanager.h
+    $$PWD/trimeshmanager.h \
+    $$PWD/drawable_trimesh.h
 
 SOURCES += \
-    $$PWD/trimeshmanager.cpp
+    $$PWD/trimeshmanager.cpp \
+    $$PWD/drawable_trimesh.cpp

@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "../common/drawable_object.h"
-#include "trimesh.h"
+#include "../../viewer/interfaces/drawable_object.h"
+#include "../trimesh.h"
 
 //using namespace std;
 

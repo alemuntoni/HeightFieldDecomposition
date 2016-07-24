@@ -26,7 +26,9 @@ HEADERS += \
     $$PWD/mainwindow.h \
     $$PWD/objects/drawabledebugobjects.h \
     $$PWD/managers/windowmanager.h \
-    $$PWD/objects/objects.h
+    $$PWD/objects/objects.h \
+    $$PWD/interfaces/drawable_object.h \
+    $$PWD/interfaces/pickable_object.h
 
 SOURCES += \
     $$PWD/glcanvas.cpp \

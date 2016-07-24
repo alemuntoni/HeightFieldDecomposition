@@ -1,7 +1,7 @@
 #ifndef DRAWABLEGRID_H
 #define DRAWABLEGRID_H
 
-#include "common/drawable_object.h"
+#include "viewer/interfaces//drawable_object.h"
 #include "grid.h"
 #include "viewer/objects/objects.h"
 

@@ -41,8 +41,8 @@ class SimpleIGLMesh : public SerializableObject {
         bool saveOnObj(const std::string &filename) const;
         bool saveOnPly(const std::string &filename) const;
         void clear();
-        int getNumberFaces() const;
-        int getNumberVertices() const;
+        unsigned int getNumberFaces() const;
+        unsigned int getNumberVertices() const;
         Pointd getVertex(unsigned int i) const;
         void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
         #ifdef CGAL_DEFINED
@@ -170,11 +170,11 @@ inline void SimpleIGLMesh::clear() {
     F.resize(0,3);
 }
 
-inline int SimpleIGLMesh::getNumberFaces() const {
+inline unsigned int SimpleIGLMesh::getNumberFaces() const {
     return F.rows();
 }
 
-inline int SimpleIGLMesh::getNumberVertices() const {
+inline unsigned int SimpleIGLMesh::getNumberVertices() const {
     return V.rows();
 }
 

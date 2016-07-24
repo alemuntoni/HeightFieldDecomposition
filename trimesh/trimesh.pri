@@ -8,12 +8,10 @@ MODULES += TRIMESH
 
 HEADERS += \
     $$PWD/trimesh.h \
-    $$PWD/load_save_trimesh.h \
-    $$PWD/drawable_trimesh.h
+    $$PWD/load_save_trimesh.h
 
 SOURCES += \
-    $$PWD/load_save_trimesh.cpp \
-    $$PWD/drawable_trimesh.cpp
+    $$PWD/load_save_trimesh.cpp
 
 #Note: QtCreator always shows this module included, however files included in it are compiled only if Viewer module is included
 VIEWER_DEFINED{

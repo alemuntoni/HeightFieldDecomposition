@@ -19,7 +19,8 @@
 #endif
 
 #include "../common/bounding_box.h"
-#include "../common/pickable_object.h"
+#include "interfaces/drawable_object.h"
+#include "interfaces/pickable_object.h"
 #include <qmessagebox.h>
 
 //using namespace std;

@@ -19,13 +19,11 @@ unix:!macx{
 
 HEADERS += \
     $$PWD/iglinterface.h \
-    $$PWD/iglmesh.h \
-    $$PWD/drawableiglmesh.h
+    $$PWD/iglmesh.h
 
 SOURCES += \
     $$PWD/iglinterface.cpp \
-    $$PWD/iglmesh.cpp \
-    $$PWD/drawableiglmesh.cpp
+    $$PWD/iglmesh.cpp
 
 #Note: QtCreator always shows this module included, however files included in it are compiled only if Viewer module is included
 VIEWER_DEFINED{

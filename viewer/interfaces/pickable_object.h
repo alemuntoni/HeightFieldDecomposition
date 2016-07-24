@@ -5,7 +5,6 @@
 
 #ifndef PICKABLEOBJECT_H
 #define PICKABLEOBJECT_H
-#include "drawable_object.h"
 
 /**
  * \~English

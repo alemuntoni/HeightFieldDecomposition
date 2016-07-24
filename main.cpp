@@ -11,7 +11,7 @@
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
 #include <QApplication>
-#include <common/comparators.h>
+#include "common/comparators.h"
 #else
 #include "engine/engine.h"
 #endif

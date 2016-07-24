@@ -7,9 +7,9 @@
 #ifndef DRAWABLE_DCEL_H
 #define DRAWABLE_DCEL_H
 
-#include "../common/pickable_object.h"
-#include "../common/utils.h"
-#include "dcel.h"
+#include "../../viewer/interfaces/drawable_object.h"
+#include "../../common/utils.h"
+#include "../dcel.h"
 
 // From: https://blog.nobel-joergensen.com/2013/01/29/debugging-opengl-using-glgeterror/
 void _check_gl_error(const char *file, int line);

@@ -8,7 +8,9 @@ FORMS += \
     $$PWD/iglmeshmanager.ui
 
 HEADERS += \
-    $$PWD/iglmeshmanager.h
+    $$PWD/iglmeshmanager.h \
+    $$PWD/drawableiglmesh.h
 
 SOURCES += \
-    $$PWD/iglmeshmanager.cpp
+    $$PWD/iglmeshmanager.cpp \
+    $$PWD/drawableiglmesh.cpp

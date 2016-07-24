@@ -10,7 +10,7 @@
 #include "engine/energy.h"
 #include "engine/engine.h"
 #include "common/timer.h"
-#include "igl/drawableiglmesh.h"
+#include "igl/gui/drawableiglmesh.h"
 #include "engine/heightfieldslist.h"
 
 namespace Ui {
@@ -117,6 +117,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_subtractPushButton_clicked();
 
+        void on_stickPushButton_clicked();
+
         void on_serializeBCPushButton_clicked();
 
         void on_deserializeBCPushButton_clicked();
@@ -126,8 +128,6 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_allHeightfieldsCheckBox_stateChanged(int arg1);
 
         void on_heightfieldsSlider_valueChanged(int value);
-
-        void on_stickPushButton_clicked();
 
     private:
         Ui::EngineManager *ui;

@@ -7,7 +7,7 @@
 #define PICKABLEDCEL_H
 
 #include "drawable_dcel.h"
-#include "../common/pickable_object.h"
+#include "../../viewer/interfaces/pickable_object.h"
 
 /**
  * \~Italian

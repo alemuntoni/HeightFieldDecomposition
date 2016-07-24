@@ -5,10 +5,14 @@ MODULES +=  DCEL_MANAGER
 }
 
 HEADERS += \
-    $$PWD/dcelmanager.h
+    $$PWD/dcelmanager.h \
+    $$PWD/drawable_dcel.h \
+    $$PWD/pickable_dcel.h
 
 SOURCES += \
-    $$PWD/dcelmanager.cpp
+    $$PWD/dcelmanager.cpp \
+    $$PWD/drawable_dcel.cpp \
+    $$PWD/pickable_dcel.cpp
 
 FORMS += \
     $$PWD/dcelmanager.ui

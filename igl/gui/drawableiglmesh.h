@@ -1,8 +1,8 @@
 #ifndef DRAWABLEIGLMESH_H
 #define DRAWABLEIGLMESH_H
 
-#include "common/drawable_object.h"
-#include "iglmesh.h"
+#include "../../viewer/interfaces/drawable_object.h"
+#include "../iglmesh.h"
 
 class DrawableIGLMesh : public IGLMesh, public DrawableObject {
     public:
