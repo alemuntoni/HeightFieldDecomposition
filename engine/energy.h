@@ -17,6 +17,9 @@ class Energy{
         int gradientDiscend(Box3D &b) const;
         int gradientDiscend(Box3D &b, BoxList& iterations, bool saveIt = true) const;
 
+        int BFGS(Box3D &b) const;
+        int BFGS(Box3D &b, BoxList& iterations, bool saveIt = true) const;
+
         //Gradient Barrier
         double derivateGBarrier(double x, double s) const;
         double derivateFi(double x, double s) const;
@@ -81,6 +84,11 @@ class Energy{
 inline int Energy::gradientDiscend(Box3D& b) const {
     BoxList dummy;
     return gradientDiscend(b, dummy, false);
+}
+
+inline int Energy::BFGS(Box3D& b) const {
+    BoxList dummy;
+    return BFGS(b, dummy, false);
 }
 
 inline void Energy::gradientTricubicInterpolationEnergy(Eigen::VectorXd& gradient, const Pointd& min, const Pointd& max) const {

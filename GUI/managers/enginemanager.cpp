@@ -20,8 +20,8 @@ EngineManager::EngineManager(QWidget *parent) :
     ui->setupUi(this);
     ui->iterationsSlider->setMaximum(0);
 
-    ui->frame_2->setVisible(false);
-    ui->frame_5->setVisible(false);
+    //ui->frame_2->setVisible(false);
+    //ui->frame_5->setVisible(false);
 }
 
 void EngineManager::deleteDrawableObject(DrawableObject* d) {
@@ -480,7 +480,8 @@ void EngineManager::on_minimizePushButton_clicked() {
             deleteDrawableObject(iterations);
             iterations = new BoxList();
             Timer t("Gradient Discend");
-            it = e.gradientDiscend(*b, *iterations);
+            it = e.BFGS(*b, *iterations);
+            //it = e.gradientDiscend(*b, *iterations);
             t.stopAndPrint();
             iterations->setVisibleBox(0);
             ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
@@ -491,7 +492,8 @@ void EngineManager::on_minimizePushButton_clicked() {
         }
         else {
             Timer t("Gradient Discend");
-            it = e.gradientDiscend(*b);
+            it = e.BFGS(*b);
+            //it = e.gradientDiscend(*b);
             t.stopAndPrint();
         }
         updateLabel(it, ui->minimizedEnergyLabel);

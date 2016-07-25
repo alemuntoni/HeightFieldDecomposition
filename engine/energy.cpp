@@ -23,9 +23,6 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
     Eigen::VectorXd new_x(6);
     Eigen::VectorXd gradient(6);
-    //double diff = 10;
-    //double ratiov = 10;
-    //double volume = volumeOfBox(x), newVolume;
     objValue = energy(x, c1, c2, c3);
     bool ng = true;
     do{
@@ -59,6 +56,73 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
             //diff = 10;
         }
     } while (/*(ratiov < 0.99999 || ratiov > 1.00001) &&*/ nIterations < 500 && alfa > 1e-7);
+    b.setMin(Pointd(x(0), x(1), x(2)));
+    b.setMax(Pointd(x(3), x(4), x(5)));
+    if (saveIt) iterations.addBox(b);
+    return nIterations;
+}
+
+int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
+    int nIterations = 0;
+    double objValue, newObjValue;
+    double alfa = 1;
+    Pointd c1 = b.getConstraint1();
+    Pointd c2 = b.getConstraint2();
+    Pointd c3 = b.getConstraint3();
+    Eigen::VectorXd x(6);
+    x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
+    Eigen::VectorXd new_x(6);
+    Eigen::VectorXd gradient(6);
+    Eigen::VectorXd direction(6);
+    Eigen::MatrixXd B = Eigen::MatrixXd::Identity(6,6); // some initialization of B
+    Eigen::MatrixXd Binv = B;
+    Eigen::VectorXd s(6);
+    Eigen::VectorXd y(6);
+    objValue = energy(x, c1, c2, c3);
+    gradientEnergy(gradient, x, c1, c2, c3);
+    bool nd = true;
+    do {
+        if (nd){
+            direction = Binv * (-gradient);
+        }
+        s = alfa * direction;
+        new_x = x + s;
+        newObjValue = energy(new_x, c1, c2, c3);
+        if (newObjValue < objValue) {
+
+            //Update B
+            Eigen::VectorXd new_gradient(6);
+            gradientEnergy(new_gradient, new_x, c1, c2, c3);
+            //y = new_gradient - gradient;
+            //Eigen::RowVectorXd yt = y.transpose();
+            //Eigen::RowVectorXd st = s.transpose();
+            //B = B + ((y * yt) / (yt * s)) - ((B*s*st*B)/(st*B*s));
+            //Binv = B.inverse();
+            //Binv = (Eigen::MatrixXd::Identity(6,6)-(s*yt)/(yt*s))*Binv*(Eigen::MatrixXd::Identity(6,6)-(y*st)/(yt*s)) + (s*st)/(yt*s);
+            ///
+            nIterations++;
+
+            x = new_x;
+            gradient = new_gradient;
+
+            objValue = newObjValue;
+            if (saveIt){
+                b.setMin(Pointd(x(0), x(1), x(2)));
+                b.setMax(Pointd(x(3), x(4), x(5)));
+                iterations.addBox(b);
+            }
+            alfa = 1;
+            nd = true;
+
+            //std::cerr.precision(17);
+            ///*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "; ratiov: " << ratiov << "\n";
+        }
+        else{
+            alfa /= 10;
+            nd = false;
+        }
+
+    } while (nIterations < 500 && alfa > 1e-10);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
