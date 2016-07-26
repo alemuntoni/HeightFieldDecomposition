@@ -93,11 +93,11 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
             //Update B
             Eigen::VectorXd new_gradient(6);
             gradientEnergy(new_gradient, new_x, c1, c2, c3);
-            //y = new_gradient - gradient;
-            //Eigen::RowVectorXd yt = y.transpose();
-            //Eigen::RowVectorXd st = s.transpose();
-            //B = B + ((y * yt) / (yt * s)) - ((B*s*st*B)/(st*B*s));
-            //Binv = B.inverse();
+            y = new_gradient - gradient;
+            Eigen::RowVectorXd yt = y.transpose();
+            Eigen::RowVectorXd st = s.transpose();
+            B = B + ((y * yt) / (yt * s)) - ((B*s*st*B)/(st*B*s));
+            Binv = B.inverse();
             //Binv = (Eigen::MatrixXd::Identity(6,6)-(s*yt)/(yt*s))*Binv*(Eigen::MatrixXd::Identity(6,6)-(y*st)/(yt*s)) + (s*st)/(yt*s);
             ///
             nIterations++;

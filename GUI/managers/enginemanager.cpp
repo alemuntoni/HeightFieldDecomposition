@@ -492,7 +492,7 @@ void EngineManager::on_minimizePushButton_clicked() {
         }
         else {
             Timer t("Gradient Discend");
-            it = e.BFGS(*b);
+            it = e.gradientDiscend(*b);
             //it = e.gradientDiscend(*b);
             t.stopAndPrint();
         }

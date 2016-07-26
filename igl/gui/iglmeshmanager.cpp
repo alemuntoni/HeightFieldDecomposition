@@ -76,10 +76,10 @@ void IGLMeshManager::on_saveIGLMeshButton_clicked() {
     std::cout << "save: " << filename.toStdString() << std::endl;
 
     if (selectedFilter == "PLY(*.ply)") {
-        ;
+        mesh->saveOnPly(filename.toStdString());
     }
     else  if (selectedFilter == "OBJ(*.obj)") {
-        ;
+        mesh->saveOnObj(filename.toStdString());
     }
 }
 
