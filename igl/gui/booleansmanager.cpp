@@ -2,6 +2,7 @@
 #include "ui_booleansmanager.h"
 
 #include <QFileDialog>
+#include "common/utils.h"
 
 BooleansManager::BooleansManager(QWidget *parent) :
     QFrame(parent),
@@ -56,6 +57,28 @@ void BooleansManager::setButtonsResultLoaded(bool b) {
     ui->wireframeIGLMeshCheckBox_3->setEnabled(b);
     ui->wireframeIGLMeshCheckBox_3->setChecked(false);
     ui->smoothIGLMeshRadioButton_3->setChecked(true);
+}
+
+void BooleansManager::setMesh1(const IGLMesh& m) {
+    if (meshes[0] != nullptr){
+        mainWindow->deleteObj(meshes[0]);
+        delete meshes[0];
+    }
+    meshes[0] = new DrawableIGLMesh(m);
+    mainWindow->pushObj(meshes[0], "IglMesh");
+    setButtonsMeshLoaded(true);
+    mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::setMesh2(const IGLMesh& m) {
+    if (meshes[1] != nullptr){
+        mainWindow->deleteObj(meshes[1]);
+        delete meshes[1];
+    }
+    meshes[1] = new DrawableIGLMesh(m);
+    mainWindow->pushObj(meshes[1], "IglMesh");
+    setButtonsMeshLoaded_2(true);
+    mainWindow->updateGlCanvas();
 }
 
 void BooleansManager::on_loadIGLMeshButton_clicked() {
@@ -278,7 +301,7 @@ void BooleansManager::on_saveIGLMeshButton_3_clicked() {
     QString filename = QFileDialog::getSaveFileName(nullptr,
                        "Save DCEL",
                        ".",
-                       "PLY(*.ply);;OBJ(*.obj)", &selectedFilter);
+                       "OBJ(*.obj);;PLY(*.ply)", &selectedFilter);
 
     std::cout << "save: " << filename.toStdString() << std::endl;
 
@@ -313,5 +336,119 @@ void BooleansManager::on_smoothIGLMeshRadioButton_3_toggled(bool checked) {
 
 void BooleansManager::on_wireframeIGLMeshCheckBox_3_stateChanged(int arg1) {
     result->setWireframe(arg1 == Qt::Checked);
+    mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::on_plusXButton_clicked() {
+    if (ui->mesh1CheckBox->isChecked() && meshes[0] != nullptr){
+        meshes[0]->translate(Pointd(ui->stepSpinBox->value(), 0, 0));
+    }
+    if (ui->mesh2CheckBox->isChecked() && meshes[1] != nullptr){
+        meshes[1]->translate(Pointd(ui->stepSpinBox->value(), 0, 0));
+    }
+    if (ui->resultCheckBox->isChecked() && result != nullptr){
+        result->translate(Pointd(ui->stepSpinBox->value(), 0, 0));
+    }
+    mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::on_minusXButton_clicked() {
+    if (ui->mesh1CheckBox->isChecked() && meshes[0] != nullptr){
+        meshes[0]->translate(Pointd(-ui->stepSpinBox->value(), 0, 0));
+    }
+    if (ui->mesh2CheckBox->isChecked() && meshes[1] != nullptr){
+        meshes[1]->translate(Pointd(-ui->stepSpinBox->value(), 0, 0));
+    }
+    if (ui->resultCheckBox->isChecked() && result != nullptr){
+        result->translate(Pointd(-ui->stepSpinBox->value(), 0, 0));
+    }
+    mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::on_plusYButton_clicked() {
+    if (ui->mesh1CheckBox->isChecked() && meshes[0] != nullptr){
+        meshes[0]->translate(Pointd(0, ui->stepSpinBox->value(), 0));
+    }
+    if (ui->mesh2CheckBox->isChecked() && meshes[1] != nullptr){
+        meshes[1]->translate(Pointd(0, ui->stepSpinBox->value(), 0));
+    }
+    if (ui->resultCheckBox->isChecked() && result != nullptr){
+        result->translate(Pointd(0, ui->stepSpinBox->value(), 0));
+    }
+    mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::on_minusYButton_clicked() {
+    if (ui->mesh1CheckBox->isChecked() && meshes[0] != nullptr){
+        meshes[0]->translate(Pointd(0, -ui->stepSpinBox->value(), 0));
+    }
+    if (ui->mesh2CheckBox->isChecked() && meshes[1] != nullptr){
+        meshes[1]->translate(Pointd(0, -ui->stepSpinBox->value(), 0));
+    }
+    if (ui->resultCheckBox->isChecked() && result != nullptr){
+        result->translate(Pointd(0, -ui->stepSpinBox->value(), 0));
+    }
+    mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::on_plusZButton_clicked() {
+    if (ui->mesh1CheckBox->isChecked() && meshes[0] != nullptr){
+        meshes[0]->translate(Pointd(0, 0, ui->stepSpinBox->value()));
+    }
+    if (ui->mesh2CheckBox->isChecked() && meshes[1] != nullptr){
+        meshes[1]->translate(Pointd(0, 0, ui->stepSpinBox->value()));
+    }
+    if (ui->resultCheckBox->isChecked() && result != nullptr){
+        result->translate(Pointd(0, 0, ui->stepSpinBox->value()));
+    }
+    mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::on_minusZButton_clicked() {
+    if (ui->mesh1CheckBox->isChecked() && meshes[0] != nullptr){
+        meshes[0]->translate(Pointd(0, 0, -ui->stepSpinBox->value()));
+    }
+    if (ui->mesh2CheckBox->isChecked() && meshes[1] != nullptr){
+        meshes[1]->translate(Pointd(0, 0, -ui->stepSpinBox->value()));
+    }
+    if (ui->resultCheckBox->isChecked() && result != nullptr){
+        result->translate(Pointd(0, 0, -ui->stepSpinBox->value()));
+    }
+    mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::on_rotateButton_clicked() {
+    Vec3 axis(ui->axisXSpinBox->value(), ui->axisYSpinBox->value(), ui->axisZSpinBox->value());
+    double angle = ui->angleSpinBox->value()*M_PI/180;
+    lastAxis = axis;
+    lastAngle = angle;
+    Eigen::Matrix3d m;
+    getRotationMatrix(axis, angle, m);
+    if (ui->mesh1CheckBox->isChecked() && meshes[0] != nullptr){
+        meshes[0]->rotate(m);
+    }
+    if (ui->mesh2CheckBox->isChecked() && meshes[1] != nullptr){
+        meshes[1]->rotate(m);
+    }
+    if (ui->resultCheckBox->isChecked() && result != nullptr){
+        result->rotate(m);
+    }
+    ui->undoRotateButton->setEnabled(true);
+    mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::on_undoRotateButton_clicked() {
+    Eigen::Matrix3d m;
+    getRotationMatrix(-lastAxis, lastAngle, m);
+    if (ui->mesh1CheckBox->isChecked() && meshes[0] != nullptr){
+        meshes[0]->rotate(m);
+    }
+    if (ui->mesh2CheckBox->isChecked() && meshes[1] != nullptr){
+        meshes[1]->rotate(m);
+    }
+    if (ui->resultCheckBox->isChecked() && result != nullptr){
+        result->rotate(m);
+    }
+    ui->undoRotateButton->setEnabled(false);
     mainWindow->updateGlCanvas();
 }

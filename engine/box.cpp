@@ -1,12 +1,15 @@
 #include "box.h"
 
 Box3D::Box3D(): visible(true) {
+    rotation = Eigen::Matrix3d::Identity();
 }
 
 Box3D::Box3D(const Pointd& min, const Pointd& max, const Pointd& c1, const Pointd& c2, const Pointd& c3, const QColor c) : BoundingBox(min, max), c1(c1), c2(c2), c3(c3), color(c), visible(true){
+    rotation = Eigen::Matrix3d::Identity();
 }
 
 Box3D::Box3D(const Pointd& min, const Pointd& max, const QColor c) :BoundingBox(min, max), color(c), visible(true){
+    rotation = Eigen::Matrix3d::Identity();
 }
 
 void Box3D::setConstraint1(const Pointd& p) {

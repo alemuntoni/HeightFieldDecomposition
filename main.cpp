@@ -49,6 +49,8 @@ int main(int argc, char *argv[]) {
     gui.updateGlCanvas();
     gui.show();
 
+    std::cerr << "angle " << acos(XYZ[6].dot(XYZ[18])) << "\n";
+
     return app.exec();
 
     #elif SERVER_MODE==1

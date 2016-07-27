@@ -31,6 +31,24 @@ SimpleIGLMesh::SimpleIGLMesh(const Dcel& dcel) {
         i++;
     }
 }
+
+void SimpleIGLMesh::translate(const Pointd& p) {
+    Eigen::RowVector3d v;
+    v << p.x(), p.y(), p.z();
+    V.rowwise() += v;
+}
+
+void SimpleIGLMesh::translate(const Eigen::Vector3d& p) {
+    V.rowwise() += p.transpose();
+}
+
+void SimpleIGLMesh::rotate(const Eigen::Matrix3d& m, const Eigen::Vector3d& centroid) {
+    V.rowwise() -= centroid.transpose();
+    for (unsigned int i = 0; i < V.rows(); i++){
+        V.row(i) = V.row(i) * m;
+    }
+    V.rowwise() += centroid.transpose();
+}
 #endif
 
 IGLMesh::IGLMesh() {

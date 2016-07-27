@@ -45,6 +45,10 @@ class SimpleIGLMesh : public SerializableObject {
         unsigned int getNumberVertices() const;
         Pointd getVertex(unsigned int i) const;
         void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
+
+        void translate(const Pointd &p);
+        void translate(const Eigen::Vector3d &p);
+        void rotate(const Eigen::Matrix3d &m, const Eigen::Vector3d& centroid = Eigen::Vector3d::Zero());
         #ifdef CGAL_DEFINED
         static void intersection(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
         static void difference(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
