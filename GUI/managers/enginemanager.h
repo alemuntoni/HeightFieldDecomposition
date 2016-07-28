@@ -77,6 +77,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_minimizePushButton_clicked();
 
+        void on_BFGSButton_clicked();
+
         void on_serializeBoxPushButton_clicked();
 
         void on_deserializeBoxPushButton_clicked();

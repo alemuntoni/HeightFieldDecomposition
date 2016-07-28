@@ -32,6 +32,23 @@ SimpleIGLMesh::SimpleIGLMesh(const Dcel& dcel) {
     }
 }
 
+void SimpleIGLMesh::decimate(unsigned int numberDesiredFaces) {
+    Eigen::MatrixXd VV;
+    Eigen::MatrixXi FF;
+    Eigen::VectorXi J;
+    igl::decimate(V, F, numberDesiredFaces, VV, FF, J);
+    V = VV;
+    F = FF;
+}
+
+void SimpleIGLMesh::getDecimatedMesh(SimpleIGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi& mapping) {
+    Eigen::MatrixXd VV;
+    Eigen::MatrixXi FF;
+    igl::decimate(V, F, numberDesiredFaces, VV, FF, mapping);
+    decimated.V = VV;
+    decimated.F = FF;
+}
+
 void SimpleIGLMesh::translate(const Pointd& p) {
     Eigen::RowVector3d v;
     v << p.x(), p.y(), p.z();
@@ -143,6 +160,20 @@ void IGLMesh::setColor(double red, double green, double blue, int f) {
         assert(f < F.rows());
         C.row(f) << red, green, blue;
     }
+}
+
+void IGLMesh::decimate(int numberDesiredFaces) {
+    SimpleIGLMesh::decimate(numberDesiredFaces);
+    C = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
+    updateVertexAndFaceNormals();
+    updateBoundingBox();
+}
+
+void IGLMesh::getDecimatedMesh(IGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi& mapping) {
+    SimpleIGLMesh::getDecimatedMesh(decimated, numberDesiredFaces, mapping);
+    decimated.C = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
+    decimated.updateVertexAndFaceNormals();
+    decimated.updateBoundingBox();
 }
 
 #ifdef CGAL_DEFINED

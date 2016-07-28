@@ -126,6 +126,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
         ss << "Minimization " << i << " box";
         Timer t(ss.str());
         e.gradientDiscend(b);
+        //e.BFGS(b);
         t.stopAndPrint();
         boxList.setBox(i, b);
         std::cerr << "Total: " << total.delay() << "\n\n";

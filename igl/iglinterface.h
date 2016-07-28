@@ -7,7 +7,6 @@
 #include <igl/signed_distance.h>
 #include <igl/read_triangle_mesh.h>
 
-#include <igl/decimate.h>
 
 #include "iglmesh.h"
 

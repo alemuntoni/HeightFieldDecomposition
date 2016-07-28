@@ -56,9 +56,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-343</y>
+        <y>-203</y>
         <width>339</width>
-        <height>1435</height>
+        <height>1463</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
@@ -184,7 +184,7 @@
           <item row="12" column="0">
            <widget class="QPushButton" name="minimizePushButton">
             <property name="text">
-             <string>Minimize</string>
+             <string>Gradient D</string>
             </property>
            </widget>
           </item>
@@ -297,13 +297,6 @@
             </property>
            </widget>
           </item>
-          <item row="12" column="1" colspan="2">
-           <widget class="QLabel" name="minimizedEnergyLabel">
-            <property name="text">
-             <string>0.0</string>
-            </property>
-           </widget>
-          </item>
           <item row="10" column="0">
            <widget class="QDoubleSpinBox" name="wSpinBox">
             <property name="decimals">
@@ -373,6 +366,20 @@
            <widget class="QPushButton" name="trianglesCoveredPushButton">
             <property name="text">
              <string>T Covered</string>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="0">
+           <widget class="QPushButton" name="BFGSButton">
+            <property name="text">
+             <string>BFGS</string>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="1" colspan="2">
+           <widget class="QLabel" name="minimizedEnergyLabel">
+            <property name="text">
+             <string>0.0</string>
             </property>
            </widget>
           </item>

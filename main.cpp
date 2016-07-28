@@ -17,8 +17,6 @@
 #include "engine/engine.h"
 #endif
 
-
-
 int main(int argc, char *argv[]) {
 
     #ifndef SERVER_MODE

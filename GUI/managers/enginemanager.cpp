@@ -479,9 +479,8 @@ void EngineManager::on_minimizePushButton_clicked() {
         if (ui->saveIterationsCheckBox->isChecked()){
             deleteDrawableObject(iterations);
             iterations = new BoxList();
-            Timer t("Gradient Discend");
-            it = e.BFGS(*b, *iterations);
-            //it = e.gradientDiscend(*b, *iterations);
+            Timer t("Graidient Discent");
+            it = e.gradientDiscend(*b, *iterations);
             t.stopAndPrint();
             iterations->setVisibleBox(0);
             ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
@@ -491,9 +490,8 @@ void EngineManager::on_minimizePushButton_clicked() {
             updateLabel(energy, ui->energyIterationLabel);
         }
         else {
-            Timer t("Gradient Discend");
+            Timer t("Gradient Discent");
             it = e.gradientDiscend(*b);
-            //it = e.gradientDiscend(*b);
             t.stopAndPrint();
         }
         updateLabel(it, ui->minimizedEnergyLabel);
@@ -505,6 +503,38 @@ void EngineManager::on_minimizePushButton_clicked() {
         mainWindow->updateGlCanvas();
     }
 }
+
+void EngineManager::on_BFGSButton_clicked() {
+    if (b!=nullptr){
+        double it;
+        if (ui->saveIterationsCheckBox->isChecked()){
+            deleteDrawableObject(iterations);
+            iterations = new BoxList();
+            Timer t("BFGS");
+            it = e.BFGS(*b, *iterations);
+            t.stopAndPrint();
+            iterations->setVisibleBox(0);
+            ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
+            mainWindow->pushObj(iterations, "Iterations");
+
+            double energy = e.energy(iterations->getBox(0));
+            updateLabel(energy, ui->energyIterationLabel);
+        }
+        else {
+            Timer t("BFGS");
+            it = e.BFGS(*b);
+            t.stopAndPrint();
+        }
+        updateLabel(it, ui->minimizedEnergyLabel);
+        double energy = e.energy(*b);
+        updateLabel(energy, ui->energyLabel);
+        ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
+        ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
+        ui->dSpinBox->setValue(b->getMax().z()-b->getMin().z());
+        mainWindow->updateGlCanvas();
+    }
+}
+
 
 void EngineManager::on_serializeBoxPushButton_clicked() {
     if (b!=nullptr){

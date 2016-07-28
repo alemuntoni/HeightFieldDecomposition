@@ -48,8 +48,7 @@ void IGLMeshManager::on_loadIGLMeshButton_clicked() {
                        "Open IGL Mesh",
                        ".",
                        "OBJ(*.obj);;PLY(*.ply)");
-    if (!filename.isEmpty())
-    {
+    if (!filename.isEmpty()) {
         mesh = new DrawableIGLMesh();
         mesh->readFromFile(filename.toStdString());
         mainWindow->pushObj(mesh, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
