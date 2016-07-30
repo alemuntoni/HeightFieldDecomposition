@@ -37,6 +37,8 @@ namespace Engine {
 
     void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3());
 
+    void calculateDecimatedBoxes(BoxList &boxList, const Dcel &d, const Eigen::VectorXi& mapping, const std::set<int> &coveredFaces, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
+
     void calculateInitialBoxes(BoxList &boxList, const Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
 
     void expandBoxes(BoxList &boxList, const Grid &g);

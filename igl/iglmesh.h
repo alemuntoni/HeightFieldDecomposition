@@ -47,7 +47,7 @@ class SimpleIGLMesh : public SerializableObject {
         Pointd getVertex(unsigned int i) const;
         void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
         void decimate(unsigned int numberDesiredFaces);
-        void getDecimatedMesh(SimpleIGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
+        bool getDecimatedMesh(SimpleIGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
 
         void translate(const Pointd &p);
         void translate(const Eigen::Vector3d &p);
@@ -87,7 +87,7 @@ class IGLMesh : public SimpleIGLMesh {
         Vec3 getNormal(unsigned int f) const;
         void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
         void decimate(int numberDesiredFaces);
-        void getDecimatedMesh(IGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
+        bool getDecimatedMesh(IGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
 
         #ifdef CGAL_DEFINED
         static void intersection(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);

@@ -45,6 +45,8 @@ class Grid : public SerializableObject{
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);
 
+        void resetSignedDistances();
+
     protected:
         Pointd getPoint(unsigned int i, unsigned int j, unsigned int k) const;
         unsigned int getIndex(unsigned int i, unsigned int j, unsigned int k) const;
@@ -130,6 +132,10 @@ inline double Grid::getFullBoxValue(const Pointd& p) const {
     if(bb.isStrictlyIntern(p))
         return fullBoxValues(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
     else return fullBoxValues(0,0,0);
+}
+
+inline void Grid::resetSignedDistances() {
+    signedDistances.resize(0,0,0);
 }
 
 inline Pointd Grid::getPoint(unsigned int i, unsigned int j, unsigned int k) const {

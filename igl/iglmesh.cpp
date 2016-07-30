@@ -41,12 +41,13 @@ void SimpleIGLMesh::decimate(unsigned int numberDesiredFaces) {
     F = FF;
 }
 
-void SimpleIGLMesh::getDecimatedMesh(SimpleIGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi& mapping) {
+bool SimpleIGLMesh::getDecimatedMesh(SimpleIGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi& mapping) {
     Eigen::MatrixXd VV;
     Eigen::MatrixXi FF;
-    igl::decimate(V, F, numberDesiredFaces, VV, FF, mapping);
+    bool b = igl::decimate(V, F, numberDesiredFaces, VV, FF, mapping);
     decimated.V = VV;
     decimated.F = FF;
+    return b;
 }
 
 void SimpleIGLMesh::translate(const Pointd& p) {
@@ -169,11 +170,12 @@ void IGLMesh::decimate(int numberDesiredFaces) {
     updateBoundingBox();
 }
 
-void IGLMesh::getDecimatedMesh(IGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi& mapping) {
-    SimpleIGLMesh::getDecimatedMesh(decimated, numberDesiredFaces, mapping);
+bool IGLMesh::getDecimatedMesh(IGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi& mapping) {
+    bool b = SimpleIGLMesh::getDecimatedMesh(decimated, numberDesiredFaces, mapping);
     decimated.C = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
     decimated.updateVertexAndFaceNormals();
     decimated.updateBoundingBox();
+    return b;
 }
 
 #ifdef CGAL_DEFINED

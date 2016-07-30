@@ -11,9 +11,13 @@ class Energy{
     public:
         Energy();
         Energy(const Grid& g);
+
+        bool isInside(const Eigen::VectorXd &x) const;
         void calculateFullBoxValues(Grid& g) const;
 
         // Gradient Discend
+        bool wolfeConditions(double value, double newValue, const Eigen::VectorXd &p, const Eigen::VectorXd &gradient, const Eigen::VectorXd& newGradient, double alfa, double cos2 = 0.1) const;
+
         int gradientDiscend(Box3D &b) const;
         int gradientDiscend(Box3D &b, BoxList& iterations, bool saveIt = true) const;
 
@@ -80,6 +84,10 @@ class Energy{
         const Grid* g;
 
 };
+
+inline bool Energy::isInside(const Eigen::VectorXd& x) const {
+    return g->getBoundingBox().isIntern(Pointd(x(0), x(1), x(2))) && g->getBoundingBox().isIntern(Pointd(x(3), x(4), x(5)));
+}
 
 inline int Energy::gradientDiscend(Box3D& b) const {
     BoxList dummy;

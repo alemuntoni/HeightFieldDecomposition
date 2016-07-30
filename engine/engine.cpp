@@ -84,6 +84,44 @@ void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool he
     e.calculateFullBoxValues(g);
 }
 
+void Engine::calculateDecimatedBoxes(BoxList& boxList, const Dcel& d, const Eigen::VectorXi &mapping, const std::set<int>& coveredFaces, const Eigen::Matrix3d& rot, bool onlyTarget, const Vec3& target) {
+    std::vector<int> facesToCover;
+    for (unsigned int i = 0; i < mapping.size(); i++){
+        if (coveredFaces.find(mapping(i)) == coveredFaces.end()){
+            facesToCover.push_back(mapping(i));
+        }
+    }
+
+    for (unsigned int i = 0; i < facesToCover.size(); i++){
+        const Dcel::Face* f = d.getFace(facesToCover[i]);
+        Vec3 n =f->getNormal();
+        Vec3 closestTarget = getClosestTarget(n);
+        if (!onlyTarget || (onlyTarget && closestTarget == target)){
+            Box3D box;
+            box.setTarget(closestTarget);
+            Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
+            Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
+            Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
+            Pointd bmin = p1;
+            bmin = bmin.min(p2);
+            bmin = bmin.min(p3);
+            bmin = bmin - 1;
+            Pointd bmax = p1;
+            bmax = bmax.max(p2);
+            bmax = bmax.max(p3);
+            bmax = bmax + 1;
+            box.setMin(bmin);
+            box.setMax(bmax);
+            box.setColor(colorOfNormal(closestTarget));
+            box.setConstraint1(p1);
+            box.setConstraint2(p2);
+            box.setConstraint3(p3);
+            box.setRotationMatrix(rot);
+            boxList.addBox(box);
+        }
+    }
+}
+
 void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen::Matrix3d &rot, bool onlyTarget, const Vec3& target) {
     for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
         const Dcel::Face* f = *fit;
@@ -122,21 +160,17 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
     # pragma omp parallel for if(np>10)
     for (int i = 0; i < np; i++){
         Box3D b = boxList.getBox(i);
-        std::stringstream ss;
-        ss << "Minimization " << i << " box";
-        Timer t(ss.str());
+        //std::stringstream ss;
+        //ss << "Minimization " << i << " box";
+        //Timer t(ss.str());
         e.gradientDiscend(b);
         //e.BFGS(b);
-        t.stopAndPrint();
+        //t.stopAndPrint();
         boxList.setBox(i, b);
-        std::cerr << "Total: " << total.delay() << "\n\n";
+        //std::cerr << "Total: " << total.delay() << "\n\n";
     }
     total.stopAndPrint();
-    std::ofstream myfile;
-    myfile.open ("solutions.bin", std::ios::out | std::ios::binary);
-    boxList.serialize(myfile);
-    myfile.close();
-
+    std::cerr << "Number Boxes: " << np << "\n";
 }
 #endif
 

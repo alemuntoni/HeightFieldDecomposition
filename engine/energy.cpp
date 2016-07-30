@@ -12,6 +12,13 @@ void Energy::calculateFullBoxValues(Grid &g) const {
     g.calculateFullBoxValues(integralTricubicInterpolation);
 }
 
+bool Energy::wolfeConditions(double value, double newValue, const Eigen::VectorXd &p, const Eigen::VectorXd &gradient, const Eigen::VectorXd &newGradient, double alfa, double cos2) const {
+    double cos1 = 1e-4;
+    bool con1 = newValue <= value + cos1*alfa*gradient.transpose()*p;
+    bool con2 = std::abs(newGradient.transpose()*p) >= cos2*std::abs(gradient.transpose()*p);
+    return con1 && con2;
+}
+
 int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     int nIterations = 0;
     double objValue, newObjValue;
@@ -23,39 +30,31 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
     Eigen::VectorXd new_x(6);
     Eigen::VectorXd gradient(6);
+    Eigen::VectorXd newGradient(6);
     objValue = energy(x, c1, c2, c3);
-    bool ng = true;
+    gradientEnergy(gradient, x, c1, c2, c3);
     do{
-        if (ng) {
-            gradientEnergy(gradient, x, c1, c2, c3);
-        }
         new_x = x - alfa * gradient;
         newObjValue = energy(new_x, c1, c2, c3);
-        if (newObjValue < objValue) {
+        gradientEnergy(newGradient, new_x, c1, c2, c3);
+        if (wolfeConditions(objValue, newObjValue, -gradient, gradient, newGradient, alfa)) {
+        //if (newObjValue < objValue) {
             nIterations++;
-            //diff = objValue - newObjValue;
-            //newVolume = volumeOfBox(new_x);
-            //volume = volumeOfBox(x);
-            //ratiov = std::abs(newVolume / volume);
-            std::cerr.precision(17);
-            ///*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "; ratiov: " << ratiov << "\n";
             x = new_x;
 
             objValue = newObjValue;
+            gradient = newGradient;
             if (saveIt){
                 b.setMin(Pointd(x(0), x(1), x(2)));
                 b.setMax(Pointd(x(3), x(4), x(5)));
                 iterations.addBox(b);
             }
-            alfa *= 10;
-            ng = true;
+            alfa*=10;
         }
         else{
             alfa /= 10;
-            ng = false;
-            //diff = 10;
         }
-    } while (/*(ratiov < 0.99999 || ratiov > 1.00001) &&*/ nIterations < 500 && alfa > 1e-7);
+    } while (nIterations < 500 && alfa > 1e-7);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
@@ -64,7 +63,6 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
 
 int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
     int nIterations = 0;
-    int totIt = 0;
     double objValue, newObjValue;
     double alfa = 1;
     Pointd c1 = b.getConstraint1();
@@ -72,68 +70,52 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
     Pointd c3 = b.getConstraint3();
     Eigen::VectorXd x(6);
     x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
-    do {
-        alfa = 1;
-        nIterations = 0;
-        Eigen::VectorXd new_x(6);
-        Eigen::VectorXd gradient(6);
-        Eigen::VectorXd direction(6);
-        Eigen::MatrixXd B = Eigen::MatrixXd::Identity(6,6); // some initialization of B
-        Eigen::MatrixXd Binv = B;
-        Eigen::VectorXd s(6);
-        Eigen::VectorXd y(6);
-        objValue = energy(x, c1, c2, c3);
-        gradientEnergy(gradient, x, c1, c2, c3);
-        bool nd = true;
+    Eigen::VectorXd new_x(6), gradient(6), newGradient(6), direction(6);
+    Eigen::MatrixXd I = Eigen::MatrixXd::Identity(6,6);
+    Eigen::MatrixXd Binv = I;
+    Eigen::VectorXd s(6), y(6);
+    double ro;
+    objValue = energy(x, c1, c2, c3);
+    gradientEnergy(gradient, x, c1, c2, c3);
+    direction = -Binv*gradient;
+    do{
+        bool inside;
         do {
-            if (nd){
-                direction = Binv * (-gradient);
+            new_x = x +alfa * direction;
+            inside = isInside(new_x);
+            if (!inside)
+                alfa/=2;
+        } while(!inside);
+
+        newObjValue = energy(new_x, c1, c2, c3);
+        gradientEnergy(newGradient, new_x, c1, c2, c3);
+        if (wolfeConditions(objValue, newObjValue, direction, gradient, newGradient, alfa, 0.9)) {
+            s = new_x - x;
+            y = newGradient - gradient;
+            ro = 1 / (y.transpose()*s);
+            Binv = (I - ro*s*y.transpose())*Binv*(I - ro*y*s.transpose()) + ro*s*s.transpose();
+
+            nIterations++;
+            x = new_x;
+
+            objValue = newObjValue;
+            gradient = newGradient;
+            direction = -Binv*gradient;
+            if (saveIt){
+                b.setMin(Pointd(x(0), x(1), x(2)));
+                b.setMax(Pointd(x(3), x(4), x(5)));
+                iterations.addBox(b);
             }
-            s = alfa * direction;
-            new_x = x + s;
-            newObjValue = energy(new_x, c1, c2, c3);
-            if (newObjValue < objValue) {
-
-                //Update B
-                Eigen::VectorXd new_gradient(6);
-                gradientEnergy(new_gradient, new_x, c1, c2, c3);
-                y = new_gradient - gradient;
-                Eigen::RowVectorXd yt = y.transpose();
-                Eigen::RowVectorXd st = s.transpose();
-                B = B + ((y * yt) / (yt * s)) - ((B*s*st*B)/(st*B*s));
-                //std::cerr << B << "\n\n";
-                //Binv = B.inverse();
-                Binv = (Eigen::MatrixXd::Identity(6,6)-(s*yt)/(yt*s))*Binv*(Eigen::MatrixXd::Identity(6,6)-(y*st)/(yt*s)) + (s*st)/(yt*s);
-                ///
-                nIterations++;
-
-                x = new_x;
-                gradient = new_gradient;
-
-                objValue = newObjValue;
-                if (saveIt){
-                    b.setMin(Pointd(x(0), x(1), x(2)));
-                    b.setMax(Pointd(x(3), x(4), x(5)));
-                    iterations.addBox(b);
-                }
-                alfa = 1;
-                nd = true;
-
-                //std::cerr.precision(17);
-                ///*if (nIterations % 100 == 0)*/ std::cerr << "It: " << nIterations << "; alfa: " << alfa << "; ratiov: " << ratiov << "\n";
-            }
-            else{
-                alfa /= 10;
-                nd = false;
-            }
-
-        } while (nIterations < 500 && alfa > 1e-7);
-        totIt += nIterations;
-    } while (nIterations != 0);
+            alfa = 1;
+        }
+        else{
+            alfa /= 2;
+        }
+    } while (nIterations < 500 && alfa > 1e-7);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
-    return totIt;
+    return nIterations;
 }
 
 void Energy::gradientBarrier(Eigen::VectorXd &gBarrier, const Eigen::VectorXd &x, const Pointd& c1, const Pointd& c2, const Pointd& c3, double s)  const {
