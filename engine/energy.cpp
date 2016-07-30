@@ -54,6 +54,7 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
         else{
             alfa /= 10;
         }
+        std::cerr << new_x << "\n\n";
     } while (nIterations < 500 && alfa > 1e-7);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));

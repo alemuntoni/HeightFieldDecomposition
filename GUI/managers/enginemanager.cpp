@@ -50,6 +50,20 @@ void EngineManager::updateLabel(double value, QLabel* label) {
     label->setText(QString::fromStdString(ss.str()));
 }
 
+void EngineManager::updateBoxValues() {
+    if (b != nullptr){
+        ui->minXSpinBox->setValue(b->getMinX());
+        ui->minYSpinBox->setValue(b->getMinY());
+        ui->minZSpinBox->setValue(b->getMinZ());
+        ui->maxXSpinBox->setValue(b->getMaxX());
+        ui->maxYSpinBox->setValue(b->getMaxY());
+        ui->maxZSpinBox->setValue(b->getMaxZ());
+        ui->wSpinBox->setValue(b->getMaxX() - b->getMinX());
+        ui->hSpinBox->setValue(b->getMaxY() - b->getMinY());
+        ui->dSpinBox->setValue(b->getMaxZ() - b->getMinZ());
+    }
+}
+
 void EngineManager::serialize(std::ofstream& binaryFile) const {
     g->serialize(binaryFile);
     d->serialize(binaryFile);
@@ -242,6 +256,7 @@ void EngineManager::on_deserializePushButton_clicked() {
 void EngineManager::on_wSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setW(arg1);
+        updateBoxValues();
         mainWindow->updateGlCanvas();
     }
 }
@@ -249,6 +264,7 @@ void EngineManager::on_wSpinBox_valueChanged(double arg1) {
 void EngineManager::on_hSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setH(arg1);
+        updateBoxValues();
         mainWindow->updateGlCanvas();
     }
 }
@@ -256,14 +272,17 @@ void EngineManager::on_hSpinBox_valueChanged(double arg1) {
 void EngineManager::on_dSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setD(arg1);
+        updateBoxValues();
         mainWindow->updateGlCanvas();
     }
 }
 
 void EngineManager::on_plusXButton_clicked() {
     if (b!=nullptr){
-        if (ui->boxRadioButton->isChecked())
+        if (ui->boxRadioButton->isChecked()){
             b->moveX(ui->stepSpinBox->value());
+            updateBoxValues();
+        }
         else {
             Pointd c;
             if (ui->c1RadioButton->isChecked()){
@@ -288,14 +307,17 @@ void EngineManager::on_plusXButton_clicked() {
                 b->setConstraint3(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
             }
         }
+
         mainWindow->updateGlCanvas();
     }
 }
 
 void EngineManager::on_minusXButton_clicked() {
     if (b!=nullptr){
-        if (ui->boxRadioButton->isChecked())
+        if (ui->boxRadioButton->isChecked()){
             b->moveX(- ui->stepSpinBox->value());
+            updateBoxValues();
+        }
         else {
             Pointd c;
             if (ui->c1RadioButton->isChecked()){
@@ -326,8 +348,10 @@ void EngineManager::on_minusXButton_clicked() {
 
 void EngineManager::on_plusYButton_clicked() {
     if (b!=nullptr){
-        if (ui->boxRadioButton->isChecked())
+        if (ui->boxRadioButton->isChecked()){
             b->moveY(ui->stepSpinBox->value());
+            updateBoxValues();
+        }
         else {
             Pointd c;
             if (ui->c1RadioButton->isChecked()){
@@ -359,8 +383,10 @@ void EngineManager::on_plusYButton_clicked() {
 
 void EngineManager::on_minusYButton_clicked() {
     if (b!=nullptr){
-        if (ui->boxRadioButton->isChecked())
+        if (ui->boxRadioButton->isChecked()){
             b->moveY(- ui->stepSpinBox->value());
+            updateBoxValues();
+        }
         else {
             Pointd c;
             if (ui->c1RadioButton->isChecked()){
@@ -392,8 +418,10 @@ void EngineManager::on_minusYButton_clicked() {
 
 void EngineManager::on_plusZButton_clicked() {
     if (b!=nullptr){
-        if (ui->boxRadioButton->isChecked())
+        if (ui->boxRadioButton->isChecked()){
             b->moveZ(ui->stepSpinBox->value());
+            updateBoxValues();
+        }
         else {
             Pointd c;
             if (ui->c1RadioButton->isChecked()){
@@ -425,8 +453,10 @@ void EngineManager::on_plusZButton_clicked() {
 
 void EngineManager::on_minusZButton_clicked() {
     if (b!=nullptr){
-        if (ui->boxRadioButton->isChecked())
+        if (ui->boxRadioButton->isChecked()){
             b->moveZ(- ui->stepSpinBox->value());
+            updateBoxValues();
+        }
         else {
             Pointd c;
             if (ui->c1RadioButton->isChecked()){
@@ -497,9 +527,7 @@ void EngineManager::on_minimizePushButton_clicked() {
         updateLabel(it, ui->minimizedEnergyLabel);
         double energy = e.energy(*b);
         updateLabel(energy, ui->energyLabel);
-        ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
-        ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
-        ui->dSpinBox->setValue(b->getMax().z()-b->getMin().z());
+        updateBoxValues();
         mainWindow->updateGlCanvas();
     }
 }
@@ -528,9 +556,7 @@ void EngineManager::on_BFGSButton_clicked() {
         updateLabel(it, ui->minimizedEnergyLabel);
         double energy = e.energy(*b);
         updateLabel(energy, ui->energyLabel);
-        ui->wSpinBox->setValue(b->getMax().x()-b->getMin().x());
-        ui->hSpinBox->setValue(b->getMax().y()-b->getMin().y());
-        ui->dSpinBox->setValue(b->getMax().z()-b->getMin().z());
+        updateBoxValues();
         mainWindow->updateGlCanvas();
     }
 }
@@ -555,6 +581,7 @@ void EngineManager::on_deserializeBoxPushButton_clicked() {
     myfile.open ("box.bin", std::ios::in | std::ios::binary);
     b->deserialize(myfile);
     myfile.close();
+    updateBoxValues();
     mainWindow->updateGlCanvas();
 }
 
@@ -1287,6 +1314,48 @@ void EngineManager::on_heightfieldsSlider_valueChanged(int value) {
     if (he != nullptr){
         ui->solutionsSlider->setValue(value);
         he->setVisibleHeightfield(value);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_minXSpinBox_valueChanged(double arg1) {
+    if (b!=nullptr){
+        b->setMinX(arg1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_minYSpinBox_valueChanged(double arg1) {
+    if (b!=nullptr){
+        b->setMinY(arg1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_minZSpinBox_valueChanged(double arg1) {
+    if (b!=nullptr){
+        b->setMinZ(arg1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_maxXSpinBox_valueChanged(double arg1) {
+    if (b!=nullptr){
+        b->setMaxX(arg1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_maxYSpinBox_valueChanged(double arg1) {
+    if (b!=nullptr){
+        b->setMaxY(arg1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_maxZSpinBox_valueChanged(double arg1) {
+    if (b!=nullptr){
+        b->setMaxZ(arg1);
         mainWindow->updateGlCanvas();
     }
 }

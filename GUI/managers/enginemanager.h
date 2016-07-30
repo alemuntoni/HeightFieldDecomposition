@@ -27,6 +27,7 @@ class EngineManager : public QFrame, public SerializableObject {
         ~EngineManager();
 
         void updateLabel(double value, QLabel* label);
+        void updateBoxValues();
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -130,6 +131,18 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_allHeightfieldsCheckBox_stateChanged(int arg1);
 
         void on_heightfieldsSlider_valueChanged(int value);
+
+        void on_minXSpinBox_valueChanged(double arg1);
+
+        void on_minYSpinBox_valueChanged(double arg1);
+
+        void on_minZSpinBox_valueChanged(double arg1);
+
+        void on_maxXSpinBox_valueChanged(double arg1);
+
+        void on_maxYSpinBox_valueChanged(double arg1);
+
+        void on_maxZSpinBox_valueChanged(double arg1);
 
     private:
         Ui::EngineManager *ui;
