@@ -16,6 +16,9 @@ class Energy{
         void calculateFullBoxValues(Grid& g) const;
 
         // Gradient Discend
+
+        bool wolfeConditions(const Eigen::VectorXd& x, double alfa, const Eigen::VectorXd& direction, const Pointd& c1, const Pointd& c2, const Pointd& c3, double cos2) const;
+        bool strongWolfeConditions(const Eigen::VectorXd& x, double alfa, const Eigen::VectorXd& direction, const Pointd& c1, const Pointd& c2, const Pointd& c3, double cos2) const;
         bool wolfeConditions(double value, double newValue, const Eigen::VectorXd &p, const Eigen::VectorXd &gradient, const Eigen::VectorXd& newGradient, double alfa, double cos2 = 0.1) const;
 
         int gradientDiscend(Box3D &b) const;

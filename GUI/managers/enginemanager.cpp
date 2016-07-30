@@ -181,6 +181,7 @@ void EngineManager::on_freezeKernelPushButton_clicked() {
         g->setTarget(XYZ[ui->targetComboBox->currentIndex()]);
         g->calculateWeightsAndFreezeKernel(*d, value, ui->heightfieldsCheckBox->isChecked());
         e = Energy(*g);
+        e.calculateFullBoxValues(*g);
         mainWindow->updateGlCanvas();
     }
 
