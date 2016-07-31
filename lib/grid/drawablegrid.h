@@ -44,7 +44,7 @@ class DrawableGrid: public Grid, public DrawableObject
         void drawCube(const BoundingBox& b) const;
 
         enum {
-            DRAW_KERNEL, DRAW_BORDERS
+            DRAW_KERNEL, DRAW_WEIGHTS
         };
         enum {
             NO_SLICE = 0, X_SLICE = 1, Y_SLICE = 2, Z_SLICE = 3

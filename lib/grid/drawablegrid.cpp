@@ -28,7 +28,7 @@ void DrawableGrid::setDrawKernel() {
 }
 
 void DrawableGrid::setDrawBorders() {
-    drawMode = DRAW_BORDERS;
+    drawMode = DRAW_WEIGHTS;
 }
 
 void DrawableGrid::setSlice(int value) {
@@ -119,7 +119,7 @@ void DrawableGrid::draw() const {
                         break;
                 }
                 break;
-            case DRAW_BORDERS:
+            case DRAW_WEIGHTS:
                 switch (slice){
                     case NO_SLICE:
                         for (unsigned int i = 0; i < getResX(); i+=2){
@@ -140,7 +140,7 @@ void DrawableGrid::draw() const {
                                 drawSphere(getPoint(sliceValue,j,k), 0.4, c);
                             }
                         }
-                        xi = gridCoordinates(sliceValue,0,0).x();
+                        xi = getPoint(sliceValue, 0, 0).x();
                         for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
                             for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
                                 double w = getValue(Pointd(xi,yi,zi));
@@ -158,7 +158,7 @@ void DrawableGrid::draw() const {
                                 drawSphere(getPoint(i,sliceValue,k), 0.4, c);
                             }
                         }
-                        yi = gridCoordinates(0,sliceValue,0).y();
+                        yi = getPoint(0,sliceValue,0).y();
                         for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
                             for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
                                 double w = getValue(Pointd(xi,yi,zi));
@@ -176,7 +176,7 @@ void DrawableGrid::draw() const {
                                 drawSphere(getPoint(i,j,sliceValue), 0.4, c);
                             }
                         }
-                        zi = gridCoordinates(0,0,sliceValue).z();
+                        zi = getPoint(0,0,sliceValue).z();
                         for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
                             for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
                                 double w = getValue(Pointd(xi,yi,zi));
@@ -222,8 +222,7 @@ void DrawableGrid::deleteCubes() {
     cubes.clear();
 }
 
-void DrawableGrid::drawLine(const Pointd &a, const Pointd &b) const
-{
+void DrawableGrid::drawLine(const Pointd &a, const Pointd &b) const {
     glBegin(GL_LINES);
     glColor3f(0.0, 0.0, 0.0);
     glVertex3f(a.x(), a.y(), a.z());
@@ -231,8 +230,7 @@ void DrawableGrid::drawLine(const Pointd &a, const Pointd &b) const
     glEnd();
 }
 
-void DrawableGrid::drawCube(const BoundingBox &b) const
-{
+void DrawableGrid::drawCube(const BoundingBox &b) const {
     Pointd to(b.getMinX(), b.getMinY(), b.getMaxZ());
     drawLine(b.getMin(), to);
     to.set(b.getMinX(), b.getMaxY(), b.getMinZ());
@@ -269,7 +267,6 @@ void DrawableGrid::drawCube(const BoundingBox &b) const
     drawLine(from, to);
 }
 
-void DrawableGrid::setStepDrawGrid(double value)
-{
+void DrawableGrid::setStepDrawGrid(double value) {
     stepDrawGrid = value;
 }

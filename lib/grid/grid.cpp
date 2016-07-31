@@ -4,7 +4,8 @@ Grid::Grid() {
 }
 
 Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<double>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
-    gridCoordinates(gridCoordinates), signedDistances(signedDistances), target(0,0,0) {
+    signedDistances(signedDistances), target(0,0,0) {
+    unit = gridCoordinates(1,0,0).x() - gridCoordinates(0,0,0).x();
     bb.setMin(gMin);
     bb.setMax(gMax);
     resX = resolution.x();
@@ -117,9 +118,7 @@ void Grid::calculateFullBoxValues(double (*integralTricubicInterpolation)(const 
 double Grid::getValue(const Pointd& p) const {
     if (! bb.isStrictlyIntern(p)) return BORDER_PAY;
     unsigned int xi = getIndexOfCoordinateX(p.x()), yi = getIndexOfCoordinateY(p.y()), zi = getIndexOfCoordinateZ(p.z());
-    //unsigned int gridIndex = getIndex(xi,yi,zi);
-    //Pointd n(gridCoordinates(gridIndex,0), gridCoordinates(gridIndex,1), gridCoordinates(gridIndex,2));
-    Pointd n(gridCoordinates(xi,yi,zi));
+    Pointd n = getPoint(xi, yi, zi);
     if (n == p)
         return weights(xi,yi,zi);
     else{
@@ -147,12 +146,11 @@ void Grid::getMinAndMax(double& min, double& max) {
 }
 
 void Grid::serialize(std::ofstream& binaryFile) const {
+    Serializer::serialize(unit, binaryFile);
     bb.serialize(binaryFile);
     Serializer::serialize(resX, binaryFile);
     Serializer::serialize(resY, binaryFile);
     Serializer::serialize(resZ, binaryFile);
-    gridCoordinates.serialize(binaryFile);
-    //Serializer::serialize(gridCoordinates, binaryFile);
     signedDistances.serialize(binaryFile);
     //Serializer::serialize(signedDistances, binaryFile);
     weights.serialize(binaryFile);
@@ -163,304 +161,17 @@ void Grid::serialize(std::ofstream& binaryFile) const {
 }
 
 void Grid::deserialize(std::ifstream& binaryFile) {
+    Serializer::deserialize(unit, binaryFile);
     bb.deserialize(binaryFile);
     Serializer::deserialize(resX, binaryFile);
     Serializer::deserialize(resY, binaryFile);
     Serializer::deserialize(resZ, binaryFile);
-    gridCoordinates.deserialize(binaryFile);
-    //Serializer::deserialize(gridCoordinates, binaryFile);
     signedDistances.deserialize(binaryFile);
     //Serializer::deserialize(signedDistances, binaryFile);
     weights.deserialize(binaryFile);
     coeffs.deserialize(binaryFile);
     fullBoxValues.deserialize(binaryFile);
     target.deserialize(binaryFile);
-}
-
-void Grid::setNeighboroudWeigth(const Pointd& p, double w) {
-    unsigned int i = getIndexOfCoordinateX(p.x());
-    unsigned int j = getIndexOfCoordinateY(p.y());
-    unsigned int k = getIndexOfCoordinateZ(p.z());
-    double dx = gridCoordinates(i,j,k).x();
-    double dy = gridCoordinates(i,j,k).y();
-    double dz = gridCoordinates(i,j,k).z();
-
-    // point in a grid point
-    if (dx == p.x() &&
-            dy == p.y() &&
-            dz == p.z()){
-        weights(i-1,j-1,k-1) = w;
-        weights(i-1,j-1,k  ) = w;
-        weights(i-1,j-1,k+1) = w;
-        weights(i-1,j  ,k-1) = w;
-        weights(i-1,j  ,k  ) = w;
-        weights(i-1,j  ,k+1) = w;
-        weights(i-1,j+1,k-1) = w;
-        weights(i-1,j+1,k  ) = w;
-        weights(i-1,j+1,k+1) = w;
-        weights(i  ,j-1,k-1) = w;
-        weights(i  ,j-1,k  ) = w;
-        weights(i  ,j-1,k+1) = w;
-        weights(i  ,j  ,k-1) = w;
-        weights(i  ,j  ,k  ) = w;
-        weights(i  ,j  ,k+1) = w;
-        weights(i  ,j+1,k-1) = w;
-        weights(i  ,j+1,k  ) = w;
-        weights(i  ,j+1,k+1) = w;
-        weights(i+1,j-1,k-1) = w;
-        weights(i+1,j-1,k  ) = w;
-        weights(i+1,j-1,k+1) = w;
-        weights(i+1,j  ,k-1) = w;
-        weights(i+1,j  ,k  ) = w;
-        weights(i+1,j  ,k+1) = w;
-        weights(i+1,j+1,k-1) = w;
-        weights(i+1,j+1,k  ) = w;
-        weights(i+1,j+1,k+1) = w;
-
-    }
-
-    //point between edge xy
-    if (dx == p.x() &&
-            dy == p.y() &&
-            dz != p.z()){
-        weights(i-1,j-1,k  ) = w;
-        weights(i-1,j  ,k  ) = w;
-        weights(i-1,j+1,k  ) = w;
-        weights(i  ,j-1,k  ) = w;
-        weights(i  ,j  ,k  ) = w;
-        weights(i  ,j+1,k  ) = w;
-        weights(i+1,j-1,k  ) = w;
-        weights(i+1,j  ,k  ) = w;
-        weights(i+1,j+1,k  ) = w;
-        weights(i-1,j-1,k+1) = w;
-        weights(i-1,j  ,k+1) = w;
-        weights(i-1,j+1,k+1) = w;
-        weights(i  ,j-1,k+1) = w;
-        weights(i  ,j  ,k+1) = w;
-        weights(i  ,j+1,k+1) = w;
-        weights(i+1,j-1,k+1) = w;
-        weights(i+1,j  ,k+1) = w;
-        weights(i+1,j+1,k+1) = w;
-    }
-
-    //point between edge xz
-    if (dx == p.x() &&
-            dy != p.y() &&
-            dz == p.z()){
-        weights(i-1,j  ,k-1) = w;
-        weights(i-1,j  ,k  ) = w;
-        weights(i-1,j  ,k+1) = w;
-        weights(i  ,j  ,k-1) = w;
-        weights(i  ,j  ,k  ) = w;
-        weights(i  ,j  ,k+1) = w;
-        weights(i+1,j  ,k-1) = w;
-        weights(i+1,j  ,k  ) = w;
-        weights(i+1,j  ,k+1) = w;
-        weights(i-1,j+1,k-1) = w;
-        weights(i-1,j+1,k  ) = w;
-        weights(i-1,j+1,k+1) = w;
-        weights(i  ,j+1,k-1) = w;
-        weights(i  ,j+1,k  ) = w;
-        weights(i  ,j+1,k+1) = w;
-        weights(i+1,j+1,k-1) = w;
-        weights(i+1,j+1,k  ) = w;
-        weights(i+1,j+1,k+1) = w;
-
-    }
-
-    //point between edge yz
-    if (dx != p.x() &&
-            dy == p.y() &&
-            dz == p.z()){
-        weights(i  ,j-1,k-1) = w;
-        weights(i  ,j-1,k  ) = w;
-        weights(i  ,j-1,k+1) = w;
-        weights(i  ,j  ,k-1) = w;
-        weights(i  ,j  ,k  ) = w;
-        weights(i  ,j  ,k+1) = w;
-        weights(i  ,j+1,k-1) = w;
-        weights(i  ,j+1,k  ) = w;
-        weights(i  ,j+1,k+1) = w;
-        weights(i+1,j-1,k-1) = w;
-        weights(i+1,j-1,k  ) = w;
-        weights(i+1,j-1,k+1) = w;
-        weights(i+1,j  ,k-1) = w;
-        weights(i+1,j  ,k  ) = w;
-        weights(i+1,j  ,k+1) = w;
-        weights(i+1,j+1,k-1) = w;
-        weights(i+1,j+1,k  ) = w;
-        weights(i+1,j+1,k+1) = w;
-    }
-
-    //point between faces x
-    if (dx == p.x() &&
-            dy != p.y() &&
-            dz != p.z()){
-        weights(i-1,j  ,k  ) = w;
-        weights(i-1,j  ,k+1) = w;
-        weights(i-1,j+1,k  ) = w;
-        weights(i-1,j+1,k+1) = w;
-        weights(i  ,j  ,k  ) = w;
-        weights(i  ,j  ,k+1) = w;
-        weights(i  ,j+1,k  ) = w;
-        weights(i  ,j+1,k+1) = w;
-        weights(i+1,j  ,k  ) = w;
-        weights(i+1,j  ,k+1) = w;
-        weights(i+1,j+1,k  ) = w;
-        weights(i+1,j+1,k+1) = w;
-    }
-    //point between faces y
-    if (dx != p.x() &&
-            dy == p.y() &&
-            dz != p.z()){
-        weights(i  ,j-1,k  ) = w;
-        weights(i  ,j-1,k+1) = w;
-        weights(i+1,j-1,k  ) = w;
-        weights(i+1,j-1,k+1) = w;
-        weights(i  ,j  ,k  ) = w;
-        weights(i  ,j  ,k+1) = w;
-        weights(i+1,j  ,k  ) = w;
-        weights(i+1,  j,k+1) = w;
-        weights(i  ,j-1,k  ) = w;
-        weights(i  ,j-1,k+1) = w;
-        weights(i+1,j+1,k  ) = w;
-        weights(i+1,j+1,k+1) = w;
-    }
-    //point between faces z
-    if (dx != p.x() &&
-            dy != p.y() &&
-            dz == p.z()){
-        weights(i  ,j  ,k-1) = w;
-        weights(i  ,j+1,k-1) = w;
-        weights(i+1,j  ,k-1) = w;
-        weights(i+1,j+1,k-1) = w;
-        weights(i  ,j  ,k  ) = w;
-        weights(i  ,j+1,k  ) = w;
-        weights(i+1,j  ,k  ) = w;
-        weights(i+1,j+1,k  ) = w;
-        weights(i  ,j  ,k+1) = w;
-        weights(i  ,j+1,k+1) = w;
-        weights(i+1,j  ,k+1) = w;
-        weights(i+1,j+1,k+1) = w;
-    }
-
-    //point inside a cube
-    if (dx != p.x() &&
-            dy != p.y() &&
-            dz != p.z()){
-        weights(i  ,j  ,k  ) = w;
-        weights(i  ,j  ,k+1) = w;
-        weights(i  ,j+1,k  ) = w;
-        weights(i  ,j+1,k+1) = w;
-        weights(i+1,j  ,k  ) = w;
-        weights(i+1,j  ,k+1) = w;
-        weights(i+1,j+1,k  ) = w;
-        weights(i+1,j+1,k+1) = w;
-    }
-
-
-    /*// point in a grid point
-    if (dx == p.x() &&
-        dy == p.y() &&
-        dz == p.z()){
-        weights(i-1,j  ,k  ) = w;
-        weights(i  ,j-1,k  ) = w;
-        weights(i  ,j  ,k-1) = w;
-        weights(i  ,j  ,k  ) = w;
-        weights(i  ,j  ,k+1) = w;
-        weights(i  ,j+1,k  ) = w;
-        weights(i+1,j  ,k  ) = w;
-    }
-
-    //point between edge xy
-    if (dx == p.x() &&
-        dy == p.y() &&
-        dz != p.z()){
-        weights(i-1,j,k) = w;
-        weights(i,j-1,k) = w;
-        weights(i,j,k) = w;
-        weights(i,j+1,k) = w;
-        weights(i+1,j,k) = w;
-        weights(i-1,j,k+1) = w;
-        weights(i,j-1,k+1) = w;
-        weights(i,j,k+1) = w;
-        weights(i,j+1,k+1) = w;
-        weights(i+1,j,k+1) = w;
-    }
-
-    //point between edge xz
-    if (dx == p.x() &&
-        dy != p.y() &&
-        dz == p.z()){
-        weights(i-1,j,k) = w;
-        weights(i,j,k-1) = w;
-        weights(i,j,k) = w;
-        weights(i,j,k+1) = w;
-        weights(i+1,j,k) = w;
-        weights(i-1,j+1,k) = w;
-        weights(i,j+1,k-1) = w;
-        weights(i,j+1,k) = w;
-        weights(i,j+1,k+1) = w;
-        weights(i+1,j+1,k) = w;
-    }
-
-    //point between edge xz
-    if (dx != p.x() &&
-        dy == p.y() &&
-        dz == p.z()){
-        weights(i,j-1,k) = w;
-        weights(i,j,k-1) = w;
-        weights(i,j,k) = w;
-        weights(i,j,k+1) = w;
-        weights(i,j+1,k) = w;
-        weights(i+1,j-1,k) = w;
-        weights(i+1,j,k-1) = w;
-        weights(i+1,j,k) = w;
-        weights(i+1,j,k+1) = w;
-        weights(i+1,j+1,k) = w;
-    }
-
-    //point between faces x
-    if (dx == p.x() &&
-        dy != p.y() &&
-        dz != p.z()){
-        weights(i, j, k) = w;
-        weights(i, j, k+1) = w;
-        weights(i, j+1, k) = w;
-        weights(i, j+1, k+1) = w;
-    }
-    //point between faces y
-    if (dx != p.x() &&
-        dy == p.y() &&
-        dz != p.z()){
-        weights(i, j, k) = w;
-        weights(i, j, k+1) = w;
-        weights(i+1, j, k) = w;
-        weights(i+1, j, k+1) = w;
-    }
-    //point between faces z
-    if (dx != p.x() &&
-        dy != p.y() &&
-        dz == p.z()){
-        weights(i, j, k) = w;
-        weights(i, j+1, k) = w;
-        weights(i+1, j, k) = w;
-        weights(i+1, j+1, k) = w;
-    }
-
-    //point inside a cube
-    if (dx != p.x() &&
-        dy != p.y() &&
-        dz != p.z()){
-        weights(i   ,j   ,k   ) = w;
-        weights(i   ,j   ,k+1 ) = w;
-        weights(i   ,j+1 ,k   ) = w;
-        weights(i   ,j+1 ,k+1 ) = w;
-        weights(i+1 ,j   ,k   ) = w;
-        weights(i+1 ,j   ,k+1 ) = w;
-        weights(i+1 ,j+1 ,k   ) = w;
-        weights(i+1 ,j+1 ,k+1 ) = w;
-    }*/
 }
 
 

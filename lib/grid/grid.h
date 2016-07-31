@@ -56,19 +56,18 @@ class Grid : public SerializableObject{
         int getIndexOfCoordinateY(double y) const;
         int getIndexOfCoordinateZ(double z) const;
 
-        void setNeighboroudWeigth(const Pointd&p, double w);
         void getCoefficients(const double*& coeffs, unsigned int i, unsigned int j, unsigned int k) const;
 
         void setWeightOnCube(unsigned int i, unsigned int j, unsigned int k, double w);
 
         BoundingBox bb;
         unsigned int resX, resY, resZ;
-        Array3D<Pointd> gridCoordinates;
         Array3D<double> signedDistances;
         Array3D<double> weights;
         Array4D<double> coeffs;
         Array3D<double> fullBoxValues;
         Vec3 target;
+        double unit;
 
 };
 
@@ -97,11 +96,11 @@ inline void Grid::setTarget(const Vec3& value) {
 }
 
 inline double Grid::getUnit() const {
-    return gridCoordinates(1,0,0).x() - gridCoordinates(0,0,0).x();
+    return unit;
 }
 
 inline Pointd Grid::getNearestGridPoint(const Pointd& p) const{
-    return gridCoordinates(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
+    return std::move(Pointd(bb.getMinX() + getIndexOfCoordinateX(p.x())*unit, bb.getMinY() + getIndexOfCoordinateY(p.y())*unit, bb.getMinZ() + getIndexOfCoordinateZ(p.z())*unit));
 }
 
 inline void Grid::getCoefficients(const double* &coeffs, unsigned int i, unsigned int j, unsigned int k) const {
@@ -139,7 +138,7 @@ inline void Grid::resetSignedDistances() {
 }
 
 inline Pointd Grid::getPoint(unsigned int i, unsigned int j, unsigned int k) const {
-    return gridCoordinates(i,j,k);
+    return std::move(Pointd(bb.getMinX() + i*unit, bb.getMinY() + j*unit, bb.getMinZ() + k*unit));
 }
 
 inline unsigned int Grid::getIndex(unsigned int i, unsigned int j, unsigned int k) const {
