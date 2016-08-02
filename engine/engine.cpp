@@ -153,21 +153,27 @@ void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen:
     }
 }
 
-void Engine::expandBoxes(BoxList& boxList, const Grid& g) {
+void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool printTimes) {
     Energy e(g);
     Timer total("Minimization All Boxes");
     int np = boxList.getNumberBoxes();
-    # pragma omp parallel for if(np>10)
+    Timer t("");
+    #pragma omp parallel for
     for (int i = 0; i < np; i++){
         Box3D b = boxList.getBox(i);
-        //std::stringstream ss;
-        //ss << "Minimization " << i << " box";
-        //Timer t(ss.str());
+        if (printTimes){
+            std::stringstream ss;
+            ss << "Minimization " << i << " box";
+            t = Timer(ss.str());
+        }
         e.gradientDiscend(b);
         //e.BFGS(b);
-        //t.stopAndPrint();
+        if (printTimes){
+            t.stopAndPrint();
+            std::cerr << "Total: " << total.delay() << "\n\n";
+        }
         boxList.setBox(i, b);
-        //std::cerr << "Total: " << total.delay() << "\n\n";
+
     }
     total.stopAndPrint();
     std::cerr << "Number Boxes: " << np << "\n";

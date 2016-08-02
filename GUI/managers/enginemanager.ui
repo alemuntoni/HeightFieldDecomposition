@@ -64,7 +64,7 @@
         <x>0</x>
         <y>0</y>
         <width>406</width>
-        <height>962</height>
+        <height>982</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -182,6 +182,26 @@
                 </property>
                </widget>
               </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="factorSpinBox">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="value">
+                 <number>3</number>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QRadioButton" name="kernelRadioButton">
+                <property name="text">
+                 <string>Kernel</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
               <item row="2" column="1">
                <widget class="QPushButton" name="generateGridPushButton">
                 <property name="text">
@@ -189,10 +209,47 @@
                 </property>
                </widget>
               </item>
+              <item row="3" column="0">
+               <widget class="QRadioButton" name="weigthsRadioButton">
+                <property name="text">
+                 <string>Weigths</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QCheckBox" name="heightfieldsCheckBox">
+                <property name="text">
+                 <string>Heightfields</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QCheckBox" name="sliceCheckBox">
+                <property name="text">
+                 <string>Sliced Visual</string>
+                </property>
+               </widget>
+              </item>
               <item row="4" column="1">
                <widget class="QLabel" name="label_2">
                 <property name="text">
                  <string>Kernel Distance</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QSlider" name="sliceSlider">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
@@ -212,10 +269,52 @@
                 </property>
                </widget>
               </item>
+              <item row="6" column="0">
+               <widget class="QComboBox" name="sliceComboBox">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>+X</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>+Y</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>+Z</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
               <item row="6" column="1">
                <widget class="QPushButton" name="freezeKernelPushButton">
                 <property name="text">
                  <string>Freeze Kernel</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QDoubleSpinBox" name="stepDrawGridSpinBox">
+                <property name="minimum">
+                 <double>0.010000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value">
+                 <double>2.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Target:</string>
                 </property>
                </widget>
               </item>
@@ -260,102 +359,22 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
-               <widget class="QCheckBox" name="heightfieldsCheckBox">
-                <property name="text">
-                 <string>Heightfields</string>
+              <item row="11" column="1">
+               <widget class="QSlider" name="toleranceSlider">
+                <property name="maximum">
+                 <number>100</number>
                 </property>
-                <property name="checked">
-                 <bool>true</bool>
+                <property name="singleStep">
+                 <number>5</number>
                 </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QRadioButton" name="kernelRadioButton">
-                <property name="text">
-                 <string>Kernel</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QRadioButton" name="weigthsRadioButton">
-                <property name="text">
-                 <string>Weigths</string>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QCheckBox" name="sliceCheckBox">
-                <property name="text">
-                 <string>Sliced Visual</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QSlider" name="sliceSlider">
-                <property name="enabled">
-                 <bool>false</bool>
+                <property name="value">
+                 <number>25</number>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
-               </widget>
-              </item>
-              <item row="6" column="0">
-               <widget class="QComboBox" name="sliceComboBox">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>+X</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>+Y</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>+Z</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="8" column="0">
-               <widget class="QDoubleSpinBox" name="stepDrawGridSpinBox">
-                <property name="minimum">
-                 <double>0.010000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.100000000000000</double>
-                </property>
-                <property name="value">
-                 <double>0.500000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="1">
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>Target:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QSpinBox" name="factorSpinBox">
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="value">
-                 <number>3</number>
+                <property name="tickPosition">
+                 <enum>QSlider::TicksAbove</enum>
                 </property>
                </widget>
               </item>
@@ -717,6 +736,9 @@
                 <property name="decimals">
                  <number>4</number>
                 </property>
+                <property name="maximum">
+                 <double>1000.000000000000000</double>
+                </property>
                 <property name="singleStep">
                  <double>0.500000000000000</double>
                 </property>
@@ -757,6 +779,9 @@
                <widget class="QDoubleSpinBox" name="dSpinBox">
                 <property name="decimals">
                  <number>4</number>
+                </property>
+                <property name="maximum">
+                 <double>10000.000000000000000</double>
                 </property>
                 <property name="singleStep">
                  <double>0.500000000000000</double>
@@ -944,6 +969,9 @@
                <widget class="QDoubleSpinBox" name="wSpinBox">
                 <property name="decimals">
                  <number>4</number>
+                </property>
+                <property name="maximum">
+                 <double>1000.000000000000000</double>
                 </property>
                 <property name="singleStep">
                  <double>0.500000000000000</double>

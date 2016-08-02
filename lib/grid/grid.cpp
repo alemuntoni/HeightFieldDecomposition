@@ -45,7 +45,7 @@ void Grid::calculateBorderWeights(const Dcel& d, bool heightfields) {
                         bool b = true;
                         for (std::list<const Dcel::Face*>::iterator it = l.begin(); it != l.end(); ++it){
                             const Dcel::Face* f = *it;
-                            if (f->getNormal().dot(target) < 0){
+                            if (f->getNormal().dot(target) < 0 && f->getFlag() != 1){
                                 Pointi p(i,j,k);
                                 flipped.push_back(p);
                                 b = false;
@@ -104,6 +104,7 @@ void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool hei
 
 void Grid::calculateFullBoxValues(double (*integralTricubicInterpolation)(const double *&, double, double, double, double, double, double)) {
     fullBoxValues = Array3D<double>(getResX()-1, getResY()-1, getResZ()-1);
+    #pragma omp parallel for
     for (unsigned int i = 0; i < fullBoxValues.getSizeX(); ++i){
         for (unsigned int j = 0; j < fullBoxValues.getSizeY(); ++j){
             for (unsigned int k = 0; k < fullBoxValues.getSizeZ(); ++k){

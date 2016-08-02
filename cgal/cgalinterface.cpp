@@ -145,6 +145,9 @@ namespace CGALInterface{
             for (unsigned int i = 0; i < triangles2D.size(); i++){
                 std::array<Point2D, 3> triangle2D = triangles2D[i];
                 std::array<Pointd, 3> triangle3D;
+                assert(pointsVerticesMap.find(triangle2D[0]) != pointsVerticesMap.end());
+                assert(pointsVerticesMap.find(triangle2D[1]) != pointsVerticesMap.end());
+                assert(pointsVerticesMap.find(triangle2D[2]) != pointsVerticesMap.end());
                 triangle3D[0] = pointsVerticesMap[triangle2D[0]];
                 triangle3D[1] = pointsVerticesMap[triangle2D[1]];
                 triangle3D[2] = pointsVerticesMap[triangle2D[2]];

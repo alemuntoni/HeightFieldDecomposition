@@ -450,7 +450,7 @@ Vec3 Dcel::Face::updateNormal() {
  * @warning Utilizza Dcel::Face::ConstIncidentVertexIterator
  * @return L'area della faccia aggiornata
  */
-float Dcel::Face::updateArea() {
+double Dcel::Face::updateArea() {
     updateNormal();
     if (isTriangle()) {
         Pointd v1 = outerHalfEdge->getFromVertex()->getCoordinate();
@@ -767,6 +767,9 @@ void Dcel::Face::getTriangulation(std::vector<std::array<const Dcel::Vertex*, 3>
             Pointd p1 = triangle[0];
             Pointd p2 = triangle[1];
             Pointd p3 = triangle[2];
+            assert(pointsVerticesMap.find(p1) != pointsVerticesMap.end());
+            assert(pointsVerticesMap.find(p2) != pointsVerticesMap.end());
+            assert(pointsVerticesMap.find(p3) != pointsVerticesMap.end());
             const Dcel::Vertex* a = pointsVerticesMap[p1];
             const Dcel::Vertex* b = pointsVerticesMap[p2];
             const Dcel::Vertex* c = pointsVerticesMap[p3];

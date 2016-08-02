@@ -10,6 +10,7 @@
 #include <QGLViewer/qglviewer.h>
 #include <QGLViewer/manipulatedCameraFrame.h>
 #include <QGLWidget>
+#include <QKeyEvent>
 #include <vector>
 
 #ifdef __APPLE__
@@ -48,7 +49,7 @@ class GLcanvas : public QGLViewer {
         void deleteObj(const DrawableObject* obj);
 
     signals:
-        void objectPicked(int);
+        void objectPicked(unsigned int);
 
     private:
 

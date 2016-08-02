@@ -171,7 +171,7 @@ class Dcel::Face {
         Dcel::Vertex* getVertex2();
         Dcel::Vertex* getVertex3();
         Vec3 updateNormal();
-        float updateArea();
+        double updateArea();
         void removeInnerHalfEdge(const InnerHalfEdgeIterator& iterator);
         bool removeInnerHalfEdge(const Dcel::HalfEdge* halfEdge);
         void removeAllInnerHalfEdges();

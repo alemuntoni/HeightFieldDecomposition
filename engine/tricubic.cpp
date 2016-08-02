@@ -91,6 +91,7 @@ void TricubicInterpolator::getCoefficients(Array4D<double>& coeffs, const Array3
         }
     }
 
+    #pragma omp parallel for
     for (unsigned int xi = 1; xi < weights.getSizeX() - 2; xi++){
         for (unsigned int yi = 1; yi < weights.getSizeY() - 2; yi++){
             for (unsigned int zi = 1; zi < weights.getSizeZ() - 2; zi++){

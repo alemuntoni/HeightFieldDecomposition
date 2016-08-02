@@ -41,7 +41,7 @@ namespace Engine {
 
     void calculateInitialBoxes(BoxList &boxList, const Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
 
-    void expandBoxes(BoxList &boxList, const Grid &g);
+    void expandBoxes(BoxList &boxList, const Grid &g, bool printTimes = false);
     #endif
 
     #ifndef SERVER_MODE

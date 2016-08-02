@@ -28,6 +28,7 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void updateLabel(double value, QLabel* label);
         void updateBoxValues();
+        void updateColors(double threshold);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -143,6 +144,8 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_maxYSpinBox_valueChanged(double arg1);
 
         void on_maxZSpinBox_valueChanged(double arg1);
+
+        void on_toleranceSlider_valueChanged(int value);
 
     private:
         Ui::EngineManager *ui;

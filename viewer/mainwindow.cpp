@@ -23,8 +23,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
     checkBoxMapper = new QSignalMapper(this);
     connect(checkBoxMapper, SIGNAL(mapped(int)), this, SLOT(checkBoxClicked(int)));
-    connect(ui->glCanvas, SIGNAL(objectPicked(int)),
-            this, SLOT(slotObjectClicked(int)));
+    connect(ui->glCanvas, SIGNAL(objectPicked(unsigned int)),
+            this, SLOT(slotObjectPicked(unsigned int)));
     QVBoxLayout * layout = new QVBoxLayout(this);
     ui->scrollArea->setLayout(layout);
     ui->scrollArea->layout()->setSpacing(0);
@@ -35,6 +35,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
 MainWindow::~MainWindow() {
     delete ui;
+    if (debugObjects!=nullptr){
+        deleteObj(debugObjects);
+        delete debugObjects;
+    }
 }
 
 /**
@@ -200,7 +204,7 @@ void MainWindow::disableDebugObjects() {
 void MainWindow::addDebugSphere(const Pointd& center, double radius, const QColor& color, int precision) {
     if (debugObjects!= nullptr){
         debugObjects->addDebugSphere(center, radius, color, precision);
-        //ui->glCanvas->updateGL();
+        ui->glCanvas->updateGL();
     }
 }
 
@@ -237,8 +241,8 @@ void MainWindow::checkBoxClicked(int i) {
     ui->glCanvas->updateGL();
 }
 
-void MainWindow::slotObjectClicked(int i) {
-    emit objectClicked(i);
+void MainWindow::slotObjectPicked(unsigned int i) {
+    emit objectPicked(i);
 }
 
 /**
@@ -251,4 +255,9 @@ void MainWindow::setFullScreen(bool b) {
 
 void MainWindow::setBackgroundColor(const QColor & color) {
     ui->glCanvas->setClearColor(color);
+}
+
+void MainWindow::keyPressEvent(QKeyEvent * event){
+    if(event->matches(QKeySequence::Undo))
+        emit(undoEvent());
 }

@@ -64,6 +64,18 @@ void EngineManager::updateBoxValues() {
     }
 }
 
+void EngineManager::updateColors(double threshold) {
+    double dot = - threshold/100;
+    for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit){
+        if ((*fit)->getNormal().dot(XYZ[ui->targetComboBox->currentIndex()]) < dot)
+            (*fit)->setColor(QColor(255,0,0));
+        else
+            (*fit)->setColor(QColor(128,128,128));
+    }
+    d->update();
+    mainWindow->updateGlCanvas();
+}
+
 void EngineManager::serialize(std::ofstream& binaryFile) const {
     g->serialize(binaryFile);
     d->serialize(binaryFile);
@@ -91,6 +103,7 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
         (*fit)->setColor(QColor(128,128,128));
     d->setWireframe(true);
     d->setPointsShading();
+    updateColors(ui->toleranceSlider->value());
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
     mainWindow->pushObj(g, "Grid");
@@ -117,12 +130,6 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
     }
 
     mainWindow->updateGlCanvas();
-
-    ////DEBUG
-    double min, max;
-    g->getMinAndMax(min, max);
-    std::cerr << "Min: " << min <<"; max: " << max << "\n";
-    //FINEDEBUG
 }
 
 void EngineManager::on_generateGridPushButton_clicked() {
@@ -137,7 +144,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
 
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()]);
-
+        updateColors(ui->toleranceSlider->value());
         d->update();
         g->setKernelDistance(ui->distanceSpinBox->value());
         e = Energy(*g);
@@ -156,6 +163,8 @@ void EngineManager::on_distanceSpinBox_valueChanged(double arg1) {
 void EngineManager::on_targetComboBox_currentIndexChanged(int index) {
     if (d!= nullptr && g!= nullptr){
         g->setTarget(XYZ[index]);
+        updateColors(ui->toleranceSlider->value());
+        d->update();
         g->calculateBorderWeights(*d);
         mainWindow->updateGlCanvas();
     }
@@ -491,7 +500,9 @@ void EngineManager::on_energyBoxPushButton_clicked() {
     if (b!=nullptr){
         double energy = e.energy(*b);
         Eigen::VectorXd gradient(6);
-        e.gradientTricubicInterpolationEnergy(gradient, b->getMin(), b->getMax());
+        Eigen::VectorXd solution(6);
+        solution << b->getMinX(), b->getMinY(), b->getMinZ(), b->getMaxX(), b->getMaxY(), b->getMaxZ();
+        e.gradientEnergy(gradient, solution, b->getConstraint1(), b->getConstraint2(), b->getConstraint3());
         updateLabel(gradient(0), ui->gminx);
         updateLabel(gradient(1), ui->gminy);
         updateLabel(gradient(2), ui->gminz);
@@ -660,10 +671,24 @@ void EngineManager::on_setFromSolutionButton_clicked() {
     if (solutions != nullptr){
         unsigned int value = ui->setFromSolutionSpinBox->value();
         if (value < solutions->getNumberBoxes()){
-            deleteDrawableObject(b);
-            solutions->getBox(value);
-            b = new Box3D(solutions->getBox(value));
-            mainWindow->pushObj(b, "Box");
+            if (b == nullptr){
+                b = new Box3D(solutions->getBox(value));
+                mainWindow->pushObj(b, "Box");
+            }
+            else {
+                b->setMin(solutions->getBox(value).getMin());
+                b->setMax(solutions->getBox(value).getMax());
+                b->setConstraint1(solutions->getBox(value).getConstraint1());
+                b->setConstraint2(solutions->getBox(value).getConstraint2());
+                b->setConstraint3(solutions->getBox(value).getConstraint3());
+                b->setColor(solutions->getBox(value).getColor());
+                b->setRotationMatrix(solutions->getBox(value).getRotationMatrix());
+                b->setTarget(solutions->getBox(value).getTarget());
+            }
+            //deleteDrawableObject(b);
+            //solutions->getBox(value);
+            //b = new Box3D(solutions->getBox(value));
+            //mainWindow->pushObj(b, "Box");
             mainWindow->updateGlCanvas();
         }
 
@@ -1193,10 +1218,61 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
         if (!ui->heightfieldsCheckBox->isChecked()){
             Grid g[ORIENTATIONS];
             BoxList bl[ORIENTATIONS];
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                Engine::generateGrid(g[i], scaled[i], kernelDistance);
-                Engine::calculateInitialBoxes(bl[i],scaled[i], m[i], false);
-                Engine::expandBoxes(bl[i], g[i]);
+            std::set<int> coveredFaces;
+            unsigned int numberFaces = 100;
+            CGALInterface::AABBTree aabb0(scaled[0]);
+            CGALInterface::AABBTree aabb1(scaled[1]);
+            CGALInterface::AABBTree aabb2(scaled[2]);
+            CGALInterface::AABBTree aabb3(scaled[3]);
+            # pragma omp parallel for if(ORIENTATIONS>1)
+            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+                    Engine::generateGrid(g[i], scaled[i], kernelDistance);
+                    g[i].resetSignedDistances();
+                    std::cerr << "Generated grid or " << i << "\n";
+            }
+
+            while (coveredFaces.size() < scaled[0].getNumberFaces()){
+                BoxList tmp[ORIENTATIONS];
+                Eigen::VectorXi faces[ORIENTATIONS];
+                for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                    IGLMesh m(scaled[i]);
+                    IGLMesh dec;
+                    bool b = m.getDecimatedMesh(dec, numberFaces, faces[i]);
+                    std::cerr << "Decimated mesh " << i << ": " << (b ? "true" : "false") <<"\n";
+                }
+
+                for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                    std::cerr << "Calculating Boxes\n";
+                    Engine::calculateDecimatedBoxes(tmp[i],scaled[i], faces[i], coveredFaces, m[i]);
+                    std::cerr << "Starting boxes growth\n";
+                    Engine::expandBoxes(tmp[i], g[i], true);
+                    std::cerr << "Orientation: " << i << " completed.\n";
+                }
+
+                for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+
+                        for (unsigned int k = 0; k < tmp[i].getNumberBoxes(); ++k){
+                            std::list<const Dcel::Face*> list;
+                            switch(i){
+                                    case 0: aabb0.getIntersectedPrimitives(list, tmp[i].getBox(k)); break;
+                                    case 1: aabb1.getIntersectedPrimitives(list, tmp[i].getBox(k)); break;
+                                    case 2: aabb2.getIntersectedPrimitives(list, tmp[i].getBox(k)); break;
+                                    case 3: aabb3.getIntersectedPrimitives(list, tmp[i].getBox(k)); break;
+                            }
+                            for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
+                                coveredFaces.insert((*it)->getId());
+                            }
+                        }
+                }
+                for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+                        bl[i].insert(tmp[i]);
+                }
+
+                std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
+                std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
+                numberFaces*=2;
+                if (numberFaces > scaled[0].getNumberFaces())
+                    numberFaces = scaled[0].getNumberFaces();
             }
 
             std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS];
@@ -1229,7 +1305,6 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
             while (coveredFaces.size() < scaled[0].getNumberFaces()){
                 BoxList tmp[ORIENTATIONS][TARGETS];
                 Eigen::VectorXi faces[ORIENTATIONS];
-                //check if there vectors are the same
                 for (unsigned int i = 0; i < ORIENTATIONS; i++){
                     IGLMesh m(scaled[i]);
                     IGLMesh dec;
@@ -1358,5 +1433,11 @@ void EngineManager::on_maxZSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setMaxZ(arg1);
         mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_toleranceSlider_valueChanged(int value) {
+    if (d!= nullptr){
+        updateColors(value);
     }
 }

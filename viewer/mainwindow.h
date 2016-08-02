@@ -17,6 +17,7 @@
 #include <QApplication>
 
 #include "interfaces/drawable_object.h"
+#include "interfaces/pickable_object.h"
 #include "../common/bounding_box.h"
 #include "objects/drawabledebugobjects.h"
 
@@ -60,16 +61,19 @@ class MainWindow : public QMainWindow {
         void addDebugCylinder(const Pointd& a, const Pointd& b, double radius, const QColor color);
         void clearDebugCylinders();
 
+        void keyPressEvent(QKeyEvent * event);
+
     signals:
         /**
          * @brief objectClicked
          * Segnale da "catchare", ha come parametro l'oggetto cliccato nella GLCanvas
          */
-        void objectClicked(int);
+        void objectPicked(unsigned int);
+        void undoEvent();
 
     private slots:
         void checkBoxClicked(int i);
-        void slotObjectClicked(int i);
+        void slotObjectPicked(unsigned int i);
 
     private:
 
