@@ -113,19 +113,62 @@ class Dcel : public SerializableObject {
         FaceIterator faceBegin();
         FaceIterator faceEnd();
 
+        class VertexList {
+            public:
+                VertexList(Dcel *d) : d(d) {}
+                ConstVertexIterator begin() const;
+                ConstVertexIterator end() const;
+                VertexIterator begin();
+                VertexIterator end();
+            private:
+                Dcel *d;
+        };
+
+        class HalfEdgeList {
+            public:
+                HalfEdgeList(Dcel *d) : d(d) {}
+                ConstHalfEdgeIterator begin() const;
+                ConstHalfEdgeIterator end() const;
+                HalfEdgeIterator begin();
+                HalfEdgeIterator end();
+            private:
+                Dcel *d;
+        };
+
+        class FaceList {
+            public:
+                FaceList(Dcel *d) : d(d) {}
+                ConstFaceIterator begin() const;
+                ConstFaceIterator end() const;
+                FaceIterator begin();
+                FaceIterator end();
+            private:
+                Dcel *d;
+        };
+
+        VertexList vertexIterator();
+        const VertexList vertexIterator() const;
+
+        HalfEdgeList halfEdgeIterator();
+        const HalfEdgeList halfEdgeIterator() const;
+
+        FaceList faceIterator();
+        const FaceList faceIterator() const;
+
         /*****************
         * Public Methods *
         ******************/
 
-        const Vertex* getVertex(unsigned int idVertex)               const;
-        const HalfEdge* getHalfEdge(unsigned int idHalfEdge)         const;
-        const Face* getFace(unsigned int idFace)                     const;
-        BoundingBox getBoundingBox()                        const;
-        bool isTriangleMesh()                               const;
-        void saveOnObjFile(std::string fileNameObj)     const;
-        void saveOnPlyFile(std::string fileNamePly)     const;
-        void saveOnDcelFile(std::string fileNameDcel)   const;
-        void serialize(std::ofstream& binaryFile) const;
+        const Vertex* getVertex(unsigned int idVertex)          const;
+        const HalfEdge* getHalfEdge(unsigned int idHalfEdge)    const;
+        const Face* getFace(unsigned int idFace)                const;
+        BoundingBox getBoundingBox()                            const;
+        bool isTriangleMesh()                                   const;
+        double getSurfaceArea()                                 const;
+        void saveOnObjFile(std::string fileNameObj)             const;
+        void saveOnPlyFile(std::string fileNamePly)             const;
+        void saveOnDcelFile(std::string fileNameDcel)           const;
+        void serialize(std::ofstream& binaryFile)               const;
 
         Vertex* getVertex(unsigned int idVertex);
         HalfEdge* getHalfEdge(unsigned int idHalfEdge);
@@ -180,6 +223,10 @@ class Dcel : public SerializableObject {
         unsigned int            nHalfEdges;     /**< \~Italian @brief Prossimo id dell'half edge. */
         unsigned int            nFaces;         /**< \~Italian @brief Prossimo id della faccia. */
         BoundingBox             boundingBox;    /**< \~Italian @brief Bounding box della mesh. */
+
+        VertexList              vertexList;
+        HalfEdgeList            halfEdgeList;
+        FaceList                faceList;
 
         /******************
         * Private Methods *
@@ -341,6 +388,78 @@ inline Dcel::FaceIterator Dcel::faceBegin() {
  */
 inline Dcel::FaceIterator Dcel::faceEnd() {
     return FaceIterator(faces.size(), faces);
+}
+
+inline Dcel::VertexList Dcel::vertexIterator() {
+    return vertexList;
+}
+
+inline const Dcel::VertexList Dcel::vertexIterator() const {
+    return vertexList;
+}
+
+inline Dcel::HalfEdgeList Dcel::halfEdgeIterator() {
+    return halfEdgeList;
+}
+
+inline const Dcel::HalfEdgeList Dcel::halfEdgeIterator() const {
+    return halfEdgeList;
+}
+
+inline Dcel::FaceList Dcel::faceIterator() {
+    return faceList;
+}
+
+inline const Dcel::FaceList Dcel::faceIterator() const {
+    return faceList;
+}
+
+inline Dcel::ConstVertexIterator Dcel::VertexList::begin() const {
+    return d->vertexBegin();
+}
+
+inline Dcel::ConstVertexIterator Dcel::VertexList::end() const {
+    return d->vertexEnd();
+}
+
+inline Dcel::VertexIterator Dcel::VertexList::begin() {
+    return d->vertexBegin();
+}
+
+inline Dcel::VertexIterator Dcel::VertexList::end() {
+    return d->vertexEnd();
+}
+
+inline Dcel::ConstHalfEdgeIterator Dcel::HalfEdgeList::begin() const {
+    return d->halfEdgeBegin();
+}
+
+inline Dcel::ConstHalfEdgeIterator Dcel::HalfEdgeList::end() const {
+    return d->halfEdgeEnd();
+}
+
+inline Dcel::HalfEdgeIterator Dcel::HalfEdgeList::begin() {
+    return d->halfEdgeBegin();
+}
+
+inline Dcel::HalfEdgeIterator Dcel::HalfEdgeList::end() {
+    return d->halfEdgeEnd();
+}
+
+inline Dcel::ConstFaceIterator Dcel::FaceList::begin() const {
+    return d->faceBegin();
+}
+
+inline Dcel::ConstFaceIterator Dcel::FaceList::end() const {
+    return d->faceEnd();
+}
+
+inline Dcel::FaceIterator Dcel::FaceList::begin() {
+    return d->faceBegin();
+}
+
+inline Dcel::FaceIterator Dcel::FaceList::end() {
+    return d->faceEnd();
 }
 
 #endif // DCEL_STRUCT_H

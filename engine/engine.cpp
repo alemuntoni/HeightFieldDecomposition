@@ -69,6 +69,36 @@ Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, unsigned int rot, int factor
     return rotateDcelAlreadyScaled(d, rot);
 }
 
+void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set<const Dcel::Face*> &savedFaces, const Dcel& d, const Vec3& target, double angleThreshold, double areaThreshold) {
+    double dot = - angleThreshold;
+    for (const Dcel::Face* f : d.faceIterator()){
+        if (f->getNormal().dot(target) < 0){
+            if (f->getNormal().dot(target) < dot)
+                flippedFaces.insert(f);
+            else
+                savedFaces.insert(f);
+        }
+    }
+    /*for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
+        if ((*fit)->getNormal().dot(target) < 0){
+            if ((*fit)->getNormal().dot(target) < dot)
+                flippedFaces.insert(*fit);
+            else
+                savedFaces.insert(*fit);
+        }
+    }*/
+    if (areaThreshold > 0) {
+        double totalArea = d.getSurfaceArea();
+        areaThreshold*=totalArea;
+        std::set<const Dcel::Face*> visitedFaces, connectedComponent;
+        for (const Dcel::Face* f : flippedFaces){
+            connectedComponent.clear();
+            connectedComponent.insert(f);
+
+        }
+    }
+}
+
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target) {
     SimpleIGLMesh m(d);
     Array3D<Pointd> grid;

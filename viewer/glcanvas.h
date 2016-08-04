@@ -45,7 +45,7 @@ class GLcanvas : public QGLViewer {
         int getNumberVisibleObjects();
         void postSelection(const QPoint& point);
 
-        int  pushObj(DrawableObject * obj);
+        int  pushObj(const DrawableObject * obj);
         void deleteObj(const DrawableObject* obj);
 
     signals:
@@ -54,7 +54,7 @@ class GLcanvas : public QGLViewer {
     private:
 
         QColor clearColor;
-        std::vector<DrawableObject *> drawlist;
+        std::vector<const DrawableObject *> drawlist;
 
         qglviewer::Vec orig, dir, selectedPoint;
 };

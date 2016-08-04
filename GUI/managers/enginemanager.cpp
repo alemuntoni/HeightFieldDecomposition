@@ -65,13 +65,14 @@ void EngineManager::updateBoxValues() {
 }
 
 void EngineManager::updateColors(double threshold) {
-    double dot = - threshold/100;
-    for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit){
-        if ((*fit)->getNormal().dot(XYZ[ui->targetComboBox->currentIndex()]) < dot)
-            (*fit)->setColor(QColor(255,0,0));
-        else
-            (*fit)->setColor(QColor(128,128,128));
+    std::set<const Dcel::Face*> flippedFaces, savedFaces;
+    Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], threshold/100, 0);
+
+    for (const Dcel::Face* cf : flippedFaces){
+        Dcel::Face* f = d->getFace(cf->getId());
+        f->setColor(QColor(255,0,0));
     }
+
     d->update();
     mainWindow->updateGlCanvas();
 }

@@ -19,7 +19,7 @@
  *
  * Crea una Dcel vuota, con 0 vertici, 0 half edge e 0 facce.
  */
-Dcel::Dcel() : nVertices(0), nHalfEdges(0), nFaces(0) {
+Dcel::Dcel() : nVertices(0), nHalfEdges(0), nFaces(0), vertexList(this), halfEdgeList(this), faceList(this) {
 }
 
 /**
@@ -31,7 +31,7 @@ Dcel::Dcel() : nVertices(0), nHalfEdges(0), nFaces(0) {
  * tutte le relazioni tra essi.
  * @param[in] dcel: dcel da cui verrà creata la Dcel this.
  */
-Dcel::Dcel(const Dcel& dcel) {
+Dcel::Dcel(const Dcel& dcel) : vertexList(this), halfEdgeList(this), faceList(this) {
     copyFrom(dcel);
 }
 
@@ -122,6 +122,21 @@ bool Dcel::isTriangleMesh() const {
     for (fit = faceBegin(); fit != faceEnd(); ++fit)
         if (! (*fit)->isTriangle()) return false;
     return true;
+}
+
+/**
+ * \~Italian
+ * @brief Funzione che restituisce la somma delle aree di tutta le facce presenti nella Dcel.
+ * @return L'area dell'intra superficie della mesh
+ * @par Complessità:
+ *      \e O(numFaces)
+ */
+double Dcel::getSurfaceArea() const {
+    double area = 0;
+    for (ConstFaceIterator fit = faceBegin(); fit != faceEnd(); ++fit){
+        area += (*fit)->getArea();
+    }
+    return area;
 }
 
 /**

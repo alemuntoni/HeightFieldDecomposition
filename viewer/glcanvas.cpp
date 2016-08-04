@@ -39,7 +39,7 @@ void GLcanvas::postSelection(const QPoint& point)
                  "No object selected under pixel " + QString::number(point.x()) + "," + QString::number(point.y()));
   else
       for(int i=0; i<(int)drawlist.size(); ++i){
-          PickableObject* po = dynamic_cast<PickableObject*>(drawlist[i]);
+          const PickableObject* po = dynamic_cast<const PickableObject*>(drawlist[i]);
           if (po) { // se è un PickableObject, allora faccio la emit sull'object!
               emit objectPicked(idObject);
               updateGL();
@@ -63,13 +63,12 @@ void GLcanvas::drawWithNames(){
 void GLcanvas::draw() {
     setBackgroundColor(clearColor);
 
-    for(int i=0; i<(int)drawlist.size(); ++i)
-    {
+    for(int i=0; i<(int)drawlist.size(); ++i) {
         drawlist[i]->draw();
     }
 }
 
-int GLcanvas::pushObj(DrawableObject * obj) {
+int GLcanvas::pushObj(const DrawableObject* obj) {
     drawlist.push_back(obj);
     updateGL();
 
@@ -77,9 +76,10 @@ int GLcanvas::pushObj(DrawableObject * obj) {
 }
 
 void GLcanvas::deleteObj(const DrawableObject* obj) {
-    std::vector<DrawableObject *>::iterator it = std::find(drawlist.begin(), drawlist.end(), obj);
-    if (it != drawlist.end()) drawlist.erase(it);
-
+    std::vector<const DrawableObject *>::iterator it = std::find(drawlist.begin(), drawlist.end(), obj);
+    if (it != drawlist.end()) {
+        drawlist.erase(it);
+    }
 }
 
 void GLcanvas::fitScene() {

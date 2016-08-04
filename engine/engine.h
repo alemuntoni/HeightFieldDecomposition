@@ -35,6 +35,8 @@ namespace Engine {
 
     Eigen::Matrix3d scaleAndRotateDcel(Dcel& d, unsigned int rot = 0, int factor = 1);
 
+    void getFlippedFaces(std::set<const Dcel::Face*>& flippedFaces, std::set<const Dcel::Face*>& savedFaces, const Dcel& d, const Vec3& target, double angleThreshold, double areaThreshold);
+
     void setTrianglesTargets(Dcel scaled[]);
 
     void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3());

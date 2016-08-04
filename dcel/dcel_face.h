@@ -98,6 +98,8 @@ class Dcel::Face {
          */
         typedef std::vector<Dcel::HalfEdge*>::iterator InnerHalfEdgeIterator;
         class ConstInnerHalfEdgeIterator;
+        class AdjacentFaceIterator;
+        class ConstAdjacentFaceIterator;
         class IncidentHalfEdgeIterator;
         class ConstIncidentHalfEdgeIterator;
         class IncidentVertexIterator;
@@ -193,6 +195,8 @@ class Dcel::Face {
         #endif
 
     protected:
+
+        class GenericIterator;
 
         /*************
         * Attributes *
