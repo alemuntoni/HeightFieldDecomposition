@@ -89,6 +89,36 @@ class Dcel::Face::GenericIterator {
         GenericIterator(Dcel::HalfEdge* start, Dcel::HalfEdge* end, Dcel::Face* f);
 };
 
+class Dcel::Face::ConstGenericIterator {
+
+        friend class Dcel::Face;
+
+    public:
+        //Constructors
+        ConstGenericIterator();
+        ConstGenericIterator(const Dcel::Face::GenericIterator& it);
+
+        //Public Operators
+        const void* operator * () const {return nullptr;}
+        bool operator == (const ConstGenericIterator& otherIterator)   const;
+        bool operator != (const ConstGenericIterator& otherIterator)   const;
+
+        ConstGenericIterator operator ++ ();
+        ConstGenericIterator operator ++ (int);
+        ConstGenericIterator operator -- ();
+        ConstGenericIterator operator -- (int);
+
+    protected:
+        //Protected Attributes
+        const Dcel::Face*     f;        /**< \~Italian @brief Faccia su cui vengono iterati gli half edge incidenti */
+        const Dcel::HalfEdge* start;    /**< \~Italian @brief Half edge dal quale è partito l'iteratore */
+        const Dcel::HalfEdge* pos;      /**< \~Italian @brief Posizione attuale dell'iteratore */
+        const Dcel::HalfEdge* end;      /**< \~Italian @brief Half edge sul quale termina l'iteratore */
+
+        //Protected Constructor
+        ConstGenericIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Face* f);
+};
+
 
 /**
  * \~Italian
@@ -132,7 +162,7 @@ class Dcel::Face::GenericIterator {
  *
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
-class Dcel::Face::AdjacentFaceIterator {
+class Dcel::Face::AdjacentFaceIterator : public Dcel::Face::GenericIterator{
 
         friend class Dcel::Face;
 
@@ -142,21 +172,8 @@ class Dcel::Face::AdjacentFaceIterator {
 
         //Public Operators
         Dcel::Face* operator * ()                                     const;
-        bool operator == (const AdjacentFaceIterator& otherIterator)  const;
-        bool operator != (const AdjacentFaceIterator& otherIterator)  const;
-
-        AdjacentFaceIterator operator ++ ();
-        AdjacentFaceIterator operator ++ (int);
-        AdjacentFaceIterator operator -- ();
-        AdjacentFaceIterator operator -- (int);
 
     protected:
-        //Protected Attributes
-        Dcel::Face*     f;      /**< \~Italian @brief Faccia su cui vengono iterati gli half edge incidenti */
-        Dcel::HalfEdge* start;  /**< \~Italian @brief Half edge dal quale è partito l'iteratore */
-        Dcel::HalfEdge* pos;    /**< \~Italian @brief Posizione attuale dell'iteratore */
-        Dcel::HalfEdge* end;    /**< \~Italian @brief Half edge sul quale termina l'iteratore */
-
         //Protected Constructor
         AdjacentFaceIterator(Dcel::HalfEdge* start, Dcel::HalfEdge* end, Dcel::Face* f);
 };
@@ -203,7 +220,7 @@ class Dcel::Face::AdjacentFaceIterator {
  *
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
-class Dcel::Face::ConstAdjacentFaceIterator {
+class Dcel::Face::ConstAdjacentFaceIterator : public ConstGenericIterator {
 
         friend class Dcel::Face;
 
@@ -214,20 +231,8 @@ class Dcel::Face::ConstAdjacentFaceIterator {
 
         //Public Operators
         const Dcel::Face* operator * ()                                     const;
-        bool operator == (const ConstAdjacentFaceIterator& otherIterator)   const;
-        bool operator != (const ConstAdjacentFaceIterator& otherIterator)   const;
-
-        ConstAdjacentFaceIterator operator ++ ();
-        ConstAdjacentFaceIterator operator ++ (int);
-        ConstAdjacentFaceIterator operator -- ();
-        ConstAdjacentFaceIterator operator -- (int);
 
     protected:
-        //Protected Attributes
-        const Dcel::Face*     f;        /**< \~Italian @brief Faccia su cui vengono iterati gli half edge incidenti */
-        const Dcel::HalfEdge* start;    /**< \~Italian @brief Half edge dal quale è partito l'iteratore */
-        const Dcel::HalfEdge* pos;      /**< \~Italian @brief Posizione attuale dell'iteratore */
-        const Dcel::HalfEdge* end;      /**< \~Italian @brief Half edge sul quale termina l'iteratore */
 
         //Protected Constructor
         ConstAdjacentFaceIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Face* f);
@@ -272,7 +277,7 @@ class Dcel::Face::ConstAdjacentFaceIterator {
  *
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
-class Dcel::Face::IncidentHalfEdgeIterator {
+class Dcel::Face::IncidentHalfEdgeIterator : public Dcel::Face::GenericIterator {
 
         friend class Dcel::Face;
 
@@ -282,20 +287,8 @@ class Dcel::Face::IncidentHalfEdgeIterator {
 
         //Public Operators
         Dcel::HalfEdge* operator * ()                                       const;
-        bool operator == (const IncidentHalfEdgeIterator& otherIterator)    const;
-        bool operator != (const IncidentHalfEdgeIterator& otherIterator)    const;
-
-        IncidentHalfEdgeIterator operator ++ ();
-        IncidentHalfEdgeIterator operator ++ (int);
-        IncidentHalfEdgeIterator operator -- ();
-        IncidentHalfEdgeIterator operator -- (int);
 
     protected:
-        //Protected Attributes
-        Dcel::Face*     f;      /**< \~Italian @brief Faccia su cui vengono iterati gli half edge incidenti */
-        Dcel::HalfEdge* start;  /**< \~Italian @brief Half edge dal quale è partito l'iteratore */
-        Dcel::HalfEdge* pos;    /**< \~Italian @brief Posizione attuale dell'iteratore */
-        Dcel::HalfEdge* end;    /**< \~Italian @brief Half edge sul quale termina l'iteratore */
 
         //Protected Constructor
         IncidentHalfEdgeIterator(Dcel::HalfEdge* start, Dcel::HalfEdge* end, Dcel::Face* f);
@@ -340,7 +333,7 @@ class Dcel::Face::IncidentHalfEdgeIterator {
  *
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
-class Dcel::Face::ConstIncidentHalfEdgeIterator {
+class Dcel::Face::ConstIncidentHalfEdgeIterator : public ConstGenericIterator {
 
         friend class Dcel::Face;
 
@@ -351,20 +344,8 @@ class Dcel::Face::ConstIncidentHalfEdgeIterator {
 
         //Public Operators
         const Dcel::HalfEdge* operator * ()                                     const;
-        bool operator == (const ConstIncidentHalfEdgeIterator& otherIterator)   const;
-        bool operator != (const ConstIncidentHalfEdgeIterator& otherIterator)   const;
-
-        ConstIncidentHalfEdgeIterator operator ++ ();
-        ConstIncidentHalfEdgeIterator operator ++ (int);
-        ConstIncidentHalfEdgeIterator operator -- ();
-        ConstIncidentHalfEdgeIterator operator -- (int);
 
     protected:
-        //Protected Attributes
-        const Dcel::Face*     f;        /**< \~Italian @brief Faccia su cui vengono iterati gli half edge incidenti */
-        const Dcel::HalfEdge* start;    /**< \~Italian @brief Half edge dal quale è partito l'iteratore */
-        const Dcel::HalfEdge* pos;      /**< \~Italian @brief Posizione attuale dell'iteratore */
-        const Dcel::HalfEdge* end;      /**< \~Italian @brief Half edge sul quale termina l'iteratore */
 
         //Protected Constructor
         ConstIncidentHalfEdgeIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Face* f);
@@ -411,7 +392,7 @@ class Dcel::Face::ConstIncidentHalfEdgeIterator {
  *
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
-class Dcel::Face::IncidentVertexIterator {
+class Dcel::Face::IncidentVertexIterator : public Dcel::Face::GenericIterator {
 
         friend class Dcel::Face;
 
@@ -421,20 +402,8 @@ class Dcel::Face::IncidentVertexIterator {
 
         //Public Operators
         Dcel::Vertex* operator * ()                                     const;
-        bool operator == (const IncidentVertexIterator& otherIterator)  const;
-        bool operator != (const IncidentVertexIterator& otherIterator)  const;
-
-        IncidentVertexIterator operator ++ ();
-        IncidentVertexIterator operator ++ (int);
-        IncidentVertexIterator operator -- ();
-        IncidentVertexIterator operator -- (int);
 
     protected:
-        //Protected Attributes
-        Dcel::Face*     f;      /**< \~Italian @brief Faccia su cui vengono iterati gli half edge incidenti */
-        Dcel::HalfEdge* start;  /**< \~Italian @brief Half edge dal quale è partito l'iteratore */
-        Dcel::HalfEdge* pos;    /**< \~Italian @brief Posizione attuale dell'iteratore */
-        Dcel::HalfEdge* end;    /**< \~Italian @brief Half edge sul quale termina l'iteratore */
 
         //Protected Constructor
         IncidentVertexIterator(Dcel::HalfEdge* start, Dcel::HalfEdge* end, Dcel::Face* f);
@@ -481,7 +450,7 @@ class Dcel::Face::IncidentVertexIterator {
  *
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
-class Dcel::Face::ConstIncidentVertexIterator {
+class Dcel::Face::ConstIncidentVertexIterator : public ConstGenericIterator {
 
         friend class Dcel::Face;
 
@@ -492,20 +461,8 @@ class Dcel::Face::ConstIncidentVertexIterator {
 
         //Public Operators
         const Dcel::Vertex* operator * ()                                   const;
-        bool operator == (const ConstIncidentVertexIterator& otherIterator) const;
-        bool operator != (const ConstIncidentVertexIterator& otherIterator) const;
-
-        ConstIncidentVertexIterator operator ++ ();
-        ConstIncidentVertexIterator operator ++ (int);
-        ConstIncidentVertexIterator operator -- ();
-        ConstIncidentVertexIterator operator -- (int);
 
     protected:
-        //Protected Attributes
-        const Dcel::Face*     f;        /**< \~Italian @brief Faccia su cui vengono iterati gli half edge incidenti */
-        const Dcel::HalfEdge* start;    /**< \~Italian @brief Half edge dal quale è partito l'iteratore */
-        const Dcel::HalfEdge* pos;      /**< \~Italian @brief Posizione attuale dell'iteratore */
-        const Dcel::HalfEdge* end;      /**< \~Italian @brief Half edge sul quale termina l'iteratore */
 
         //Protected Constructor
         ConstIncidentVertexIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Face* f);
@@ -763,6 +720,141 @@ inline Dcel::Face::GenericIterator Dcel::Face::GenericIterator::operator -- (int
 inline Dcel::Face::GenericIterator::GenericIterator(HalfEdge* start, HalfEdge* end, Face* f) : f(f), start(start), pos(start), end(end) {
 }
 
+/*****************************************
+ * Dcel::Face::ConstGenericIterator *
+ *****************************************/
+
+//Constructor
+
+/**
+ * \~Italian
+ * @brief Costruttore vuoto.
+ * Un iteratore inizializzato con questo costruttore non è utilizzabile.
+ */
+inline Dcel::Face::ConstGenericIterator::ConstGenericIterator() : f(nullptr), start(nullptr), pos(nullptr), end(nullptr) {
+}
+
+/**
+ * \~Italian
+ * @brief Costruttore di copia da un iteratore const.
+ *
+ * Inizializza un ConstAdjacentFaceIterator pari all'AdjacentFaceIterator passato in input.
+ * @param[in] it: iteratore di cui ne verrà fatta una copia
+ */
+inline Dcel::Face::ConstGenericIterator::ConstGenericIterator(const Dcel::Face::GenericIterator& it) : f(it.f), start (it.start), pos(it.pos), end(it.end) {
+}
+
+//Public Operators
+
+/**
+ * \~Italian
+ * @brief Operatore di uguaglianza tra iteratori const.
+ *
+ * Due AdjacentFaceIterator sono considerati uguali se:
+ * - puntano allo stesso half edge;
+ * - iterano sulla stessa faccia.
+ *
+ *
+ * @param[in] otherIterator: iteratore con cui è verificata l'uguaglianza con this
+ * @return True se gli iteratori sono uguali, false altrimenti
+ */
+inline bool Dcel::Face::ConstGenericIterator::operator == (const Dcel::Face::ConstGenericIterator& otherIterator) const {
+    if (this->pos == otherIterator.pos && this->f == otherIterator.f) return true;
+    return false;
+}
+
+/**
+ * \~Italian
+ * @brief Operatore di disuguaglianza tra iteratori const.
+ * @param[in] otherIterator: iteratore con cui è verificata la disuguaglianza con this
+ * @return True se gli iteratori sono diversi, false altrimenti
+ */
+inline bool Dcel::Face::ConstGenericIterator::operator != (const Dcel::Face::ConstGenericIterator& otherIterator) const {
+    return !(*this == otherIterator);
+}
+
+/**
+ * \~Italian
+ * @brief Operatore di incremento prefisso dell'iteratore const.
+ *
+ * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
+ * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
+ *
+ * @return L'iteratore appena incrementato
+ */
+inline Dcel::Face::ConstGenericIterator Dcel::Face::ConstGenericIterator::operator ++ () {
+    pos = pos->getNext();
+    if (pos == end) pos = nullptr;
+    return *this;
+}
+
+/**
+ * \~Italian
+ * @brief Operatore di incremento postfisso dell'iteratore const.
+ *
+ * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
+ * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
+ *
+ * @return L'iteratore prima di essere incrementato
+ */
+inline Dcel::Face::ConstGenericIterator Dcel::Face::ConstGenericIterator::operator ++ (int) {
+    ConstGenericIterator old_value = *this;
+    pos = pos->getNext();
+    if (pos == end) pos = nullptr;
+    return old_value;
+}
+
+/**
+ * \~Italian
+ * @brief Operatore di decremento prefisso dell'iteratore const.
+ *
+ * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
+ * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
+ *
+ * @return L'iteratore appena decrementato
+ */
+inline Dcel::Face::ConstGenericIterator Dcel::Face::ConstGenericIterator::operator -- () {
+    pos = pos->getPrev();
+    if (pos == end) pos = nullptr;
+    return *this;
+}
+
+/**
+ * \~Italian
+ * @brief Operatore di decremento postfisso dell'iteratore const.
+ *
+ * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
+ * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
+ *
+ * @return L'iteratore prima di essere decrementato
+ */
+inline Dcel::Face::ConstGenericIterator Dcel::Face::ConstGenericIterator::operator -- (int) {
+    ConstGenericIterator old_value = *this;
+    pos = pos->getPrev();
+    if (pos == end) pos = nullptr;
+    return old_value;
+}
+
+//Protected Constructor
+
+/**
+ * \~Italian
+ * @brief Costruttore di un iteratore const.
+ *
+ * Setta l'half edge di partenza, l'half edge di arrivo e la faccia su cui iterare.
+ * L'iteratore viene inizializzato all'half edge start.
+ * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
+ * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Face nei vari metodi
+ * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
+ * l'inizializzazione dell'iteratore.
+ *
+ * @param[in] start: half edge di start
+ * @param[in] end: half edge di end
+ * @param[in] f: faccia su cui vengono iterati gli half edge incidenti
+ */
+inline Dcel::Face::ConstGenericIterator::ConstGenericIterator(const HalfEdge* start, const HalfEdge* end, const Face* f) : f(f), start(start), pos(start), end(end) {
+}
+
 /************************************
  * Dcel::Face::AdjacentFaceIterator *
  ************************************/
@@ -774,7 +866,7 @@ inline Dcel::Face::GenericIterator::GenericIterator(HalfEdge* start, HalfEdge* e
  * @brief Costruttore vuoto.
  * Un iteratore inizializzato con questo costruttore non è utilizzabile.
  */
-inline Dcel::Face::AdjacentFaceIterator::AdjacentFaceIterator() : f(nullptr), start(nullptr), pos(nullptr), end(nullptr) {
+inline Dcel::Face::AdjacentFaceIterator::AdjacentFaceIterator() : GenericIterator() {
 }
 
 //Public Operators
@@ -786,95 +878,6 @@ inline Dcel::Face::AdjacentFaceIterator::AdjacentFaceIterator() : f(nullptr), st
  */
 inline Dcel::Face* Dcel::Face::AdjacentFaceIterator::operator * () const {
     return pos->getTwin()->getFace();
-}
-
-/**
- * \~Italian
- * @brief Operatore di uguaglianza tra AdjacentFaceIterator.
- *
- * Due AdjacentFaceIterator sono considerati uguali se:
- * - puntano allo stesso half edge;
- * - iterano sulla stessa faccia.
- *
- *
- * @param[in] otherIterator: iteratore con cui è verificata l'uguaglianza con this
- * @return True se gli iteratori sono uguali, false altrimenti
- */
-inline bool Dcel::Face::AdjacentFaceIterator::operator == (const Dcel::Face::AdjacentFaceIterator& otherIterator) const {
-    if (this->pos == otherIterator.pos && this->f == otherIterator.f) return true;
-    return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra AdjacentFaceIterator
- * @param[in] otherIterator: iteratore con cui è verificata la disuguaglianza con this
- * @return True se gli iteratori sono diversi, false altrimenti
- */
-inline bool Dcel::Face::AdjacentFaceIterator::operator != (const Dcel::Face::AdjacentFaceIterator& otherIterator) const {
-    return !(*this == otherIterator);
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso dell'AdjacentFaceIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Face::AdjacentFaceIterator Dcel::Face::AdjacentFaceIterator::operator ++ () {
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso dell'AdjacentFaceIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Face::AdjacentFaceIterator Dcel::Face::AdjacentFaceIterator::operator ++ (int) {
-    AdjacentFaceIterator old_value = *this;
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso dell'AdjacentFaceIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Face::AdjacentFaceIterator Dcel::Face::AdjacentFaceIterator::operator -- () {
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso dell'AdjacentFaceIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere decrementato
- */
-inline Dcel::Face::AdjacentFaceIterator Dcel::Face::AdjacentFaceIterator::operator -- (int) {
-    AdjacentFaceIterator old_value = *this;
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return old_value;
 }
 
 //Protected Constructor
@@ -894,7 +897,7 @@ inline Dcel::Face::AdjacentFaceIterator Dcel::Face::AdjacentFaceIterator::operat
  * @param[in] end: half edge di end
  * @param[in] f: faccia su cui vengono iterati gli half edge incidenti
  */
-inline Dcel::Face::AdjacentFaceIterator::AdjacentFaceIterator(HalfEdge* start, HalfEdge* end, Face* f) : f(f), start(start), pos(start), end(end) {
+inline Dcel::Face::AdjacentFaceIterator::AdjacentFaceIterator(HalfEdge* start, HalfEdge* end, Face* f) : GenericIterator(start, end, f) {
 }
 
 /*****************************************
@@ -908,7 +911,7 @@ inline Dcel::Face::AdjacentFaceIterator::AdjacentFaceIterator(HalfEdge* start, H
  * @brief Costruttore vuoto.
  * Un iteratore inizializzato con questo costruttore non è utilizzabile.
  */
-inline Dcel::Face::ConstAdjacentFaceIterator::ConstAdjacentFaceIterator() : f(nullptr), start(nullptr), pos(nullptr), end(nullptr) {
+inline Dcel::Face::ConstAdjacentFaceIterator::ConstAdjacentFaceIterator() : ConstGenericIterator() {
 }
 
 /**
@@ -918,7 +921,7 @@ inline Dcel::Face::ConstAdjacentFaceIterator::ConstAdjacentFaceIterator() : f(nu
  * Inizializza un ConstAdjacentFaceIterator pari all'AdjacentFaceIterator passato in input.
  * @param[in] it: iteratore di cui ne verrà fatta una copia
  */
-inline Dcel::Face::ConstAdjacentFaceIterator::ConstAdjacentFaceIterator(const Dcel::Face::AdjacentFaceIterator& it) : f(it.f), start (it.start), pos(it.pos), end(it.end) {
+inline Dcel::Face::ConstAdjacentFaceIterator::ConstAdjacentFaceIterator(const Dcel::Face::AdjacentFaceIterator& it) : ConstGenericIterator(it) {
 }
 
 //Public Operators
@@ -930,95 +933,6 @@ inline Dcel::Face::ConstAdjacentFaceIterator::ConstAdjacentFaceIterator(const Dc
  */
 inline const Dcel::Face* Dcel::Face::ConstAdjacentFaceIterator::operator * () const {
     return pos->getTwin()->getFace();
-}
-
-/**
- * \~Italian
- * @brief Operatore di uguaglianza tra AdjacentFaceIterator.
- *
- * Due AdjacentFaceIterator sono considerati uguali se:
- * - puntano allo stesso half edge;
- * - iterano sulla stessa faccia.
- *
- *
- * @param[in] otherIterator: iteratore con cui è verificata l'uguaglianza con this
- * @return True se gli iteratori sono uguali, false altrimenti
- */
-inline bool Dcel::Face::ConstAdjacentFaceIterator::operator == (const Dcel::Face::ConstAdjacentFaceIterator& otherIterator) const {
-    if (this->pos == otherIterator.pos && this->f == otherIterator.f) return true;
-    return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra AdjacentFaceIterator
- * @param[in] otherIterator: iteratore con cui è verificata la disuguaglianza con this
- * @return True se gli iteratori sono diversi, false altrimenti
- */
-inline bool Dcel::Face::ConstAdjacentFaceIterator::operator != (const Dcel::Face::ConstAdjacentFaceIterator& otherIterator) const {
-    return !(*this == otherIterator);
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso dell'AdjacentFaceIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Face::ConstAdjacentFaceIterator Dcel::Face::ConstAdjacentFaceIterator::operator ++ () {
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso dell'AdjacentFaceIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Face::ConstAdjacentFaceIterator Dcel::Face::ConstAdjacentFaceIterator::operator ++ (int) {
-    ConstAdjacentFaceIterator old_value = *this;
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso dell'AdjacentFaceIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Face::ConstAdjacentFaceIterator Dcel::Face::ConstAdjacentFaceIterator::operator -- () {
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso dell'AdjacentFaceIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere decrementato
- */
-inline Dcel::Face::ConstAdjacentFaceIterator Dcel::Face::ConstAdjacentFaceIterator::operator -- (int) {
-    ConstAdjacentFaceIterator old_value = *this;
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return old_value;
 }
 
 //Protected Constructor
@@ -1038,7 +952,7 @@ inline Dcel::Face::ConstAdjacentFaceIterator Dcel::Face::ConstAdjacentFaceIterat
  * @param[in] end: half edge di end
  * @param[in] f: faccia su cui vengono iterati gli half edge incidenti
  */
-inline Dcel::Face::ConstAdjacentFaceIterator::ConstAdjacentFaceIterator(const HalfEdge* start, const HalfEdge* end, const Face* f) : f(f), start(start), pos(start), end(end) {
+inline Dcel::Face::ConstAdjacentFaceIterator::ConstAdjacentFaceIterator(const HalfEdge* start, const HalfEdge* end, const Face* f) : ConstGenericIterator(start, end, f) {
 }
 
 /****************************************
@@ -1052,7 +966,7 @@ inline Dcel::Face::ConstAdjacentFaceIterator::ConstAdjacentFaceIterator(const Ha
  * @brief Costruttore vuoto.
  * Un iteratore inizializzato con questo costruttore non è utilizzabile.
  */
-inline Dcel::Face::IncidentHalfEdgeIterator::IncidentHalfEdgeIterator() : f(nullptr), start(nullptr), pos(nullptr), end(nullptr) {
+inline Dcel::Face::IncidentHalfEdgeIterator::IncidentHalfEdgeIterator() : GenericIterator() {
 }
 
 //Public Operators
@@ -1064,95 +978,6 @@ inline Dcel::Face::IncidentHalfEdgeIterator::IncidentHalfEdgeIterator() : f(null
  */
 inline Dcel::HalfEdge* Dcel::Face::IncidentHalfEdgeIterator::operator * () const {
     return pos;
-}
-
-/**
- * \~Italian
- * @brief Operatore di uguaglianza tra IncidentHalfEdgeIterator.
- *
- * Due IncidentHalfEdgeIterator sono considerati uguali se:
- * - puntano allo stesso half edge;
- * - iterano sulla stessa faccia.
- *
- *
- * @param[in] otherIterator: iteratore con cui è verificata l'uguaglianza con this
- * @return True se gli iteratori sono uguali, false altrimenti
- */
-inline bool Dcel::Face::IncidentHalfEdgeIterator::operator == (const Dcel::Face::IncidentHalfEdgeIterator& otherIterator) const {
-    if (this->pos == otherIterator.pos && this->f == otherIterator.f) return true;
-    return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra IncidentHalfEdgeIterator
- * @param[in] otherIterator: iteratore con cui è verificata la disuguaglianza con this
- * @return True se gli iteratori sono diversi, false altrimenti
- */
-inline bool Dcel::Face::IncidentHalfEdgeIterator::operator != (const Dcel::Face::IncidentHalfEdgeIterator& otherIterator) const {
-    return !(*this == otherIterator);
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso dell'IncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Face::IncidentHalfEdgeIterator Dcel::Face::IncidentHalfEdgeIterator::operator ++ () {
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso dell'IncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Face::IncidentHalfEdgeIterator Dcel::Face::IncidentHalfEdgeIterator::operator ++ (int) {
-    IncidentHalfEdgeIterator old_value = *this;
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso dell'IncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Face::IncidentHalfEdgeIterator Dcel::Face::IncidentHalfEdgeIterator::operator -- () {
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso dell'IncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere decrementato
- */
-inline Dcel::Face::IncidentHalfEdgeIterator Dcel::Face::IncidentHalfEdgeIterator::operator -- (int) {
-    IncidentHalfEdgeIterator old_value = *this;
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return old_value;
 }
 
 //Protected Constructor
@@ -1172,7 +997,7 @@ inline Dcel::Face::IncidentHalfEdgeIterator Dcel::Face::IncidentHalfEdgeIterator
  * @param[in] end: half edge di end
  * @param[in] f: faccia su cui vengono iterati gli half edge incidenti
  */
-inline Dcel::Face::IncidentHalfEdgeIterator::IncidentHalfEdgeIterator(HalfEdge* start, HalfEdge* end, Face* f) : f(f), start(start), pos(start), end(end) {
+inline Dcel::Face::IncidentHalfEdgeIterator::IncidentHalfEdgeIterator(HalfEdge* start, HalfEdge* end, Face* f) : GenericIterator(start, end, f) {
 }
 
 /*********************************************
@@ -1186,7 +1011,7 @@ inline Dcel::Face::IncidentHalfEdgeIterator::IncidentHalfEdgeIterator(HalfEdge* 
  * @brief Costruttore vuoto.
  * Un iteratore inizializzato con questo costruttore non è utilizzabile.
  */
-inline Dcel::Face::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator() : f(nullptr), start(nullptr), pos(nullptr), end(nullptr) {
+inline Dcel::Face::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator() : ConstGenericIterator() {
 }
 
 /**
@@ -1196,7 +1021,7 @@ inline Dcel::Face::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator(
  * Inizializza un ConstIncidentHalfEdgeIterator pari all'IncidentHalfEdgeIterator passato in input.
  * @param[in] it: iteratore di cui ne verrà fatta una copia
  */
-inline Dcel::Face::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator(const Dcel::Face::IncidentHalfEdgeIterator& it) : f(it.f), start (it.start), pos(it.pos), end(it.end) {
+inline Dcel::Face::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator(const Dcel::Face::IncidentHalfEdgeIterator& it) : ConstGenericIterator(it) {
 }
 
 //Public Operators
@@ -1208,95 +1033,6 @@ inline Dcel::Face::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator(
  */
 inline const Dcel::HalfEdge *Dcel::Face::ConstIncidentHalfEdgeIterator::operator * () const {
     return pos;
-}
-
-/**
- * \~Italian
- * @brief Operatore di uguaglianza tra ConstIncidentHalfEdgeIterator.
- *
- * Due ConstIncidentHalfEdgeIterator sono considerati uguali se:
- * - puntano allo stesso half edge;
- * - iterano sulla stessa faccia.
- *
- *
- * @param[in] otherIterator: iteratore con cui è verificata l'uguaglianza con this
- * @return True se gli iteratori sono uguali, false altrimenti
- */
-inline bool Dcel::Face::ConstIncidentHalfEdgeIterator::operator == (const ConstIncidentHalfEdgeIterator& otherIterator) const {
-    if (this->pos == otherIterator.pos && this->f == otherIterator.f) return true;
-    return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra ConstIncidentHalfEdgeIterator
- * @param[in] otherIterator: iteratore con cui è verificata la disuguaglianza con this
- * @return True se gli iteratori sono diversi, false altrimenti
- */
-inline bool Dcel::Face::ConstIncidentHalfEdgeIterator::operator !=(const ConstIncidentHalfEdgeIterator& otherIterator) const {
-    return !(*this == otherIterator);
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso del ConstIncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Face::ConstIncidentHalfEdgeIterator Dcel::Face::ConstIncidentHalfEdgeIterator::operator ++ () {
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso del ConstIncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Face::ConstIncidentHalfEdgeIterator Dcel::Face::ConstIncidentHalfEdgeIterator::operator ++ (int) {
-    ConstIncidentHalfEdgeIterator old_value = *this;
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso del ConstIncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Face::ConstIncidentHalfEdgeIterator Dcel::Face::ConstIncidentHalfEdgeIterator::operator -- () {
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso del ConstIncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere decrementato
- */
-inline Dcel::Face::ConstIncidentHalfEdgeIterator Dcel::Face::ConstIncidentHalfEdgeIterator::operator -- (int) {
-    ConstIncidentHalfEdgeIterator old_value = *this;
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return old_value;
 }
 
 //Protected Constructor
@@ -1316,7 +1052,7 @@ inline Dcel::Face::ConstIncidentHalfEdgeIterator Dcel::Face::ConstIncidentHalfEd
  * @param[in] end: half edge di end
  * @param[in] f: faccia su cui vengono iterati gli half edge incidenti
  */
-inline Dcel::Face::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator(const HalfEdge* start, const HalfEdge* end, const Face* f) : f(f), start(start), pos(start), end(end) {
+inline Dcel::Face::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator(const HalfEdge* start, const HalfEdge* end, const Face* f) : ConstGenericIterator(start, end, f) {
 }
 
 /**************************************
@@ -1330,7 +1066,7 @@ inline Dcel::Face::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator(
  * @brief Costruttore vuoto.
  * Un iteratore inizializzato con questo costruttore non è utilizzabile.
  */
-inline Dcel::Face::IncidentVertexIterator::IncidentVertexIterator() : f(nullptr), start(nullptr), pos(nullptr), end(nullptr) {
+inline Dcel::Face::IncidentVertexIterator::IncidentVertexIterator() : GenericIterator() {
 }
 
 //Public Operators
@@ -1342,95 +1078,6 @@ inline Dcel::Face::IncidentVertexIterator::IncidentVertexIterator() : f(nullptr)
  */
 inline Dcel::Vertex* Dcel::Face::IncidentVertexIterator::operator * () const {
     return this->pos->getToVertex();
-}
-
-/**
- * \~Italian
- * @brief Operatore di uguaglianza tra IncidentVertexIterator.
- *
- * Due IncidentVertexIterator sono considerati uguali se:
- * - puntano allo stesso vertice (posizione sullo stesso half edge);
- * - iterano sulla stessa faccia.
- *
- *
- * @param[in] otherIterator: iteratore con cui è verificata l'uguaglianza con this
- * @return True se gli iteratori sono uguali, false altrimenti
- */
-inline bool Dcel::Face::IncidentVertexIterator::operator == (const Dcel::Face::IncidentVertexIterator& otherIterator) const {
-    if (this->pos == otherIterator.pos && this->f == otherIterator.f) return true;
-    return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra IncidentVertexIterator
- * @param[in] otherIterator: iteratore con cui è verificata la disuguaglianza con this
- * @return true se gli iteratori sono diversi, false altrimenti
- */
-inline bool Dcel::Face::IncidentVertexIterator::operator != (const Dcel::Face::IncidentVertexIterator& otherIterator) const {
-    return !(*this == otherIterator);
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso dell'IncidentVertexIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Face::IncidentVertexIterator Dcel::Face::IncidentVertexIterator::operator ++ () {
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso dell'IncidentVertexIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Face::IncidentVertexIterator Dcel::Face::IncidentVertexIterator::operator ++ (int) {
-    IncidentVertexIterator old_value = *this;
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso dell'IncidentVertexIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Face::IncidentVertexIterator Dcel::Face::IncidentVertexIterator::operator -- () {
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso dell'IncidentVertexIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere decrementato
- */
-inline Dcel::Face::IncidentVertexIterator Dcel::Face::IncidentVertexIterator::operator -- (int) {
-    IncidentVertexIterator old_value = *this;
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return old_value;
 }
 
 //Protected Constructor
@@ -1450,7 +1097,7 @@ inline Dcel::Face::IncidentVertexIterator Dcel::Face::IncidentVertexIterator::op
  * @param[in] end: half edge di end
  * @param[in] f: faccia su cui vengono iterati gli half edge incidenti
  */
-inline Dcel::Face::IncidentVertexIterator::IncidentVertexIterator(HalfEdge* start, HalfEdge* end, Face* f) : f(f), start(start), pos(start), end(end) {
+inline Dcel::Face::IncidentVertexIterator::IncidentVertexIterator(HalfEdge* start, HalfEdge* end, Face* f) : GenericIterator(start, end, f) {
 }
 
 /*******************************************
@@ -1464,7 +1111,7 @@ inline Dcel::Face::IncidentVertexIterator::IncidentVertexIterator(HalfEdge* star
  * @brief Costruttore vuoto.
  * Un iteratore inizializzato con questo costruttore non è utilizzabile.
  */
-inline Dcel::Face::ConstIncidentVertexIterator::ConstIncidentVertexIterator() : f(nullptr), start(nullptr), pos(nullptr), end(nullptr) {
+inline Dcel::Face::ConstIncidentVertexIterator::ConstIncidentVertexIterator() : ConstGenericIterator() {
 }
 
 /**
@@ -1474,7 +1121,7 @@ inline Dcel::Face::ConstIncidentVertexIterator::ConstIncidentVertexIterator() : 
  * Inizializza un ConstIncidentVertexIterator pari all'IncidentVertexIterator passato in input.
  * @param[in] it: iteratore di cui ne verrà fatta una copia
  */
-inline Dcel::Face::ConstIncidentVertexIterator::ConstIncidentVertexIterator(const Dcel::Face::IncidentVertexIterator& it) : f(it.f), start(it.start), pos(it.pos), end(it.end) {
+inline Dcel::Face::ConstIncidentVertexIterator::ConstIncidentVertexIterator(const Dcel::Face::IncidentVertexIterator& it) : ConstGenericIterator(it) {
 }
 
 //Public Operators
@@ -1486,95 +1133,6 @@ inline Dcel::Face::ConstIncidentVertexIterator::ConstIncidentVertexIterator(cons
  */
 inline const Dcel::Vertex *Dcel::Face::ConstIncidentVertexIterator::operator * () const {
     return this->pos->getToVertex();
-}
-
-/**
- * \~Italian
- * @brief Operatore di uguaglianza tra ConstIncidentVertexIterator.
- *
- * Due IncidentVertexIterator sono considerati uguali se:
- * - puntano allo stesso vertice (posizione sullo stesso half edge);
- * - iterano sulla stessa faccia.
- *
- *
- * @param[in] otherIterator: iteratore con cui è verificata l'uguaglianza con this
- * @return True se gli iteratori sono uguali, false altrimenti
- */
-inline bool Dcel::Face::ConstIncidentVertexIterator::operator == (const ConstIncidentVertexIterator& otherIterator) const {
-    if (this->pos == otherIterator.pos && this->f == otherIterator.f) return true;
-    return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra ConstIncidentVertexIterator
- * @param[in] otherIterator: iteratore con cui è verificata la disuguaglianza con this
- * @return True se gli iteratori sono diversi, false altrimenti
- */
-inline bool Dcel::Face::ConstIncidentVertexIterator::operator != (const ConstIncidentVertexIterator& otherIterator) const {
-    return !(*this == otherIterator);
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso dell'ConstIncidentVertexIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Face::ConstIncidentVertexIterator Dcel::Face::ConstIncidentVertexIterator::operator ++ () {
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso dell'ConstIncidentVertexIterator.
- *
- * Esegue un'operazione di \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Face::ConstIncidentVertexIterator Dcel::Face::ConstIncidentVertexIterator::operator ++ (int) {
-    ConstIncidentVertexIterator old_value = *this;
-    pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso dell'ConstIncidentVertexIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Face::ConstIncidentVertexIterator Dcel::Face::ConstIncidentVertexIterator::operator -- () {
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso dell'ConstIncidentVertexIterator.
- *
- * Esegue un'operazione di \c prev() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere decrementato
- */
-inline Dcel::Face::ConstIncidentVertexIterator Dcel::Face::ConstIncidentVertexIterator::operator --(int) {
-    ConstIncidentVertexIterator old_value = *this;
-    pos = pos->getPrev();
-    if (pos == end) pos = nullptr;
-    return old_value;
 }
 
 //Protected Constructor
@@ -1594,7 +1152,7 @@ inline Dcel::Face::ConstIncidentVertexIterator Dcel::Face::ConstIncidentVertexIt
  * @param[in] end: half edge di end
  * @param[in] f: faccia su cui vengono iterati gli half edge incidenti
  */
-inline Dcel::Face::ConstIncidentVertexIterator::ConstIncidentVertexIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Face* f) :f(f), start(start), pos(start), end(end) {
+inline Dcel::Face::ConstIncidentVertexIterator::ConstIncidentVertexIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Face* f) : ConstGenericIterator(start, end, f) {
 }
 
 #endif // DCEL_FACE_ITERATORS_H

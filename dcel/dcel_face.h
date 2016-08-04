@@ -197,6 +197,7 @@ class Dcel::Face {
     protected:
 
         class GenericIterator;
+        class ConstGenericIterator;
 
         /*************
         * Attributes *
