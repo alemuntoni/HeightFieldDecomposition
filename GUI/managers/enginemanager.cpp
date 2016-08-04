@@ -1189,7 +1189,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        /*IGLMesh m(*d);
+        IGLMesh m(*d);
         m.saveOnObj("prova/model.obj");
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
             SimpleIGLMesh bb;
@@ -1197,7 +1197,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
             std::stringstream ss;
             ss << "prova/box" << i << ".obj";
             bb.saveOnObj(ss.str());
-        }*/
+        }
     }
 }
 
@@ -1215,6 +1215,10 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
             scaled[i] = *d;
             m[i] = Engine::rotateDcelAlreadyScaled(scaled[i], i);
         }
+
+        if (ui->onlyNearestTargetCheckBox->isChecked())
+            Engine::setTrianglesTargets(scaled);
+
         if (!ui->heightfieldsCheckBox->isChecked()){
             Grid g[ORIENTATIONS];
             BoxList bl[ORIENTATIONS];
@@ -1243,7 +1247,11 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
 
                 for (unsigned int i = 0; i < ORIENTATIONS; i++){
                     std::cerr << "Calculating Boxes\n";
-                    Engine::calculateDecimatedBoxes(tmp[i],scaled[i], faces[i], coveredFaces, m[i]);
+                    if (ui->onlyNearestTargetCheckBox->isChecked()){
+                        Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i], i);
+                    }
+                    else
+                        Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i]);
                     std::cerr << "Starting boxes growth\n";
                     Engine::expandBoxes(tmp[i], g[i], true);
                     std::cerr << "Orientation: " << i << " completed.\n";
@@ -1314,7 +1322,11 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
                 for (unsigned int i = 0; i < ORIENTATIONS; ++i){
                     for (unsigned int j = 0; j < TARGETS; ++j){
                         std::cerr << "Calculating Boxes\n";
-                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], true, XYZ[j]);
+                        if (ui->onlyNearestTargetCheckBox->isChecked()){
+                            Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], i, true, XYZ[j]);
+                        }
+                        else
+                            Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, true, XYZ[j]);
                         std::cerr << "Starting boxes growth\n";
                         Engine::expandBoxes(tmp[i][j], g[i][j]);
                         std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";

@@ -33,18 +33,18 @@ Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
                 getRotationMatrix(Vec3(0,0,-1), 0.785398, m);
                 break;
             case 2:
-                getRotationMatrix(Vec3(1,0,0), 0.785398, m);
-                d.rotate(m);
-                d.updateFaceNormals();
-                d.updateVertexNormals();
-                getRotationMatrix(Vec3(-1,0,0), 0.785398, m);
-                break;
-            case 3:
                 getRotationMatrix(Vec3(0,1,0), 0.785398, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 getRotationMatrix(Vec3(0,-1,0), 0.785398, m);
+                break;
+            case 3:
+                getRotationMatrix(Vec3(1,0,0), 0.785398, m);
+                d.rotate(m);
+                d.updateFaceNormals();
+                d.updateVertexNormals();
+                getRotationMatrix(Vec3(-1,0,0), 0.785398, m);
                 break;
             default:
                 assert(0);
@@ -84,7 +84,45 @@ void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool he
     e.calculateFullBoxValues(g);
 }
 
-void Engine::calculateDecimatedBoxes(BoxList& boxList, const Dcel& d, const Eigen::VectorXi &mapping, const std::set<int>& coveredFaces, const Eigen::Matrix3d& rot, bool onlyTarget, const Vec3& target) {
+void Engine::setTrianglesTargets(Dcel scaled[]) {
+    for (Dcel::FaceIterator fit = scaled[0].faceBegin(); fit != scaled[0].faceEnd(); ++fit){
+        Vec3 n = (*fit)->getNormal();
+        double angle = n.dot(XYZ[0]);
+        int k = 0;
+        for (unsigned int i = 1; i < 18; i++){
+            if (n.dot(XYZ[i]) > angle){
+                angle = n.dot(XYZ[i]);
+                k = i;
+            }
+        }
+        if (k < 6){
+            (*fit)->setFlag(0);
+            scaled[1].getFace((*fit)->getId())->setFlag(0);
+            scaled[2].getFace((*fit)->getId())->setFlag(0);
+            scaled[3].getFace((*fit)->getId())->setFlag(0);
+        }
+        else if (k < 10) {
+            (*fit)->setFlag(1);
+            scaled[1].getFace((*fit)->getId())->setFlag(1);
+            scaled[2].getFace((*fit)->getId())->setFlag(1);
+            scaled[3].getFace((*fit)->getId())->setFlag(1);
+        }
+        else if (k < 14) {
+            (*fit)->setFlag(2);
+            scaled[1].getFace((*fit)->getId())->setFlag(2);
+            scaled[2].getFace((*fit)->getId())->setFlag(2);
+            scaled[3].getFace((*fit)->getId())->setFlag(2);
+        }
+        else if (k < 18) {
+            (*fit)->setFlag(3);
+            scaled[1].getFace((*fit)->getId())->setFlag(3);
+            scaled[2].getFace((*fit)->getId())->setFlag(3);
+            scaled[3].getFace((*fit)->getId())->setFlag(3);
+        }
+    }
+}
+
+void Engine::calculateDecimatedBoxes(BoxList& boxList, const Dcel& d, const Eigen::VectorXi &mapping, const std::set<int>& coveredFaces, const Eigen::Matrix3d& rot, int orientation, bool onlyTarget, const Vec3& target) {
     std::vector<int> facesToCover;
     for (unsigned int i = 0; i < mapping.size(); i++){
         if (coveredFaces.find(mapping(i)) == coveredFaces.end()){
@@ -97,27 +135,29 @@ void Engine::calculateDecimatedBoxes(BoxList& boxList, const Dcel& d, const Eige
         Vec3 n =f->getNormal();
         Vec3 closestTarget = getClosestTarget(n);
         if (!onlyTarget || (onlyTarget && closestTarget == target)){
-            Box3D box;
-            box.setTarget(closestTarget);
-            Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
-            Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
-            Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
-            Pointd bmin = p1;
-            bmin = bmin.min(p2);
-            bmin = bmin.min(p3);
-            bmin = bmin - 1;
-            Pointd bmax = p1;
-            bmax = bmax.max(p2);
-            bmax = bmax.max(p3);
-            bmax = bmax + 1;
-            box.setMin(bmin);
-            box.setMax(bmax);
-            box.setColor(colorOfNormal(closestTarget));
-            box.setConstraint1(p1);
-            box.setConstraint2(p2);
-            box.setConstraint3(p3);
-            box.setRotationMatrix(rot);
-            boxList.addBox(box);
+            if (orientation<0 || f->getFlag()==orientation){
+                Box3D box;
+                box.setTarget(closestTarget);
+                Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
+                Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
+                Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
+                Pointd bmin = p1;
+                bmin = bmin.min(p2);
+                bmin = bmin.min(p3);
+                bmin = bmin - 1;
+                Pointd bmax = p1;
+                bmax = bmax.max(p2);
+                bmax = bmax.max(p3);
+                bmax = bmax + 1;
+                box.setMin(bmin);
+                box.setMax(bmax);
+                box.setColor(colorOfNormal(closestTarget));
+                box.setConstraint1(p1);
+                box.setConstraint2(p2);
+                box.setConstraint3(p3);
+                box.setRotationMatrix(rot);
+                boxList.addBox(box);
+            }
         }
     }
 }
@@ -166,8 +206,8 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool printTimes) {
             ss << "Minimization " << i << " box";
             t = Timer(ss.str());
         }
-        e.gradientDiscend(b);
-        //e.BFGS(b);
+        //e.gradientDiscend(b);
+        e.BFGS(b);
         if (printTimes){
             t.stopAndPrint();
             std::cerr << "Total: " << total.delay() << "\n\n";
