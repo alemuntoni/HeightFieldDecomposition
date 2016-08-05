@@ -220,7 +220,7 @@ class Dcel::Face::AdjacentFaceIterator : public Dcel::Face::GenericIterator{
  *
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
-class Dcel::Face::ConstAdjacentFaceIterator : public ConstGenericIterator {
+class Dcel::Face::ConstAdjacentFaceIterator : public Dcel::Face::ConstGenericIterator {
 
         friend class Dcel::Face;
 
@@ -333,7 +333,7 @@ class Dcel::Face::IncidentHalfEdgeIterator : public Dcel::Face::GenericIterator 
  *
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
-class Dcel::Face::ConstIncidentHalfEdgeIterator : public ConstGenericIterator {
+class Dcel::Face::ConstIncidentHalfEdgeIterator : public Dcel::Face::ConstGenericIterator {
 
         friend class Dcel::Face;
 
@@ -450,7 +450,7 @@ class Dcel::Face::IncidentVertexIterator : public Dcel::Face::GenericIterator {
  *
  * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
  */
-class Dcel::Face::ConstIncidentVertexIterator : public ConstGenericIterator {
+class Dcel::Face::ConstIncidentVertexIterator : public Dcel::Face::ConstGenericIterator {
 
         friend class Dcel::Face;
 

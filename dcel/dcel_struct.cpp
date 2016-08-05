@@ -19,7 +19,7 @@
  *
  * Crea una Dcel vuota, con 0 vertici, 0 half edge e 0 facce.
  */
-Dcel::Dcel() : nVertices(0), nHalfEdges(0), nFaces(0), vertexList(this), halfEdgeList(this), faceList(this) {
+Dcel::Dcel() : nVertices(0), nHalfEdges(0), nFaces(0) {
 }
 
 /**
@@ -31,7 +31,7 @@ Dcel::Dcel() : nVertices(0), nHalfEdges(0), nFaces(0), vertexList(this), halfEdg
  * tutte le relazioni tra essi.
  * @param[in] dcel: dcel da cui verrà creata la Dcel this.
  */
-Dcel::Dcel(const Dcel& dcel) : vertexList(this), halfEdgeList(this), faceList(this) {
+Dcel::Dcel(const Dcel& dcel) {
     copyFrom(dcel);
 }
 

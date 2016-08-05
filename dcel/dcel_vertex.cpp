@@ -22,7 +22,7 @@
  * - id pari a 0;
  * - flag pari a 0.
  */
-Dcel::Vertex::Vertex() : incidentHalfEdge(nullptr), cardinality(0), id(0), flag(0) {
+Dcel::Vertex::Vertex() : incidentHalfEdge(nullptr), cardinality(0), id(0), flag(0){
 }
 
 /**
@@ -187,7 +187,7 @@ std::string Dcel::Vertex::toString() const {
  * @return Un iteratore che punta al toVertex dell'incidentHalfEdge
  */
 Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin() const {
-    return ConstAdjacentVertexIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(ConstAdjacentVertexIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -199,7 +199,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin() co
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexEnd() const {
-    return ConstAdjacentVertexIterator(nullptr, nullptr, this);
+    return std::move(ConstAdjacentVertexIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -219,7 +219,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(cons
         assert(0);
     }
     #endif
-    return ConstAdjacentVertexIterator(start, start, this);
+    return std::move(ConstAdjacentVertexIterator(start, start, this));
 }
 
 /**
@@ -244,7 +244,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(cons
         assert(0);
     }
     #endif
-    return ConstAdjacentVertexIterator(start, end, this);
+    return std::move(ConstAdjacentVertexIterator(start, end, this));
 }
 
 /**
@@ -271,7 +271,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(cons
     std::cerr << "ERROR: start vertex " << start->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
     #endif
-    return ConstAdjacentVertexIterator();
+    return std::move(ConstAdjacentVertexIterator());
 }
 
 /**
@@ -307,7 +307,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(cons
     std::cerr << "ERROR: end vertex " << end->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
     #endif
-    return ConstAdjacentVertexIterator();
+    return std::move(ConstAdjacentVertexIterator());
 }
 
 /**
@@ -319,7 +319,7 @@ Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(cons
  * @return Un iteratore che punta all'incidentHalfEdge del vertice
  */
 Dcel::Vertex::ConstOutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeBegin() const {
-    return ConstOutgoingHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(ConstOutgoingHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -331,7 +331,7 @@ Dcel::Vertex::ConstOutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeBegin(
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::ConstOutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeEnd() const {
-    return ConstOutgoingHalfEdgeIterator(nullptr, nullptr, this);
+    return std::move(ConstOutgoingHalfEdgeIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -351,7 +351,7 @@ Dcel::Vertex::ConstOutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeBegin(
         assert(0);
     }
     #endif
-    return ConstOutgoingHalfEdgeIterator(start, start, this);
+    return std::move(ConstOutgoingHalfEdgeIterator(start, start, this));
 }
 
 /**
@@ -376,7 +376,7 @@ Dcel::Vertex::ConstOutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeBegin(
         assert(0);
     }
     #endif
-    return ConstOutgoingHalfEdgeIterator(start, end, this);
+    return std::move(ConstOutgoingHalfEdgeIterator(start, end, this));
 }
 
 /**
@@ -388,7 +388,7 @@ Dcel::Vertex::ConstOutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeBegin(
  * @return Un iteratore che punta al twin dell'incidentHalfEdge del vertice
  */
 Dcel::Vertex::ConstIncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeBegin() const {
-    return ConstIncomingHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(ConstIncomingHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -400,7 +400,7 @@ Dcel::Vertex::ConstIncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeBegin(
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::ConstIncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeEnd() const {
-    return ConstIncomingHalfEdgeIterator(nullptr, nullptr, this);
+    return std::move(ConstIncomingHalfEdgeIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -420,7 +420,7 @@ Dcel::Vertex::ConstIncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeBegin(
         assert(0);
     }
     #endif
-    return ConstIncomingHalfEdgeIterator(start->getTwin(), start->getTwin(), this);
+    return std::move(ConstIncomingHalfEdgeIterator(start->getTwin(), start->getTwin(), this));
 }
 
 /**
@@ -445,7 +445,7 @@ Dcel::Vertex::ConstIncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeBegin(
         assert(0);
     }
     #endif
-    return ConstIncomingHalfEdgeIterator(start->getTwin(), end->getTwin(), this);
+    return std::move(ConstIncomingHalfEdgeIterator(start->getTwin(), end->getTwin(), this));
 }
 
 /**
@@ -457,7 +457,7 @@ Dcel::Vertex::ConstIncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeBegin(
  * @return Un iteratore che punta all'incidentHalfEdge del vertice
  */
 Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegin() const {
-    return ConstIncidentHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(ConstIncidentHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -469,7 +469,7 @@ Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegin(
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeEnd() const {
-    return ConstIncidentHalfEdgeIterator(nullptr, nullptr, this);
+    return std::move(ConstIncidentHalfEdgeIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -489,7 +489,7 @@ Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegin(
         assert(0);
     }
     #endif
-    return ConstIncidentHalfEdgeIterator(start, start, this);
+    return std::move(ConstIncidentHalfEdgeIterator(start, start, this));
 }
 
 /**
@@ -514,7 +514,7 @@ Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegin(
         assert(0);
     }
     #endif
-    return ConstIncidentHalfEdgeIterator(start, end, this);
+    return std::move(ConstIncidentHalfEdgeIterator(start, end, this));
 }
 
 /**
@@ -526,7 +526,7 @@ Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegin(
  * @return Un iteratore che punta alla faccia incidente sull'incidentHalfEdge del vertice
  */
 Dcel::Vertex::ConstIncidentFaceIterator Dcel::Vertex::incidentFaceBegin() const {
-    return ConstIncidentFaceIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(ConstIncidentFaceIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -538,7 +538,7 @@ Dcel::Vertex::ConstIncidentFaceIterator Dcel::Vertex::incidentFaceBegin() const 
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::ConstIncidentFaceIterator Dcel::Vertex::incidentFaceEnd() const {
-    return ConstIncidentFaceIterator(nullptr, nullptr, this);
+    return std::move(ConstIncidentFaceIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -558,7 +558,7 @@ Dcel::Vertex::ConstIncidentFaceIterator Dcel::Vertex::incidentFaceBegin(const Ha
         assert(0);
     }
     #endif
-    return ConstIncidentFaceIterator(start, start, this);
+    return std::move(ConstIncidentFaceIterator(start, start, this));
 }
 
 /**
@@ -583,7 +583,7 @@ Dcel::Vertex::ConstIncidentFaceIterator Dcel::Vertex::incidentFaceBegin(const Ha
         assert(0);
     }
     #endif
-    return ConstIncidentFaceIterator(start, end, this);
+    return std::move(ConstIncidentFaceIterator(start, end, this));
 }
 
 /**
@@ -657,7 +657,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin() {
     #ifdef DEBUG
     checkIncidentHalfEdge();
     #endif
-    return AdjacentVertexIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(AdjacentVertexIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -669,7 +669,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin() {
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexEnd() {
-    return AdjacentVertexIterator(nullptr, nullptr, this);
+    return std::move(AdjacentVertexIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -689,7 +689,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(HalfEdge*
         assert(0);
     }
     #endif
-    return AdjacentVertexIterator(start, start, this);
+    return std::move(AdjacentVertexIterator(start, start, this));
 }
 
 /**
@@ -714,7 +714,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(HalfEdge*
         assert(0);
     }
     #endif
-    return AdjacentVertexIterator(start, end, this);
+    return std::move(AdjacentVertexIterator(start, end, this));
 }
 
 /**
@@ -739,7 +739,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(Vertex* s
     }
     std::cerr << "ERROR: start vertex " << start->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
-    return AdjacentVertexIterator();
+    return std::move(AdjacentVertexIterator());
 }
 
 /**
@@ -773,7 +773,7 @@ Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::adjacentVertexBegin(Vertex* s
     }
     std::cerr << "ERROR: end vertex " << end->getId() << " hasn't this vertex " << this->getId() << " as adjacent vertex.\n";
     assert(0);
-    return AdjacentVertexIterator();
+    return std::move(AdjacentVertexIterator());
 }
 
 /**
@@ -788,7 +788,7 @@ Dcel::Vertex::OutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeBegin() {
     #ifdef DEBUG
     checkIncidentHalfEdge();
     #endif
-    return OutgoingHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(OutgoingHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -800,7 +800,7 @@ Dcel::Vertex::OutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeBegin() {
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::OutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeEnd() {
-    return OutgoingHalfEdgeIterator(nullptr, nullptr, this);
+    return std::move(OutgoingHalfEdgeIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -820,7 +820,7 @@ Dcel::Vertex::OutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeBegin(HalfE
         assert(0);
     }
     #endif
-    return OutgoingHalfEdgeIterator(start, start, this);
+    return std::move(OutgoingHalfEdgeIterator(start, start, this));
 }
 
 /**
@@ -845,7 +845,7 @@ Dcel::Vertex::OutgoingHalfEdgeIterator Dcel::Vertex::outgoingHalfEdgeBegin(HalfE
         assert(0);
     }
     #endif
-    return OutgoingHalfEdgeIterator(start, end, this);
+    return std::move(OutgoingHalfEdgeIterator(start, end, this));
 }
 
 /**
@@ -860,7 +860,7 @@ Dcel::Vertex::IncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeBegin() {
     #ifdef DEBUG
     checkIncidentHalfEdge();
     #endif
-    return IncomingHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(IncomingHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -872,7 +872,7 @@ Dcel::Vertex::IncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeBegin() {
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::IncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeEnd() {
-    return IncomingHalfEdgeIterator(nullptr, nullptr, this);
+    return std::move(IncomingHalfEdgeIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -892,7 +892,7 @@ Dcel::Vertex::IncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeBegin(HalfE
         assert(0);
     }
     #endif
-    return IncomingHalfEdgeIterator(start->getTwin(), start->getTwin(), this);
+    return std::move(IncomingHalfEdgeIterator(start->getTwin(), start->getTwin(), this));
 }
 
 /**
@@ -917,7 +917,7 @@ Dcel::Vertex::IncomingHalfEdgeIterator Dcel::Vertex::incomingHalfEdgeBegin(HalfE
         assert(0);
     }
     #endif
-    return IncomingHalfEdgeIterator(start->getTwin(), end->getTwin(), this);
+    return std::move(IncomingHalfEdgeIterator(start->getTwin(), end->getTwin(), this));
 }
 
 /**
@@ -932,7 +932,7 @@ Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegin() {
     #ifdef DEBUG
     checkIncidentHalfEdge();
     #endif
-    return IncidentHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(IncidentHalfEdgeIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -944,7 +944,7 @@ Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegin() {
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeEnd() {
-    return IncidentHalfEdgeIterator(nullptr, nullptr, this);
+    return std::move(IncidentHalfEdgeIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -964,7 +964,7 @@ Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegin(HalfE
         assert(0);
     }
     #endif
-    return IncidentHalfEdgeIterator(start, start, this);
+    return std::move(IncidentHalfEdgeIterator(start, start, this));
 }
 
 /**
@@ -989,7 +989,7 @@ Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegin(HalfE
         assert(0);
     }
     #endif
-    return IncidentHalfEdgeIterator(start, end, this);
+    return std::move(IncidentHalfEdgeIterator(start, end, this));
 }
 
 /**
@@ -1004,7 +1004,7 @@ Dcel::Vertex::IncidentFaceIterator Dcel::Vertex::incidentFaceBegin() {
     #ifdef DEBUG
     checkIncidentHalfEdge();
     #endif
-    return IncidentFaceIterator(incidentHalfEdge, incidentHalfEdge, this);
+    return std::move(IncidentFaceIterator(incidentHalfEdge, incidentHalfEdge, this));
 }
 
 /**
@@ -1016,7 +1016,7 @@ Dcel::Vertex::IncidentFaceIterator Dcel::Vertex::incidentFaceBegin() {
  * @return Un iteratore di finalizzazione
  */
 Dcel::Vertex::IncidentFaceIterator Dcel::Vertex::incidentFaceEnd() {
-    return IncidentFaceIterator(nullptr, nullptr, this);
+    return std::move(IncidentFaceIterator(nullptr, nullptr, this));
 }
 
 /**
@@ -1036,7 +1036,7 @@ Dcel::Vertex::IncidentFaceIterator Dcel::Vertex::incidentFaceBegin(HalfEdge* sta
         assert(0);
     }
     #endif
-    return IncidentFaceIterator(start, start, this);
+    return std::move(IncidentFaceIterator(start, start, this));
 }
 
 /**
@@ -1061,5 +1061,85 @@ Dcel::Vertex::IncidentFaceIterator Dcel::Vertex::incidentFaceBegin(HalfEdge* sta
         assert(0);
     }
     #endif
-    return IncidentFaceIterator(start, end, this);
+    return std::move(IncidentFaceIterator(start, end, this));
+}
+
+Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::ConstAdjacentVertexRangeBasedIterator::begin() const {
+    return std::move(v->adjacentVertexBegin());
+}
+
+Dcel::Vertex::ConstAdjacentVertexIterator Dcel::Vertex::ConstAdjacentVertexRangeBasedIterator::end() const {
+    return std::move(v->adjacentVertexEnd());
+}
+
+Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::AdjacentVertexRangeBasedIterator::begin() {
+    return std::move(v->adjacentVertexBegin());
+}
+
+Dcel::Vertex::AdjacentVertexIterator Dcel::Vertex::AdjacentVertexRangeBasedIterator::end() {
+    return std::move(v->adjacentVertexEnd());
+}
+
+Dcel::Vertex::ConstOutgoingHalfEdgeIterator Dcel::Vertex::ConstOutgoingHalfEdgeRangeBasedIterator::begin() const {
+    return std::move(v->outgoingHalfEdgeBegin());
+}
+
+Dcel::Vertex::ConstOutgoingHalfEdgeIterator Dcel::Vertex::ConstOutgoingHalfEdgeRangeBasedIterator::end() const {
+    return std::move(v->outgoingHalfEdgeEnd());
+}
+
+Dcel::Vertex::OutgoingHalfEdgeIterator Dcel::Vertex::OutgoingHalfEdgeRangeBasedIterator::begin() {
+    return std::move(v->outgoingHalfEdgeBegin());
+}
+
+Dcel::Vertex::OutgoingHalfEdgeIterator Dcel::Vertex::OutgoingHalfEdgeRangeBasedIterator::end() {
+    return std::move(v->outgoingHalfEdgeEnd());
+}
+
+Dcel::Vertex::ConstIncomingHalfEdgeIterator Dcel::Vertex::ConstIncomingHalfEdgeRangeBasedIterator::begin() const {
+    return std::move(v->incomingHalfEdgeBegin());
+}
+
+Dcel::Vertex::ConstIncomingHalfEdgeIterator Dcel::Vertex::ConstIncomingHalfEdgeRangeBasedIterator::end() const {
+    return std::move(v->incomingHalfEdgeEnd());
+}
+
+Dcel::Vertex::IncomingHalfEdgeIterator Dcel::Vertex::IncomingHalfEdgeRangeBasedIterator::begin() {
+    return std::move(v->incomingHalfEdgeBegin());
+}
+
+Dcel::Vertex::IncomingHalfEdgeIterator Dcel::Vertex::IncomingHalfEdgeRangeBasedIterator::end() {
+    return std::move(v->incomingHalfEdgeEnd());
+}
+
+Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::ConstIncidentHalfEdgeRangeBasedIterator::begin() const {
+    return std::move(v->incidentHalfEdgeBegin());
+}
+
+Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::ConstIncidentHalfEdgeRangeBasedIterator::end() const {
+    return std::move(v->incidentHalfEdgeEnd());
+}
+
+Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeRangeBasedIterator::begin() {
+    return std::move(v->incidentHalfEdgeBegin());
+}
+
+Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeRangeBasedIterator::end() {
+    return std::move(v->incidentHalfEdgeEnd());
+}
+
+Dcel::Vertex::ConstIncidentFaceIterator Dcel::Vertex::ConstIncidentFaceRangeBasedIterator::begin() const {
+    return std::move(v->incidentFaceBegin());
+}
+
+Dcel::Vertex::ConstIncidentFaceIterator Dcel::Vertex::ConstIncidentFaceRangeBasedIterator::end() const {
+    return std::move(v->incidentFaceEnd());
+}
+
+Dcel::Vertex::IncidentFaceIterator Dcel::Vertex::IncidentFaceRangeBasedIterator::begin() {
+    return std::move(v->incidentFaceBegin());
+}
+
+Dcel::Vertex::IncidentFaceIterator Dcel::Vertex::IncidentFaceRangeBasedIterator::end() {
+    return std::move(v->incidentFaceEnd());
 }

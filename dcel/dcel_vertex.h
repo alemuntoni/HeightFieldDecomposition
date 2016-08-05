@@ -155,7 +155,121 @@ class Dcel::Vertex
         IncidentFaceIterator incidentFaceBegin(Dcel::HalfEdge* start);
         IncidentFaceIterator incidentFaceBegin(Dcel::HalfEdge* start, Dcel::HalfEdge* end);
 
+        class ConstAdjacentVertexRangeBasedIterator {
+                friend class Vertex;
+            public:
+                ConstAdjacentVertexIterator begin() const;
+                ConstAdjacentVertexIterator end() const;
+            private:
+                ConstAdjacentVertexRangeBasedIterator(const Vertex *v) : v(v) {}
+                const Vertex *v;
+        };
+
+        class ConstOutgoingHalfEdgeRangeBasedIterator {
+                friend class Vertex;
+            public:
+                ConstOutgoingHalfEdgeIterator begin() const;
+                ConstOutgoingHalfEdgeIterator end() const;
+            private:
+                ConstOutgoingHalfEdgeRangeBasedIterator(const Vertex *v) : v(v) {}
+                const Vertex *v;
+        };
+
+        class ConstIncomingHalfEdgeRangeBasedIterator {
+                friend class Vertex;
+            public:
+                ConstIncomingHalfEdgeIterator begin() const;
+                ConstIncomingHalfEdgeIterator end() const;
+            private:
+                ConstIncomingHalfEdgeRangeBasedIterator(const Vertex *v) : v(v) {}
+                const Vertex *v;
+        };
+
+        class ConstIncidentHalfEdgeRangeBasedIterator {
+                friend class Vertex;
+            public:
+                ConstIncidentHalfEdgeIterator begin() const;
+                ConstIncidentHalfEdgeIterator end() const;
+            private:
+                ConstIncidentHalfEdgeRangeBasedIterator(const Vertex *v) : v(v) {}
+                const Vertex *v;
+        };
+
+        class ConstIncidentFaceRangeBasedIterator {
+                friend class Vertex;
+            public:
+                ConstIncidentFaceIterator begin() const;
+                ConstIncidentFaceIterator end() const;
+            private:
+                ConstIncidentFaceRangeBasedIterator(const Vertex *v) : v(v) {}
+                const Vertex *v;
+        };
+
+        class AdjacentVertexRangeBasedIterator {
+                friend class Vertex;
+            public:
+                AdjacentVertexIterator begin();
+                AdjacentVertexIterator end();
+            private:
+                AdjacentVertexRangeBasedIterator(Vertex *v) : v(v) {}
+                Vertex *v;
+        };
+
+        class OutgoingHalfEdgeRangeBasedIterator {
+                friend class Vertex;
+            public:
+                OutgoingHalfEdgeIterator begin();
+                OutgoingHalfEdgeIterator end();
+            private:
+                OutgoingHalfEdgeRangeBasedIterator(Vertex *v) : v(v) {}
+                Vertex *v;
+        };
+
+        class IncomingHalfEdgeRangeBasedIterator {
+                friend class Vertex;
+            public:
+                IncomingHalfEdgeIterator begin();
+                IncomingHalfEdgeIterator end();
+            private:
+                IncomingHalfEdgeRangeBasedIterator(Vertex *v) : v(v) {}
+                Vertex *v;
+        };
+
+        class IncidentHalfEdgeRangeBasedIterator {
+                friend class Vertex;
+            public:
+                IncidentHalfEdgeIterator begin();
+                IncidentHalfEdgeIterator end();
+            private:
+                IncidentHalfEdgeRangeBasedIterator(Vertex *v) : v(v) {}
+                Vertex *v;
+        };
+
+        class IncidentFaceRangeBasedIterator {
+                friend class Vertex;
+            public:
+                IncidentFaceIterator begin();
+                IncidentFaceIterator end();
+            private:
+                IncidentFaceRangeBasedIterator(Vertex *v) : v(v) {}
+                Vertex *v;
+        };
+
+        const ConstAdjacentVertexRangeBasedIterator adjacentVertexIterator() const;
+        AdjacentVertexRangeBasedIterator adjacentVertexIterator();
+        const ConstOutgoingHalfEdgeRangeBasedIterator outgoingHalfEdgeIterator() const;
+        OutgoingHalfEdgeRangeBasedIterator outgoingHalfEdgeIterator();
+        const ConstIncomingHalfEdgeRangeBasedIterator incomingHalfEdgeIterator() const;
+        IncomingHalfEdgeRangeBasedIterator incomingHalfEdgeIterator();
+        const ConstIncidentHalfEdgeRangeBasedIterator incidentHalfEdgeIterator() const;
+        IncidentHalfEdgeRangeBasedIterator incidentHalfEdgeIterator();
+        const ConstIncidentFaceRangeBasedIterator incidentFaceIterator() const;
+        IncidentFaceRangeBasedIterator incidentFaceIterator();
+
     protected:
+
+        class GenericIterator;
+        class ConstGenericIterator;
 
         /*************
         * Attributes *
@@ -369,6 +483,46 @@ inline Dcel::HalfEdge* Dcel::Vertex::getIncidentHalfEdge() {
  */
 inline void Dcel::Vertex::setIncidentHalfEdge(HalfEdge* newIncidentHalfEdge ) {
     incidentHalfEdge = newIncidentHalfEdge;
+}
+
+inline const Dcel::Vertex::ConstAdjacentVertexRangeBasedIterator Dcel::Vertex::adjacentVertexIterator() const {
+    return std::move(ConstAdjacentVertexRangeBasedIterator(this));
+}
+
+inline Dcel::Vertex::AdjacentVertexRangeBasedIterator Dcel::Vertex::adjacentVertexIterator() {
+    return std::move(AdjacentVertexRangeBasedIterator(this));
+}
+
+inline const Dcel::Vertex::ConstOutgoingHalfEdgeRangeBasedIterator Dcel::Vertex::outgoingHalfEdgeIterator() const {
+    return std::move(ConstOutgoingHalfEdgeRangeBasedIterator(this));
+}
+
+inline Dcel::Vertex::OutgoingHalfEdgeRangeBasedIterator Dcel::Vertex::outgoingHalfEdgeIterator() {
+    return std::move(OutgoingHalfEdgeRangeBasedIterator(this));
+}
+
+inline const Dcel::Vertex::ConstIncomingHalfEdgeRangeBasedIterator Dcel::Vertex::incomingHalfEdgeIterator() const {
+    return std::move(ConstIncomingHalfEdgeRangeBasedIterator(this));
+}
+
+inline Dcel::Vertex::IncomingHalfEdgeRangeBasedIterator Dcel::Vertex::incomingHalfEdgeIterator() {
+    return std::move(IncomingHalfEdgeRangeBasedIterator(this));
+}
+
+inline const Dcel::Vertex::ConstIncidentHalfEdgeRangeBasedIterator Dcel::Vertex::incidentHalfEdgeIterator() const {
+    return std::move(ConstIncidentHalfEdgeRangeBasedIterator(this));
+}
+
+inline Dcel::Vertex::IncidentHalfEdgeRangeBasedIterator Dcel::Vertex::incidentHalfEdgeIterator() {
+    return std::move(IncidentHalfEdgeRangeBasedIterator(this));
+}
+
+inline const Dcel::Vertex::ConstIncidentFaceRangeBasedIterator Dcel::Vertex::incidentFaceIterator() const {
+    return std::move(ConstIncidentFaceRangeBasedIterator(this));
+}
+
+inline Dcel::Vertex::IncidentFaceRangeBasedIterator Dcel::Vertex::incidentFaceIterator() {
+    return std::move(IncidentFaceRangeBasedIterator(this));
 }
 
 /****************************
