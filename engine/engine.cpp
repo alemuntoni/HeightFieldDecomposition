@@ -79,22 +79,27 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
                 savedFaces.insert(f);
         }
     }
-    /*for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
-        if ((*fit)->getNormal().dot(target) < 0){
-            if ((*fit)->getNormal().dot(target) < dot)
-                flippedFaces.insert(*fit);
-            else
-                savedFaces.insert(*fit);
-        }
-    }*/
     if (areaThreshold > 0) {
         double totalArea = d.getSurfaceArea();
         areaThreshold*=totalArea;
         std::set<const Dcel::Face*> visitedFaces, connectedComponent;
         for (const Dcel::Face* f : flippedFaces){
-            connectedComponent.clear();
-            connectedComponent.insert(f);
-
+            if (visitedFaces.find(f) == visitedFaces.end()){
+                std::stack<const Dcel::Face* > stack;
+                stack.push(f);
+                connectedComponent.clear();
+                while (stack.size() > 0){
+                    const Dcel::Face* f = stack.top();
+                    stack.pop();
+                    connectedComponent.insert(f);
+                    visitedFaces.insert(f);
+                    for (const Dcel::Face* ad : f->adjacentFaceIterator()){
+                        if (connectedComponent.find(ad) == connectedComponent.end()){
+                            stack.push(ad);
+                        }
+                    }
+                }
+            }
         }
     }
 }

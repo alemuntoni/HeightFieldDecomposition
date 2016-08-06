@@ -104,6 +104,12 @@ class Dcel::Face {
         class ConstIncidentHalfEdgeIterator;
         class IncidentVertexIterator;
         class ConstIncidentVertexIterator;
+        class ConstAdjacentFaceRangeBasedIterator;
+        class ConstIncidentHalfEdgeRangeBasedIterator;
+        class ConstIncidentVertexRangeBasedIterator;
+        class AdjacentFaceRangeBasedIterator;
+        class IncidentHalfEdgeRangeBasedIterator;
+        class IncidentVertexRangeBasedIterator;
 
         /***************
         * Constructors *
@@ -119,6 +125,9 @@ class Dcel::Face {
         *************************/
 
         unsigned int getId()                            const;
+        const Dcel::Vertex* getVertex1()                const;
+        const Dcel::Vertex* getVertex2()                const;
+        const Dcel::Vertex* getVertex3()                const;
         int getFlag()                                   const;
         Vec3 getNormal()                                const;
         double getArea()                                const;
@@ -128,11 +137,12 @@ class Dcel::Face {
         bool hasHoles()                                 const;
         bool operator == (const Face& otherFace)        const;
         bool operator != (const Face& otherFace)        const;
-        #ifdef DEBUG
-        void checkOuterHalfEdge()                       const;
-        #endif
+        bool checkOuterHalfEdge()                       const;
 
 
+        Dcel::Vertex* getVertex1();
+        Dcel::Vertex* getVertex2();
+        Dcel::Vertex* getVertex3();
         void setFlag();
         void setFlag(int newFlag);
         void resetFlag();
@@ -148,13 +158,15 @@ class Dcel::Face {
         * Public Methods *
         ******************/
 
-        const Dcel::Vertex* getVertex1()                                                                            const;
-        const Dcel::Vertex* getVertex2()                                                                            const;
-        const Dcel::Vertex* getVertex3()                                                                            const;
         bool isTriangle()                                                                                           const;
+        bool isAdjacentTo(const Dcel::Face* ad)                                                                     const;
+        bool isIncidentTo(const Dcel::Vertex* v)                                                                    const;
         int getNumberIncidentVertices()                                                                             const;
         int getNumberIncidentHalfEdges()                                                                            const;
         Pointd getBarycentre()                                                                                      const;
+        #ifdef CGAL_DEFINED
+        void getTriangulation(std::vector<std::array<const Dcel::Vertex*, 3> >& triangles)                          const;
+        #endif
         std::string toString()                                                                                      const;
         ConstAdjacentFaceIterator adjacentFaceBegin()                                                               const;
         ConstAdjacentFaceIterator adjacentFaceEnd()                                                                 const;
@@ -170,10 +182,10 @@ class Dcel::Face {
         ConstIncidentVertexIterator incidentVertexBegin(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end)     const;
         ConstIncidentVertexIterator incidentVertexBegin(const Dcel::Vertex* start)                                  const;
         ConstIncidentVertexIterator incidentVertexBegin(const Dcel::Vertex* start, const Dcel::Vertex* end)         const;
+        ConstAdjacentFaceRangeBasedIterator adjacentFaceIterator()                                                  const;
+        ConstIncidentHalfEdgeRangeBasedIterator incidentHalfEdgeIterator()                                          const;
+        ConstIncidentVertexRangeBasedIterator incidentVertexIterator()                                              const;
 
-        Dcel::Vertex* getVertex1();
-        Dcel::Vertex* getVertex2();
-        Dcel::Vertex* getVertex3();
         Vec3 updateNormal();
         double updateArea();
         void removeInnerHalfEdge(const InnerHalfEdgeIterator& iterator);
@@ -193,77 +205,9 @@ class Dcel::Face {
         IncidentVertexIterator incidentVertexBegin(Dcel::HalfEdge* start, Dcel::HalfEdge* end);
         IncidentVertexIterator incidentVertexBegin(Dcel::Vertex* start);
         IncidentVertexIterator incidentVertexBegin(Dcel::Vertex* start, Dcel::Vertex* end);
-
-        class ConstAdjacentFaceRangeBasedIterator {
-                friend class Face;
-            public:
-                ConstAdjacentFaceIterator begin() const;
-                ConstAdjacentFaceIterator end() const;
-            private:
-                ConstAdjacentFaceRangeBasedIterator(const Face *f) : f(f) {}
-                const Face *f;
-        };
-
-        class ConstIncidentHalfEdgeRangeBasedIterator {
-                friend class Face;
-            public:
-                ConstIncidentHalfEdgeIterator begin() const;
-                ConstIncidentHalfEdgeIterator end() const;
-            private:
-                ConstIncidentHalfEdgeRangeBasedIterator(const Face *f) : f(f) {}
-                const Face *f;
-        };
-
-        class ConstIncidentVertexRangeBasedIterator {
-                friend class Face;
-            public:
-                ConstIncidentVertexIterator begin() const;
-                ConstIncidentVertexIterator end() const;
-            private:
-                ConstIncidentVertexRangeBasedIterator(const Face *f) : f(f) {}
-                const Face *f;
-        };
-
-        class AdjacentFaceRangeBasedIterator {
-                friend class Face;
-            public:
-                AdjacentFaceIterator begin();
-                AdjacentFaceIterator end();
-            private:
-                AdjacentFaceRangeBasedIterator(Face *f) : f(f) {}
-                Face *f;
-        };
-
-        class IncidentHalfEdgeRangeBasedIterator {
-                friend class Face;
-            public:
-                IncidentHalfEdgeIterator begin();
-                IncidentHalfEdgeIterator end();
-            private:
-                IncidentHalfEdgeRangeBasedIterator(Face *f) : f(f) {}
-                Face *f;
-        };
-
-        class IncidentVertexRangeBasedIterator {
-                friend class Face;
-            public:
-                IncidentVertexIterator begin();
-                IncidentVertexIterator end();
-            private:
-                IncidentVertexRangeBasedIterator(Face *f) : f(f) {}
-                Face *f;
-        };
-
-        const ConstAdjacentFaceRangeBasedIterator adjacentFaceIterator() const;
         AdjacentFaceRangeBasedIterator adjacentFaceIterator();
-        const ConstIncidentHalfEdgeRangeBasedIterator incidentHalfEdgeIterator() const;
         IncidentHalfEdgeRangeBasedIterator incidentHalfEdgeIterator();
-        const ConstIncidentVertexRangeBasedIterator incidentVertexIterator() const;
         IncidentVertexRangeBasedIterator incidentVertexIterator();
-
-        #ifdef CGAL_DEFINED
-        void getTriangulation(std::vector<std::array<const Dcel::Vertex*, 3> >& triangles) const;
-        #endif
 
     protected:
 
@@ -295,235 +239,6 @@ class Dcel::Face {
         std::string innerComponentsToString() const;
 };
 
-/*************************
- * Public Inline Methods *
- *************************/
-/**
- * \~Italian
- * @brief Restituisce l'id identificativo nella Dcel della faccia
- * @return L'id della faccia
- */
-inline unsigned int Dcel::Face::getId() const {
-    return id;
-}
-
-/**
- * \~Italian
- * @brief Restituisce il flag associato alla faccia
- * @return Il flag della faccia
- */
-inline int Dcel::Face::getFlag() const {
-    return flag;
-}
-
-/**
- * \~Italian
- * @brief Restituisce il vettore normale alla faccia
- * @note Non ricalcola la normale, restituisce solo l'ultima normale calcolata o settata
- * @return La normale della faccia
- */
-inline Vec3 Dcel::Face::getNormal() const {
-    return normal;
-}
-
-/**
- * \~Italian
- * @brief Restituisce la superficie della faccia
- * @note Non ricalcola l'area, restituisce solo l'ultima area calcolata o settata
- * @return L'area della faccia
- */
-inline double Dcel::Face::getArea() const {
-    return area;
-}
-
-/**
- * \~Italian
- * @brief Restituisce il colore associato alla faccia
- * @return Il colore della faccia
- */
-inline QColor Dcel::Face::getColor() const {
-    return color;
-}
-
-/**
- * \~Italian
- * @brief Restituisce il puntatore all'half edge costante di bordo esterno della faccia
- * @return L'HalfEdge di bordo della faccia
- */
-inline const Dcel::HalfEdge* Dcel::Face::getOuterHalfEdge() const {
-    return outerHalfEdge;
-}
-
-/**
- * \~Italian
- * @brief Restituisce il numero di inner half edges contenuti nella faccia, ossia il numero di buchi
- * @return Il numero di HalfEdge interni della faccia
- */
-inline int Dcel::Face::getNumberInnerHalfEdges() const {
-    return innerHalfEdges.size();
-}
-
-/**
- * \~Italian
- * @brief Restituisce true se la faccia contiene buchi
- * @return True se la faccia contiene buchi, false altrimenti
- */
-inline bool Dcel::Face::hasHoles() const {
-    return (innerHalfEdges.size() != 0);
-}
-
-/**
- * \~Italian
- * @brief Operatore di uguaglianza tra facce
- * @param[in] otherFace: faccia con cui verrà verificata l'uguaglianza con la faccia this
- * @return True se le facce sono uguali, false altrimenti
- * @todo Da riscrivere
- */
-inline bool Dcel::Face::operator == (const Face& otherFace) const {
-    if (otherFace.id == id) return true;
-    else return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra facce
- * @param[in] otherFace: faccia con cui verrà verificata la disuguaglianza con la faccia this
- * @return True se le facce sono diverse, false altrimenti
- */
-inline bool Dcel::Face::operator != (const Face& otherFace) const {
-    return !(*this == otherFace);
-}
-
-#ifdef DEBUG
-/**
- * \~Italian
- * @brief Lancia un'asserzione se l'outerHalfEdge è nullptr
- */
-inline void Dcel::Face::checkOuterHalfEdge() const {
-    if (outerHalfEdge == nullptr) {
-        std::cerr << "ALERT! Face "<< id << ": outer_half_edge is nullptr";
-        assert(! (outerHalfEdge == nullptr));
-    }
-}
-#endif
-
-/**
- * \~Italian
- * @brief Setta il flag della faccia a 1
- */
-inline void Dcel::Face::setFlag() {
-    flag = 1;
-}
-
-/**
- * \~Italian
- * @brief Setta il flag della faccia
- * @param[in] newFlag: il valore del flag che verrà settato
- */
-inline void Dcel::Face::setFlag(int newFlag) {
-    flag = newFlag;
-}
-
-/**
- * \~Italian
- * @brief Setta il flag della faccia a 0
- */
-inline void Dcel::Face::resetFlag() {
-    flag = 0;
-}
-
-/**
- * \~Italian
- * @brief Setta il vettore normale della faccia
- * @param[in] newNormal: il vettore normale che verrà settato
- */
-inline void Dcel::Face::setNormal(const Vec3& newNormal) {
-    normal = newNormal;
-}
-
-/**
- * \~Italian
- * @brief Setta la superficie della faccia
- * @param[in] newArea: il valore dell'area che verrà settato
- */
-inline void Dcel::Face::setArea(double newArea) {
-    area = newArea;
-}
-
-/**
- * \~Italian
- * @brief Assegna un nuovo colore alla faccia
- * @param[in] newColor: il nuovo colore che verrà assegnato alla faccia
- */
-inline void Dcel::Face::setColor(const QColor& newColor) {
-    color = newColor;
-}
-
-/**
- * \~Italian
- * @brief Restituisce il puntatore all'half edge di bordo esterno della faccia
- * @return L'HalfEdge di bordo della faccia
- */
-inline Dcel::HalfEdge* Dcel::Face::getOuterHalfEdge() {
-    return outerHalfEdge;
-}
-
-/**
- * \~Italian
- * @brief Assegna un nuovo half edge di bordo esterno alla faccia
- * @param[in] newOuterHalfEdge: puntatore all'half edge di bordo esterno assegnato alla faccia
- */
-inline void Dcel::Face::setOuterHalfEdge(Dcel::HalfEdge* newOuterHalfEdge) {
-    outerHalfEdge = newOuterHalfEdge;
-}
-
-/**
- * \~Italian
- * @brief Aggiunge un nuovo half edge di bordo interno (ossia un buco) alla faccia
- * @param[in] newInnerHalfEdge: nuovo half edge di bordo interno aggiunto alla faccia
- */
-inline void Dcel::Face::addInnerHalfEdge(Dcel::HalfEdge* newInnerHalfEdge) {
-    innerHalfEdges.push_back(newInnerHalfEdge);
-}
-
-inline const Dcel::Face::ConstAdjacentFaceRangeBasedIterator Dcel::Face::adjacentFaceIterator() const {
-    return std::move(ConstAdjacentFaceRangeBasedIterator(this));
-}
-
-inline Dcel::Face::AdjacentFaceRangeBasedIterator Dcel::Face::adjacentFaceIterator() {
-    return std::move(AdjacentFaceRangeBasedIterator(this));
-}
-
-inline const Dcel::Face::ConstIncidentHalfEdgeRangeBasedIterator Dcel::Face::incidentHalfEdgeIterator() const {
-    return std::move(ConstIncidentHalfEdgeRangeBasedIterator(this));
-}
-
-inline Dcel::Face::IncidentHalfEdgeRangeBasedIterator Dcel::Face::incidentHalfEdgeIterator() {
-    return std::move(IncidentHalfEdgeRangeBasedIterator(this));
-}
-
-inline const Dcel::Face::ConstIncidentVertexRangeBasedIterator Dcel::Face::incidentVertexIterator() const {
-    return std::move(ConstIncidentVertexRangeBasedIterator(this));
-}
-
-inline Dcel::Face::IncidentVertexRangeBasedIterator Dcel::Face::incidentVertexIterator() {
-    return std::move(IncidentVertexRangeBasedIterator(this));
-}
-
-/**************************
- * Private Inline Methods *
- **************************/
-
-/**
- * \~Italian
- * @brief Setta l'id della faccia.
- *
- * Questa funzione dovrebbe essere chiamata solamente dalla classe Dcel.
- *
- * @param[in] id: nuovo id che verrà assegnato alla faccia
- */
-inline void Dcel::Face::setId(unsigned int id) {
-    this->id = id;
-}
+#include "dcel_face_inline.cpp"
 
 #endif // DCEL_FACE_H

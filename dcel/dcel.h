@@ -240,7 +240,7 @@
  * - Dcel::HalfEdge \n
  * - Dcel::Face \n
  *
- * @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
+ * @author Alessandro Muntoni (muntoni.alessandro@gmail.com)
  * @author Andreas Scalas (andreasscalas@tiscali.it)
  * @version 1.0
  * @copyright Alessandro Muntoni 2016.
@@ -251,7 +251,7 @@
  * This library has been designed to allow the developemento of algorithms on three-dimensional meshes using a data structure
  * preactical and easy, having all the necessary tools to make all the basic and advanced operations of navigation on the mesh.
  *
- *  @author    Alessandro Muntoni (muntoni.alessandro@gmail.com)
+ * @author Alessandro Muntoni (muntoni.alessandro@gmail.com)
  * @author Andreas Scalas (andreasscalas@tiscali.it)
  * @version 1.0
  * @copyright Alessandro Muntoni 2016.

@@ -641,904 +641,106 @@ class Dcel::Vertex::ConstIncidentFaceIterator : public Dcel::Vertex::ConstGeneri
         ConstIncidentFaceIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Vertex* v);
 };
 
-/****************************************
- * DCEL::Vertex::GenericIterator *
- ****************************************/
-
-//Constructor
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::GenericIterator::GenericIterator() {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di uguaglianza tra iteratori.
- *
- * Due AdjacentVertexIterator sono considerati uguali se:
- * - puntano allo stesso vertice (posizione sullo stesso half edge);
- * - iterano sulla stessa faccia.
- *
- *
- * @param[in] otherIterator: iteratore con cui è verificata l'uguaglianza con this
- * @return True se gli iteratori sono uguali, false altrimenti
- */
-inline bool Dcel::Vertex::GenericIterator::operator == (const GenericIterator& right) const {
-    if (this->pos == right.pos && this->v == right.v) return true;
-    return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra iteratori
- * @param[in] otherIterator: iteratore con cui è verificata la disuguaglianza con this
- * @return true se gli iteratori sono diversi, false altrimenti
- */
-inline bool Dcel::Vertex::GenericIterator::operator != (const GenericIterator& right) const {
-    return !(*this == right);
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso dell'iteratore.
- *
- * Esegue un'operazione di \c twin() e \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Vertex::GenericIterator Dcel::Vertex::GenericIterator::operator ++ () {
-    pos = pos->getTwin()->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso dell'iteratore.
- *
- * Esegue un'operazione di \c twin() e \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Vertex::GenericIterator Dcel::Vertex::GenericIterator::operator ++ (int) {
-    GenericIterator old_value = *this;
-    pos = pos->getTwin()->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso dell'iteratore.
- *
- * Esegue un'operazione di \c prev() e \c twin() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Vertex::GenericIterator Dcel::Vertex::GenericIterator::operator -- () {
-    pos = pos->getPrev()->getTwin();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso dell'iteratore.
- *
- * Esegue un'operazione di \c prev() e \c twin() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere decrementato
- */
-inline Dcel::Vertex::GenericIterator Dcel::Vertex::GenericIterator::operator -- (int) {
-    GenericIterator old_value = *this;
-    pos = pos->getPrev()->getTwin();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un iteratore.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (uscente dal vertice) di start
- * @param[in] end: half edge (uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati i vertici adiacenti
- */
-inline Dcel::Vertex::GenericIterator::GenericIterator(HalfEdge* start, HalfEdge* end, Vertex* v) : v(v), start(start), pos(start), end(end) {
-}
-
-/*********************************************
- * DCEL::Vertex::ConstGenericIterator *
- *********************************************/
-
-//Constructors
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::ConstGenericIterator::ConstGenericIterator() {
-}
-
-/**
- * \~Italian
- * @brief Costruttore di copia da un iteratore const.
- *
- * Inizializza un ConstAdjacentVertexIterator pari all'AdjacentVertexIterator passato in input.
- * @param[in] it: iteratore di cui ne verrà fatta una copia
- */
-inline Dcel::Vertex::ConstGenericIterator::ConstGenericIterator(const Dcel::Vertex::GenericIterator& it) : v(it.v), start(it.start), pos(it.pos), end(it.end) {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di uguaglianza tra iteratori const.
- *
- * Due AdjacentVertexIterator sono considerati uguali se:
- * - puntano allo stesso vertice (posizione sullo stesso half edge);
- * - iterano sulla stessa faccia.
- *
- *
- * @param[in] otherIterator: iteratore con cui è verificata l'uguaglianza con this
- * @return True se gli iteratori sono uguali, false altrimenti
- */
-inline bool Dcel::Vertex::ConstGenericIterator::operator == (const ConstGenericIterator& right) const {
-    if (this->pos == right.pos && this->v == right.v) return true;
-    return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra iteratori const
- * @param[in] otherIterator: iteratore con cui è verificata la disuguaglianza con this
- * @return true se gli iteratori sono diversi, false altrimenti
- */
-inline bool Dcel::Vertex::ConstGenericIterator::operator !=(const ConstGenericIterator& right) const {
-    return !(*this == right);
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso dell'iteratore const.
- *
- * Esegue un'operazione di \c twin() e \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::operator ++ () {
-    pos = pos->getTwin()->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso dell'iteratore const.
- *
- * Esegue un'operazione di \c twin() e \c next() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::operator ++ (int) {
-    ConstGenericIterator old_value = *this;
-    pos = pos->getTwin()->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso dell'iteratore const.
- *
- * Esegue un'operazione di \c prev() e \c twin() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::operator -- () {
-    pos = pos->getPrev()->getTwin();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso dell'iteratore const.
- *
- * Esegue un'operazione di \c prev() e \c twin() sull'half edge. Se l'half edge ottenuto è uguale
- * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere decrementato
- */
-inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::operator -- (int) {
-    ConstGenericIterator old_value = *this;
-    pos = pos->getPrev()->getTwin();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un iteratore const.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (uscente dal vertice) di start
- * @param[in] end: half edge (uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati i vertici adiacenti
- */
-inline Dcel::Vertex::ConstGenericIterator::ConstGenericIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Vertex* v) : v(v), start(start), pos(start), end(end) {
-}
-
-/****************************************
- * DCEL::Vertex::AdjacentVertexIterator *
- ****************************************/
-
-//Constructor
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::AdjacentVertexIterator::AdjacentVertexIterator() : GenericIterator() {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione dell'AdjacentVertexIterator
- * @return Il to vertex dell'half edge puntato dall'iteratore
- */
-inline Dcel::Vertex* Dcel::Vertex::AdjacentVertexIterator::operator * () const {
-    return pos->getToVertex();
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un AdjacentVertexIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (uscente dal vertice) di start
- * @param[in] end: half edge (uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati i vertici adiacenti
- */
-inline Dcel::Vertex::AdjacentVertexIterator::AdjacentVertexIterator(HalfEdge* start, HalfEdge* end, Vertex* v) : GenericIterator(start, end, v) {
-}
-
-/*********************************************
- * DCEL::Vertex::ConstAdjacentVertexIterator *
- *********************************************/
-
-//Constructors
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::ConstAdjacentVertexIterator::ConstAdjacentVertexIterator() : ConstGenericIterator(){
-}
-
-/**
- * \~Italian
- * @brief Costruttore di copia da un AdjacentVertexIterator.
- *
- * Inizializza un ConstAdjacentVertexIterator pari all'AdjacentVertexIterator passato in input.
- * @param[in] it: iteratore di cui ne verrà fatta una copia
- */
-inline Dcel::Vertex::ConstAdjacentVertexIterator::ConstAdjacentVertexIterator(const Dcel::Vertex::AdjacentVertexIterator& it) : ConstGenericIterator(it) {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione dell'ConstAdjacentVertexIterator
- * @return Il to vertex dell'half edge puntato dall'iteratore
- */
-inline const Dcel::Vertex* Dcel::Vertex::ConstAdjacentVertexIterator::operator * () const {
-    return pos->getToVertex();
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un ConstAdjacentVertexIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (uscente dal vertice) di start
- * @param[in] end: half edge (uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati i vertici adiacenti
- */
-inline Dcel::Vertex::ConstAdjacentVertexIterator::ConstAdjacentVertexIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Vertex* v) : ConstGenericIterator(start, end, v) {
-}
-
-/******************************************
- * DCEL::Vertex::OutgoingHalfEdgeIterator *
- ******************************************/
-
-//Constructor
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::OutgoingHalfEdgeIterator::OutgoingHalfEdgeIterator() : GenericIterator() {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione dell'OutgoingHalfEdgeIterator
- * @return L'half edge puntato dall'iteratore
- */
-inline Dcel::HalfEdge* Dcel::Vertex::OutgoingHalfEdgeIterator::operator * () const {
-    return pos;
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un OutgoingHalfEdgeIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (uscente dal vertice) di start
- * @param[in] end: half edge (uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati gli half edge uscenti
- */
-inline Dcel::Vertex::OutgoingHalfEdgeIterator::OutgoingHalfEdgeIterator(HalfEdge* start, HalfEdge* end, Vertex* v) : GenericIterator(start, end, v) {
-}
-
-/***********************************************
- * DCEL::Vertex::ConstOutgoingHalfEdgeIterator *
- ***********************************************/
-
-//Constructors
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::ConstOutgoingHalfEdgeIterator::ConstOutgoingHalfEdgeIterator() : ConstGenericIterator(){
-}
-
-/**
- * \~Italian
- * @brief Costruttore di copia da un OutgoingHalfEdgeIterator.
- *
- * Inizializza un ConstOutgoingHalfEdgeIterator pari all'OutgoingHalfEdgeIterator passato in input.
- * @param[in] it: iteratore di cui ne verrà fatta una copia
- */
-inline Dcel::Vertex::ConstOutgoingHalfEdgeIterator::ConstOutgoingHalfEdgeIterator(const Dcel::Vertex::OutgoingHalfEdgeIterator& it) : ConstGenericIterator(it) {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione del ConstOutgoingHalfEdgeIterator
- * @return L'half edge puntato dall'iteratore
- */
-inline const Dcel::HalfEdge* Dcel::Vertex::ConstOutgoingHalfEdgeIterator::operator * () const {
-    return pos;
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un ConstOutgoingHalfEdgeIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (uscente dal vertice) di start
- * @param[in] end: half edge (uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati gli half edge uscenti
- */
-inline Dcel::Vertex::ConstOutgoingHalfEdgeIterator::ConstOutgoingHalfEdgeIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Vertex* v) : ConstGenericIterator(start, end, v) {
-}
-
-/******************************************
- * DCEL::Vertex::IncomingHalfEdgeIterator *
- ******************************************/
-
-//Constructor
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::IncomingHalfEdgeIterator::IncomingHalfEdgeIterator() : GenericIterator() {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione dell'IncomingHalfEdgeIterator
- * @return Il twin dell'half edge puntato dall'iteratore
- */
-inline Dcel::HalfEdge* Dcel::Vertex::IncomingHalfEdgeIterator::operator * () const {
-    return pos->getTwin();
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un IncomingHalfEdgeIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (uscente dal vertice) di start
- * @param[in] end: half edge (uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati gli half edge entranti
- */
-inline Dcel::Vertex::IncomingHalfEdgeIterator::IncomingHalfEdgeIterator(HalfEdge* start, HalfEdge* end, Vertex* v) : GenericIterator(start, end, v) {
-}
-
-/***********************************************
- * DCEL::Vertex::ConstIncomingHalfEdgeIterator *
- ***********************************************/
-
-//Constructors
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::ConstIncomingHalfEdgeIterator::ConstIncomingHalfEdgeIterator() : ConstGenericIterator(){
-}
-
-/**
- * \~Italian
- * @brief Costruttore di copia da un IncomingHalfEdgeIterator.
- *
- * Inizializza un ConstIncomingHalfEdgeIterator pari all'IncomingHalfEdgeIterator passato in input.
- * @param[in] it: iteratore di cui ne verrà fatta una copia
- */
-inline Dcel::Vertex::ConstIncomingHalfEdgeIterator::ConstIncomingHalfEdgeIterator(const Dcel::Vertex::IncomingHalfEdgeIterator& it) : ConstGenericIterator(it) {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione del ConstIncomingHalfEdgeIterator
- * @return Il twin dell'half edge puntato dall'iteratore
- */
-inline const Dcel::HalfEdge* Dcel::Vertex::ConstIncomingHalfEdgeIterator::operator * () const {
-    return pos->getTwin();
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un ConstIncomingHalfEdgeIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (uscente dal vertice) di start
- * @param[in] end: half edge (uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati gli half edge entranti
- */
-inline Dcel::Vertex::ConstIncomingHalfEdgeIterator::ConstIncomingHalfEdgeIterator(const Dcel::HalfEdge* start, const Dcel::HalfEdge* end, const Dcel::Vertex* v) : ConstGenericIterator(start, end, v) {
-}
-
-/******************************************
- * DCEL::Vertex::IncidentHalfEdgeIterator *
- ******************************************/
-
-//Constructor
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::IncidentHalfEdgeIterator::IncidentHalfEdgeIterator() : GenericIterator(){
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione dell'IncidentHalfEdgeIterator
- * @return L'half edge puntato dall'iteratore
- */
-inline Dcel::HalfEdge* Dcel::Vertex::IncidentHalfEdgeIterator::operator * () const {
-    return pos;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso dell'IncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c twin() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c next() se l'half edge attuale è entrante sul vertice. Se l'half edge
- * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIterator::operator ++ () {
-    if (pos->getFromVertex() == v) pos = pos->getTwin();
-    else pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso dell'IncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c twin() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c next() se l'half edge attuale è entrante sul vertice. Se l'half edge
- * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIterator::operator ++ (int) {
-    IncidentHalfEdgeIterator old_value = *this;
-    if (pos->getFromVertex() == v) pos = pos->getTwin();
-    else pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso dell'IncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c prev() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c twin() se l'half edge attuale è entrante sul vertice. Se l'half edge
- * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIterator::operator -- () {
-    if (pos->getFromVertex() == v) pos = pos->getPrev();
-    else pos = pos->getTwin();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso dell'IncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c prev() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c twin() se l'half edge attuale è entrante sul vertice. Se l'half edge
- * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere decrementato
- */
-inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIterator::operator -- (int) {
-    IncidentHalfEdgeIterator old_value = *this;
-    if (pos->getFromVertex() == v) pos = pos->getPrev();
-    else pos = pos->getTwin();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un IncidentHalfEdgeIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (non per forza uscente dal vertice) di start
- * @param[in] end: half edge (non per forza uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati gli half edge incidenti
- */
-inline Dcel::Vertex::IncidentHalfEdgeIterator::IncidentHalfEdgeIterator(HalfEdge* start, HalfEdge* end, Vertex* v) : GenericIterator(start, end, v) {
-}
-
-/***********************************************
- * DCEL::Vertex::ConstIncidentHalfEdgeIterator *
- ***********************************************/
-
-//Constructors
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator() : ConstGenericIterator(){
-}
-
-/**
- * \~Italian
- * @brief Costruttore di copia da un IncidentHalfEdgeIterator.
- *
- * Inizializza un ConstIncidentHalfEdgeIterator pari all'IncidentHalfEdgeIterator passato in input.
- * @param[in] it: iteratore di cui ne verrà fatta una copia
- */
-inline Dcel::Vertex::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator(const Dcel::Vertex::IncidentHalfEdgeIterator& it) : ConstGenericIterator(it) {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione del ConstIncidentHalfEdgeIterator
- * @return L'half edge puntato dall'iteratore
- */
-inline const Dcel::HalfEdge* Dcel::Vertex::ConstIncidentHalfEdgeIterator::operator * () const {
-    return pos;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento prefisso del ConstIncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c twin() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c next() se l'half edge attuale è entrante sul vertice. Se l'half edge
- * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena incrementato
- */
-inline Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::ConstIncidentHalfEdgeIterator::operator ++ () {
-    if (pos->getFromVertex() == v) pos = pos->getTwin();
-    else pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di incremento postfisso del ConstIncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c twin() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c next() se l'half edge attuale è entrante sul vertice. Se l'half edge
- * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::ConstIncidentHalfEdgeIterator::operator ++ (int) {
-    ConstIncidentHalfEdgeIterator old_value = *this;
-    if (pos->getFromVertex() == v) pos = pos->getTwin();
-    else pos = pos->getNext();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento prefisso del ConstIncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c prev() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c twin() se l'half edge attuale è entrante sul vertice. Se l'half edge
- * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore appena decrementato
- */
-inline Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::ConstIncidentHalfEdgeIterator::operator -- () {
-    if (pos->getFromVertex() == v) pos = pos->getPrev();
-    else pos = pos->getTwin();
-    if (pos == end) pos = nullptr;
-    return *this;
-}
-
-/**
- * \~Italian
- * @brief Operatore di decremento postfisso del ConstIncidentHalfEdgeIterator.
- *
- * Esegue un'operazione di \c prev() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c twin() se l'half edge attuale è entrante sul vertice. Se l'half edge
- * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
- *
- * @return L'iteratore prima di essere incrementato
- */
-inline Dcel::Vertex::ConstIncidentHalfEdgeIterator Dcel::Vertex::ConstIncidentHalfEdgeIterator::operator -- (int) {
-    ConstIncidentHalfEdgeIterator old_value = *this;
-    if (pos->getFromVertex() == v) pos = pos->getPrev();
-    else pos = pos->getTwin();
-    if (pos == end) pos = nullptr;
-    return old_value;
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un ConstIncidentHalfEdgeIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (non per forza uscente dal vertice) di start
- * @param[in] end: half edge (non per forza uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterati gli half edge incidenti
- */
-inline Dcel::Vertex::ConstIncidentHalfEdgeIterator::ConstIncidentHalfEdgeIterator(const HalfEdge* start, const HalfEdge* end, const Vertex* v)  : ConstGenericIterator(start, end, v) {
-}
-
-/**************************************
- * DCEL::Vertex::IncidentFaceIterator *
- **************************************/
-
-//Constructor
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::IncidentFaceIterator::IncidentFaceIterator() : GenericIterator(){
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione dell'IncidentFaceIterator
- * @return La faccia incidente sull'half edge puntato dall'iteratore
- */
-inline Dcel::Face* Dcel::Vertex::IncidentFaceIterator::operator * () const {
-    return pos->getFace();
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un IncidentFaceIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (non per forza uscente dal vertice) di start
- * @param[in] end: half edge (non per forza uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterate le facce incidenti
- */
-inline Dcel::Vertex::IncidentFaceIterator::IncidentFaceIterator(HalfEdge* start, HalfEdge* end, Vertex* v) : GenericIterator(start, end, v) {
-}
-
-/*******************************************
- * DCEL::Vertex::ConstIncidentFaceIterator *
- *******************************************/
-
-//Constructors
-
-/**
- * \~Italian
- * @brief Costruttore vuoto.
- * Un iteratore inizializzato con questo costruttore non è utilizzabile.
- */
-inline Dcel::Vertex::ConstIncidentFaceIterator::ConstIncidentFaceIterator() : ConstGenericIterator() {
-}
-
-/**
- * \~Italian
- * @brief Costruttore di copia da un IncidentFaceIterator.
- *
- * Inizializza un ConstIncidentFaceIterator pari all'IncidentFaceIterator passato in input.
- * @param[in] it: iteratore di cui ne verrà fatta una copia
- */
-inline Dcel::Vertex::ConstIncidentFaceIterator::ConstIncidentFaceIterator(const Dcel::Vertex::IncidentFaceIterator& it) : ConstGenericIterator(it) {
-}
-
-//Public Operators
-
-/**
- * \~Italian
- * @brief Operatore di dereferenziazione del ConstIncidentFaceIterator
- * @return La faccia incidente sull'half edge puntato dall'iteratore
- */
-inline const Dcel::Face* Dcel::Vertex::ConstIncidentFaceIterator::operator * () const {
-    return pos->getFace();
-}
-
-//Protected Constructor
-
-/**
- * \~Italian
- * @brief Costruttore di un ConstIncidentFaceIterator.
- *
- * Setta l'half edge di partenza, l'half edge di arrivo e il vertice su cui iterare.
- * L'iteratore viene inizializzato all'half edge start.
- * Per questioni di sicurezza e di robustezza del codice questo costruttore non è direttamente richiamabile
- * dal programmatore. Tuttavia, questo costruttore viene richiamato dalla friend class Dcel::Vertex nei vari metodi
- * begin, che inizializzano correttamente l'iteratore e che possono essere utilizzati dal programmatore per
- * l'inizializzazione dell'iteratore.
- *
- * @param[in] start: half edge (non per forza uscente dal vertice) di start
- * @param[in] end: half edge (non per forza uscente dal vertice) di end
- * @param[in] v: vertice su cui vengono iterate le facce incidenti
- */
-inline Dcel::Vertex::ConstIncidentFaceIterator::ConstIncidentFaceIterator(const HalfEdge* start, const HalfEdge* end, const Vertex* v) : ConstGenericIterator(start, end, v) {
-}
+class Dcel::Vertex::ConstAdjacentVertexRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::ConstAdjacentVertexIterator begin() const;
+        Dcel::Vertex::ConstAdjacentVertexIterator end() const;
+    private:
+        ConstAdjacentVertexRangeBasedIterator(const Vertex *v) : v(v) {}
+        const Vertex *v;
+};
+
+class Dcel::Vertex::ConstOutgoingHalfEdgeRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::ConstOutgoingHalfEdgeIterator begin() const;
+        Dcel::Vertex::ConstOutgoingHalfEdgeIterator end() const;
+    private:
+        ConstOutgoingHalfEdgeRangeBasedIterator(const Vertex *v) : v(v) {}
+        const Vertex *v;
+};
+
+class Dcel::Vertex::ConstIncomingHalfEdgeRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::ConstIncomingHalfEdgeIterator begin() const;
+        Dcel::Vertex::ConstIncomingHalfEdgeIterator end() const;
+    private:
+        ConstIncomingHalfEdgeRangeBasedIterator(const Vertex *v) : v(v) {}
+        const Vertex *v;
+};
+
+class Dcel::Vertex::ConstIncidentHalfEdgeRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::ConstIncidentHalfEdgeIterator begin() const;
+        Dcel::Vertex::ConstIncidentHalfEdgeIterator end() const;
+    private:
+        ConstIncidentHalfEdgeRangeBasedIterator(const Vertex *v) : v(v) {}
+        const Vertex *v;
+};
+
+class Dcel::Vertex::ConstIncidentFaceRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::ConstIncidentFaceIterator begin() const;
+        Dcel::Vertex::ConstIncidentFaceIterator end() const;
+    private:
+        ConstIncidentFaceRangeBasedIterator(const Vertex *v) : v(v) {}
+        const Vertex *v;
+};
+
+class Dcel::Vertex::AdjacentVertexRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::AdjacentVertexIterator begin();
+        Dcel::Vertex::AdjacentVertexIterator end();
+    private:
+        AdjacentVertexRangeBasedIterator(Vertex *v) : v(v) {}
+        Vertex *v;
+};
+
+class Dcel::Vertex::OutgoingHalfEdgeRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::OutgoingHalfEdgeIterator begin();
+        Dcel::Vertex::OutgoingHalfEdgeIterator end();
+    private:
+        OutgoingHalfEdgeRangeBasedIterator(Vertex *v) : v(v) {}
+        Vertex *v;
+};
+
+class Dcel::Vertex::IncomingHalfEdgeRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::IncomingHalfEdgeIterator begin();
+        Dcel::Vertex::IncomingHalfEdgeIterator end();
+    private:
+        IncomingHalfEdgeRangeBasedIterator(Vertex *v) : v(v) {}
+        Vertex *v;
+};
+
+class Dcel::Vertex::IncidentHalfEdgeRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::IncidentHalfEdgeIterator begin();
+        Dcel::Vertex::IncidentHalfEdgeIterator end();
+    private:
+        IncidentHalfEdgeRangeBasedIterator(Vertex *v) : v(v) {}
+        Vertex *v;
+};
+
+class Dcel::Vertex::IncidentFaceRangeBasedIterator {
+        friend class Vertex;
+    public:
+        Dcel::Vertex::IncidentFaceIterator begin();
+        Dcel::Vertex::IncidentFaceIterator end();
+    private:
+        IncidentFaceRangeBasedIterator(Vertex *v) : v(v) {}
+        Vertex *v;
+};
+
+#include "dcel_vertex_iterators_inline.cpp"
 
 #endif // DCEL_VERTEX_ITERATORS_H
