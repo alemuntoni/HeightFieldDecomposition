@@ -83,6 +83,12 @@ class Dcel : public SerializableObject {
         class ConstHalfEdgeIterator;
         class FaceIterator;
         class ConstFaceIterator;
+        class ConstVertexRangeBasedIterator;
+        class ConstHalfEdgeRangeBasedIterator;
+        class ConstFaceRangeBasedIterator;
+        class VertexRangeBasedIterator;
+        class HalfEdgeRangeBasedIterator;
+        class FaceRangeBasedIterator;
 
         /***************
         * Constructors *
@@ -105,6 +111,9 @@ class Dcel : public SerializableObject {
         inline ConstHalfEdgeIterator halfEdgeEnd()     const;
         inline ConstFaceIterator faceBegin()           const;
         inline ConstFaceIterator faceEnd()             const;
+        inline const ConstVertexRangeBasedIterator vertexIterator() const;
+        inline const ConstHalfEdgeRangeBasedIterator halfEdgeIterator() const;
+        inline const ConstFaceRangeBasedIterator faceIterator() const;
 
         inline VertexIterator vertexBegin();
         inline VertexIterator vertexEnd();
@@ -112,22 +121,9 @@ class Dcel : public SerializableObject {
         inline HalfEdgeIterator halfEdgeEnd();
         inline FaceIterator faceBegin();
         inline FaceIterator faceEnd();
-
-        class ConstVertexRangeBasedIterator;
-        class ConstHalfEdgeRangeBasedIterator;
-        class ConstFaceRangeBasedIterator;
-        class VertexRangeBasedIterator;
-        class HalfEdgeRangeBasedIterator;
-        class FaceRangeBasedIterator;
-
-        const ConstVertexRangeBasedIterator vertexIterator() const;
-        VertexRangeBasedIterator vertexIterator();
-
-        const ConstHalfEdgeRangeBasedIterator halfEdgeIterator() const;
-        HalfEdgeRangeBasedIterator halfEdgeIterator();
-
-        const ConstFaceRangeBasedIterator faceIterator() const;
-        FaceRangeBasedIterator faceIterator();
+        inline VertexRangeBasedIterator vertexIterator();
+        inline HalfEdgeRangeBasedIterator halfEdgeIterator();
+        inline FaceRangeBasedIterator faceIterator();
 
         /*****************
         * Public Methods *
@@ -163,6 +159,7 @@ class Dcel : public SerializableObject {
         void updateFaceNormals();
         void updateVertexNormals();
         BoundingBox updateBoundingBox();
+        void setColor(const QColor &c);
         void scale(const BoundingBox &newBoundingBox);
         void rotate(const Eigen::Matrix3d& matrix, const Pointd& centroid = Pointd());
         void rotate(double matrix[3][3], const Pointd& centroid = Pointd());

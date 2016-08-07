@@ -79,28 +79,37 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
                 savedFaces.insert(f);
         }
     }
-    if (areaThreshold > 0) {
+    if (areaThreshold > 0) { //if areathreshold = 0, no flipped charts are ignored
         double totalArea = d.getSurfaceArea();
         areaThreshold*=totalArea;
+
+        //Chart construction
         std::set<const Dcel::Face*> visitedFaces, connectedComponent;
-        for (const Dcel::Face* f : flippedFaces){
-            if (visitedFaces.find(f) == visitedFaces.end()){
+        for (const Dcel::Face* ff : flippedFaces) {
+            if (visitedFaces.find(ff) == visitedFaces.end()){
                 std::stack<const Dcel::Face* > stack;
-                stack.push(f);
+                stack.push(ff);
                 connectedComponent.clear();
-                while (stack.size() > 0){
+                double area = 0;
+                while (stack.size() > 0) {
                     const Dcel::Face* f = stack.top();
+                    area += f->getArea();
                     stack.pop();
                     connectedComponent.insert(f);
                     visitedFaces.insert(f);
                     for (const Dcel::Face* ad : f->adjacentFaceIterator()){
-                        if (connectedComponent.find(ad) == connectedComponent.end()){
+                        if (connectedComponent.find(ad) == connectedComponent.end() && flippedFaces.find(ad) != flippedFaces.end()){
                             stack.push(ad);
                         }
                     }
                 }
+                if (area < areaThreshold){
+                    savedFaces.insert(connectedComponent.begin(), connectedComponent.end());
+                }
             }
         }
+        for (const Dcel::Face* f : savedFaces)
+            flippedFaces.erase(f);
     }
 }
 

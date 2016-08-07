@@ -64,13 +64,18 @@ void EngineManager::updateBoxValues() {
     }
 }
 
-void EngineManager::updateColors(double threshold) {
+void EngineManager::updateColors(double angleThreshold, double areaThreshold) {
+    d->setColor(QColor(128,128,128));
     std::set<const Dcel::Face*> flippedFaces, savedFaces;
-    Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], threshold/100, 0);
+    Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], angleThreshold/100, areaThreshold);
 
     for (const Dcel::Face* cf : flippedFaces){
         Dcel::Face* f = d->getFace(cf->getId());
         f->setColor(QColor(255,0,0));
+    }
+    for (const Dcel::Face* cf : savedFaces){
+        Dcel::Face* f = d->getFace(cf->getId());
+        f->setColor(QColor(0,0,255));
     }
 
     d->update();
@@ -104,7 +109,7 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
         (*fit)->setColor(QColor(128,128,128));
     d->setWireframe(true);
     d->setPointsShading();
-    updateColors(ui->toleranceSlider->value());
+    updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
     mainWindow->pushObj(g, "Grid");
@@ -145,7 +150,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
 
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()]);
-        updateColors(ui->toleranceSlider->value());
+        updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
         d->update();
         g->setKernelDistance(ui->distanceSpinBox->value());
         e = Energy(*g);
@@ -164,7 +169,7 @@ void EngineManager::on_distanceSpinBox_valueChanged(double arg1) {
 void EngineManager::on_targetComboBox_currentIndexChanged(int index) {
     if (d!= nullptr && g!= nullptr){
         g->setTarget(XYZ[index]);
-        updateColors(ui->toleranceSlider->value());
+        updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
         d->update();
         g->calculateBorderWeights(*d);
         mainWindow->updateGlCanvas();
@@ -1451,6 +1456,12 @@ void EngineManager::on_maxZSpinBox_valueChanged(double arg1) {
 
 void EngineManager::on_toleranceSlider_valueChanged(int value) {
     if (d!= nullptr){
-        updateColors(value);
+        updateColors(value, ui->areaToleranceSpinBox->value());
+    }
+}
+
+void EngineManager::on_areaToleranceSpinBox_valueChanged(double arg1){
+    if (d!= nullptr){
+        updateColors(ui->toleranceSlider->value(), arg1);
     }
 }

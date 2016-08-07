@@ -921,6 +921,11 @@ BoundingBox Dcel::updateBoundingBox() {
     return boundingBox;
 }
 
+void Dcel::setColor(const QColor& c) {
+    for (Dcel::Face* f : faceIterator())
+        f->setColor(c);
+}
+
 void Dcel::scale(const BoundingBox& newBoundingBox) {
     Pointd oldCenter = boundingBox.center();
     Pointd newCenter = newBoundingBox.center();
