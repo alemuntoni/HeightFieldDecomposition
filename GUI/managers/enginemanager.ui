@@ -352,32 +352,6 @@
                 </item>
                </widget>
               </item>
-              <item row="13" column="1">
-               <widget class="QPushButton" name="createAndMinimizeAllPushButton">
-                <property name="text">
-                 <string>Create and Minimize All</string>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="1">
-               <widget class="QSlider" name="toleranceSlider">
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="singleStep">
-                 <number>5</number>
-                </property>
-                <property name="value">
-                 <number>25</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
               <item row="10" column="1">
                <widget class="QCheckBox" name="onlyNearestTargetCheckBox">
                 <property name="text">
@@ -395,6 +369,13 @@
                 </property>
                </widget>
               </item>
+              <item row="12" column="0">
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>Area Tolerance</string>
+                </property>
+               </widget>
+              </item>
               <item row="12" column="1">
                <widget class="QDoubleSpinBox" name="areaToleranceSpinBox">
                 <property name="decimals">
@@ -408,10 +389,32 @@
                 </property>
                </widget>
               </item>
-              <item row="12" column="0">
-               <widget class="QLabel" name="label_18">
+              <item row="13" column="1">
+               <widget class="QPushButton" name="createAndMinimizeAllPushButton">
                 <property name="text">
-                 <string>Area Tolerance</string>
+                 <string>Create and Minimize All</string>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="1">
+               <widget class="QSlider" name="toleranceSlider">
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="singleStep">
+                 <number>5</number>
+                </property>
+                <property name="value">
+                 <number>10</number>
+                </property>
+                <property name="sliderPosition">
+                 <number>10</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="tickPosition">
+                 <enum>QSlider::TicksAbove</enum>
                 </property>
                </widget>
               </item>

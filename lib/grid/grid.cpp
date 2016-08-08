@@ -28,7 +28,7 @@ Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, con
  * Calcola i pesi per gli heightfieltds rispetto alla normale target
  * @param d
  */
-void Grid::calculateBorderWeights(const Dcel& d, bool heightfields) {
+void Grid::calculateBorderWeights(const Dcel& d, bool heightfields, std::set<const Dcel::Face*>& savedFaces) {
     CGALInterface::AABBTree aabb(d);
     double unit = getUnit();
     std::vector<Pointi> flipped;
@@ -46,9 +46,11 @@ void Grid::calculateBorderWeights(const Dcel& d, bool heightfields) {
                         for (std::list<const Dcel::Face*>::iterator it = l.begin(); it != l.end(); ++it){
                             const Dcel::Face* f = *it;
                             if (f->getNormal().dot(target) < 0 && f->getFlag() != 1){
-                                Pointi p(i,j,k);
-                                flipped.push_back(p);
-                                b = false;
+                                if (savedFaces.find(f) == savedFaces.end()){
+                                    Pointi p(i,j,k);
+                                    flipped.push_back(p);
+                                    b = false;
+                                }
                             }
                         }
                         if (b){
@@ -75,7 +77,7 @@ void Grid::calculateBorderWeights(const Dcel& d, bool heightfields) {
  * Assegna massimo peso ai punti nel kernel
  * @param value
  */
-void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool heightfields) {
+void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool heightfields, std::set<const Dcel::Face*>& savedFaces) {
     // grid border and rest
     weights.setConstant(BORDER_PAY);
     for (unsigned int i = 2; i < resX-2; i++){
@@ -87,7 +89,7 @@ void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool hei
     }
 
     //mesh border
-    calculateBorderWeights(d, heightfields);
+    calculateBorderWeights(d, heightfields, savedFaces);
 
     //kernel
     for (unsigned int i = 0; i < getResX(); ++i){

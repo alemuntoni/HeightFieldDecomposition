@@ -39,7 +39,8 @@ namespace Engine {
 
     void setTrianglesTargets(Dcel scaled[]);
 
-    void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3());
+    static std::set<const Dcel::Face*> dummy;
+    void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3(), std::set<const Dcel::Face*> &savedFaces = dummy);
 
     void calculateDecimatedBoxes(BoxList &boxList, const Dcel &d, const Eigen::VectorXi& mapping, const std::set<int> &coveredFaces, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), int orientation = -1,  bool onlyTarget = false, const Vec3& target = Vec3());
 

@@ -149,7 +149,9 @@ void EngineManager::on_generateGridPushButton_clicked() {
         g = new DrawableGrid();
 
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
-        Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()]);
+        std::set<const Dcel::Face*> flippedFaces, savedFaces;
+        Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
+        Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()], savedFaces);
         updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
         d->update();
         g->setKernelDistance(ui->distanceSpinBox->value());
@@ -171,7 +173,9 @@ void EngineManager::on_targetComboBox_currentIndexChanged(int index) {
         g->setTarget(XYZ[index]);
         updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
         d->update();
-        g->calculateBorderWeights(*d);
+        std::set<const Dcel::Face*> flippedFaces, savedFaces;
+        Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
+        g->calculateBorderWeights(*d, ui->heightfieldsCheckBox->isChecked(), savedFaces);
         mainWindow->updateGlCanvas();
     }
 }
@@ -194,7 +198,9 @@ void EngineManager::on_freezeKernelPushButton_clicked() {
     if (g!=nullptr && d!=nullptr){
         double value = ui->distanceSpinBox->value();
         g->setTarget(XYZ[ui->targetComboBox->currentIndex()]);
-        g->calculateWeightsAndFreezeKernel(*d, value, ui->heightfieldsCheckBox->isChecked());
+        std::set<const Dcel::Face*> flippedFaces, savedFaces;
+        Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
+        g->calculateWeightsAndFreezeKernel(*d, value, ui->heightfieldsCheckBox->isChecked(), savedFaces);
         e = Energy(*g);
         e.calculateFullBoxValues(*g);
         mainWindow->updateGlCanvas();
@@ -1028,13 +1034,15 @@ void EngineManager::on_baseComplexPushButton_clicked() {
 void EngineManager::on_subtractPushButton_clicked() {
     if (solutions!= nullptr && baseComplex != nullptr && d != nullptr){
         CGALInterface::AABBTree aabb(*d, true);
+        deleteDrawableObject(he);
         he = new HeightfieldsList();
         mainWindow->pushObj(he, "Heightfields");
         mainWindow->updateGlCanvas();
         he->resize(solutions->getNumberBoxes());
         SimpleIGLMesh bc((SimpleIGLMesh)*baseComplex);
         Timer timer("Boolean Operations");
-        for (int i = solutions->getNumberBoxes()-1; i >= 0 ; i--){
+        for (unsigned int i = 0; i <solutions->getNumberBoxes() ; i++){
+        //for (int i = solutions->getNumberBoxes()-1; i >= 0 ; i--){
             bool b = true;
             for (unsigned int j = 0; j < bc.getNumberVertices(); j++) {
                 Pointd p = bc.getVertex(j);
@@ -1236,11 +1244,12 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
             CGALInterface::AABBTree aabb3(scaled[3]);
             # pragma omp parallel for if(ORIENTATIONS>1)
             for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                    Engine::generateGrid(g[i], scaled[i], kernelDistance);
-                    g[i].resetSignedDistances();
-                    std::cerr << "Generated grid or " << i << "\n";
+                Engine::generateGrid(g[i], scaled[i], kernelDistance);
+                g[i].resetSignedDistances();
+                std::cerr << "Generated grid or " << i << "\n";
             }
 
+            Timer t("Expanding all Boxes");
             while (coveredFaces.size() < scaled[0].getNumberFaces()){
                 BoxList tmp[ORIENTATIONS];
                 Eigen::VectorXi faces[ORIENTATIONS];
@@ -1288,6 +1297,7 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
                 if (numberFaces > scaled[0].getNumberFaces())
                     numberFaces = scaled[0].getNumberFaces();
             }
+            t.stopAndPrint();
 
             std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS];
             for (unsigned int i = 0; i < ORIENTATIONS; i++){
@@ -1303,6 +1313,8 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
             BoxList bl[ORIENTATIONS][TARGETS];
             std::set<int> coveredFaces;
             unsigned int numberFaces = 100;
+            double angleTolerance = (double)ui->toleranceSlider->value()/100;
+            double areaTolerance = ui->areaToleranceSpinBox->value();
             CGALInterface::AABBTree aabb0(scaled[0]);
             CGALInterface::AABBTree aabb1(scaled[1]);
             CGALInterface::AABBTree aabb2(scaled[2]);
@@ -1310,7 +1322,9 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
             # pragma omp parallel for if(ORIENTATIONS>1)
             for (unsigned int i = 0; i < ORIENTATIONS; ++i){
                 for (unsigned int j = 0; j < TARGETS; ++j) {
-                    Engine::generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j]);
+                    std::set<const Dcel::Face*> flippedFaces, savedFaces;
+                    Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
+                    Engine::generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j], savedFaces);
                     g[i][j].resetSignedDistances();
                     std::cerr << "Generated grid or " << i << " t " << j << "\n";
                 }

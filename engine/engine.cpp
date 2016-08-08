@@ -113,7 +113,7 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
     }
 }
 
-void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target) {
+void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces) {
     SimpleIGLMesh m(d);
     Array3D<Pointd> grid;
     Array3D<double> distanceField;
@@ -123,7 +123,7 @@ void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool he
     Pointd nGmax(grid(res.x()-1, res.y()-1, res.z()-1));
     g = Grid(res, grid, distanceField, nGmin, nGmax);
     g.setTarget(target);
-    g.calculateWeightsAndFreezeKernel(d, kernelDistance, heightfields);
+    g.calculateWeightsAndFreezeKernel(d, kernelDistance, heightfields, savedFaces);
     Energy e(g);
     e.calculateFullBoxValues(g);
 }
@@ -239,7 +239,7 @@ void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen:
 
 void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool printTimes) {
     Energy e(g);
-    Timer total("Minimization All Boxes");
+    Timer total("Boxlist expanding");
     int np = boxList.getNumberBoxes();
     Timer t("");
     #pragma omp parallel for
