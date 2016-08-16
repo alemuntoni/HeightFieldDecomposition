@@ -6,6 +6,7 @@
 #include <GL/gl.h>
 #endif
 
+namespace IGLInterface {
 DrawableIGLMesh::DrawableIGLMesh() {
     init();
 }
@@ -214,4 +215,5 @@ void DrawableIGLMesh::renderPass() const {
         }
     }
 
+}
 }

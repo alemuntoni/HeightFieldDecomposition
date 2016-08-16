@@ -239,7 +239,7 @@ inline const double& BoundingBox::getMaxZ() const {
  * @return Il punto al centro del bounding box
  */
 inline Pointd BoundingBox::center() const {
-    return std::move((min + max) * 0.5);
+    return (min + max) * 0.5;
 }
 
 /**

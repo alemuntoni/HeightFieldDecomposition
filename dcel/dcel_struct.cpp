@@ -3,11 +3,20 @@
  * @copyright Alessandro Muntoni 2016.
  */
 
+#include <boost/tokenizer.hpp>
 #include "dcel_face_iterators.h"
 #include "dcel_vertex_iterators.h"
 #include "dcel_iterators.h"
 #include "../common/comparators.h"
 #include "../common/utils.h"
+
+#ifdef CGAL_DEFINED
+#include "../cgal/cgalinterface.h"
+#endif
+
+#ifdef IGL_DEFINED
+#include "../igl/iglmesh.h"
+#endif
 
 /****************
  * Constructors *
@@ -34,6 +43,25 @@ Dcel::Dcel() : nVertices(0), nHalfEdges(0), nFaces(0) {
 Dcel::Dcel(const Dcel& dcel) {
     copyFrom(dcel);
 }
+
+Dcel::Dcel(Dcel&& dcel) {
+    vertices = std::move(dcel.vertices);
+    faces = std::move(dcel.faces);
+    halfEdges = std::move(dcel.halfEdges);
+    unusedVids = std::move(dcel.unusedVids);
+    unusedHeids = std::move(dcel.unusedHeids);
+    unusedFids = std::move(dcel.unusedFids);
+    nVertices = std::move(dcel.nVertices);
+    nHalfEdges = std::move(dcel.nHalfEdges);
+    nFaces = std::move(dcel.nFaces);
+    boundingBox = std::move(dcel.boundingBox);
+}
+
+#ifdef IGL_DEFINED
+Dcel::Dcel(const IGLInterface::SimpleIGLMesh& iglMesh) {
+    copyFrom(iglMesh);
+}
+#endif
 
 /**
  * \~Italian
@@ -2204,6 +2232,31 @@ Dcel& Dcel::operator = (const Dcel& dcel) {
     return *this;
 }
 
+Dcel& Dcel::operator=(Dcel&& dcel) {
+    std::swap(vertices, dcel.vertices);
+    std::swap(halfEdges, dcel.halfEdges);
+    std::swap(faces, dcel.faces);
+    std::swap(unusedVids, dcel.unusedVids);
+    std::swap(unusedHeids, dcel.unusedHeids);
+    std::swap(unusedFids, dcel.unusedFids);
+    std::swap(nVertices, dcel.nVertices);
+    std::swap(nHalfEdges, dcel.nHalfEdges);
+    std::swap(nFaces, dcel.nFaces);
+    std::swap(boundingBox, dcel.boundingBox);
+    return *this;
+}
+
+#ifdef IGL_DEFINED
+Dcel&Dcel::operator=(const IGLInterface::SimpleIGLMesh& iglMesh) {
+    this->clear();
+    vertices.clear();
+    halfEdges.clear();
+    faces.clear();
+    copyFrom(iglMesh);
+    return *this;
+}
+#endif
+
 /*********************
  * Protected Methods *
  ********************/
@@ -2416,3 +2469,101 @@ void Dcel::copyFrom(const Dcel &d) {
         v->setIncidentHalfEdge(mapHalfEdges[(*vit)->getIncidentHalfEdge()]);
     }
 }
+
+#ifdef IGL_DEFINED
+void Dcel::copyFrom(const IGLInterface::SimpleIGLMesh& iglMesh) {
+    clear();
+
+    std::vector<Vertex*> vertices;
+
+    std::map< std::pair<int,int>, HalfEdge* > edge;
+    std::map< std::pair<int,int>, HalfEdge* >::iterator eiter;
+
+    bool first = true;
+
+
+    for (unsigned int i = 0; i < iglMesh.getNumberVertices(); i++) {
+
+        Pointd coord = iglMesh.getVertex(i);
+
+        if (first) {
+            boundingBox.setMin(coord);
+            boundingBox.setMax(coord);
+            first = false;
+        }
+
+        if (coord.x() < boundingBox.getMinX()) boundingBox.setMinX(coord.x());
+        if (coord.y() < boundingBox.getMinY()) boundingBox.setMinY(coord.y());
+        if (coord.z() < boundingBox.getMinZ()) boundingBox.setMinZ(coord.z());
+
+        if (coord.x() > boundingBox.getMaxX()) boundingBox.setMaxX(coord.x());
+        if (coord.y() > boundingBox.getMaxY()) boundingBox.setMaxY(coord.y());
+        if (coord.z() > boundingBox.getMaxZ()) boundingBox.setMaxZ(coord.z());
+
+        Vertex* vid = addVertex(coord);
+
+        vertices.push_back(vid);
+    }
+
+    for (unsigned int i = 0; i < iglMesh.getNumberFaces(); i++) {
+
+        std::vector<int> nid;
+        Pointi ff = iglMesh.getFace(i);
+        nid.push_back(ff.x());
+        nid.push_back(ff.y());
+        nid.push_back(ff.z());
+        nid.push_back(nid[0]);
+        std::pair<int, int> p;
+        HalfEdge* eid = nullptr;
+        Face* fid = addFace();
+        HalfEdge* prev = nullptr;
+        HalfEdge* first = nullptr;
+
+        for (unsigned int i=0; i<nid.size()-1; i++){
+            eid = addHalfEdge();
+            if (i==0) {
+                first = eid;
+                fid->setOuterHalfEdge(eid);
+            }
+            else {
+                eid->setPrev(prev);
+                prev->setNext(eid);
+            }
+            vertices[nid[i] - 1]->setIncidentHalfEdge(eid);
+            eid->setFromVertex(vertices[nid[i] - 1]);
+            vertices[nid[i] - 1]->incrementCardinality();
+            eid->setToVertex(vertices[nid[i+1] - 1]);
+            eid->setFace(fid);
+            p.first = nid[i+1] - 1;
+            p.second = nid[i] - 1;
+            eiter = edge.find(p);
+            if (eiter != edge.end()){
+                HalfEdge* twin = edge[p];
+                eid->setTwin(twin);
+                twin->setTwin(eid);
+                edge.erase(eiter);
+            }
+            else {
+                p.first = nid[i] - 1;
+                p.second = nid[i+1] - 1;
+                edge[p] = eid;
+            }
+            prev = eid;
+        }
+        eid->setNext(first);
+        first->setPrev(eid);
+
+        fid->setColor(QColor(128, 128, 128));
+
+        fid->updateNormal();
+        fid->updateArea();
+    }
+}
+
+void Dcel::copyFrom(const IGLInterface::IGLMesh& iglMesh) {
+    copyFrom((IGLInterface::SimpleIGLMesh)iglMesh);
+    for (Dcel::Face* f : faceIterator()){
+        f->setColor(iglMesh.getColor(f->getId()));
+    }
+}
+#endif

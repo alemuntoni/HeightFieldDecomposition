@@ -22,18 +22,20 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         void setFlatShading();
         void setSmoothShading();
 
-        void addHeightfield(const DrawableIGLMesh &m, const Vec3 &target, int i = -1);
+        void addHeightfield(const IGLInterface::DrawableIGLMesh &m, const Vec3 &target, int i = -1);
         unsigned int getNumHeightfields() const;
 
         void removeHeightfield(unsigned int i);
-        const IGLMesh& getHeightfield(unsigned int i) const;
+        const IGLInterface::IGLMesh& getHeightfield(unsigned int i) const;
+        //IGLInterface::IGLMesh getHeightfield(unsigned int i) const;
+        void setHeightfield(const IGLInterface::IGLMesh& he, unsigned int i);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);
 
     private:
-        std::vector<DrawableIGLMesh> heightfields;
+        std::vector<IGLInterface::DrawableIGLMesh> heightfields;
         std::vector<Vec3> targets;
         bool visible;
         int nVisible;

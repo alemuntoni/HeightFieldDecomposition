@@ -36,11 +36,11 @@ int main(int argc, char *argv[]) {
     EngineManager e(&gui);
     ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
 
-    IGLMeshManager mm(&gui);
-    gui.addManager(&mm, "IGL Mesh Manager");
+    //IGLMeshManager mm(&gui);
+    //gui.addManager(&mm, "IGL Mesh Manager");
 
-    BooleansManager bm(&gui);
-    gui.addManager(&bm, "Booleans Manager");
+    //BooleansManager bm(&gui);
+    //gui.addManager(&bm, "Booleans Manager");
 
 
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default

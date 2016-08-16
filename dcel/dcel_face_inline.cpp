@@ -15,14 +15,18 @@ inline unsigned int Dcel::Face::getId() const {
 }
 
 inline const Dcel::Vertex*Dcel::Face::getVertex1() const {
+    assert(outerHalfEdge != nullptr && "Face's Outer HalfEdge is null.");
     return outerHalfEdge->getFromVertex();
 }
 
 inline const Dcel::Vertex*Dcel::Face::getVertex2() const {
+    assert(outerHalfEdge != nullptr && "Face's Outer HalfEdge is null.");
     return outerHalfEdge->getToVertex();
 }
 
 inline const Dcel::Vertex*Dcel::Face::getVertex3() const {
+    assert(outerHalfEdge != nullptr && "Face's Outer HalfEdge is null.");
+    assert(outerHalfEdge->getNext() != nullptr && "Outer HalfEdge's next is null.");
     return outerHalfEdge->getNext()->getToVertex();
 }
 
@@ -93,28 +97,6 @@ inline bool Dcel::Face::hasHoles() const {
 
 /**
  * \~Italian
- * @brief Operatore di uguaglianza tra facce
- * @param[in] otherFace: faccia con cui verrà verificata l'uguaglianza con la faccia this
- * @return True se le facce sono uguali, false altrimenti
- * @todo Da riscrivere
- */
-inline bool Dcel::Face::operator == (const Face& otherFace) const {
-    if (otherFace.id == id) return true;
-    else return false;
-}
-
-/**
- * \~Italian
- * @brief Operatore di disuguaglianza tra facce
- * @param[in] otherFace: faccia con cui verrà verificata la disuguaglianza con la faccia this
- * @return True se le facce sono diverse, false altrimenti
- */
-inline bool Dcel::Face::operator != (const Face& otherFace) const {
-    return !(*this == otherFace);
-}
-
-/**
- * \~Italian
  * @brief Restituisce true se l'outer half edge non è null
  */
 inline bool Dcel::Face::checkOuterHalfEdge() const {
@@ -122,14 +104,18 @@ inline bool Dcel::Face::checkOuterHalfEdge() const {
 }
 
 inline Dcel::Vertex*Dcel::Face::getVertex1() {
+    assert(outerHalfEdge != nullptr && "Face's Outer HalfEdge is null.");
     return outerHalfEdge->getFromVertex();
 }
 
 inline Dcel::Vertex*Dcel::Face::getVertex2() {
+    assert(outerHalfEdge != nullptr && "Face's Outer HalfEdge is null.");
     return outerHalfEdge->getToVertex();
 }
 
 inline Dcel::Vertex*Dcel::Face::getVertex3() {
+    assert(outerHalfEdge != nullptr && "Face's Outer HalfEdge is null.");
+    assert(outerHalfEdge->getNext() != nullptr && "Outer HalfEdge's next is null.");
     return outerHalfEdge->getNext()->getToVertex();
 }
 

@@ -6,19 +6,13 @@
 #ifndef DCEL_STRUCT_H
 #define DCEL_STRUCT_H
 
-#include <boost/tokenizer.hpp>
-#include <fstream>
-#include <sstream>
-#include <QFileInfo>
-#include <map>
-#include <set>
-#include <array>
-#include <omp.h>
-
 #include "../common/bounding_box.h"
 
-#ifdef CGAL_DEFINED
-#include "../cgal/cgalinterface.h"
+#ifdef IGL_DEFINED
+namespace IGLInterface{
+    class SimpleIGLMesh;
+    class IGLMesh;
+}
 #endif
 
 /**
@@ -95,7 +89,11 @@ class Dcel : public SerializableObject {
         ****************/
 
         Dcel();
-        Dcel(const Dcel &dcel);
+        Dcel(const Dcel& dcel);
+        Dcel(Dcel&& dcel);
+        #ifdef IGL_DEFINED
+        Dcel(const IGLInterface::SimpleIGLMesh &iglMesh);
+        #endif
         ~Dcel();
 
         /************************
@@ -177,6 +175,10 @@ class Dcel : public SerializableObject {
         std::string loadFromOldDcelFile(const std::string& filename);
         std::string loadFromOldOldDcelFile(const std::string& filename);
         Dcel& operator= (const Dcel& dcel);
+        Dcel& operator= (Dcel&& dcel);
+        #ifdef IGL_DEFINED
+        Dcel& operator= (const IGLInterface::SimpleIGLMesh& iglMesh);
+        #endif
 
     protected:
 
@@ -206,6 +208,10 @@ class Dcel : public SerializableObject {
         std::vector<const Vertex*> makeSingleBorder(const Face *f)     const;
 
         void copyFrom(const Dcel &d);
+        #ifdef IGL_DEFINED
+        void copyFrom(const IGLInterface::SimpleIGLMesh &iglMesh);
+        void copyFrom(const IGLInterface::IGLMesh &iglMesh);
+        #endif
 
 };
 

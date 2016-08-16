@@ -16,7 +16,7 @@ class IGLMeshManager : public QFrame
     public:
         explicit IGLMeshManager(QWidget *parent = 0);
         void setButtonsMeshLoaded(bool b);
-        void setIGLMesh(const IGLMesh &m);
+        void setIGLMesh(const IGLInterface::IGLMesh &m);
         ~IGLMeshManager();
 
     private slots:
@@ -37,7 +37,7 @@ class IGLMeshManager : public QFrame
     private:
         Ui::IGLMeshManager *ui;
         MainWindow* mainWindow;
-        DrawableIGLMesh* mesh;
+        IGLInterface::DrawableIGLMesh* mesh;
 
 
 };

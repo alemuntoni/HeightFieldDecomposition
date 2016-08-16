@@ -8,7 +8,6 @@
 #include "ui_mainwindow.h"
 #include <QScrollArea>
 #include <QCheckBox>
-#include <QThread>
 
 /**
  * @brief Crea una nuova mainWindow composta da canvas, toolBox avente 0 frame e scrollArea.
@@ -26,10 +25,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     connect(checkBoxMapper, SIGNAL(mapped(int)), this, SLOT(checkBoxClicked(int)));
     connect(ui->glCanvas, SIGNAL(objectPicked(unsigned int)),
             this, SLOT(slotObjectPicked(unsigned int)));
-
-    //QThread *newThread=new QThread();
-    //ui->glCanvas->doneCurrent();
-    //ui->glCanvas->context()->moveToThread(newThread);
 
     QVBoxLayout * layout = new QVBoxLayout(this);
     ui->scrollArea->setLayout(layout);

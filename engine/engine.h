@@ -13,6 +13,7 @@
 #include "energy.h"
 #include "cgal/aabbtree.h"
 #include "igl/iglinterface.h"
+#include "heightfieldslist.h"
 #elif SERVER_MODE==1
 #include "dcel/dcel.h"
 #include "lib/grid/grid.h"
@@ -47,6 +48,14 @@ namespace Engine {
     void calculateInitialBoxes(BoxList &boxList, const Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
 
     void expandBoxes(BoxList &boxList, const Grid &g, bool printTimes = false);
+
+    void createAndMinimizeAllBoxes(BoxList &solutions, const Dcel &d, double kernelDistance, bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0);
+
+    void boxSnapping(BoxList &solutions, double minimumDistance);
+
+    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, bool onlyTouchingSurface=false);
+
+    void gluePortionsToBaseComplex(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
     #endif
 
     #ifndef SERVER_MODE

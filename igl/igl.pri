@@ -28,5 +28,7 @@ SOURCES += \
 #Note: QtCreator always shows this module included, however files included in it are compiled only if Viewer module is included
 VIEWER_DEFINED{
     include ($$PWD/gui/iglmeshmanager.pri)
-    include ($$PWD/gui/booleansmanager.pri)
+    CGAL_DEFINED {
+        include ($$PWD/gui/booleansmanager.pri)
+    }
 }

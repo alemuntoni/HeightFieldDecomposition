@@ -16,10 +16,6 @@ class Box3D : public BoundingBox, public DrawableObject{
 
         void setColor(const QColor &c);
         QColor getColor() const;
-        /*const Pointd& getMin() const;
-        void setMin(const Pointd& value);
-        const Pointd& getMax() const;
-        void setMax(const Pointd& value);*/
 
         const Pointd& getConstraint1() const;
         const Pointd& getConstraint2() const;
@@ -40,7 +36,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         void moveY(double d);
         void moveZ(double d);
         #ifdef IGL_DEFINED
-        void getIGLMesh(SimpleIGLMesh& box) const;
+        void getIGLMesh(IGLInterface::SimpleIGLMesh& box) const;
         #endif
 
         // DrawableObject interface

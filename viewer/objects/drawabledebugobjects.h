@@ -1,7 +1,7 @@
 #ifndef DRAWABLEDEBUGOBJECTS_H
 #define DRAWABLEDEBUGOBJECTS_H
 
-#include "../interfaces//drawable_object.h"
+#include "../interfaces/drawable_object.h"
 #include "../../common/bounding_box.h"
 
 

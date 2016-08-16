@@ -797,7 +797,7 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
         std::list<const Dcel::Face*> covered;
         if (mb == m[0]){
             CGALInterface::AABBTree t(dd);
-            t.getIntersectedPrimitives(covered, *b);
+            t.getIntersectedDcelFaces(covered, *b);
         }
         else if (mb == m[1]){
 
@@ -805,21 +805,21 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
             getRotationMatrix(Vec3(0,0,1), 0.785398, mm);
             dd.rotate(mm);
             CGALInterface::AABBTree t(dd);
-            t.getIntersectedPrimitives(covered, *b);
+            t.getIntersectedDcelFaces(covered, *b);
         }
         else if (mb == m[2]){
             Eigen::Matrix3d mm;
             getRotationMatrix(Vec3(1,0,0), 0.785398, mm);
             dd.rotate(mm);
             CGALInterface::AABBTree t(dd);
-            t.getIntersectedPrimitives(covered, *b);
+            t.getIntersectedDcelFaces(covered, *b);
         }
         else if (mb == m[3]){
             Eigen::Matrix3d mm;
             getRotationMatrix(Vec3(0,1,0), 0.785398, mm);
             dd.rotate(mm);
             CGALInterface::AABBTree t(dd);
-            t.getIntersectedPrimitives(covered, *b);
+            t.getIntersectedDcelFaces(covered, *b);
         }
         else assert(0);
 
@@ -1024,8 +1024,9 @@ void EngineManager::on_stepDrawGridSpinBox_valueChanged(double arg1) {
 
 void EngineManager::on_baseComplexPushButton_clicked() {
     if (d != nullptr){
-        IGLMesh m = (Dcel)*d;
-        baseComplex = new DrawableIGLMesh(m);
+        deleteDrawableObject(baseComplex);
+        IGLInterface::IGLMesh m = (Dcel)*d;
+        baseComplex = new IGLInterface::DrawableIGLMesh(m);
         mainWindow->pushObj(baseComplex, "Base Complex");
         mainWindow->updateGlCanvas();
     }
@@ -1033,56 +1034,12 @@ void EngineManager::on_baseComplexPushButton_clicked() {
 
 void EngineManager::on_subtractPushButton_clicked() {
     if (solutions!= nullptr && baseComplex != nullptr && d != nullptr){
-        CGALInterface::AABBTree aabb(*d, true);
         deleteDrawableObject(he);
         he = new HeightfieldsList();
         mainWindow->pushObj(he, "Heightfields");
         mainWindow->updateGlCanvas();
-        he->resize(solutions->getNumberBoxes());
-        SimpleIGLMesh bc((SimpleIGLMesh)*baseComplex);
-        Timer timer("Boolean Operations");
-        for (unsigned int i = 0; i <solutions->getNumberBoxes() ; i++){
-        //for (int i = solutions->getNumberBoxes()-1; i >= 0 ; i--){
-            bool b = true;
-            for (unsigned int j = 0; j < bc.getNumberVertices(); j++) {
-                Pointd p = bc.getVertex(j);
-                double dist = aabb.getSquaredDistance(p);
-                if (dist == 0) {
-                    b = false;
-                    break;
-                }
-            }
-            if (b){
-                std::cerr << "Finished! \n";
-                break;
-            }
-            SimpleIGLMesh box;
-            SimpleIGLMesh intersection;
-            solutions->getBox(i).getIGLMesh(box);
-            SimpleIGLMesh::intersection(intersection, bc, box);
-            b = true;
-            for (unsigned int j = 0; j < intersection.getNumberVertices(); j++) {
-                Pointd p = intersection.getVertex(j);
-                double dist = aabb.getSquaredDistance(p);
-                if (dist == 0) {
-                    b = false;
-                    break;
-                }
-            }
-            if (!b) {
-                SimpleIGLMesh::difference(bc, bc, box);
-                DrawableIGLMesh dimm(intersection);
-                he->addHeightfield(dimm, solutions->getBox(i).getRotatedTarget(), i);
-            }
-            std::cerr << i << "\n";
-        }
-        timer.stopAndPrint();
-        for (int i = he->getNumHeightfields()-1; i >= 0 ; i--){
-            if (he->getNumberVerticesHeightfield(i) == 0){
-                he->removeHeightfield(i);
-                solutions->removeBox(i);
-            }
-        }
+        IGLInterface::SimpleIGLMesh bc((IGLInterface::SimpleIGLMesh)*baseComplex);
+        Engine::booleanOperations(*he, bc, *solutions, *d, ui->cutHEightfieldsCheckBox->isChecked());
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
@@ -1093,7 +1050,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow->deleteObj(baseComplex);
         delete baseComplex;
-        baseComplex = new DrawableIGLMesh(bc);
+        baseComplex = new IGLInterface::DrawableIGLMesh(bc);
         baseComplex->updateFaceNormals();
         for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
             Vec3 n = baseComplex->getNormal(i);
@@ -1109,36 +1066,20 @@ void EngineManager::on_subtractPushButton_clicked() {
 
 void EngineManager::on_stickPushButton_clicked() {
     if (d!=nullptr && baseComplex != nullptr && he != nullptr && solutions != nullptr){
-        CGALInterface::AABBTree aabb(*d, true);
-        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            bool b = true;
-            for (unsigned int j = 0; j < he->getNumberVerticesHeightfield(i); j++) {
-                Pointd p = he->getVertexOfHeightfield(i,j);
-                double dist = aabb.getSquaredDistance(p);
-                if (dist == 0) b = false;
-            }
-            if (b) {
-                std::cerr << "Heightfield eliminabile\n";
-                IGLMesh::unionn(*baseComplex, *baseComplex, he->getHeightfield(i));
-                he->removeHeightfield(i);
-                solutions->removeBox(i);
-                i--;
-            }
+        IGLInterface::SimpleIGLMesh bc = *baseComplex;
+        Engine::gluePortionsToBaseComplex(*he, bc, *solutions, *d);
+        deleteDrawableObject(baseComplex);
+        baseComplex = new IGLInterface::DrawableIGLMesh(bc);
+        baseComplex->updateFaceNormals();
+        for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
+            Vec3 n = baseComplex->getNormal(i);
+            n.normalize();
+            QColor c = colorOfNearestNormal(n);
+            baseComplex->setColor(c.redF(), c.greenF(), c.blueF(), i);
         }
+        mainWindow->pushObj(baseComplex, "Base Complex");
     }
-    for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
-        Vec3 n = baseComplex->getNormal(i);
-        n.normalize();
-        QColor c = colorOfNearestNormal(n);
-        baseComplex->setColor(c.redF(), c.greenF(), c.blueF(), i);
-    }
-    ui->showAllSolutionsCheckBox->setEnabled(true);
-    solutions->setVisibleBox(0);
-    ui->solutionsSlider->setEnabled(true);
-    ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-    ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
-    ui->setFromSolutionSpinBox->setValue(0);
-    ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+
     mainWindow->updateGlCanvas();
 }
 
@@ -1155,7 +1096,7 @@ void EngineManager::on_serializeBCPushButton_clicked() {
             solutions->serialize(myfile);
             baseComplex->serialize(myfile);
             he->serialize(myfile);
-            std::vector<IGLMesh> hf;
+            std::vector<IGLInterface::IGLMesh> hf;
             Serializer::serialize(hf, myfile);
             myfile.close();
         }
@@ -1176,7 +1117,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         deleteDrawableObject(he);
         d = new DrawableDcel();
         solutions = new BoxList();
-        baseComplex = new DrawableIGLMesh();
+        baseComplex = new IGLInterface::DrawableIGLMesh();
         he = new HeightfieldsList();
         std::ifstream myfile;
         myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
@@ -1187,7 +1128,6 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         //manca gestione heightfields
         myfile.close();
         d->update();
-        d->saveOnObjFile("sphere_sim3.obj");
         d->setPointsShading();
         d->setWireframe(true);
         mainWindow->pushObj(d, "Input Mesh");
@@ -1203,14 +1143,16 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        IGLMesh m(*d);
-        m.saveOnObj("prova/model.obj");
-        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
-            SimpleIGLMesh bb;
-            solutions->getBox(i).getIGLMesh(bb);
+        //Engine::gluePortionsToBaseComplex(*he, *baseComplex, *solutions, *d);
+        IGLInterface::IGLMesh m(*d);
+        m.saveOnObj("results/input_model.obj");
+        baseComplex->saveOnObj("results/base_complex.obj");
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            IGLInterface::IGLMesh h;
+            h = he->getHeightfield(i);
             std::stringstream ss;
-            ss << "prova/box" << i << ".obj";
-            bb.saveOnObj(ss.str());
+            ss << "results/heightfield" << i << ".obj";
+            h.saveOnObj(ss.str());
         }
     }
 }
@@ -1221,178 +1163,9 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
         solutions = new BoxList();
         mainWindow->pushObj(solutions, "Solutions");
         double kernelDistance = ui->distanceSpinBox->value();
-        Dcel scaled[ORIENTATIONS];
-        Eigen::Matrix3d m[ORIENTATIONS];
-        std::vector< std::tuple<int, Box3D, std::vector<bool> > > allVectorTriples;
-
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            scaled[i] = *d;
-            m[i] = Engine::rotateDcelAlreadyScaled(scaled[i], i);
-        }
-
-        if (ui->onlyNearestTargetCheckBox->isChecked())
-            Engine::setTrianglesTargets(scaled);
-
-        if (!ui->heightfieldsCheckBox->isChecked()){
-            Grid g[ORIENTATIONS];
-            BoxList bl[ORIENTATIONS];
-            std::set<int> coveredFaces;
-            unsigned int numberFaces = 100;
-            CGALInterface::AABBTree aabb0(scaled[0]);
-            CGALInterface::AABBTree aabb1(scaled[1]);
-            CGALInterface::AABBTree aabb2(scaled[2]);
-            CGALInterface::AABBTree aabb3(scaled[3]);
-            # pragma omp parallel for if(ORIENTATIONS>1)
-            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                Engine::generateGrid(g[i], scaled[i], kernelDistance);
-                g[i].resetSignedDistances();
-                std::cerr << "Generated grid or " << i << "\n";
-            }
-
-            Timer t("Expanding all Boxes");
-            while (coveredFaces.size() < scaled[0].getNumberFaces()){
-                BoxList tmp[ORIENTATIONS];
-                Eigen::VectorXi faces[ORIENTATIONS];
-                for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                    IGLMesh m(scaled[i]);
-                    IGLMesh dec;
-                    bool b = m.getDecimatedMesh(dec, numberFaces, faces[i]);
-                    std::cerr << "Decimated mesh " << i << ": " << (b ? "true" : "false") <<"\n";
-                }
-
-                for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                    std::cerr << "Calculating Boxes\n";
-                    if (ui->onlyNearestTargetCheckBox->isChecked()){
-                        Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i], i);
-                    }
-                    else
-                        Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i]);
-                    std::cerr << "Starting boxes growth\n";
-                    Engine::expandBoxes(tmp[i], g[i], true);
-                    std::cerr << "Orientation: " << i << " completed.\n";
-                }
-
-                for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-
-                        for (unsigned int k = 0; k < tmp[i].getNumberBoxes(); ++k){
-                            std::list<const Dcel::Face*> list;
-                            switch(i){
-                                    case 0: aabb0.getIntersectedPrimitives(list, tmp[i].getBox(k)); break;
-                                    case 1: aabb1.getIntersectedPrimitives(list, tmp[i].getBox(k)); break;
-                                    case 2: aabb2.getIntersectedPrimitives(list, tmp[i].getBox(k)); break;
-                                    case 3: aabb3.getIntersectedPrimitives(list, tmp[i].getBox(k)); break;
-                            }
-                            for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
-                                coveredFaces.insert((*it)->getId());
-                            }
-                        }
-                }
-                for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                        bl[i].insert(tmp[i]);
-                }
-
-                std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
-                std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
-                numberFaces*=2;
-                if (numberFaces > scaled[0].getNumberFaces())
-                    numberFaces = scaled[0].getNumberFaces();
-            }
-            t.stopAndPrint();
-
-            std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS];
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                solutions->insert(bl[i]);
-                Engine::createVectorTriples(vectorTriples[i], bl[i], scaled[i]);
-                allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i].begin(), vectorTriples[i].end());
-            }
-
-            Engine::deleteBoxes(*solutions, allVectorTriples, d->getNumberFaces());
-        }
-        else {
-            Grid g[ORIENTATIONS][TARGETS];
-            BoxList bl[ORIENTATIONS][TARGETS];
-            std::set<int> coveredFaces;
-            unsigned int numberFaces = 100;
-            double angleTolerance = (double)ui->toleranceSlider->value()/100;
-            double areaTolerance = ui->areaToleranceSpinBox->value();
-            CGALInterface::AABBTree aabb0(scaled[0]);
-            CGALInterface::AABBTree aabb1(scaled[1]);
-            CGALInterface::AABBTree aabb2(scaled[2]);
-            CGALInterface::AABBTree aabb3(scaled[3]);
-            # pragma omp parallel for if(ORIENTATIONS>1)
-            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                for (unsigned int j = 0; j < TARGETS; ++j) {
-                    std::set<const Dcel::Face*> flippedFaces, savedFaces;
-                    Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
-                    Engine::generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j], savedFaces);
-                    g[i][j].resetSignedDistances();
-                    std::cerr << "Generated grid or " << i << " t " << j << "\n";
-                }
-            }
-
-            while (coveredFaces.size() < scaled[0].getNumberFaces()){
-                BoxList tmp[ORIENTATIONS][TARGETS];
-                Eigen::VectorXi faces[ORIENTATIONS];
-                for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                    IGLMesh m(scaled[i]);
-                    IGLMesh dec;
-                    bool b = m.getDecimatedMesh(dec, numberFaces, faces[i]);
-                    std::cerr << "Decimated mesh " << i << ": " << b <<"\n";
-                }
-                for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                    for (unsigned int j = 0; j < TARGETS; ++j){
-                        std::cerr << "Calculating Boxes\n";
-                        if (ui->onlyNearestTargetCheckBox->isChecked()){
-                            Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], i, true, XYZ[j]);
-                        }
-                        else
-                            Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, true, XYZ[j]);
-                        std::cerr << "Starting boxes growth\n";
-                        Engine::expandBoxes(tmp[i][j], g[i][j]);
-                        std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
-                    }
-                }
-
-                for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                    for (unsigned int j = 0; j < TARGETS; ++j){
-                        for (unsigned int k = 0; k < tmp[i][j].getNumberBoxes(); ++k){
-                            std::list<const Dcel::Face*> list;
-                            switch(i){
-                                    case 0: aabb0.getIntersectedPrimitives(list, tmp[i][j].getBox(k)); break;
-                                    case 1: aabb1.getIntersectedPrimitives(list, tmp[i][j].getBox(k)); break;
-                                    case 2: aabb2.getIntersectedPrimitives(list, tmp[i][j].getBox(k)); break;
-                                    case 3: aabb3.getIntersectedPrimitives(list, tmp[i][j].getBox(k)); break;
-                            }
-                            for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
-                                coveredFaces.insert((*it)->getId());
-                            }
-                        }
-                    }
-                }
-                for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                    for (unsigned int j = 0; j < TARGETS; ++j){
-                        bl[i][j].insert(tmp[i][j]);
-                    }
-                }
-
-                std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
-                std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
-                numberFaces*=2;
-                if (numberFaces > scaled[0].getNumberFaces())
-                    numberFaces = scaled[0].getNumberFaces();
-            }
-
-            std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS][TARGETS];
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                for (unsigned int j = 0; j < TARGETS; ++j){
-                    solutions->insert(bl[i][j]);
-                    Engine::createVectorTriples(vectorTriples[i][j], bl[i][j], scaled[i]);
-                    allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i][j].begin(), vectorTriples[i][j].end());
-                }
-            }
-
-            Engine::deleteBoxes(*solutions, allVectorTriples, d->getNumberFaces());
-        }
+        Timer t("Total Time Grids and Minimization Boxes");
+        Engine::createAndMinimizeAllBoxes(*solutions, *d, kernelDistance, ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100);
+        t.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
         ui->solutionsSlider->setEnabled(true);

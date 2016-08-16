@@ -77,7 +77,7 @@ void HeightfieldsList::setSmoothShading() {
     }
 }
 
-void HeightfieldsList::addHeightfield(const DrawableIGLMesh& m, const Vec3& target, int i) {
+void HeightfieldsList::addHeightfield(const IGLInterface::DrawableIGLMesh& m, const Vec3& target, int i) {
     if (i < 0){
         heightfields.push_back(m);
         targets.push_back(target);
@@ -102,9 +102,19 @@ void HeightfieldsList::removeHeightfield(unsigned int i) {
     targets.erase(targets.begin()+i);
 }
 
-const IGLMesh&HeightfieldsList::getHeightfield(unsigned int i) const {
+const IGLInterface::IGLMesh& HeightfieldsList::getHeightfield(unsigned int i) const {
     assert (i < heightfields.size());
     return heightfields[i];
+}
+
+/*IGLInterface::IGLMesh HeightfieldsList::getHeightfield(unsigned int i) const {
+    assert (i < heightfields.size());
+    return heightfields[i];
+}*/
+
+void HeightfieldsList::setHeightfield(const IGLInterface::IGLMesh& he, unsigned int i) {
+    assert (i < heightfields.size());
+    heightfields[i] = he;
 }
 
 void HeightfieldsList::serialize(std::ofstream& binaryFile) const {

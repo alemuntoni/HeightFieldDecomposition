@@ -64,7 +64,7 @@
         <x>0</x>
         <y>0</y>
         <width>406</width>
-        <height>1031</height>
+        <height>1036</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -547,6 +547,16 @@
                <widget class="QPushButton" name="stickPushButton">
                 <property name="text">
                  <string>Stick</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QCheckBox" name="cutHEightfieldsCheckBox">
+                <property name="text">
+                 <string>Cut Height.</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>

@@ -59,23 +59,23 @@ void BooleansManager::setButtonsResultLoaded(bool b) {
     ui->smoothIGLMeshRadioButton_3->setChecked(true);
 }
 
-void BooleansManager::setMesh1(const IGLMesh& m) {
+void BooleansManager::setMesh1(const IGLInterface::IGLMesh& m) {
     if (meshes[0] != nullptr){
         mainWindow->deleteObj(meshes[0]);
         delete meshes[0];
     }
-    meshes[0] = new DrawableIGLMesh(m);
+    meshes[0] = new IGLInterface::DrawableIGLMesh(m);
     mainWindow->pushObj(meshes[0], "IglMesh");
     setButtonsMeshLoaded(true);
     mainWindow->updateGlCanvas();
 }
 
-void BooleansManager::setMesh2(const IGLMesh& m) {
+void BooleansManager::setMesh2(const IGLInterface::IGLMesh& m) {
     if (meshes[1] != nullptr){
         mainWindow->deleteObj(meshes[1]);
         delete meshes[1];
     }
-    meshes[1] = new DrawableIGLMesh(m);
+    meshes[1] = new IGLInterface::DrawableIGLMesh(m);
     mainWindow->pushObj(meshes[1], "IglMesh");
     setButtonsMeshLoaded_2(true);
     mainWindow->updateGlCanvas();
@@ -87,7 +87,7 @@ void BooleansManager::on_loadIGLMeshButton_clicked() {
                        ".",
                        "OBJ(*.obj);;PLY(*.ply)");
     if (!filename.isEmpty()) {
-        DrawableIGLMesh* mesh = new DrawableIGLMesh();
+        IGLInterface::DrawableIGLMesh* mesh = new IGLInterface::DrawableIGLMesh();
         mesh->readFromFile(filename.toStdString());
         mainWindow->pushObj(mesh, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
         setButtonsMeshLoaded(true);
@@ -130,7 +130,7 @@ void BooleansManager::on_setFromResultButton_clicked() {
             mainWindow->deleteObj(meshes[0]);
             delete meshes[0];
         }
-        meshes[0] = new DrawableIGLMesh(*result);
+        meshes[0] = new IGLInterface::DrawableIGLMesh(*result);
         mainWindow->pushObj(meshes[0], "Result");
         setButtonsMeshLoaded(true);
         mainWindow->updateGlCanvas();
@@ -170,7 +170,7 @@ void BooleansManager::on_loadIGLMeshButton_2_clicked() {
                        ".",
                        "OBJ(*.obj);;PLY(*.ply)");
     if (!filename.isEmpty()) {
-        DrawableIGLMesh* mesh = new DrawableIGLMesh();
+        IGLInterface::DrawableIGLMesh* mesh = new IGLInterface::DrawableIGLMesh();
         mesh->readFromFile(filename.toStdString());
         mainWindow->pushObj(mesh, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
         setButtonsMeshLoaded_2(true);
@@ -213,7 +213,7 @@ void BooleansManager::on_setFromResultButton_2_clicked() {
             mainWindow->deleteObj(meshes[1]);
             delete meshes[1];
         }
-        meshes[1] = new DrawableIGLMesh(*result);
+        meshes[1] = new IGLInterface::DrawableIGLMesh(*result);
         mainWindow->pushObj(meshes[1], "Result");
         setButtonsMeshLoaded(true);
         mainWindow->updateGlCanvas();
@@ -253,8 +253,8 @@ void BooleansManager::on_intersectionButton_clicked() {
             mainWindow->deleteObj(result);
             delete result;
         }
-        result = new DrawableIGLMesh();
-        IGLMesh::intersection(*result, *(meshes[0]), *(meshes[1]));
+        result = new IGLInterface::DrawableIGLMesh();
+        IGLInterface::IGLMesh::intersection(*result, *(meshes[0]), *(meshes[1]));
         mainWindow->pushObj(result, "Intersection");
         mainWindow->updateGlCanvas();
         setButtonsResultLoaded(true);
@@ -267,8 +267,8 @@ void BooleansManager::on_differenceButton_clicked() {
             mainWindow->deleteObj(result);
             delete result;
         }
-        result = new DrawableIGLMesh();
-        IGLMesh::difference(*result, *(meshes[0]), *(meshes[1]));
+        result = new IGLInterface::DrawableIGLMesh();
+        IGLInterface::IGLMesh::difference(*result, *(meshes[0]), *(meshes[1]));
         mainWindow->pushObj(result, "Difference");
         mainWindow->updateGlCanvas();
         setButtonsResultLoaded(true);
@@ -281,8 +281,8 @@ void BooleansManager::on_unionButton_clicked() {
             mainWindow->deleteObj(result);
             delete result;
         }
-        result = new DrawableIGLMesh();
-        IGLMesh::unionn(*result, *(meshes[0]), *(meshes[1]));
+        result = new IGLInterface::DrawableIGLMesh();
+        IGLInterface::IGLMesh::unionn(*result, *(meshes[0]), *(meshes[1]));
         mainWindow->pushObj(result, "Union");
         mainWindow->updateGlCanvas();
         setButtonsResultLoaded(true);

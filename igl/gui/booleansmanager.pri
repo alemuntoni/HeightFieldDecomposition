@@ -1,7 +1,11 @@
 MODULES +=  BOOLEANS_MANAGER
 
 !contains(DEFINES, VIEWER_DEFINED){
-    error(IglMeshManager module requires Viewer module!)
+    error(BooleansManager module requires Viewer module!)
+}
+
+!contains(DEFINES, CGAL_DEFINED){
+    error(BooleansManager module requires Cgal module!)
 }
 
 FORMS += \

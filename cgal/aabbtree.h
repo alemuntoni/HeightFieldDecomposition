@@ -20,18 +20,21 @@ namespace CGALInterface {
         public:
 
             AABBTree();
+            AABBTree(const AABBTree& other);
             #ifdef DCEL_DEFINED
             AABBTree(const Dcel &d, bool forDistanceQueries = false);
             #endif
+
+            AABBTree& operator=(const AABBTree& other);
 
             int getNumberIntersectedPrimitives(const Pointd& p1, const Pointd &p2);
             int getNumberIntersectedPrimitives(const BoundingBox& b);
             double getSquaredDistance(const Pointd &p);
             Pointd getNearestPoint(const Pointd &p);
             #ifdef DCEL_DEFINED
-            void getIntersectedPrimitives(std::list<const Dcel::Face*> &outputList, const BoundingBox &b);
+            void getIntersectedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b);
 
-            const Dcel::Face* getNearestPrimitive(const Pointd &p);
+            const Dcel::Face* getNearestDcelFace(const Pointd &p);
             #endif
 
         protected:
@@ -57,9 +60,10 @@ namespace CGALInterface {
             };
 
             Tree tree;
+            bool forDistanceQueries;
             #ifdef DCEL_DEFINED
-            std::map<const Dcel::Vertex*, CGALPoint> vertices_points;
-            std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle> triangles_faces;
+            std::map<const Dcel::Vertex*, CGALPoint> mapDcelVerticesToCgalPoints;
+            std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle> mapCgalTrianglesToDcelFaces;
             #endif
             std::list<CGALTriangle> triangles;
     };

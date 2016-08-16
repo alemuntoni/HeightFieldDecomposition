@@ -135,8 +135,6 @@ class Dcel::Face {
         const Dcel::HalfEdge* getOuterHalfEdge()        const;
         int getNumberInnerHalfEdges()                   const;
         bool hasHoles()                                 const;
-        bool operator == (const Face& otherFace)        const;
-        bool operator != (const Face& otherFace)        const;
         bool checkOuterHalfEdge()                       const;
 
 
@@ -238,6 +236,8 @@ class Dcel::Face {
 
         std::string innerComponentsToString() const;
 };
+
+std::ostream& operator<< (std::ostream& inputStream, const Dcel::Face* f);
 
 #include "dcel_face_inline.cpp"
 

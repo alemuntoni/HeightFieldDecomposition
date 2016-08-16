@@ -26,25 +26,28 @@ Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
     if (rot > 0){
         switch (rot){
             case 1:
-                getRotationMatrix(Vec3(0,0,1), 0.785398, m);
+                getRotationMatrix(Vec3(0,0,1), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
-                getRotationMatrix(Vec3(0,0,-1), 0.785398, m);
+                //m.transpose();
+                getRotationMatrix(Vec3(0,0,-1), M_PI/4, m);
                 break;
             case 2:
-                getRotationMatrix(Vec3(0,1,0), 0.785398, m);
+                getRotationMatrix(Vec3(0,1,0), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
-                getRotationMatrix(Vec3(0,-1,0), 0.785398, m);
+                //m.transpose();
+                getRotationMatrix(Vec3(0,-1,0), M_PI/4, m);
                 break;
             case 3:
-                getRotationMatrix(Vec3(1,0,0), 0.785398, m);
+                getRotationMatrix(Vec3(1,0,0), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
-                getRotationMatrix(Vec3(-1,0,0), 0.785398, m);
+                //m.transpose();
+                getRotationMatrix(Vec3(-1,0,0), M_PI/4, m);
                 break;
             default:
                 assert(0);
@@ -114,7 +117,7 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
 }
 
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces) {
-    SimpleIGLMesh m(d);
+    IGLInterface::SimpleIGLMesh m(d);
     Array3D<Pointd> grid;
     Array3D<double> distanceField;
     IGLInterface::generateGridAndDistanceField(grid, distanceField, m);
@@ -262,6 +265,375 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool printTimes) {
     total.stopAndPrint();
     std::cerr << "Number Boxes: " << np << "\n";
 }
+
+/**
+ * @brief Engine::createAndMinimizeAllBoxes
+ * @param bl
+ * @param d: Dcel already scaled
+ * @param kernelDistance
+ * @param heightfields
+ * @param onlyNearestTarget
+ * @param areaTolerance
+ * @param angleTolerance
+ */
+void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool heightfields, bool onlyNearestTarget, double areaTolerance, double angleTolerance) {
+    solutions.clearBoxes();
+    Dcel scaled[ORIENTATIONS];
+    Eigen::Matrix3d m[ORIENTATIONS];
+    std::vector< std::tuple<int, Box3D, std::vector<bool> > > allVectorTriples;
+
+    for (unsigned int i = 0; i < ORIENTATIONS; i++){
+        scaled[i] = d;
+        m[i] = Engine::rotateDcelAlreadyScaled(scaled[i], i);
+    }
+
+    if (onlyNearestTarget)
+        Engine::setTrianglesTargets(scaled);
+
+    if (!heightfields){
+        Grid g[ORIENTATIONS];
+        BoxList bl[ORIENTATIONS];
+        std::set<int> coveredFaces;
+        unsigned int numberFaces = 100;
+        CGALInterface::AABBTree aabb[ORIENTATIONS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++)
+            aabb[i] = CGALInterface::AABBTree(scaled[i]);
+        # pragma omp parallel for if(ORIENTATIONS>1)
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            Engine::generateGrid(g[i], scaled[i], kernelDistance);
+            g[i].resetSignedDistances();
+            std::cerr << "Generated grid or " << i << "\n";
+        }
+
+        Timer t("Expanding all Boxes");
+        while (coveredFaces.size() < scaled[0].getNumberFaces()){
+            BoxList tmp[ORIENTATIONS];
+            Eigen::VectorXi faces[ORIENTATIONS];
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                IGLInterface::IGLMesh m(scaled[i]);
+                IGLInterface::IGLMesh dec;
+                bool b = m.getDecimatedMesh(dec, numberFaces, faces[i]);
+                std::cerr << "Decimated mesh " << i << ": " << (b ? "true" : "false") <<"\n";
+            }
+
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                std::cerr << "Calculating Boxes\n";
+                if (onlyNearestTarget){
+                    Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i], i);
+                }
+                else
+                    Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i]);
+                std::cerr << "Starting boxes growth\n";
+                Engine::expandBoxes(tmp[i], g[i], true);
+                std::cerr << "Orientation: " << i << " completed.\n";
+            }
+
+            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+
+                    for (unsigned int k = 0; k < tmp[i].getNumberBoxes(); ++k){
+                        std::list<const Dcel::Face*> list;
+                        aabb[i].getIntersectedDcelFaces(list, tmp[i].getBox(k));
+                        for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
+                            coveredFaces.insert((*it)->getId());
+                        }
+                    }
+            }
+            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+                    bl[i].insert(tmp[i]);
+            }
+
+            std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
+            std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
+            numberFaces*=2;
+            if (numberFaces > scaled[0].getNumberFaces())
+                numberFaces = scaled[0].getNumberFaces();
+        }
+        t.stopAndPrint();
+
+        std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            solutions.insert(bl[i]);
+            Engine::createVectorTriples(vectorTriples[i], bl[i], scaled[i]);
+            allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i].begin(), vectorTriples[i].end());
+        }
+
+        Engine::deleteBoxes(solutions, allVectorTriples, d.getNumberFaces());
+    }
+    else {
+        Grid g[ORIENTATIONS][TARGETS];
+        BoxList bl[ORIENTATIONS][TARGETS];
+        std::set<int> coveredFaces;
+        unsigned int numberFaces = 100;
+        CGALInterface::AABBTree aabb[ORIENTATIONS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++)
+            aabb[i] = CGALInterface::AABBTree(scaled[i]);
+        # pragma omp parallel for if(ORIENTATIONS>1)
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned int j = 0; j < TARGETS; ++j) {
+                std::set<const Dcel::Face*> flippedFaces, savedFaces;
+                Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
+                Engine::generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j], savedFaces);
+                g[i][j].resetSignedDistances();
+                std::cerr << "Generated grid or " << i << " t " << j << "\n";
+            }
+        }
+
+        while (coveredFaces.size() < scaled[0].getNumberFaces()){
+            BoxList tmp[ORIENTATIONS][TARGETS];
+            Eigen::VectorXi faces[ORIENTATIONS];
+            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+                IGLInterface::IGLMesh m(scaled[i]);
+                IGLInterface::IGLMesh dec;
+                bool b = m.getDecimatedMesh(dec, numberFaces, faces[i]);
+                std::cerr << "Decimated mesh " << i << ": " << b <<"\n";
+            }
+            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+                for (unsigned int j = 0; j < TARGETS; ++j){
+                    std::cerr << "Calculating Boxes\n";
+                    if (onlyNearestTarget){
+                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], i, true, XYZ[j]);
+                    }
+                    else
+                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, true, XYZ[j]);
+                    std::cerr << "Starting boxes growth\n";
+                    Engine::expandBoxes(tmp[i][j], g[i][j]);
+                    std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                }
+            }
+
+            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+                for (unsigned int j = 0; j < TARGETS; ++j){
+                    for (unsigned int k = 0; k < tmp[i][j].getNumberBoxes(); ++k){
+                        std::list<const Dcel::Face*> list;
+                        aabb[i].getIntersectedDcelFaces(list, tmp[i][j].getBox(k));
+                        for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
+                            coveredFaces.insert((*it)->getId());
+                        }
+                    }
+                }
+            }
+            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+                for (unsigned int j = 0; j < TARGETS; ++j){
+                    bl[i][j].insert(tmp[i][j]);
+                }
+            }
+
+            std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
+            std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
+            numberFaces*=2;
+            if (numberFaces > scaled[0].getNumberFaces())
+                numberFaces = scaled[0].getNumberFaces();
+        }
+
+        std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS][TARGETS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            for (unsigned int j = 0; j < TARGETS; ++j){
+                solutions.insert(bl[i][j]);
+                Engine::createVectorTriples(vectorTriples[i][j], bl[i][j], scaled[i]);
+                allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i][j].begin(), vectorTriples[i][j].end());
+            }
+        }
+
+        Engine::deleteBoxes(solutions, allVectorTriples, d.getNumberFaces());
+    }
+}
+
+void Engine::boxSnapping(BoxList& solutions, double minimumDistance) {
+    for (unsigned int i = 0; i < solutions.getNumberBoxes()-1; i++){
+        Box3D b1 = solutions.getBox(i);
+        for (unsigned int j = i+1; j < solutions.getNumberBoxes(); j++){
+            Box3D b2 = solutions.getBox(j);
+            if (b1.getRotationMatrix() == b2.getRotationMatrix()){
+
+            }
+        }
+    }
+}
+
+void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, bool onlyTouchingSurface) {
+    CGALInterface::AABBTree aabb(inputMesh, true);
+    Timer timer("Boolean Operations");
+    he.resize(solutions.getNumberBoxes());
+    for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
+    //for (int i = solutions->getNumberBoxes()-1; i >= 0 ; i--){
+        IGLInterface::SimpleIGLMesh box;
+        IGLInterface::SimpleIGLMesh intersection;
+        solutions.getBox(i).getIGLMesh(box);
+        IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
+        bool b = true;
+        for (unsigned int j = 0; j < intersection.getNumberVertices(); j++) {
+            Pointd p = intersection.getVertex(j);
+            double dist = aabb.getSquaredDistance(p);
+            if (dist < EPSILON) {
+                b = false;
+                break;
+            }
+        }
+        if (!b) {
+            if (onlyTouchingSurface){
+                std::vector<Pointd> pointsOnSurface;
+                for (unsigned int j = 0; j < intersection.getNumberVertices(); j++){
+                    Pointd p = intersection.getVertex(j);
+                    if (aabb.getSquaredDistance(p) < EPSILON) pointsOnSurface.push_back(p);
+                }
+                Eigen::Matrix3d m = solutions.getBox(i).getRotationMatrix(), mt;
+                Eigen::Matrix3d arr[4];
+                arr[0] = Eigen::Matrix3d::Identity();
+                getRotationMatrix(Vec3(0,0,-1), M_PI/4, arr[1]);
+                getRotationMatrix(Vec3(0,-1,0), M_PI/4, arr[2]);
+                getRotationMatrix(Vec3(-1,0,0), M_PI/4, arr[3]);
+                if (m == arr[0])
+                    mt = arr[0];
+                else if (m == arr[1])
+                    getRotationMatrix(Vec3(0,0,1), M_PI/4, mt);
+                else if (m == arr[2])
+                    getRotationMatrix(Vec3(0,1,0), M_PI/4, mt);
+                else if (m == arr[3])
+                    getRotationMatrix(Vec3(1,0,0), M_PI/4, mt);
+                else assert(0);
+                pointsOnSurface[0].rotate(mt);
+                Pointd min = pointsOnSurface[0], max = pointsOnSurface[0];
+                for (unsigned int j = 1; j < pointsOnSurface.size(); j++){
+                    pointsOnSurface[j].rotate(mt);
+                    min = min.min(pointsOnSurface[j]);
+                    max = max.max(pointsOnSurface[j]);
+                }
+                Vec3 target = solutions.getBox(i).getTarget();
+                Box3D b;
+                if (target == XYZ[0] || target == XYZ[3]){
+                    b = solutions.getBox(i);
+                    b.setMinY(min.y());
+                    b.setMinZ(min.z());
+                    b.setMaxY(max.y());
+                    b.setMaxZ(max.z());
+                    b.setMinX(b.getMinX()-5*EPSILON);
+                    b.setMaxX(b.getMaxX()+5*EPSILON);
+                }
+                else if (target == XYZ[1] || target == XYZ[4]) {
+                    b = solutions.getBox(i);
+                    b.setMinX(min.x());
+                    b.setMinZ(min.z());
+                    b.setMaxX(max.x());
+                    b.setMaxZ(max.z());
+                    b.setMinY(b.getMinY()-5*EPSILON);
+                    b.setMaxY(b.getMaxY()+5*EPSILON);
+                }
+                else if (target == XYZ[2] || target == XYZ[5]) {
+                    b = solutions.getBox(i);
+                    b.setMinY(min.y());
+                    b.setMinX(min.x());
+                    b.setMaxY(max.y());
+                    b.setMaxX(max.x());
+                    b.setMinZ(b.getMinZ()-5*EPSILON);
+                    b.setMaxZ(b.getMaxZ()+5*EPSILON);
+                }
+                else assert(0);
+                b.getIGLMesh(box);
+                IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
+            }
+            IGLInterface::SimpleIGLMesh::difference(bc, bc, box);
+            IGLInterface::DrawableIGLMesh dimm(intersection);
+            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i);
+        }
+        std::cerr << i << "\n";
+    }
+    timer.stopAndPrint();
+    for (int i = he.getNumHeightfields()-1; i >= 0 ; i--){
+        if (he.getNumberVerticesHeightfield(i) == 0){
+            he.removeHeightfield(i);
+            solutions.removeBox(i);
+        }
+    }
+}
+
+void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, IGLInterface::SimpleIGLMesh& bc, BoxList& solutions, const Dcel& inputMesh) {
+    /*std::vector<Eigen::Matrix3d> matrices;
+    std::vector<Eigen::Matrix3d> matricesT;
+    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++) {
+        bool b = true;
+        for (unsigned int j = 0; j < matrices.size(); j++) {
+            if (solutions.getBox(i).getRotationMatrix() == matrices[j])
+                b = false;
+        }
+        if (b) {
+            matrices.push_back(solutions.getBox(i).getRotationMatrix());
+            matricesT.push_back(matrices[matrices.size()-1].transpose());
+        }
+    }
+    assert(matrices.size() == 4);*/
+    CGALInterface::AABBTree aabb(inputMesh, true);
+    for (unsigned int i = solutions.getNumberBoxes()-1; i >= 1; i--){
+        IGLInterface::SimpleIGLMesh heightfield = he.getHeightfield(i);
+        std::vector<Pointd> pointsOnSurface;
+        for (unsigned int j = 0; j < heightfield.getNumberVertices(); j++){
+            Pointd p = heightfield.getVertex(j);
+            if (aabb.getSquaredDistance(p) < EPSILON) pointsOnSurface.push_back(p);
+        }
+        Eigen::Matrix3d m = solutions.getBox(i).getRotationMatrix(), mt;
+        Eigen::Matrix3d arr[4];
+        arr[0] = Eigen::Matrix3d::Identity();
+        getRotationMatrix(Vec3(0,0,-1), M_PI/4, arr[1]);
+        getRotationMatrix(Vec3(0,-1,0), M_PI/4, arr[2]);
+        getRotationMatrix(Vec3(-1,0,0), M_PI/4, arr[3]);
+        if (m == arr[0])
+            mt = arr[0];
+        else if (m == arr[1])
+            getRotationMatrix(Vec3(0,0,1), M_PI/4, mt);
+        else if (m == arr[2])
+            getRotationMatrix(Vec3(0,1,0), M_PI/4, mt);
+        else if (m == arr[3])
+            getRotationMatrix(Vec3(1,0,0), M_PI/4, mt);
+        else assert(0);
+        pointsOnSurface[0].rotate(mt);
+        Pointd min = pointsOnSurface[0], max = pointsOnSurface[0];
+        for (unsigned int j = 1; j < pointsOnSurface.size(); j++){
+            pointsOnSurface[j].rotate(mt);
+            min = min.min(pointsOnSurface[j]);
+            max = max.max(pointsOnSurface[j]);
+        }
+        Vec3 target = solutions.getBox(i).getTarget();
+        Box3D b;
+        if (target == XYZ[0] || target == XYZ[3]){
+            b = solutions.getBox(i);
+            b.setMinY(min.y());
+            b.setMinZ(min.z());
+            b.setMaxY(max.y());
+            b.setMaxZ(max.z());
+            b.setMinX(b.getMinX()-5*EPSILON);
+            b.setMaxX(b.getMaxX()+5*EPSILON);
+        }
+        else if (target == XYZ[1] || target == XYZ[4]) {
+            b = solutions.getBox(i);
+            b.setMinX(min.x());
+            b.setMinZ(min.z());
+            b.setMaxX(max.x());
+            b.setMaxZ(max.z());
+            b.setMinY(b.getMinY()-5*EPSILON);
+            b.setMaxY(b.getMaxY()+5*EPSILON);
+        }
+        else if (target == XYZ[2] || target == XYZ[5]) {
+            b = solutions.getBox(i);
+            b.setMinY(min.y());
+            b.setMinX(min.x());
+            b.setMaxY(max.y());
+            b.setMaxX(max.x());
+            b.setMinZ(b.getMinZ()-5*EPSILON);
+            b.setMaxZ(b.getMaxZ()+5*EPSILON);
+        }
+        else assert(0);
+        IGLInterface::SimpleIGLMesh inters;
+        IGLInterface::SimpleIGLMesh diff;
+        IGLInterface::SimpleIGLMesh box;
+        //solutions.setBox(i,b);
+        b.getIGLMesh(box);
+        IGLInterface::SimpleIGLMesh::intersection(inters, heightfield, box);
+        IGLInterface::SimpleIGLMesh::difference(diff, heightfield, box);
+        IGLInterface::SimpleIGLMesh::unionn(bc, bc, diff);
+        he.addHeightfield(IGLInterface::DrawableIGLMesh(inters), solutions.getBox(i).getRotatedTarget(),  i);
+        std::cerr << i << "\n";
+    }
+
+}
 #endif
 
 #ifndef SERVER_MODE
@@ -275,7 +647,7 @@ void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); ++i){
         Box3D b = boxList.getBox(i);
         std::list<const Dcel::Face*> covered;
-        t.getIntersectedPrimitives(covered, b);
+        t.getIntersectedDcelFaces(covered, b);
 
         std::list<const Dcel::Face*>::iterator it = covered.begin();
         while (it != covered.end()) {
@@ -387,13 +759,13 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
         Box3D b = boxList.getBox(i);
         std::list<const Dcel::Face*> covered;
         if (b.getRotationMatrix() == m[0])
-            t0.getIntersectedPrimitives(covered, b);
+            t0.getIntersectedDcelFaces(covered, b);
         else if (b.getRotationMatrix() == m[1])
-            t1.getIntersectedPrimitives(covered, b);
+            t1.getIntersectedDcelFaces(covered, b);
         else if (b.getRotationMatrix() == m[2])
-            t2.getIntersectedPrimitives(covered, b);
+            t2.getIntersectedDcelFaces(covered, b);
         else if (b.getRotationMatrix() == m[3])
-            t3.getIntersectedPrimitives(covered, b);
+            t3.getIntersectedDcelFaces(covered, b);
         else assert(0);
 
         std::list<const Dcel::Face*>::iterator it = covered.begin();
@@ -659,7 +1031,7 @@ void Engine::Server::booleanOperationsFromSolutions(const std::__cxx11::string& 
     std::ifstream ifile;
     ifile.open (inputFile, std::ios::in | std::ios::binary);
     BoxList bl;
-    IGLMesh tbc;
+    IGLInterface::IGLMesh tbc;
     std::vector<SimpleIGLMesh> hf;
     bl.deserialize(ifile);
     tbc.deserialize(ifile);
@@ -670,11 +1042,11 @@ void Engine::Server::booleanOperationsFromSolutions(const std::__cxx11::string& 
     hf.resize(bl.getNumberBoxes());
     Timer t("Boolean Operations");
     for (int i = bl.getNumberBoxes()-1; i >= 0 ; i--){
-        SimpleIGLMesh box;
-        SimpleIGLMesh intersection;
+        IGLInterface::SimpleIGLMesh box;
+        IGLInterface::SimpleIGLMesh intersection;
         bl.getBox(i).getIGLMesh(box);
-        SimpleIGLMesh::intersection(intersection, bc, box);
-        SimpleIGLMesh::difference(bc, bc, box);
+        IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
+        IGLInterface::SimpleIGLMesh::difference(bc, bc, box);
         hf[i] = intersection;
         std::cerr << "Difference and intersection: " << i << "\n";
     }

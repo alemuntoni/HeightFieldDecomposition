@@ -39,7 +39,7 @@ void Grid::calculateBorderWeights(const Dcel& d, bool heightfields, std::set<con
                 Pointd bbmax(bbmin.x()+unit, bbmin.y()+unit, bbmin.z()+unit);
                 BoundingBox bb(bbmin, bbmax);
                 std::list<const Dcel::Face*> l;
-                aabb.getIntersectedPrimitives(l, bb);
+                aabb.getIntersectedDcelFaces(l, bb);
                 if (l.size() != 0){
                     if (heightfields){
                         bool b = true;

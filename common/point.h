@@ -45,7 +45,6 @@ template <class T> class Point : SerializableObject {
         #ifdef COMMON_WITH_EIGEN
         Point(const Eigen::VectorXd &v);
         #endif
-        virtual ~Point(void){}
 
         /*************************
         * Public Inline Methods *
@@ -274,9 +273,9 @@ inline T Point<T>::dot(const Point<T>& otherVector) const {
  */
 template <class T>
 inline Point<T> Point<T>::cross(const Point<T>& otherVector) const {
-    return std::move(Point<T>(yCoord * otherVector.zCoord - zCoord * otherVector.yCoord,
+    return Point<T>(yCoord * otherVector.zCoord - zCoord * otherVector.yCoord,
                  zCoord * otherVector.xCoord - xCoord * otherVector.zCoord,
-                 xCoord * otherVector.yCoord - yCoord * otherVector.xCoord));
+                 xCoord * otherVector.yCoord - yCoord * otherVector.xCoord);
 }
 
 /**
@@ -312,9 +311,9 @@ inline double Point<T>::getLengthSquared() const {
  */
 template <class T>
 inline Point<T> Point<T>::min(const Point<T>& otherPoint) const {
-    return std::move(Point<T>(std::min(x(), otherPoint.x()),
+    return Point<T>(std::min(x(), otherPoint.x()),
                     std::min(y(), otherPoint.y()),
-                    std::min(z(), otherPoint.z())));
+                    std::min(z(), otherPoint.z()));
 }
 
 /**
@@ -330,9 +329,9 @@ inline Point<T> Point<T>::min(const Point<T>& otherPoint) const {
  */
 template <class T>
 inline Point<T> Point<T>::max(const Point<T>& otherPoint) const {
-    return std::move(Point<T>(std::max(x(), otherPoint.x()),
+    return Point<T>(std::max(x(), otherPoint.x()),
                     std::max(y(), otherPoint.y()),
-                    std::max(z(), otherPoint.z())));
+                    std::max(z(), otherPoint.z()));
 }
 
 /**
@@ -409,14 +408,14 @@ inline bool Point<T>::operator < (const Point<T>& otherPoint) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator - () const {
-    return std::move(Point<T>(-xCoord, -yCoord, -zCoord));
+    return Point<T>(-xCoord, -yCoord, -zCoord);
 }
 
 template <class T>
 inline Point<T> Point<T>::operator +(const T& scalar) const {
-    return std::move(Point<T>(xCoord + scalar,
+    return Point<T>(xCoord + scalar,
                     yCoord + scalar,
-                    zCoord + scalar));
+                    zCoord + scalar);
 }
 
 /**
@@ -427,16 +426,16 @@ inline Point<T> Point<T>::operator +(const T& scalar) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator + (const Point<T>& otherPoint) const {
-    return std::move(Point<T>(xCoord + otherPoint.xCoord,
+    return Point<T>(xCoord + otherPoint.xCoord,
                     yCoord + otherPoint.yCoord,
-                    zCoord + otherPoint.zCoord));
+                    zCoord + otherPoint.zCoord);
 }
 
 template <class T>
 inline Point<T> Point<T>::operator -(const T& scalar) const {
-    return std::move(Point<T>(xCoord - scalar,
+    return Point<T>(xCoord - scalar,
                     yCoord - scalar,
-                    zCoord - scalar));
+                    zCoord - scalar);
 }
 
 /**
@@ -447,9 +446,9 @@ inline Point<T> Point<T>::operator -(const T& scalar) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator - (const Point<T>& otherPoint) const {
-    return std::move(Point<T>(xCoord - otherPoint.xCoord,
+    return Point<T>(xCoord - otherPoint.xCoord,
                     yCoord - otherPoint.yCoord,
-                    zCoord - otherPoint.zCoord));
+                    zCoord - otherPoint.zCoord);
 }
 
 /**
@@ -460,7 +459,7 @@ inline Point<T> Point<T>::operator - (const Point<T>& otherPoint) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator * (const T& scalar) const {
-    return std::move(Point<T>(xCoord * scalar, yCoord * scalar, zCoord * scalar));
+    return Point<T>(xCoord * scalar, yCoord * scalar, zCoord * scalar);
 }
 
 /**
@@ -471,7 +470,7 @@ inline Point<T> Point<T>::operator * (const T& scalar) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator * (const Point<T>& otherPoint) const {
-    return std::move(Point<T>(xCoord * otherPoint.xCoord, yCoord * otherPoint.yCoord, zCoord * otherPoint.zCoord));
+    return Point<T>(xCoord * otherPoint.xCoord, yCoord * otherPoint.yCoord, zCoord * otherPoint.zCoord);
 }
 
 /**
@@ -482,7 +481,7 @@ inline Point<T> Point<T>::operator * (const Point<T>& otherPoint) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator / (const T& scalar) const {
-    return std::move(Point<T>(xCoord / scalar, yCoord / scalar, zCoord / scalar));
+    return Point<T>(xCoord / scalar, yCoord / scalar, zCoord / scalar);
 }
 
 /**
@@ -493,7 +492,7 @@ inline Point<T> Point<T>::operator / (const T& scalar) const {
  */
 template <class T>
 inline Point<T> Point<T>::operator / (const Point<T>& otherPoint) const {
-    return std::move(Point<T>(xCoord / otherPoint.xCoord, yCoord / otherPoint.yCoord, zCoord / otherPoint.zCoord));
+    return Point<T>(xCoord / otherPoint.xCoord, yCoord / otherPoint.yCoord, zCoord / otherPoint.zCoord);
 }
 
 /**
@@ -746,7 +745,7 @@ std::string Point<T>::toString() const {
     std::stringstream ss;
     ss << "[" << xCoord << ", " << yCoord << ", " << zCoord << "]";
     std::string s1 = ss.str();
-    return std::move(s1);
+    return s1;
 }
 
 /****************
@@ -761,9 +760,9 @@ std::string Point<T>::toString() const {
  */
 template <class T>
 inline Point<T> operator * (const T& scalar, const Point<T>& point) {
-    return std::move(Point<T>(point.xCoord * scalar,
+    return Point<T>(point.xCoord * scalar,
                     point.yCoord * scalar,
-                    point.zCoord * scalar));
+                    point.zCoord * scalar);
 }
 
 template <class T>
@@ -772,7 +771,7 @@ inline Point<T> mul(const T m[][3], const Point<T>& point) {
     tmp.setX(m[0][0]*point.x() + m[0][1]*point.y() + m[0][2]*point.z());
     tmp.setY(m[1][0]*point.x() + m[1][1]*point.y() + m[1][2]*point.z());
     tmp.setZ(m[2][0]*point.x() + m[2][1]*point.y() + m[2][2]*point.z());
-    return std::move(tmp);
+    return tmp;
 }
 
 #ifdef COMMON_WITH_EIGEN
@@ -782,7 +781,7 @@ inline Point<T> mul(const Eigen::Matrix3d &m, const Point<T>& point) {
     tmp.setX(m(0,0)*point.x() + m(0,1)*point.y() + m(0,2)*point.z());
     tmp.setY(m(1,0)*point.x() + m(1,1)*point.y() + m(1,2)*point.z());
     tmp.setZ(m(2,0)*point.x() + m(2,1)*point.y() + m(2,2)*point.z());
-    return std::move(tmp);
+    return tmp;
 }
 #endif //COMMON_WITH_EIGEN
 

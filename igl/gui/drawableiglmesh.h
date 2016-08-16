@@ -3,7 +3,7 @@
 
 #include "../../viewer/interfaces/drawable_object.h"
 #include "../iglmesh.h"
-
+namespace IGLInterface {
 class DrawableIGLMesh : public IGLMesh, public DrawableObject {
     public:
         DrawableIGLMesh();
@@ -43,5 +43,6 @@ class DrawableIGLMesh : public IGLMesh, public DrawableObject {
         int   drawMode; /** \~Italian @brief intero interpretato come stringa di bit rappresentante la modalità di visualizzazione della dcel*/
 
 };
+}
 
 #endif // DRAWABLEIGLMESH_H

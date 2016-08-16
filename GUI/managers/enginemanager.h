@@ -157,7 +157,7 @@ class EngineManager : public QFrame, public SerializableObject {
         Box3D* b;
         BoxList* iterations;
         BoxList* solutions;
-        DrawableIGLMesh* baseComplex;
+        IGLInterface::DrawableIGLMesh* baseComplex;
         Energy e;
         HeightfieldsList *he;
 };

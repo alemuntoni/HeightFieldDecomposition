@@ -19,8 +19,8 @@ class BooleansManager : public QFrame
         void setButtonsMeshLoaded(bool b);
         void setButtonsMeshLoaded_2(bool b);
         void setButtonsResultLoaded(bool b);
-        void setMesh1(const IGLMesh &m);
-        void setMesh2(const IGLMesh &m);
+        void setMesh1(const IGLInterface::IGLMesh &m);
+        void setMesh2(const IGLInterface::IGLMesh &m);
 
     private slots:
         void on_loadIGLMeshButton_clicked();
@@ -92,8 +92,8 @@ class BooleansManager : public QFrame
     private:
         Ui::BooleansManager *ui;
         MainWindow* mainWindow;
-        std::vector<DrawableIGLMesh*> meshes;
-        DrawableIGLMesh* result;
+        std::vector<IGLInterface::DrawableIGLMesh*> meshes;
+        IGLInterface::DrawableIGLMesh* result;
         Vec3 lastAxis;
         double lastAngle;
 };
