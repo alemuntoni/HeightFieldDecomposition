@@ -1119,8 +1119,7 @@ unsigned int Dcel::triangulateFace(Dcel::Face* f) {
 
         ///TRIANGULATION
 
-        std::vector<std::array<Pointd, 3>> triangulation;
-        CGALInterface::Triangulation::triangulate(triangulation, f->getNormal(), borderCoordinates, innerBorderCoordinates);
+        std::vector<std::array<Pointd, 3> > triangulation = CGALInterface::Triangulation::triangulate(f->getNormal(), borderCoordinates, innerBorderCoordinates);
         ///
 
 

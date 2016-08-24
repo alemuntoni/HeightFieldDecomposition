@@ -53,7 +53,8 @@ namespace Engine {
 
     void boxSnapping(BoxList &solutions, double minimumDistance);
 
-    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, bool onlyTouchingSurface=false);
+    static HeightfieldsList dummyhe;
+    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, bool onlyTouchingSurface=false, HeightfieldsList &entirePieces = dummyhe);
 
     void gluePortionsToBaseComplex(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
     #endif

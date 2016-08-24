@@ -41,8 +41,8 @@ namespace CGALInterface{
             }
         }
 
-        void triangulate(std::vector<std::array<Point2D, 3> >& triangles, const std::vector<Point2D>& polygon, const std::vector<std::vector<Point2D> >& holes) {
-            triangles.clear();
+        std::vector<std::array<Point2D, 3> > triangulate(const std::vector<Point2D>& polygon, const std::vector<std::vector<Point2D> >& holes) {
+            std::vector<std::array<Point2D, 3> > triangles;
             Polygon_2 polygon1;
             std::vector<Polygon_2> innerPolygons;
             for (unsigned int i = 0; i < polygon.size(); ++i){
@@ -85,9 +85,11 @@ namespace CGALInterface{
                     triangles.push_back(t);
                 }
             }
+            return triangles;
         }
 
-        void triangulate(std::vector<std::array<Pointd, 3> >& triangles, const Vec3 &normal, const std::vector<Pointd>& polygon, const std::vector<std::vector<Pointd> >& holes){
+        std::vector<std::array<Pointd, 3> > triangulate(const Vec3 &normal, const std::vector<Pointd>& polygon, const std::vector<std::vector<Pointd> >& holes){
+            std::vector<std::array<Pointd, 3> > triangles;
             std::map<Point2D, Pointd> pointsVerticesMap;
 
             //Rotation of the coordinates
@@ -139,7 +141,7 @@ namespace CGALInterface{
                 }
             }
             std::vector<std::array<Point2D, 3> > triangles2D;
-            triangulate(triangles2D, polygon2D, innerPolygons2D);
+            triangles2D = triangulate(polygon2D, innerPolygons2D);
             triangles.clear();
             triangles.reserve(triangles2D.size());
             for (unsigned int i = 0; i < triangles2D.size(); i++){
@@ -153,6 +155,7 @@ namespace CGALInterface{
                 triangle3D[2] = pointsVerticesMap[triangle2D[2]];
                 triangles.push_back(triangle3D);
             }
+            return triangles;
         }
     }
 
@@ -169,8 +172,8 @@ namespace CGALInterface{
             ss2 >> y;
         }
 
-        void difference(std::vector<std::vector<Point2D> >& result, const std::vector<Point2D>& polygon1, const std::vector<Point2D>& polygon2) {
-            result.clear();
+        std::vector<std::vector<Point2D> > difference(const std::vector<Point2D>& polygon1, const std::vector<Point2D>& polygon2) {
+            std::vector<std::vector<Point2D> > result;
 
             Polygon_2 P1;
             for (unsigned int i = 0; i < polygon1.size(); ++i){
@@ -204,11 +207,12 @@ namespace CGALInterface{
                 }
                 result.push_back(polygon);
             }
+            return result;
 
         }
 
-        void intersection(std::vector<std::vector<Point2D> >& result, const std::vector<Point2D>& polygon1, const std::vector<Point2D>& polygon2) {
-            result.clear();
+        std::vector<std::vector<Point2D> > intersection(const std::vector<Point2D>& polygon1, const std::vector<Point2D>& polygon2) {
+            std::vector<std::vector<Point2D> > result;
 
             Polygon_2 P1;
             for (unsigned int i = 0; i < polygon1.size(); ++i){
@@ -242,6 +246,7 @@ namespace CGALInterface{
                 }
                 result.push_back(polygon);
             }
+            return result;
         }
 
     }

@@ -36,7 +36,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         void moveY(double d);
         void moveZ(double d);
         #ifdef IGL_DEFINED
-        void getIGLMesh(IGLInterface::SimpleIGLMesh& box) const;
+        IGLInterface::SimpleIGLMesh getIGLMesh(double minimumEdge = -1) const;
         #endif
 
         // DrawableObject interface

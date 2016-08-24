@@ -50,8 +50,8 @@ namespace CGALInterface {
 
         void markDomains(CDT& ct, CDT::Face_handle start, int index, std::list<CDT::Edge>& border);
         void markDomains(CDT& cdt);
-        void triangulate(std::vector<std::array<Point2D, 3> >& triangles, const std::vector<Point2D>& polygon, const std::vector<std::vector<Point2D> >& holes = dummy_holes2D);
-        void triangulate(std::vector<std::array<Pointd, 3> >& triangles, const Vec3 &normal, const std::vector<Pointd>& polygon, const std::vector<std::vector<Pointd> >& holes = dummy_holes);
+        std::vector<std::array<Point2D, 3> > triangulate(const std::vector<Point2D>& polygon, const std::vector<std::vector<Point2D> >& holes = dummy_holes2D);
+        std::vector<std::array<Pointd, 3> > triangulate(const Vec3 &normal, const std::vector<Pointd>& polygon, const std::vector<std::vector<Pointd> >& holes = dummy_holes);
     }
 
     namespace BooleanOperations2D{
@@ -64,8 +64,8 @@ namespace CGALInterface {
 
         void getCoordinates(const Point_2&p, double &x, double &y);
 
-        void difference(std::vector< std::vector<Point2D> > &result, const std::vector<Point2D> &polygon1, const std::vector<Point2D> &polygon2);
-        void intersection(std::vector<std::vector<Point2D> >& result, const std::vector<Point2D>& polygon1, const std::vector<Point2D>& polygon2);
+        std::vector< std::vector<Point2D> > difference(const std::vector<Point2D> &polygon1, const std::vector<Point2D> &polygon2);
+        std::vector<std::vector<Point2D> > intersection(const std::vector<Point2D>& polygon1, const std::vector<Point2D>& polygon2);
     }
 
     class AABBTree;

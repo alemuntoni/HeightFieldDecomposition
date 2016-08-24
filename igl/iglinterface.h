@@ -3,10 +3,7 @@
 
 #include "../common/serialize.h"
 #include "../common/arrays.h"
-#include <igl/copyleft/marching_cubes.h>
-#include <igl/signed_distance.h>
-#include <igl/read_triangle_mesh.h>
-
+#include "../common/point2d.h"
 
 #include "iglmesh.h"
 
@@ -15,6 +12,9 @@
 
 namespace IGLInterface {
     void generateGridAndDistanceField(Array3D<Pointd>& grid, Array3D<double> &distanceField, const SimpleIGLMesh &m, double gridUnit = 2, bool integer= true);
+
+    //static std::vector< std::vector<Point2D> > dummy_holes2D;
+    //std::vector<std::array<Point2D, 3> > triangulate(const std::vector<Point2D>& polygon, const std::vector<std::vector<Point2D> >& holes = dummy_holes2D, double maximumArea, double minimumAngle = 0.2);
 }
 
 

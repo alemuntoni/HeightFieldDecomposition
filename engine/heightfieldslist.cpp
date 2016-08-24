@@ -83,12 +83,20 @@ void HeightfieldsList::addHeightfield(const IGLInterface::DrawableIGLMesh& m, co
         targets.push_back(target);
         QColor c = colorOfNormal(target);
         heightfields[heightfields.size()-1].setColor(c.redF(), c.greenF(), c.blueF());
+        for (unsigned int i = 0; i < m.getNumberFaces(); i++){
+            if (m.getNormal(i).dot(target) < 0)
+                heightfields[heightfields.size()-1].setColor(0,0,0,i);
+        }
     }
     else {
         heightfields[i] = m;
         targets[i] = target;
         QColor c = colorOfNormal(target);
         heightfields[i].setColor(c.redF(), c.greenF(), c.blueF());
+        for (unsigned int j = 0; j < m.getNumberFaces(); j++){
+            if (m.getNormal(j).dot(target) < 0)
+                heightfields[i].setColor(0,0,0,j);
+        }
     }
 }
 

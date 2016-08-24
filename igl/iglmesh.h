@@ -80,6 +80,8 @@ namespace IGLInterface {
             #ifdef DCEL_DEFINED
             IGLMesh(const Dcel& dcel);
             #endif
+            void resizeVertices(unsigned int nv);
+            void resizeFaces(unsigned int nf);
             void updateBoundingBox();
             void updateVertexNormals();
             void updateFaceNormals();
@@ -127,17 +129,17 @@ namespace IGLInterface {
 
     inline void SimpleIGLMesh::addVertex(const Eigen::VectorXd& p) {
         assert (p.size() == 3);
-        V.resize(V.rows()+1, 3);
+        V.conservativeResize(V.rows()+1, Eigen::NoChange);
         V.row(V.rows()-1) = p;
     }
 
     inline void SimpleIGLMesh::addVertex(double x, double y, double z) {
-        V.resize(V.rows()+1, 3);
+        V.conservativeResize(V.rows()+1, Eigen::NoChange);
         V(V.rows()-1, 0) = x; V(V.rows()-1, 1) = y; V(V.rows()-1, 2) = z;
     }
 
     inline void SimpleIGLMesh::resizeVertices(unsigned int nv) {
-        V.resize(nv,3);
+        V.conservativeResize(nv,Eigen::NoChange);
     }
 
     inline void SimpleIGLMesh::setFace(unsigned int i, const Eigen::VectorXi& f) {
@@ -153,17 +155,17 @@ namespace IGLInterface {
 
     inline void SimpleIGLMesh::addFace(const Eigen::VectorXi& f) {
         assert (f.size() == 3);
-        F.resize(F.rows()+1, 3);
+        F.conservativeResize(F.rows()+1, Eigen::NoChange);
         F.row(F.rows()-1) = f;
     }
 
     inline void SimpleIGLMesh::addFace(int t1, int t2, int t3) {
-        F.resize(F.rows()+1, 3);
+        F.conservativeResize(F.rows()+1, Eigen::NoChange);
         F(F.rows()-1, 0) = t1; F(F.rows()-1, 1) = t2; F(F.rows()-1, 2) = t3;
     }
 
     inline void SimpleIGLMesh::resizeFaces(unsigned int nf) {
-        F.resize(nf,3);
+        F.conservativeResize(nf,Eigen::NoChange);
     }
 
     inline bool SimpleIGLMesh::readFromFile(const std::__cxx11::string& filename) {
@@ -179,8 +181,8 @@ namespace IGLInterface {
     }
 
     inline void SimpleIGLMesh::clear() {
-        V.resize(0,3);
-        F.resize(0,3);
+        V.resize(0,Eigen::NoChange);
+        F.resize(0,Eigen::NoChange);
     }
 
     inline unsigned int SimpleIGLMesh::getNumberFaces() const {
@@ -216,6 +218,17 @@ namespace IGLInterface {
         Serializer::deserialize(F, binaryFile);
     }
 
+    inline void IGLMesh::resizeVertices(unsigned int nv){
+        SimpleIGLMesh::resizeVertices(nv);
+        NV.conservativeResize(nv, Eigen::NoChange);
+    }
+
+    inline void IGLMesh::resizeFaces(unsigned int nf) {
+        SimpleIGLMesh::resizeFaces(nf);
+        NF.conservativeResize(nf, Eigen::NoChange);
+        C.conservativeResize(nf, Eigen::NoChange);
+    }
+
     inline void IGLMesh::updateBoundingBox() {
         BBmin = V.colwise().minCoeff();
         BBmax = V.colwise().maxCoeff();
@@ -235,11 +248,11 @@ namespace IGLInterface {
     }
 
     inline void IGLMesh::clear() {
-        V.resize(0,3);
-        F.resize(0,3);
-        C.resize(0,3);
-        NV.resize(0,3);
-        NF.resize(0,3);
+        V.resize(0,Eigen::NoChange);
+        F.resize(0,Eigen::NoChange);
+        C.resize(0,Eigen::NoChange);
+        NV.resize(0,Eigen::NoChange);
+        NF.resize(0,Eigen::NoChange);
     }
 
     inline Vec3 IGLMesh::getNormal(unsigned int f) const {

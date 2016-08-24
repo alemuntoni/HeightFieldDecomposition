@@ -16,7 +16,8 @@ EngineManager::EngineManager(QWidget *parent) :
     iterations(nullptr),
     solutions(nullptr),
     baseComplex(nullptr),
-    he(nullptr) {
+    he(nullptr),
+    entirePieces(nullptr) {
     ui->setupUi(this);
     ui->iterationsSlider->setMaximum(0);
 
@@ -41,6 +42,8 @@ EngineManager::~EngineManager() {
     deleteDrawableObject(iterations);
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
+    deleteDrawableObject(he);
+    deleteDrawableObject(entirePieces);
 }
 
 void EngineManager::updateLabel(double value, QLabel* label) {
@@ -1035,11 +1038,14 @@ void EngineManager::on_baseComplexPushButton_clicked() {
 void EngineManager::on_subtractPushButton_clicked() {
     if (solutions!= nullptr && baseComplex != nullptr && d != nullptr){
         deleteDrawableObject(he);
+        deleteDrawableObject(entirePieces);
         he = new HeightfieldsList();
+        entirePieces = new HeightfieldsList();
         mainWindow->pushObj(he, "Heightfields");
+        mainWindow->pushObj(entirePieces, "Entire Pieces");
         mainWindow->updateGlCanvas();
         IGLInterface::SimpleIGLMesh bc((IGLInterface::SimpleIGLMesh)*baseComplex);
-        Engine::booleanOperations(*he, bc, *solutions, *d, ui->cutHEightfieldsCheckBox->isChecked());
+        Engine::booleanOperations(*he, bc, *solutions, *d, ui->cutHEightfieldsCheckBox->isChecked(), *entirePieces);
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
@@ -1084,7 +1090,7 @@ void EngineManager::on_stickPushButton_clicked() {
 }
 
 void EngineManager::on_serializeBCPushButton_clicked() {
-    if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr){
+    if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr && entirePieces != nullptr){
         QString filename = QFileDialog::getSaveFileName(nullptr,
                            "Serialize",
                            ".",
@@ -1096,8 +1102,7 @@ void EngineManager::on_serializeBCPushButton_clicked() {
             solutions->serialize(myfile);
             baseComplex->serialize(myfile);
             he->serialize(myfile);
-            std::vector<IGLInterface::IGLMesh> hf;
-            Serializer::serialize(hf, myfile);
+            entirePieces->serialize(myfile);
             myfile.close();
         }
     }
@@ -1180,11 +1185,13 @@ void EngineManager::on_allHeightfieldsCheckBox_stateChanged(int arg1) {
     if (arg1 == Qt::Checked){
         if (he != nullptr){
             he->setVisibleHeightfield(-1);
+            if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(-1);
             mainWindow->updateGlCanvas();
         }
     }
     else {
         if (he != nullptr){
+            if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(ui->heightfieldsSlider->value());
             he->setVisibleHeightfield(ui->heightfieldsSlider->value());
             mainWindow->updateGlCanvas();
         }
@@ -1194,6 +1201,7 @@ void EngineManager::on_allHeightfieldsCheckBox_stateChanged(int arg1) {
 void EngineManager::on_heightfieldsSlider_valueChanged(int value) {
     if (he != nullptr){
         ui->solutionsSlider->setValue(value);
+        if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(value);
         he->setVisibleHeightfield(value);
         mainWindow->updateGlCanvas();
     }

@@ -15,7 +15,11 @@ unix:!macx{
     INCLUDEPATH += $$(LIBIGL)/include/
     INCLUDEPATH += $$(LIBIGL)/external/nanogui/ext/eigen/
     INCLUDEPATH += $$(LIBIGL)/external/nanogui/ext/glfw/include/
+    INCLUDEPATH += $$(LIBIGL)/external/triangle/
+    #DEFINES += IGL_STATIC_LIBRARY
 }
+
+#LIBS += -L/usr/include/libigl/optional/build -ligl
 
 HEADERS += \
     $$PWD/iglinterface.h \

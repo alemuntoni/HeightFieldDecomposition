@@ -160,6 +160,7 @@ class EngineManager : public QFrame, public SerializableObject {
         IGLInterface::DrawableIGLMesh* baseComplex;
         Energy e;
         HeightfieldsList *he;
+        HeightfieldsList* entirePieces;
 };
 
 #endif // ENGINEMANAGER_H

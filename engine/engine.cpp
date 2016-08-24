@@ -367,7 +367,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
         CGALInterface::AABBTree aabb[ORIENTATIONS];
         for (unsigned int i = 0; i < ORIENTATIONS; i++)
             aabb[i] = CGALInterface::AABBTree(scaled[i]);
-        # pragma omp parallel for if(ORIENTATIONS>1)
+        # pragma omp parallel for
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned int j = 0; j < TARGETS; ++j) {
                 std::set<const Dcel::Face*> flippedFaces, savedFaces;
@@ -395,9 +395,14 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
                     }
                     else
                         Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, true, XYZ[j]);
-                    std::cerr << "Starting boxes growth\n";
-                    Engine::expandBoxes(tmp[i][j], g[i][j]);
-                    std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                    if (tmp[i][j].getNumberBoxes() > 0){
+                        std::cerr << "Starting boxes growth\n";
+                        Engine::expandBoxes(tmp[i][j], g[i][j]);
+                        std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                    }
+                    else {
+                        std::cerr << "Orientation: " << i << " Target: " << j << " no boxes to expand.\n";
+                    }
                 }
             }
 
@@ -450,16 +455,24 @@ void Engine::boxSnapping(BoxList& solutions, double minimumDistance) {
     }
 }
 
-void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, bool onlyTouchingSurface) {
+void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, bool onlyTouchingSurface, HeightfieldsList& entirePieces) {
+    double average = 0;
+    for (const Dcel::HalfEdge* he : inputMesh.halfEdgeIterator())
+        average += he->getLength();
+    average /= inputMesh.getNumberHalfEdges();
     CGALInterface::AABBTree aabb(inputMesh, true);
     Timer timer("Boolean Operations");
     he.resize(solutions.getNumberBoxes());
+    entirePieces.resize(solutions.getNumberBoxes());
+    IGLInterface::SimpleIGLMesh inputIGL = inputMesh;
     for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
-    //for (int i = solutions->getNumberBoxes()-1; i >= 0 ; i--){
+    //for (int i = solutions.getNumberBoxes()-1; i >= 0 ; i--){
         IGLInterface::SimpleIGLMesh box;
         IGLInterface::SimpleIGLMesh intersection;
-        solutions.getBox(i).getIGLMesh(box);
+        IGLInterface::SimpleIGLMesh entirep;
+        box = solutions.getBox(i).getIGLMesh(average*7);
         IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
+        IGLInterface::SimpleIGLMesh::intersection(entirep, inputIGL, box);
         bool b = true;
         for (unsigned int j = 0; j < intersection.getNumberVertices(); j++) {
             Pointd p = intersection.getVertex(j);
@@ -506,8 +519,8 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
                     b.setMinZ(min.z());
                     b.setMaxY(max.y());
                     b.setMaxZ(max.z());
-                    b.setMinX(b.getMinX()-5*EPSILON);
-                    b.setMaxX(b.getMaxX()+5*EPSILON);
+                    //b.setMinX(b.getMinX()-5*EPSILON);
+                    //b.setMaxX(b.getMaxX()+5*EPSILON);
                 }
                 else if (target == XYZ[1] || target == XYZ[4]) {
                     b = solutions.getBox(i);
@@ -515,8 +528,8 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
                     b.setMinZ(min.z());
                     b.setMaxX(max.x());
                     b.setMaxZ(max.z());
-                    b.setMinY(b.getMinY()-5*EPSILON);
-                    b.setMaxY(b.getMaxY()+5*EPSILON);
+                    //b.setMinY(b.getMinY()-5*EPSILON);
+                    //b.setMaxY(b.getMaxY()+5*EPSILON);
                 }
                 else if (target == XYZ[2] || target == XYZ[5]) {
                     b = solutions.getBox(i);
@@ -524,16 +537,18 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
                     b.setMinX(min.x());
                     b.setMaxY(max.y());
                     b.setMaxX(max.x());
-                    b.setMinZ(b.getMinZ()-5*EPSILON);
-                    b.setMaxZ(b.getMaxZ()+5*EPSILON);
+                    //b.setMinZ(b.getMinZ()-5*EPSILON);
+                    //b.setMaxZ(b.getMaxZ()+5*EPSILON);
                 }
                 else assert(0);
-                b.getIGLMesh(box);
+                box = b.getIGLMesh(average*7);
                 IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
             }
             IGLInterface::SimpleIGLMesh::difference(bc, bc, box);
             IGLInterface::DrawableIGLMesh dimm(intersection);
+            IGLInterface::DrawableIGLMesh dent(entirep);
             he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i);
+            entirePieces.addHeightfield(dent, solutions.getBox(i).getRotatedTarget(), i);
         }
         std::cerr << i << "\n";
     }
@@ -541,6 +556,7 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
     for (int i = he.getNumHeightfields()-1; i >= 0 ; i--){
         if (he.getNumberVerticesHeightfield(i) == 0){
             he.removeHeightfield(i);
+            entirePieces.removeHeightfield(i);
             solutions.removeBox(i);
         }
     }
@@ -625,7 +641,7 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, IGLInterface::Simpl
         IGLInterface::SimpleIGLMesh diff;
         IGLInterface::SimpleIGLMesh box;
         //solutions.setBox(i,b);
-        b.getIGLMesh(box);
+        box = b.getIGLMesh();
         IGLInterface::SimpleIGLMesh::intersection(inters, heightfield, box);
         IGLInterface::SimpleIGLMesh::difference(diff, heightfield, box);
         IGLInterface::SimpleIGLMesh::unionn(bc, bc, diff);

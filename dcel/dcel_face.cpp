@@ -202,8 +202,7 @@ void Dcel::Face::getTriangulation(std::vector<std::array<const Dcel::Vertex*, 3>
         }
     }
 
-    std::vector<std::array<Pointd, 3> > trianglesP;
-    CGALInterface::Triangulation::triangulate(trianglesP, normal, borderCoordinates, innerBorderCoordinates);
+    std::vector<std::array<Pointd, 3> > trianglesP = CGALInterface::Triangulation::triangulate(normal, borderCoordinates, innerBorderCoordinates);
 
     triangles.clear();
     for (unsigned int i = 0; i < trianglesP.size(); ++i) {
