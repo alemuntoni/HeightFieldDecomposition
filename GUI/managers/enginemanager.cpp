@@ -1120,17 +1120,19 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         deleteDrawableObject(solutions);
         deleteDrawableObject(baseComplex);
         deleteDrawableObject(he);
+        deleteDrawableObject(entirePieces);
         d = new DrawableDcel();
         solutions = new BoxList();
         baseComplex = new IGLInterface::DrawableIGLMesh();
         he = new HeightfieldsList();
+        entirePieces = new HeightfieldsList();
         std::ifstream myfile;
         myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
         d->deserialize(myfile);
         solutions->deserialize(myfile);
         baseComplex->deserialize(myfile);
         he->deserialize(myfile);
-        //manca gestione heightfields
+        entirePieces->deserialize(myfile);
         myfile.close();
         d->update();
         d->setPointsShading();
@@ -1139,6 +1141,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         mainWindow->pushObj(solutions, "Boxes");
         mainWindow->pushObj(baseComplex, "Base Complex");
         mainWindow->pushObj(he, "Heightfields");
+        mainWindow->pushObj(entirePieces, "Entire Pieces");
         mainWindow->updateGlCanvas();
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
@@ -1165,6 +1168,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
 void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
     if (d!=nullptr){
         deleteDrawableObject(solutions);
+        deleteDrawableObject(g);
         solutions = new BoxList();
         mainWindow->pushObj(solutions, "Solutions");
         double kernelDistance = ui->distanceSpinBox->value();

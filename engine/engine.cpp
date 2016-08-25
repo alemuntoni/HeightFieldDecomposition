@@ -56,7 +56,7 @@ Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
     return m;
 }
 
-Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, unsigned int rot, int factor) {
+Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, unsigned int rot, double factor) {
     BoundingBox bb = d.getBoundingBox();
     double avg = 0;
     for (Dcel::HalfEdgeIterator heit = d.halfEdgeBegin(); heit != d.halfEdgeEnd(); ++heit){
