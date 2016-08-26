@@ -5,13 +5,12 @@
 #include "grid.h"
 #include "viewer/objects/objects.h"
 
-
 class DrawableGrid: public Grid, public DrawableObject
 {
     public:
         DrawableGrid();
         DrawableGrid(const Grid &g);
-        DrawableGrid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<double>& signedDistances, const Pointd& gMin, const Pointd& gMax);
+        DrawableGrid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Pointd& gMin, const Pointd& gMax);
         virtual ~DrawableGrid();
 
         double getKernelDistance() const;

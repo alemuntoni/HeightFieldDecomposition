@@ -639,7 +639,7 @@ double Energy::gradientZMaxComponentOld(const double*& a, double u1, double v1, 
     return G_result;
 }
 
-double Energy::gradientXMinComponent(const double*& a, double u1, double v1, double w1, double v2, double w2) {
+double Energy::gradientXMinComponent(const gridreal*& a, double u1, double v1, double w1, double v2, double w2) {
     double u12 = pow(u1, 2), u13 = pow(u1, 3);
     double v12 = pow(v1, 2), v13 = pow(v1, 3), v14 = pow(v1, 4);
     double w12 = pow(w1, 2), w13 = pow(w1, 3), w14 = pow(w1, 4);
@@ -722,7 +722,7 @@ double Energy::gradientXMinComponent(const double*& a, double u1, double v1, dou
     return G_result;
 }
 
-double Energy::gradientYMinComponent(const double*& a, double u1, double v1, double w1, double u2, double w2) {
+double Energy::gradientYMinComponent(const gridreal*& a, double u1, double v1, double w1, double u2, double w2) {
     double u12 = pow(u1, 2), u13 = pow(u1, 3), u14 = pow(u1, 4);
     double v12 = pow(v1, 2), v13 = pow(v1, 3);
     double w12 = pow(w1, 2), w13 = pow(w1, 3), w14 = pow(w1, 4);
@@ -805,7 +805,7 @@ double Energy::gradientYMinComponent(const double*& a, double u1, double v1, dou
     return G_result;
 }
 
-double Energy::gradientZMinComponent(const double*& a, double u1, double v1, double w1, double u2, double v2) {
+double Energy::gradientZMinComponent(const gridreal*& a, double u1, double v1, double w1, double u2, double v2) {
     double u12 = pow(u1, 2), u13 = pow(u1, 3), u14 = pow(u1, 4);
     double v12 = pow(v1, 2), v13 = pow(v1, 3), v14 = pow(v1, 4);
     double w12 = pow(w1, 2), w13 = pow(w1, 3);
@@ -884,7 +884,7 @@ double Energy::gradientZMinComponent(const double*& a, double u1, double v1, dou
 
 }
 
-double Energy::gradientXMaxComponent(const double*& a, double v1, double w1, double u2, double v2, double w2) {
+double Energy::gradientXMaxComponent(const gridreal*& a, double v1, double w1, double u2, double v2, double w2) {
     double v12 = pow(v1, 2), v13 = pow(v1, 3), v14 = pow(v1, 4);
     double w12 = pow(w1, 2), w13 = pow(w1, 3), w14 = pow(w1, 4);
     double u22 = pow(u2, 2), u23 = pow(u2, 3);
@@ -967,7 +967,7 @@ double Energy::gradientXMaxComponent(const double*& a, double v1, double w1, dou
     return G_result;
 }
 
-double Energy::gradientYMaxComponent(const double*& a, double u1, double w1, double u2, double v2, double w2) {
+double Energy::gradientYMaxComponent(const gridreal*& a, double u1, double w1, double u2, double v2, double w2) {
     double u12 = pow(u1, 2), u13 = pow(u1, 3), u14 = pow(u1, 4);
     double w12 = pow(w1, 2), w13 = pow(w1, 3), w14 = pow(w1, 4);
     double u22 = pow(u2, 2), u23 = pow(u2, 3), u24 = pow(u2, 4);
@@ -1050,7 +1050,7 @@ double Energy::gradientYMaxComponent(const double*& a, double u1, double w1, dou
     return G_result;
 }
 
-double Energy::gradientZMaxComponent(const double*& a, double u1, double v1, double u2, double v2, double w2) {
+double Energy::gradientZMaxComponent(const gridreal*& a, double u1, double v1, double u2, double v2, double w2) {
     double u12 = pow(u1, 2), u13 = pow(u1, 3), u14 = pow(u1, 4);
     double v12 = pow(v1, 2), v13 = pow(v1, 3), v14 = pow(v1, 4);
     double u22 = pow(u2, 2), u23 = pow(u2, 3), u24 = pow(u2, 4);
@@ -1158,7 +1158,7 @@ double Energy::gradientEvaluateXMinComponent(const Eigen::VectorXd &x) const {
                 maxbz <= z1 || minbz >= z2 ) // not contained
                 energy += 0;
             else {
-                const double* coeffs;
+                const gridreal* coeffs;
                 g->getCoefficients(coeffs, Pointd(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
@@ -1213,7 +1213,7 @@ double Energy::gradientEvaluateYMinComponent(const Eigen::VectorXd &x) const {
                     maxbz <= z1 || minbz >= z2 ) // not contained
                 energy += 0;
             else {
-                const double* coeffs;
+                const gridreal* coeffs;
                 g->getCoefficients(coeffs, Pointd(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
@@ -1267,7 +1267,7 @@ double Energy::gradientEvaluateZMinComponent(const Eigen::VectorXd& x) const {
                     maxbz <= z1 || minbz >= z2 ) // not contained
                 energy += 0;
             else {
-                const double* coeffs;
+                const gridreal* coeffs;
                 g->getCoefficients(coeffs, Pointd(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
@@ -1319,7 +1319,7 @@ double Energy::gradientEvaluateXMaxComponent(const Eigen::VectorXd &x) const {
                 maxbz <= z1 || minbz >= z2 ) // not contained
                 energy += 0;
             else {
-                const double* coeffs;
+                const gridreal* coeffs;
                 g->getCoefficients(coeffs, Pointd(x1,y1,z1));
 
                 double v1 = minby < y1 ? y1 : minby;
@@ -1373,7 +1373,7 @@ double Energy::gradientEvaluateYMaxComponent(const Eigen::VectorXd& x) const {
                     maxbz <= z1 || minbz >= z2 ) // not contained
                 energy += 0;
             else {
-                const double* coeffs;
+                const gridreal* coeffs;
                 g->getCoefficients(coeffs, Pointd(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
@@ -1426,7 +1426,7 @@ double Energy::gradientEvaluateZMaxComponent(const Eigen::VectorXd &x) const {
                     maxbz <= z1 || minbz >= z2 ) // not contained
                 energy += 0;
             else {
-                const double* coeffs;
+                const gridreal* coeffs;
                 g->getCoefficients(coeffs, Pointd(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
@@ -1616,7 +1616,7 @@ double Energy::integralTricubicInterpolationOld(const double*& a, double u1, dou
 }
 
 //sia i coefficienti che la sotto-box integrata devono essere nell'intervallo 0-1
-double Energy::integralTricubicInterpolation(const double*& a, double u1, double v1, double w1, double u2, double v2, double w2) {
+double Energy::integralTricubicInterpolation(const gridreal*& a, double u1, double v1, double w1, double u2, double v2, double w2) {
     //Simpy generated code
     //assert (a.size() == 64);
     double u12 = pow(u1, 2), u13 = pow(u1, 3), u14 = pow(u1, 4);
@@ -1812,7 +1812,7 @@ double Energy::integralTricubicInterpolationEnergy(const Eigen::VectorXd& x) con
                     maxbz <= z1 || minbz >= z2 ) // not contained
                     energy += 0;
                 else {
-                    const double* coeffs;
+                    const gridreal* coeffs;
                     //g->getCoefficients(coeffs, Pointd(x1,y1,z1));
                     if (minbx <= x1 && maxbx >= x2 &&
                         minby <= y1 && maxby >= y2 &&

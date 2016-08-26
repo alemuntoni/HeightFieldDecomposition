@@ -11,7 +11,8 @@
 #include <iostream>
 
 namespace IGLInterface {
-    void generateGridAndDistanceField(Array3D<Pointd>& grid, Array3D<double> &distanceField, const SimpleIGLMesh &m, double gridUnit = 2, bool integer= true);
+    template <typename T>
+    void generateGridAndDistanceField(Array3D<Pointd>& grid, Array3D<T> &distanceField, const SimpleIGLMesh &m, double gridUnit = 2, bool integer= true);
 
     //static std::vector< std::vector<Point2D> > dummy_holes2D;
     //std::vector<std::array<Point2D, 3> > triangulate(const std::vector<Point2D>& polygon, const std::vector<std::vector<Point2D> >& holes = dummy_holes2D, double maximumArea, double minimumAngle = 0.2);

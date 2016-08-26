@@ -41,12 +41,12 @@ class Energy{
         static double gradientYMaxComponentOld(const double* &a, double u1, double w1, double u2, double v2, double w2);
         static double gradientZMaxComponentOld(const double* &a, double u1, double v1, double u2, double v2, double w2);
 
-        static double gradientXMinComponent(const double* &a, double u1, double v1, double w1, double v2, double w2);
-        static double gradientYMinComponent(const double* &a, double u1, double v1, double w1, double u2, double w2);
-        static double gradientZMinComponent(const double* &a, double u1, double v1, double w1, double u2, double v2);
-        static double gradientXMaxComponent(const double* &a, double v1, double w1, double u2, double v2, double w2);
-        static double gradientYMaxComponent(const double* &a, double u1, double w1, double u2, double v2, double w2);
-        static double gradientZMaxComponent(const double* &a, double u1, double v1, double u2, double v2, double w2);
+        static double gradientXMinComponent(const gridreal*& a, double u1, double v1, double w1, double v2, double w2);
+        static double gradientYMinComponent(const gridreal* &a, double u1, double v1, double w1, double u2, double w2);
+        static double gradientZMinComponent(const gridreal*& a, double u1, double v1, double w1, double u2, double v2);
+        static double gradientXMaxComponent(const gridreal* &a, double v1, double w1, double u2, double v2, double w2);
+        static double gradientYMaxComponent(const gridreal*& a, double u1, double w1, double u2, double v2, double w2);
+        static double gradientZMaxComponent(const gridreal* &a, double u1, double v1, double u2, double v2, double w2);
 
         double gradientEvaluateXMinComponent(const Eigen::VectorXd& x) const;
         double gradientEvaluateYMinComponent(const Eigen::VectorXd& x) const;
@@ -71,7 +71,7 @@ class Energy{
 
         // Integral
         static double integralTricubicInterpolationOld(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
-        static double integralTricubicInterpolation(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
+        static double integralTricubicInterpolation(const gridreal*& a, double u1, double v1, double w1, double u2, double v2, double w2);
         double integralTricubicInterpolationEnergy(const Pointd& min, const Pointd& max) const;
         double integralTricubicInterpolationEnergy(const Eigen::VectorXd &x) const;
 

@@ -15,7 +15,8 @@ namespace IGLInterface {
      *
      * Every point of the grid will be stored on 3D Array grid, and the distance field will be stored on the parallel 3D array distanceField.
      */
-    void generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<double> &distanceField, const SimpleIGLMesh &m, double gridUnit, bool integer) {
+    template <typename T>
+    void generateGridAndDistanceField(Array3D<Pointd>& grid, Array3D<T> &distanceField, const SimpleIGLMesh &m, double gridUnit, bool integer) {
         assert(gridUnit > 0);
         // Bounding Box
         Eigen::RowVector3d Vmin, Vmax;
@@ -105,3 +106,7 @@ namespace IGLInterface {
     }*/
 
 }
+
+template void IGLInterface::generateGridAndDistanceField<double>(Array3D<Pointd>& grid, Array3D<double> &distanceField, const SimpleIGLMesh &m, double gridUnit, bool integer);
+template void IGLInterface::generateGridAndDistanceField<float>(Array3D<Pointd>& grid, Array3D<float> &distanceField, const SimpleIGLMesh &m, double gridUnit, bool integer);
+template void IGLInterface::generateGridAndDistanceField<int>(Array3D<Pointd>& grid, Array3D<int> &distanceField, const SimpleIGLMesh &m, double gridUnit, bool integer);

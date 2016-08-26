@@ -119,7 +119,7 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces) {
     IGLInterface::SimpleIGLMesh m(d);
     Array3D<Pointd> grid;
-    Array3D<double> distanceField;
+    Array3D<gridreal> distanceField;
     IGLInterface::generateGridAndDistanceField(grid, distanceField, m);
     Pointi res(grid.getSizeX(), grid.getSizeY(), grid.getSizeZ());
     Pointd nGmin(grid(0,0,0));

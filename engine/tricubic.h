@@ -5,11 +5,13 @@
 #include "common/arrays.h"
 #include "common/point.h"
 
+typedef float gridreal;
+
 namespace TricubicInterpolator {
 
-    void getCoefficients(Array4D<double>& coeffs, const Array3D<double> &weights);
+    void getCoefficients(Array4D<gridreal>& coeffs, const Array3D<gridreal> &weights);
 
-    double getValue(const Pointd &p, const double* coeffs);
+    double getValue(const Pointd &p, const gridreal* coeffs);
 }
 
 #endif

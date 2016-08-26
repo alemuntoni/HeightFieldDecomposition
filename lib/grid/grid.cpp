@@ -3,7 +3,7 @@
 Grid::Grid() {
 }
 
-Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<double>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
+Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
     signedDistances(signedDistances), target(0,0,0) {
     unit = gridCoordinates(1,0,0).x() - gridCoordinates(0,0,0).x();
     bb.setMin(gMin);
@@ -11,7 +11,7 @@ Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, con
     resX = resolution.x();
     resY = resolution.y();
     resZ = resolution.z();
-    weights = Array3D<double>(resX,resY,resZ, BORDER_PAY);
+    weights = Array3D<gridreal>(resX,resY,resZ, BORDER_PAY);
     for (unsigned int i = 2; i < resX-2; i++){
         for (unsigned int j = 2; j < resY-2; j++){
             for (unsigned int k = 2; k < resZ-2; ++k){
@@ -19,7 +19,7 @@ Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, con
             }
         }
     }
-    coeffs = Array4D<double>((resX-1),(resY-1),(resZ-1),64, 0);
+    coeffs = Array4D<gridreal>((resX-1),(resY-1),(resZ-1),64, 0);
 }
 
 /**
@@ -104,13 +104,13 @@ void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool hei
     TricubicInterpolator::getCoefficients(coeffs, weights);
 }
 
-void Grid::calculateFullBoxValues(double (*integralTricubicInterpolation)(const double *&, double, double, double, double, double, double)) {
-    fullBoxValues = Array3D<double>(getResX()-1, getResY()-1, getResZ()-1);
+void Grid::calculateFullBoxValues(double (*integralTricubicInterpolation)(const gridreal *&, double, double, double, double, double, double)) {
+    fullBoxValues = Array3D<gridreal>(getResX()-1, getResY()-1, getResZ()-1);
     #pragma omp parallel for
     for (unsigned int i = 0; i < fullBoxValues.getSizeX(); ++i){
         for (unsigned int j = 0; j < fullBoxValues.getSizeY(); ++j){
             for (unsigned int k = 0; k < fullBoxValues.getSizeZ(); ++k){
-                const double * coeffs;
+                const gridreal * coeffs;
                 getCoefficients(coeffs, i, j, k);
                 fullBoxValues(i,j,k) = integralTricubicInterpolation(coeffs, 0,0,0,1,1,1);
             }
@@ -126,7 +126,7 @@ double Grid::getValue(const Pointd& p) const {
         return weights(xi,yi,zi);
     else{
         n = (p - n) / getUnit(); // n ora è un punto nell'intervallo 0 - 1
-        const double* coef = coeffs(xi,yi,zi);
+        const gridreal* coef = coeffs(xi,yi,zi);
         return TricubicInterpolator::getValue(n, coef);
     }
 }

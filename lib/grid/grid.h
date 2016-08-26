@@ -16,8 +16,9 @@
 
 class Grid : public SerializableObject{
     public:
+
         Grid();
-        Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<double>& signedDistances, const Pointd& gMin, const Pointd& gMax);
+        Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Pointd& gMin, const Pointd& gMax);
 
         unsigned int getResX() const;
         unsigned int getResY() const;
@@ -31,14 +32,14 @@ class Grid : public SerializableObject{
 
         void calculateBorderWeights(const Dcel &d, bool heightfields = false, std::set<const Dcel::Face*>& savedFaces = Grid::dummy);
         void calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool heightfields = false, std::set<const Dcel::Face*>& savedFaces = Grid::dummy);
-        void calculateFullBoxValues(double (*integralTricubicInterpolation)(const double *&, double, double, double, double, double, double));
+        void calculateFullBoxValues(double (*integralTricubicInterpolation)(const gridreal *&, double, double, double, double, double, double));
 
         double getValue(const Pointd &p) const;
         double getUnit() const;
         void getMinAndMax(double &min, double &max);
 
         Pointd getNearestGridPoint(const Pointd& p) const;
-        void getCoefficients(const double*& coeffs, const Pointd& p) const;
+        void getCoefficients(const gridreal*& coeffs, const Pointd& p) const;
         double getFullBoxValue(const Pointd&p) const;
 
         // SerializableObject interface
@@ -46,6 +47,7 @@ class Grid : public SerializableObject{
         void deserialize(std::ifstream& binaryFile);
 
         void resetSignedDistances();
+
 
     protected:
         Pointd getPoint(unsigned int i, unsigned int j, unsigned int k) const;
@@ -56,16 +58,16 @@ class Grid : public SerializableObject{
         int getIndexOfCoordinateY(double y) const;
         int getIndexOfCoordinateZ(double z) const;
 
-        void getCoefficients(const double*& coeffs, unsigned int i, unsigned int j, unsigned int k) const;
+        void getCoefficients(const gridreal*& coeffs, unsigned int i, unsigned int j, unsigned int k) const;
 
         void setWeightOnCube(unsigned int i, unsigned int j, unsigned int k, double w);
 
         BoundingBox bb;
         unsigned int resX, resY, resZ;
-        Array3D<double> signedDistances;
-        Array3D<double> weights;
-        Array4D<double> coeffs;
-        Array3D<double> fullBoxValues;
+        Array3D<gridreal> signedDistances;
+        Array3D<gridreal> weights;
+        Array4D<gridreal> coeffs;
+        Array3D<gridreal> fullBoxValues;
         Vec3 target;
         double unit;
 
@@ -102,10 +104,10 @@ inline double Grid::getUnit() const {
 }
 
 inline Pointd Grid::getNearestGridPoint(const Pointd& p) const{
-    return std::move(Pointd(bb.getMinX() + getIndexOfCoordinateX(p.x())*unit, bb.getMinY() + getIndexOfCoordinateY(p.y())*unit, bb.getMinZ() + getIndexOfCoordinateZ(p.z())*unit));
+    return Pointd(bb.getMinX() + getIndexOfCoordinateX(p.x())*unit, bb.getMinY() + getIndexOfCoordinateY(p.y())*unit, bb.getMinZ() + getIndexOfCoordinateZ(p.z())*unit);
 }
 
-inline void Grid::getCoefficients(const double* &coeffs, unsigned int i, unsigned int j, unsigned int k) const {
+inline void Grid::getCoefficients(const gridreal* &coeffs, unsigned int i, unsigned int j, unsigned int k) const {
     coeffs = this->coeffs(i, j, k);
 }
 
@@ -123,7 +125,7 @@ inline void Grid::setWeightOnCube(unsigned int i, unsigned int j, unsigned int k
     weights(i+1,j+1,k+1) = w;
 }
 
-inline void Grid::getCoefficients(const double* &coeffs, const Pointd& p) const {
+inline void Grid::getCoefficients(const gridreal*& coeffs, const Pointd& p) const {
     if(bb.isStrictlyIntern(p))
         coeffs = this->coeffs(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
     else coeffs = this->coeffs(0, 0, 0);
@@ -140,7 +142,7 @@ inline void Grid::resetSignedDistances() {
 }
 
 inline Pointd Grid::getPoint(unsigned int i, unsigned int j, unsigned int k) const {
-    return std::move(Pointd(bb.getMinX() + i*unit, bb.getMinY() + j*unit, bb.getMinZ() + k*unit));
+    return Pointd(bb.getMinX() + i*unit, bb.getMinY() + j*unit, bb.getMinZ() + k*unit);
 }
 
 inline unsigned int Grid::getIndex(unsigned int i, unsigned int j, unsigned int k) const {

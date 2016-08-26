@@ -1,6 +1,6 @@
 #include "tricubic.h"
 
-void TricubicInterpolator::getCoefficients(Array4D<double>& coeffs, const Array3D<double>& weights) {
+void TricubicInterpolator::getCoefficients(Array4D<gridreal>& coeffs, const Array3D<gridreal>& weights) {
     assert(coeffs.getSizeX() == weights.getSizeX()-1);
     assert(coeffs.getSizeY() == weights.getSizeY()-1);
     assert(coeffs.getSizeZ() == weights.getSizeZ()-1);
@@ -73,7 +73,7 @@ void TricubicInterpolator::getCoefficients(Array4D<double>& coeffs, const Array3
       { 8,-8,-8, 8,-8, 8, 8,-8, 4, 4,-4,-4,-4,-4, 4, 4, 4,-4, 4,-4,-4, 4,-4, 4, 4,-4,-4, 4, 4,-4,-4, 4, 2, 2, 2, 2,-2,-2,-2,-2, 2, 2,-2,-2, 2, 2,-2,-2, 2,-2, 2,-2, 2,-2, 2,-2, 1, 1, 1, 1, 1, 1, 1, 1}
     };
 
-    Eigen::Matrix<double,64,64> C;
+    Eigen::Matrix<gridreal,64,64> C;
     for(int i=0;i<64;i++){
         for(int j=0;j<64;j++){
             C(i,j) = temp[i][j];
@@ -95,7 +95,7 @@ void TricubicInterpolator::getCoefficients(Array4D<double>& coeffs, const Array3
     for (unsigned int xi = 1; xi < weights.getSizeX() - 2; xi++){
         for (unsigned int yi = 1; yi < weights.getSizeY() - 2; yi++){
             for (unsigned int zi = 1; zi < weights.getSizeZ() - 2; zi++){
-                Eigen::Matrix<double,64,1> x;
+                Eigen::Matrix<gridreal,64,1> x;
                 x <<
                         // values of f(x,y,z) at each corner.
                         weights(xi,yi,zi),weights(xi+1,yi,zi),weights(xi,yi+1,zi),
@@ -165,7 +165,7 @@ void TricubicInterpolator::getCoefficients(Array4D<double>& coeffs, const Array3
                         0.125*(weights(xi+1,yi+2,zi+2)-weights(xi-1,yi+2,zi+2)-weights(xi+1,yi,zi+2)+weights(xi-1,yi,zi+2)-weights(xi+1,yi+2,zi)+weights(xi-1,yi+2,zi)+weights(xi+1,yi,zi)-weights(xi-1,yi,zi)),
                         0.125*(weights(xi+2,yi+2,zi+2)-weights(xi,yi+2,zi+2)-weights(xi+2,yi,zi+2)+weights(xi,yi,zi+2)-weights(xi+2,yi+2,zi)+weights(xi,yi+2,zi)+weights(xi+2,yi,zi)-weights(xi,yi,zi))
                         ;
-                Eigen::Matrix<double,64,1> coefs;
+                Eigen::Matrix<gridreal,64,1> coefs;
                 coefs = C * x;
                 for (unsigned k = 0; k < 64; k++)
                     coeffs(xi,yi,zi, k) = coefs(k,0);
@@ -174,12 +174,12 @@ void TricubicInterpolator::getCoefficients(Array4D<double>& coeffs, const Array3
     }
 }
 
-double TricubicInterpolator::getValue(const Pointd& p, const double* coeffs) {
+double TricubicInterpolator::getValue(const Pointd& p, const gridreal* coeffs) {
     int ijkn =0;
-    double dzpow = 1;
-    double result = 0;
+    gridreal dzpow = 1;
+    gridreal result = 0;
     for(int k = 0; k < 4; ++k) {
-        double dypow = 1;
+        gridreal dypow = 1;
         for(int j = 0; j < 4; ++j) {
             result += dypow*dzpow*(coeffs[ijkn] + p.x()*(coeffs[ijkn+1] + p.x()*(coeffs[ijkn+2] + p.x()*coeffs[ijkn+3])));
             ijkn += 4;

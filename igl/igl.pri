@@ -19,7 +19,7 @@ unix:!macx{
     #DEFINES += IGL_STATIC_LIBRARY
 }
 
-#LIBS += -L/usr/include/libigl/optional/build -ligl
+#LIBS += -L/usr/include/libiglbin -ligl
 
 HEADERS += \
     $$PWD/iglinterface.h \
