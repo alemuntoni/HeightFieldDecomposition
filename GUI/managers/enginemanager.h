@@ -111,10 +111,6 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_deleteBoxesPushButton_clicked();
 
-        void on_deserializePreprocessingPushButton_clicked();
-
-        void on_serializePreprocessingPushButton_clicked();
-
         void on_stepDrawGridSpinBox_valueChanged(double arg1);
 
         void on_baseComplexPushButton_clicked();
@@ -148,6 +144,10 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_toleranceSlider_valueChanged(int value);
 
         void on_areaToleranceSpinBox_valueChanged(double arg1);
+
+        void on_saveObjsButton_clicked();
+
+        void on_cleanAllPushButton_clicked();
 
     private:
         Ui::EngineManager *ui;

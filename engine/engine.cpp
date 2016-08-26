@@ -287,8 +287,10 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
         m[i] = Engine::rotateDcelAlreadyScaled(scaled[i], i);
     }
 
+    #if ORIENTATIONS > 1
     if (onlyNearestTarget)
         Engine::setTrianglesTargets(scaled);
+    #endif
 
     if (!heightfields){
         Grid g[ORIENTATIONS];
@@ -318,10 +320,12 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
 
             for (unsigned int i = 0; i < ORIENTATIONS; i++){
                 std::cerr << "Calculating Boxes\n";
+                #if ORIENTATIONS > 1
                 if (onlyNearestTarget){
                     Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i], i);
                 }
                 else
+                #endif
                     Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i]);
                 std::cerr << "Starting boxes growth\n";
                 Engine::expandBoxes(tmp[i], g[i], true);
@@ -390,10 +394,12 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
             for (unsigned int i = 0; i < ORIENTATIONS; ++i){
                 for (unsigned int j = 0; j < TARGETS; ++j){
                     std::cerr << "Calculating Boxes\n";
+                    #if ORIENTATIONS > 1
                     if (onlyNearestTarget){
                         Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], i, true, XYZ[j]);
                     }
                     else
+                    #endif
                         Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, true, XYZ[j]);
                     if (tmp[i][j].getNumberBoxes() > 0){
                         std::cerr << "Starting boxes growth\n";
@@ -752,6 +758,7 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
     Eigen::Matrix3d m[ORIENTATIONS];
     m[0] = Eigen::Matrix3d::Identity();
     CGALInterface::AABBTree t0(scaled0);
+    #if ORIENTATIONS > 1
     getRotationMatrix(Vec3(0,0,1), 0.785398, m[1]);
     Dcel scaled1(d);
     scaled1.rotate(m[1]);
@@ -767,6 +774,7 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
     scaled3.rotate(m[3]);
     getRotationMatrix(Vec3(0,-1,0), 0.785398, m[3]);
     CGALInterface::AABBTree t3(scaled3);
+    #endif
 
     std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples;
 
@@ -776,12 +784,14 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
         std::list<const Dcel::Face*> covered;
         if (b.getRotationMatrix() == m[0])
             t0.getIntersectedDcelFaces(covered, b);
+        #if ORIENTATIONS > 1
         else if (b.getRotationMatrix() == m[1])
             t1.getIntersectedDcelFaces(covered, b);
         else if (b.getRotationMatrix() == m[2])
             t2.getIntersectedDcelFaces(covered, b);
         else if (b.getRotationMatrix() == m[3])
             t3.getIntersectedDcelFaces(covered, b);
+        #endif
         else assert(0);
 
         std::list<const Dcel::Face*>::iterator it = covered.begin();

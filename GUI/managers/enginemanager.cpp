@@ -278,6 +278,30 @@ void EngineManager::on_deserializePushButton_clicked() {
     }
 }
 
+void EngineManager::on_saveObjsButton_clicked() {
+    if (d != nullptr && baseComplex != nullptr && he != nullptr && entirePieces != nullptr) {
+        QString foldername = QFileDialog::getExistingDirectory(nullptr, "SaveObjs");
+        if (!foldername.isEmpty()){
+            QString inputMeshString = foldername + "/InputMesh.obj";
+            QString baseComplexString = foldername + "/BaseComplex.obj";
+            QString heightfieldString = foldername + "/Heightfield";
+            QString entirePieceString = foldername + "/EntirePiece";
+            d->saveOnObjFile(inputMeshString.toStdString());
+            baseComplex->saveOnObj(baseComplexString.toStdString());
+            for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+                IGLInterface::IGLMesh h = he->getHeightfield(i);
+                IGLInterface::IGLMesh ep = entirePieces->getHeightfield(i);
+                std::stringstream ss;
+                std::stringstream ss1;
+                ss << heightfieldString.toStdString() << i << ".obj";
+                ss1 << entirePieceString.toStdString() << i << ".obj";
+                h.saveOnObj(ss.str());
+                ep.saveOnObj(ss1.str());
+            }
+        }
+    }
+}
+
 void EngineManager::on_wSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setW(arg1);
@@ -862,160 +886,6 @@ void EngineManager::on_deleteBoxesPushButton_clicked() {
     }
 }
 
-void EngineManager::on_deserializePreprocessingPushButton_clicked() {
-    QString filename = QFileDialog::getOpenFileName(nullptr,
-                       "Deserialize",
-                       ".",
-                       "BIN(*.bin)");
-
-    if (!filename.isEmpty()) {
-        deleteDrawableObject(d);
-        d = new DrawableDcel();
-
-        std::ifstream myfile;
-        myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
-        bool heightfields;
-
-        d->deserialize(myfile);
-        for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit)
-            (*fit)->setColor(QColor(128,128,128));
-        d->setWireframe(true);
-        d->setPointsShading();
-        d->update();
-        mainWindow->pushObj(d, "Scaled Mesh");
-
-        Serializer::deserialize(heightfields, myfile);
-        //heightfields = true;
-        if (!heightfields){
-            Grid g[ORIENTATIONS];
-            BoxList bl[ORIENTATIONS];
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                g[i].deserialize(myfile);
-                bl[i].deserialize(myfile);
-            }
-            myfile.close();
-
-            deleteDrawableObject(this->g);
-            this->g = new DrawableGrid();
-            *(this->g) = g[0];
-            mainWindow->pushObj(this->g, "Grid");
-
-            deleteDrawableObject(solutions);
-            solutions = new BoxList();
-
-            //caricamento solutions
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                solutions->insert(bl[i]);
-            }
-
-            solutions->setVisibleBox(0);
-            solutions->setCylinders(false);
-            mainWindow->pushObj(solutions, "Solutions");
-            ui->showAllSolutionsCheckBox->setEnabled(true);
-            ui->solutionsSlider->setEnabled(true);
-            ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-            ui->setFromSolutionSpinBox->setValue(0);
-            ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-
-        }
-        else {
-            Grid g[ORIENTATIONS][TARGETS];
-            BoxList bl[ORIENTATIONS][TARGETS];
-            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                for (unsigned j = 0; j < TARGETS; ++j){
-                    g[i][j].deserialize(myfile);
-                    bl[i][j].deserialize(myfile);
-                }
-            }
-            myfile.close();
-
-            deleteDrawableObject(this->g);
-            this->g = new DrawableGrid();
-            *(this->g) = g[0][0];
-            mainWindow->pushObj(this->g, "Grid");
-
-            deleteDrawableObject(solutions);
-            solutions = new BoxList();
-
-            //caricamento solutions
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                for (unsigned int j = 0; j < TARGETS; ++j){
-                    solutions->insert(bl[i][j]);
-                }
-            }
-
-            solutions->setVisibleBox(0);
-            solutions->setCylinders(false);
-            mainWindow->pushObj(solutions, "Solutions");
-            ui->showAllSolutionsCheckBox->setEnabled(true);
-            ui->solutionsSlider->setEnabled(true);
-            ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-            ui->setFromSolutionSpinBox->setValue(0);
-            ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        }
-        e = Energy(*g);
-    }
-    mainWindow->updateGlCanvas();
-}
-
-void EngineManager::on_serializePreprocessingPushButton_clicked() {
-    QString filename = QFileDialog::getSaveFileName(nullptr,
-                       "Serialize",
-                       ".",
-                       "BIN(*.bin)");
-    if (!filename.isEmpty()) {
-        Dcel scaled[ORIENTATIONS];
-        Eigen::Matrix3d m[ORIENTATIONS];
-        bool heightfields = ui->heightfieldsCheckBox->isChecked();
-        scaled[0] = (Dcel)*d;
-        m[0] = Eigen::Matrix3d::Identity();
-        for (unsigned int i = 1; i < ORIENTATIONS; i++){
-            scaled[i] = (Dcel)*d;
-            m[i] = Engine::rotateDcelAlreadyScaled(scaled[i], i);
-        }
-        if (! heightfields){
-            Grid g[ORIENTATIONS];
-            BoxList bl[ORIENTATIONS];
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                Engine::generateGrid(g[i], scaled[i], ui->distanceSpinBox->value(), false);
-                Engine::calculateInitialBoxes(bl[i],scaled[i], m[i], false);
-
-            }
-            std::ofstream myfile;
-            myfile.open (filename.toStdString(), std::ios::out | std::ios::binary);
-            scaled[0].serialize(myfile);
-            Serializer::serialize(heightfields, myfile);
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                g[i].serialize(myfile);
-                bl[i].serialize(myfile);
-            }
-
-            myfile.close();
-        }
-        else {
-            Grid g[ORIENTATIONS][TARGETS];
-            BoxList bl[ORIENTATIONS][TARGETS];
-            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                for (unsigned j = 0; j < TARGETS; ++j){
-                    Engine::generateGrid(g[i][j], scaled[i], ui->distanceSpinBox->value(), true, XYZ[j]);
-                    Engine::calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
-                }
-            }
-            std::ofstream myfile;
-            myfile.open (filename.toStdString(), std::ios::out | std::ios::binary);
-            scaled[0].serialize(myfile);
-            Serializer::serialize(heightfields, myfile);
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                for (unsigned j = 0; j < TARGETS; ++j){
-                    g[i][j].serialize(myfile);
-                    bl[i][j].serialize(myfile);
-                }
-            }
-            myfile.close();
-        }
-    }
-}
-
 void EngineManager::on_stepDrawGridSpinBox_valueChanged(double arg1) {
     if (g!=nullptr){
         if (arg1 > 0){
@@ -1263,4 +1133,15 @@ void EngineManager::on_areaToleranceSpinBox_valueChanged(double arg1){
     if (d!= nullptr){
         updateColors(ui->toleranceSlider->value(), arg1);
     }
+}
+
+void EngineManager::on_cleanAllPushButton_clicked() {
+    deleteDrawableObject(g);
+    deleteDrawableObject(d);
+    deleteDrawableObject(b);
+    deleteDrawableObject(iterations);
+    deleteDrawableObject(solutions);
+    deleteDrawableObject(baseComplex);
+    deleteDrawableObject(he);
+    deleteDrawableObject(entirePieces);
 }
