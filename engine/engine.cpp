@@ -373,6 +373,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
             aabb[i] = CGALInterface::AABBTree(scaled[i]);
         # pragma omp parallel for
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            # pragma omp parallel for
             for (unsigned int j = 0; j < TARGETS; ++j) {
                 std::set<const Dcel::Face*> flippedFaces, savedFaces;
                 Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
@@ -707,8 +708,22 @@ int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, st
             return false;
         }
     };
+
+    std::vector<std::tuple<int, Box3D, std::vector<bool> > > vectorTriples0;
+    for (unsigned int i = 0; i < vectorTriples.size(); i++){
+        Box3D b = std::get<1>(vectorTriples[i]);
+        if (b.getRotationMatrix() == Eigen::Matrix3d::Identity()){
+            vectorTriples0.push_back(vectorTriples[i]);
+            vectorTriples.erase(vectorTriples.begin() + i);
+            i--;
+        }
+    }
+    std::sort(vectorTriples0.begin(), vectorTriples0.end(), triplesOrdering());
+
+
     std::sort(vectorTriples.begin(), vectorTriples.end(), triplesOrdering());
 
+    vectorTriples.insert(vectorTriples.end(), vectorTriples0.begin(), vectorTriples0.end());
 
     //create m
     std::vector<std::vector<bool> > m;
@@ -744,8 +759,19 @@ int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, st
     for (int i = eliminate.size()-1; i >= 0; i--){
         vectorTriples.erase(vectorTriples.begin() + eliminate[i]);
     }
-    int n = boxList.getNumberBoxes();
 
+    vectorTriples0.clear();
+    for (unsigned int i = 0; i < vectorTriples.size(); i++){
+        Box3D b = std::get<1>(vectorTriples[i]);
+        if (b.getRotationMatrix() == Eigen::Matrix3d::Identity()){
+            vectorTriples0.push_back(vectorTriples[i]);
+            vectorTriples.erase(vectorTriples.begin() + i);
+            i--;
+        }
+    }
+    vectorTriples.insert(vectorTriples.begin(), vectorTriples0.begin(), vectorTriples0.end());
+
+    int n = boxList.getNumberBoxes();
     boxList.clearBoxes();
     for (unsigned int i = 0; i < vectorTriples.size(); i++){
         boxList.addBox(std::get<1>(vectorTriples[i]));
