@@ -43,7 +43,7 @@ ALL {
     #Trimesh module: contains a Trimesh data structure
     #Requires: Common module
     #Optional: Viewer module
-    #include (trimesh/trimesh.pri)
+    include (trimesh/trimesh.pri)
 
     #Igl module: coontaint an intergace to some functionalities of libIGL
     #Requires: Common module, libIGL (an environment variable named LIBIGL containing the root directory of the library must be setted)

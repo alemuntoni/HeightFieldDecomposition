@@ -33,7 +33,7 @@ namespace CGALInterface {
             Pointd getNearestPoint(const Pointd &p);
             #ifdef DCEL_DEFINED
             void getIntersectedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b);
-
+            void getCompletelyContainedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b);
             const Dcel::Face* getNearestDcelFace(const Pointd &p);
             #endif
 

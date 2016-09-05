@@ -23,7 +23,7 @@
 #include "igl/iglinterface.h"
 #endif
 
-#define ORIENTATIONS 4
+#define ORIENTATIONS 1
 #define TARGETS 6
 
 namespace Engine {

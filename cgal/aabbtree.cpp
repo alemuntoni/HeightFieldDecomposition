@@ -90,6 +90,21 @@ void CGALInterface::AABBTree::getIntersectedDcelFaces(std::list<const Dcel::Face
     }
 }
 
+void CGALInterface::AABBTree::getCompletelyContainedDcelFaces(std::list<const Dcel::Face*>& outputList, const BoundingBox& b) {
+    getIntersectedDcelFaces(outputList, b);
+
+    std::list<const Dcel::Face*>::iterator i = outputList.begin();
+    while (i != outputList.end()) {
+        const Dcel::Face* f = *i;
+        Pointd p1 = f->getVertex1()->getCoordinate(), p2 = f->getVertex2()->getCoordinate(), p3 = f->getVertex3()->getCoordinate();
+
+        if (!b.isIntern(p1) || !b.isIntern(p2) || !b.isIntern(p3)) {
+            i =outputList.erase(i);
+        }
+        else ++i;
+    }
+}
+
 const Dcel::Face* CGALInterface::AABBTree::getNearestDcelFace(const Pointd& p) {
     CGALPoint query(p.x(), p.y(), p.z());
     AABB_triangle_traits::Point_and_primitive_id ppid = tree.closest_point_and_primitive(query);

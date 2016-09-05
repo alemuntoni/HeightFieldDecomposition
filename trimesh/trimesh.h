@@ -187,21 +187,28 @@ template<typename real> class Trimesh
             for(int vid=0; vid<numVertices(); ++vid)
             {
                 std::vector<int> nbrs = adj_vtx2tri(vid);
-
-                Point<real> sum(0,0,0);
-                for(int i=0; i<(int)nbrs.size(); ++i)
-                {
-                    sum += triangleNormal(nbrs[i]);
-                }
-
-                assert(nbrs.size() > 0);
-                sum /= nbrs.size();
-                sum.normalize();
-
                 int vid_ptr = vid * 3;
-                vertexNormals[vid_ptr + 0] = sum.x();
-                vertexNormals[vid_ptr + 1] = sum.y();
-                vertexNormals[vid_ptr + 2] = sum.z();
+                if (nbrs.size() == 0) {
+                    vertexNormals[vid_ptr + 0] = 0;
+                    vertexNormals[vid_ptr + 1] = 0;
+                    vertexNormals[vid_ptr + 2] = 0;
+                }
+                else {
+                    Point<real> sum(0,0,0);
+                    for(int i=0; i<(int)nbrs.size(); ++i)
+                    {
+                        sum += triangleNormal(nbrs[i]);
+                    }
+
+                    assert(nbrs.size() > 0);
+                    sum /= nbrs.size();
+                    sum.normalize();
+
+
+                    vertexNormals[vid_ptr + 0] = sum.x();
+                    vertexNormals[vid_ptr + 1] = sum.y();
+                    vertexNormals[vid_ptr + 2] = sum.z();
+                }
             }
         }
 

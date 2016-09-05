@@ -2,6 +2,9 @@ DEFINES += IGL_DEFINED
 CONFIG += IGL_DEFINED
 MODULES += IGL
 
+#comment next line if libigl is not used in static mode
+CONFIG += IGL_STATIC_LIBRARY
+
 !contains(DEFINES, COMMON_DEFINED){
     error(Igl module requires common module!)
 }
@@ -9,17 +12,17 @@ MODULES += IGL
 unix:!macx{
     QMAKE_CXXFLAGS += -std=c++11  -fopenmp
     QMAKE_LFLAGS +=  -fopenmp
-    #QMAKE_CXXFLAGS += -O3 -DNDEBUG
     LIBS += -lboost_system -DBOOST_LOG_DYN_LINK -lboost_log -lboost_thread -lpthread
     INCLUDEPATH -= /usr/include/eigen3
     INCLUDEPATH += $$(LIBIGL)/include/
     INCLUDEPATH += $$(LIBIGL)/external/nanogui/ext/eigen/
-    INCLUDEPATH += $$(LIBIGL)/external/nanogui/ext/glfw/include/
-    INCLUDEPATH += $$(LIBIGL)/external/triangle/
-    #DEFINES += IGL_STATIC_LIBRARY
+    IGL_STATIC_LIBRARY {
+        DEFINES += IGL_STATIC_LIBRARY
+        LIBS += -L/usr/include/libiglbin -liglcgal -ligl
+    }
 }
 
-#LIBS += -L/usr/include/libiglbin -ligl
+
 
 HEADERS += \
     $$PWD/iglinterface.h \

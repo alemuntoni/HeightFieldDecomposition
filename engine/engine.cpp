@@ -296,7 +296,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
         Grid g[ORIENTATIONS];
         BoxList bl[ORIENTATIONS];
         std::set<int> coveredFaces;
-        unsigned int numberFaces = 100;
+        unsigned int numberFaces = 200;
         CGALInterface::AABBTree aabb[ORIENTATIONS];
         for (unsigned int i = 0; i < ORIENTATIONS; i++)
             aabb[i] = CGALInterface::AABBTree(scaled[i]);
@@ -336,7 +336,8 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
 
                     for (unsigned int k = 0; k < tmp[i].getNumberBoxes(); ++k){
                         std::list<const Dcel::Face*> list;
-                        aabb[i].getIntersectedDcelFaces(list, tmp[i].getBox(k));
+                        aabb[i].getCompletelyContainedDcelFaces(list, tmp[i].getBox(k));
+
                         for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
                             coveredFaces.insert((*it)->getId());
                         }
@@ -367,7 +368,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
         Grid g[ORIENTATIONS][TARGETS];
         BoxList bl[ORIENTATIONS][TARGETS];
         std::set<int> coveredFaces;
-        unsigned int numberFaces = 100;
+        unsigned int numberFaces = 200;
         CGALInterface::AABBTree aabb[ORIENTATIONS];
         for (unsigned int i = 0; i < ORIENTATIONS; i++)
             aabb[i] = CGALInterface::AABBTree(scaled[i]);
@@ -480,7 +481,7 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
         box = solutions.getBox(i).getIGLMesh(average*7);
         IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
         IGLInterface::SimpleIGLMesh::intersection(entirep, inputIGL, box);
-        bool b = true;
+        /*bool b = true;
         for (unsigned int j = 0; j < intersection.getNumberVertices(); j++) {
             Pointd p = intersection.getVertex(j);
             double dist = aabb.getSquaredDistance(p);
@@ -551,12 +552,12 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
                 box = b.getIGLMesh(average*7);
                 IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
             }
-            IGLInterface::SimpleIGLMesh::difference(bc, bc, box);
-            IGLInterface::DrawableIGLMesh dimm(intersection);
-            IGLInterface::DrawableIGLMesh dent(entirep);
-            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i);
-            entirePieces.addHeightfield(dent, solutions.getBox(i).getRotatedTarget(), i);
-        }
+        }*/
+        IGLInterface::SimpleIGLMesh::difference(bc, bc, box);
+        IGLInterface::DrawableIGLMesh dimm(intersection);
+        IGLInterface::DrawableIGLMesh dent(entirep);
+        he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i);
+        entirePieces.addHeightfield(dent, solutions.getBox(i).getRotatedTarget(), i);
         std::cerr << i << "\n";
     }
     timer.stopAndPrint();

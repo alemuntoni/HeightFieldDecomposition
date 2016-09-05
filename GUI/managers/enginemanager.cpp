@@ -175,10 +175,9 @@ void EngineManager::on_targetComboBox_currentIndexChanged(int index) {
     if (d!= nullptr && g!= nullptr){
         g->setTarget(XYZ[index]);
         updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
-        d->update();
-        std::set<const Dcel::Face*> flippedFaces, savedFaces;
-        Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
-        g->calculateBorderWeights(*d, ui->heightfieldsCheckBox->isChecked(), savedFaces);
+        //std::set<const Dcel::Face*> flippedFaces, savedFaces;
+        //Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
+        //g->calculateBorderWeights(*d, ui->heightfieldsCheckBox->isChecked(), savedFaces);
         mainWindow->updateGlCanvas();
     }
 }
@@ -817,15 +816,18 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
         Eigen::Matrix3d m[ORIENTATIONS];
         Eigen::Matrix3d mb = b->getRotationMatrix();
         m[0] = Eigen::Matrix3d::Identity();
+        #if ORIENTATIONS > 1
         getRotationMatrix(Vec3(0,0,-1), 0.785398, m[1]);
         getRotationMatrix(Vec3(-1,0,0), 0.785398, m[2]);
         getRotationMatrix(Vec3(0,-1,0), 0.785398, m[3]);
+        #endif
         Dcel dd = *d;
         std::list<const Dcel::Face*> covered;
         if (mb == m[0]){
             CGALInterface::AABBTree t(dd);
             t.getIntersectedDcelFaces(covered, *b);
         }
+        #if ORIENTATIONS > 1
         else if (mb == m[1]){
 
             Eigen::Matrix3d mm;
@@ -848,6 +850,7 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
             CGALInterface::AABBTree t(dd);
             t.getIntersectedDcelFaces(covered, *b);
         }
+        #endif
         else assert(0);
 
 
