@@ -81,4 +81,21 @@ static inline void drawBox(const std::vector<Pointd> &p, const QColor& c, int wi
     drawLine(p[3], p[7], c, width);
 }
 
+static inline void drawBox(const Pointd &p0, const Pointd &p1, const Pointd &p2, const Pointd &p3, const Pointd &p4, const Pointd &p5, const Pointd &p6, const Pointd &p7, const QColor& c, int width = 3) {
+    drawLine(p0, p1, c, width);
+    drawLine(p1, p2, c, width);
+    drawLine(p2, p3, c, width);
+    drawLine(p0, p3, c, width);
+
+    drawLine(p4, p5, c, width);
+    drawLine(p5, p6, c, width);
+    drawLine(p6, p7, c, width);
+    drawLine(p4, p7, c, width);
+
+    drawLine(p0, p4, c, width);
+    drawLine(p1, p5, c, width);
+    drawLine(p2, p6, c, width);
+    drawLine(p3, p7, c, width);
+}
+
 #endif // OBJECTS_H

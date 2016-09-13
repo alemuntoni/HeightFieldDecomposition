@@ -5,6 +5,7 @@
 #include <QLabel>
 #include "dcel/gui/dcelmanager.h"
 #include "lib/grid/drawablegrid.h"
+#include "lib/grid/drawableirregulargrid.h"
 #include "common.h"
 #include "engine/box.h"
 #include "engine/energy.h"
@@ -149,6 +150,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_cleanAllPushButton_clicked();
 
+        void on_createIrregularGridButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
@@ -161,6 +164,7 @@ class EngineManager : public QFrame, public SerializableObject {
         Energy e;
         HeightfieldsList *he;
         HeightfieldsList* entirePieces;
+        DrawableIrregularGrid* irregularGrid;
 };
 
 #endif // ENGINEMANAGER_H

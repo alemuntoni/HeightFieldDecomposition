@@ -17,7 +17,8 @@ EngineManager::EngineManager(QWidget *parent) :
     solutions(nullptr),
     baseComplex(nullptr),
     he(nullptr),
-    entirePieces(nullptr) {
+    entirePieces(nullptr),
+    irregularGrid(nullptr) {
     ui->setupUi(this);
     ui->iterationsSlider->setMaximum(0);
 
@@ -1147,4 +1148,13 @@ void EngineManager::on_cleanAllPushButton_clicked() {
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
     deleteDrawableObject(entirePieces);
+}
+
+void EngineManager::on_createIrregularGridButton_clicked() {
+    if (solutions!=nullptr){
+        irregularGrid = new DrawableIrregularGrid();
+        Engine::createIrregularGrid(*irregularGrid, *solutions);
+        mainWindow->pushObj(irregularGrid, "Irregular Grid");
+        mainWindow->updateGlCanvas();
+    }
 }

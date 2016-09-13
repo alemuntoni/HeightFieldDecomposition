@@ -13,12 +13,18 @@
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Boolean_set_operations_2.h>
 
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/IO/Polyhedron_iostream.h>
+#include <CGAL/boost/graph/graph_traits_Polyhedron_3.h>
+#include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
+#include <fstream>
+
 /**
   CGAL Triangulation
   */
 namespace CGALInterface {
 
-    namespace Triangulation{
+    namespace Triangulation {
         struct FaceInfo2
         {
                 FaceInfo2(){}
@@ -54,7 +60,7 @@ namespace CGALInterface {
         std::vector<std::array<Pointd, 3> > triangulate(const Vec3 &normal, const std::vector<Pointd>& polygon, const std::vector<std::vector<Pointd> >& holes = dummy_holes);
     }
 
-    namespace BooleanOperations2D{
+    namespace BooleanOperations2D {
 
         typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
         typedef Kernel::Point_2                                   Point_2;
@@ -67,6 +73,19 @@ namespace CGALInterface {
         std::vector< std::vector<Point2D> > difference(const std::vector<Point2D> &polygon1, const std::vector<Point2D> &polygon2);
         std::vector<std::vector<Point2D> > intersection(const std::vector<Point2D>& polygon1, const std::vector<Point2D>& polygon2);
     }
+
+    #ifdef CGAL_EIGEN3_ENABLED
+    namespace HoleFilling {
+
+        typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
+        typedef CGAL::Polyhedron_3<Kernel>     Polyhedron;
+        typedef Polyhedron::Halfedge_handle    Halfedge_handle;
+        typedef Polyhedron::Facet_handle       Facet_handle;
+        typedef Polyhedron::Vertex_handle      Vertex_handle;
+
+        void fillHolesMeshOff(const std::string& input, const std::string& output);
+    }
+    #endif
 
     class AABBTree;
 

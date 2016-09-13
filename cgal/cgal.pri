@@ -19,6 +19,10 @@ macx{
     LIBS += -L/libs/lib/CGAL -lCGAL
 }
 
+contains(DEFINES, COMMON_WITH_EIGEN){
+    DEFINES += CGAL_EIGEN3_ENABLED
+}
+
 HEADERS += \
     $$PWD/aabbtree.h \
     $$PWD/cgalinterface.h

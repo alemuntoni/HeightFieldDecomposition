@@ -14,6 +14,7 @@
 #include "cgal/aabbtree.h"
 #include "igl/iglinterface.h"
 #include "heightfieldslist.h"
+#include "lib/grid/irregulargrid.h"
 #elif SERVER_MODE==1
 #include "dcel/dcel.h"
 #include "lib/grid/grid.h"
@@ -43,6 +44,8 @@ namespace Engine {
     static std::set<const Dcel::Face*> dummy;
     void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3(), std::set<const Dcel::Face*> &savedFaces = dummy);
 
+    void addBox(BoxList& boxList, const Vec3 target, const Dcel::Face* f, const Eigen::Matrix3d& rot);
+
     void calculateDecimatedBoxes(BoxList &boxList, const Dcel &d, const Eigen::VectorXi& mapping, const std::set<int> &coveredFaces, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), int orientation = -1,  bool onlyTarget = false, const Vec3& target = Vec3());
 
     void calculateInitialBoxes(BoxList &boxList, const Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
@@ -51,7 +54,7 @@ namespace Engine {
 
     void createAndMinimizeAllBoxes(BoxList &solutions, const Dcel &d, double kernelDistance, bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0);
 
-    void boxSnapping(BoxList &solutions, double minimumDistance);
+    void createIrregularGrid(IrregularGrid &grid, const BoxList& solutions);
 
     static HeightfieldsList dummyhe;
     void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, bool onlyTouchingSurface=false, HeightfieldsList &entirePieces = dummyhe);

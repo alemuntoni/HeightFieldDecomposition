@@ -60,7 +60,10 @@ ALL {
         engine/box.h \
         engine/boxlist.h \
         engine/engine.h \
-        engine/heightfieldslist.h
+        engine/heightfieldslist.h \
+        lib/grid/drawableirregulargrid.h \
+        lib/grid/irregulargrid.h
+
 
 
     SOURCES += \
@@ -74,7 +77,10 @@ ALL {
         engine/box.cpp \
         engine/boxlist.cpp \
         engine/engine.cpp \
-        engine/heightfieldslist.cpp
+        engine/heightfieldslist.cpp \
+        lib/grid/drawableirregulargrid.cpp \
+        lib/grid/irregulargrid.cpp
+
 
     FORMS += \
         GUI/managers/enginemanager.ui
