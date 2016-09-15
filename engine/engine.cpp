@@ -385,7 +385,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
                     }
                     else
                     #endif
-                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, true, XYZ[j]);
+                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, onlyNearestTarget, XYZ[j]);
                         //Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, false);
                     if (tmp[i][j].getNumberBoxes() > 0){
                         std::cerr << "Starting boxes growth\n";
