@@ -205,7 +205,7 @@ void Engine::calculateDecimatedBoxes(BoxList& boxList, const Dcel& d, const Eige
         const Dcel::Face* f = d.getFace(facesToCover[i]);
         Vec3 n =f->getNormal();
         Vec3 closestTarget = getClosestTarget(n);
-        if ((!onlyTarget && f->getNormal().dot(target) >= 0) || (onlyTarget && closestTarget == target)){
+        if (!onlyTarget || (onlyTarget && closestTarget == target)){
             if (orientation<0 || f->getFlag()==orientation){
                 addBox(boxList, closestTarget, f, rot);
             }
@@ -385,7 +385,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
                     }
                     else
                     #endif
-                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, onlyNearestTarget, XYZ[j]);
+                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, true, XYZ[j]);
                         //Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, false);
                     if (tmp[i][j].getNumberBoxes() > 0){
                         std::cerr << "Starting boxes growth\n";
