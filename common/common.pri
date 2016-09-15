@@ -34,4 +34,5 @@ HEADERS += \
     $$PWD/arrays.h \
     $$PWD/timer.h \
     $$PWD/utils.h \
-    $$PWD/hashlib.h
+    $$PWD/hashlib.h \
+    $$PWD/file_conversions.h

@@ -171,7 +171,7 @@ namespace IGLInterface {
 
     #endif
 
-    bool IGLMesh::readFromFile(const std::__cxx11::string& filename) {
+    bool IGLMesh::readFromFile(const std::string& filename) {
         bool b = SimpleIGLMesh::readFromFile(filename);
         if (b){
             C = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);

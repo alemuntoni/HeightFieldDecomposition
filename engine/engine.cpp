@@ -205,7 +205,7 @@ void Engine::calculateDecimatedBoxes(BoxList& boxList, const Dcel& d, const Eige
         const Dcel::Face* f = d.getFace(facesToCover[i]);
         Vec3 n =f->getNormal();
         Vec3 closestTarget = getClosestTarget(n);
-        if (!onlyTarget || (onlyTarget && closestTarget == target)){
+        if ((!onlyTarget && f->getNormal().dot(target) >= 0) || (onlyTarget && closestTarget == target)){
             if (orientation<0 || f->getFlag()==orientation){
                 addBox(boxList, closestTarget, f, rot);
             }
@@ -385,11 +385,11 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
                     }
                     else
                     #endif
-                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, true, XYZ[j]);
+                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, onlyNearestTarget, XYZ[j]);
                         //Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, false);
                     if (tmp[i][j].getNumberBoxes() > 0){
                         std::cerr << "Starting boxes growth\n";
-                        Engine::expandBoxes(tmp[i][j], g[i][j], true);
+                        Engine::expandBoxes(tmp[i][j], g[i][j]);
                         std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
                     }
                     else {
@@ -459,6 +459,17 @@ void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions) 
             j++;
         }
         i++;
+    }
+    for (unsigned int sol = 0; sol < solutions.getNumberBoxes(); ++sol){
+        Box3D b = solutions.getBox(sol);
+        for (unsigned int i = 0; i < xCoord.size()-1; i++) {
+            for (unsigned int j = 0; j < yCoord.size()-1; j++) {
+                for (unsigned int k = 0; k < zCoord.size()-1; k++) {
+                    if (b.isIntern(grid.getPoint(i,j,k)) && b.isIntern(grid.getPoint(i+1, j+1, k+1)))
+                        grid.setTarget(i,j,k, b.getTarget());
+                }
+            }
+        }
     }
 }
 
@@ -952,7 +963,7 @@ void Engine::largeScaleFabrication(const Dcel& input, double kernelDistance, boo
 #endif
 
 #if SERVER_MODE==1
-void Engine::Server::expandBoxesFromFile(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile, double kernelDistance, bool heightfields) {
+void Engine::Server::expandBoxesFromFile(const std::string& inputFile, const std::string& outputFile, double kernelDistance, bool heightfields) {
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
     for (unsigned int i = 0; i < ORIENTATIONS; i++){
@@ -1014,7 +1025,7 @@ void Engine::Server::expandBoxesFromFile(const std::__cxx11::string& inputFile, 
     }
 }
 
-void Engine::Server::expandBoxesFromPreprocessing(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile) {
+void Engine::Server::expandBoxesFromPreprocessing(const std::string& inputFile, const std::string& outputFile) {
     Dcel d;
     bool heightfields;
 
@@ -1078,7 +1089,7 @@ void Engine::Server::expandBoxesFromPreprocessing(const std::__cxx11::string& in
 #endif
 
 #if SERVER_MODE==2
-void Engine::Server::booleanOperationsFromSolutions(const std::__cxx11::string& inputFile, const std::__cxx11::string& outputFile) {
+void Engine::Server::booleanOperationsFromSolutions(const std::string& inputFile, const std::string& outputFile) {
 
     std::ifstream ifile;
     ifile.open (inputFile, std::ios::in | std::ios::binary);

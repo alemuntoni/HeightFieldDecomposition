@@ -168,15 +168,15 @@ namespace IGLInterface {
         F.conservativeResize(nf,Eigen::NoChange);
     }
 
-    inline bool SimpleIGLMesh::readFromFile(const std::__cxx11::string& filename) {
+    inline bool SimpleIGLMesh::readFromFile(const std::string& filename) {
         return igl::read_triangle_mesh(filename, V, F);
     }
 
-    inline bool SimpleIGLMesh::saveOnObj(const std::__cxx11::string& filename) const {
+    inline bool SimpleIGLMesh::saveOnObj(const std::string& filename) const {
         return igl::writeOBJ(filename, V, F);
     }
 
-    inline bool SimpleIGLMesh::saveOnPly(const std::__cxx11::string& filename) const {
+    inline bool SimpleIGLMesh::saveOnPly(const std::string& filename) const {
         return igl::writePLY(filename, V, F);
     }
 

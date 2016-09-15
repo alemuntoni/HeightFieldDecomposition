@@ -1005,6 +1005,7 @@ void Dcel::recalculateIds() {
         if (vertices[i] != nullptr) nVertices++;
     }
     unusedVids.clear();
+    vertices.resize(nVertices);
 
     nHalfEdges = 0;
     for (unsigned int i = 0; i < halfEdges.size(); i++){
@@ -1012,6 +1013,7 @@ void Dcel::recalculateIds() {
         if (halfEdges[i] != nullptr) nHalfEdges++;
     }
     unusedHeids.clear();
+    halfEdges.resize(nHalfEdges);
 
     nFaces = 0;
     for (unsigned int i = 0; i < faces.size(); i++){
@@ -1019,6 +1021,8 @@ void Dcel::recalculateIds() {
         if (faces[i] != nullptr) nFaces++;
     }
     unusedFids.clear();
+    faces.resize(nFaces);
+
 }
 
 /**
@@ -1942,7 +1946,7 @@ void Dcel::deserialize(std::ifstream &binaryFile) {
     }
 }
 
-std::__cxx11::string Dcel::loadFromOldDcelFile(const std::__cxx11::string& filename) {
+std::string Dcel::loadFromOldDcelFile(const std::string& filename) {
     clear();
 
     std::ifstream myfile;

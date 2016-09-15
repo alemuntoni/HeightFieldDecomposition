@@ -1040,6 +1040,21 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
 }
 
 void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
+    if (d == nullptr) {
+        DcelManager* dm = (DcelManager*)mainWindow->getManager(DCEL_MANAGER_ID);
+        DrawableDcel* dd = dm->getDcel();
+        if (dd != nullptr){
+            d = new DrawableDcel(*dd);
+            mainWindow->pushObj(d, "Scaled Mesh");
+
+            Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
+            std::set<const Dcel::Face*> flippedFaces, savedFaces;
+            Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
+            updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
+            d->update();
+            mainWindow->updateGlCanvas();
+        }
+    }
     if (d!=nullptr){
         deleteDrawableObject(solutions);
         deleteDrawableObject(g);
@@ -1156,5 +1171,19 @@ void EngineManager::on_createIrregularGridButton_clicked() {
         Engine::createIrregularGrid(*irregularGrid, *solutions);
         mainWindow->pushObj(irregularGrid, "Irregular Grid");
         mainWindow->updateGlCanvas();
+
+        int count = 0, othercount=0;
+        for (unsigned int i = 0; i < irregularGrid->getResolutionX()-1; i++){
+            for (unsigned int j = 0; j < irregularGrid->getResolutionY()-1; j++){
+                for (unsigned int k = 0; k < irregularGrid->getResolutionZ()-1; k++){
+                    if (irregularGrid->getNumberTargets(i,j,k) == 1 || irregularGrid->getNumberTargets(i,j,k) == 0)
+                        count++;
+                    else
+                        othercount++;
+                }
+            }
+        }
+        std::cerr << count << "\n";
+        std::cerr << othercount << "\n";
     }
 }
