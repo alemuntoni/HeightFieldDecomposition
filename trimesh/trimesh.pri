@@ -6,8 +6,7 @@ DEFINES += TRIMESH_DEFINED
 
 HEADERS += \
     $$PWD/trimesh.h \
-    $$PWD/load_save_trimesh.h \
-    $$PWD/utils.h
+    $$PWD/load_save_trimesh.h
 
 SOURCES += \
     $$PWD/load_save_trimesh.cpp \

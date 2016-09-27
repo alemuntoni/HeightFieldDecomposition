@@ -9,6 +9,7 @@
 #include <igl/writePLY.h>
 #include <igl/signed_distance.h>
 #include <igl/decimate.h>
+#include <igl/remove_duplicates.h>
 
 #ifdef CGAL_DEFINED
 #include <igl/copyleft/cgal/CSGTree.h>
@@ -16,6 +17,7 @@
 #include <igl/jet.h>
 #include "../common/serialize.h"
 #include "../common/point.h"
+#include "../common/bounding_box.h"
 
 #ifdef DCEL_DEFINED
 class Dcel;
@@ -48,6 +50,7 @@ namespace IGLInterface {
             void addFace(const Eigen::VectorXi &f);
             void addFace(int t1, int t2, int t3);
             void resizeFaces(unsigned int nf);
+            void deleteDuplicatedVertices(Eigen::Matrix<int, Eigen::Dynamic, 1> &I = dummy);
             bool readFromFile(const std::string &filename);
             bool saveOnObj(const std::string &filename) const;
             bool saveOnPly(const std::string &filename) const;
@@ -60,7 +63,8 @@ namespace IGLInterface {
             void decimate(unsigned int numberDesiredFaces);
             bool getDecimatedMesh(SimpleIGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
             Eigen::VectorXd getSignedDistance(const Eigen::MatrixXd &points) const;
-
+            Eigen::MatrixXd getVerticesMatrix() const;
+            Eigen::MatrixXi getFacesMatrix() const;
             void translate(const Pointd &p);
             void translate(const Eigen::Vector3d &p);
             void rotate(const Eigen::Matrix3d &m, const Eigen::Vector3d& centroid = Eigen::Vector3d::Zero());
@@ -78,6 +82,7 @@ namespace IGLInterface {
         protected:
             Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> V;
             Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> F;
+            static Eigen::Matrix<int, Eigen::Dynamic, 1> dummy;
     };
 
     class IGLMesh : public SimpleIGLMesh {
@@ -85,9 +90,13 @@ namespace IGLInterface {
             IGLMesh();
             IGLMesh(const SimpleIGLMesh &m);
             IGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F);
-            IGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eigen::MatrixXd &C);
+            IGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eigen::MatrixXd &CF);
             #ifdef DCEL_DEFINED
             IGLMesh(const Dcel& dcel);
+            #endif
+            #ifdef TRIMESH_DEFINED
+            template<typename T>
+            IGLMesh(const Trimesh<T>& trimesh);
             #endif
             void resizeVertices(unsigned int nv);
             void resizeFaces(unsigned int nf);
@@ -95,14 +104,21 @@ namespace IGLInterface {
             void updateVertexNormals();
             void updateFaceNormals();
             void updateVertexAndFaceNormals();
+            void deleteDuplicatedVertices();
             void clear();
             bool readFromFile(const std::string &filename);
             void setColor(double red, double green, double blue, int f = -1);
             Vec3 getNormal(unsigned int f) const;
             QColor getColor(unsigned int f) const;
             void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
+            BoundingBox getBoundingBox();
             void decimate(int numberDesiredFaces);
             bool getDecimatedMesh(IGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
+            Eigen::MatrixXd getVerticesColorMatrix() const;
+
+            bool readFromPly(const std::string &filename);
+            bool saveOnPly(const std::string &filename);
+            void deleteVerticesLowerThanY(double y);
 
             #ifdef CGAL_DEFINED
             static void intersection(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);
@@ -119,7 +135,8 @@ namespace IGLInterface {
 
         protected:
 
-            Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> C;
+            Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> CF;
+            Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> CV;
             Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NV;
             Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
             Eigen::RowVector3d BBmin, BBmax;
@@ -255,6 +272,23 @@ namespace IGLInterface {
         Serializer::deserialize(F, binaryFile);
     }
 
+
+    #ifdef TRIMESH_DEFINED
+    template <typename T>
+    inline IGLMesh::IGLMesh(const Trimesh<T>& trimesh) : SimpleIGLMesh(trimesh)
+    {
+        CF = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
+        NV.resize(V.rows(), 3);
+        NF.resize(F.rows(), 3);
+        igl::per_face_normals(V,F,NF);
+        igl::per_vertex_normals(V,F,NV);
+        if (V.rows() > 0){
+            BBmin = V.colwise().minCoeff();
+            BBmax = V.colwise().maxCoeff();
+        }
+    }
+    #endif
+
     inline void IGLMesh::resizeVertices(unsigned int nv){
         SimpleIGLMesh::resizeVertices(nv);
         NV.conservativeResize(nv, Eigen::NoChange);
@@ -263,7 +297,7 @@ namespace IGLInterface {
     inline void IGLMesh::resizeFaces(unsigned int nf) {
         SimpleIGLMesh::resizeFaces(nf);
         NF.conservativeResize(nf, Eigen::NoChange);
-        C.conservativeResize(nf, Eigen::NoChange);
+        CF.conservativeResize(nf, Eigen::NoChange);
     }
 
     inline void IGLMesh::updateBoundingBox() {
@@ -287,7 +321,7 @@ namespace IGLInterface {
     inline void IGLMesh::clear() {
         V.resize(0,Eigen::NoChange);
         F.resize(0,Eigen::NoChange);
-        C.resize(0,Eigen::NoChange);
+        CF.resize(0,Eigen::NoChange);
         NV.resize(0,Eigen::NoChange);
         NF.resize(0,Eigen::NoChange);
     }
@@ -300,9 +334,9 @@ namespace IGLInterface {
     inline QColor IGLMesh::getColor(unsigned int f) const {
         assert (f < F.rows());
         QColor c;
-        c.setRedF((float)C(f,0));
-        c.setGreenF((float)C(f,1));
-        c.setBlueF((float)C(f,2));
+        c.setRedF((float)CF(f,0));
+        c.setGreenF((float)CF(f,1));
+        c.setBlueF((float)CF(f,2));
         return c;
     }
 

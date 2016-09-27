@@ -169,7 +169,7 @@ void DrawableIGLMesh::renderPass() const {
                 int vid1     = F(tid, 1);
                 int vid2     = F(tid, 2);
                 glBegin(GL_TRIANGLES);
-                glColor3dv((C.row(tid).data()));
+                glColor3dv((CF.row(tid).data()));
                 glNormal3dv((NF.row(tid).data()));
                 glVertex3dv((V.row(vid0).data()));
                 glNormal3dv((NF.row(tid).data()));

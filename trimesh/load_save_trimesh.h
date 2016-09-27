@@ -20,8 +20,8 @@ void loadObj(const char          * filename,
               std::vector<int>    & tri);
 
 void saveObj(const char          * filename,
-              std::vector<double> & xyz,
-              std::vector<int>    & tri);
+             const std::vector<double> & xyz,
+             const std::vector<int>    & tri);
 
 void objToOff(const char* f1, const char* f2);
 

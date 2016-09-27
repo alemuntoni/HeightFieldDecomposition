@@ -64,6 +64,7 @@ template<typename real> class Trimesh
             init();
         }
 
+        #ifdef IGL_DEFINED
         Trimesh(const IGLInterface::SimpleIGLMesh& simpleIGLMesh)
         {
             unsigned int nVertices=simpleIGLMesh.getNumberVertices();
@@ -92,6 +93,7 @@ template<typename real> class Trimesh
             init();
 
         }
+        #endif
 
         inline BoundingBox getBoundingBox() const {
             return bbox;
@@ -279,10 +281,10 @@ template<typename real> class Trimesh
 
     public:
 
-        inline std::vector<real> & vectorCoords()     { return coords;        }
-        inline std::vector<int>  & vectorTriangles()  { return tris;          }
-        inline std::vector<real> & vectorVertexNormals()    { return vertexNormals; }
-        inline const std::vector<std::vector<int>> & vectorAdjTri2Tri() {return tri2tri;}
+        inline const std::vector<real> & vectorCoords() const { return coords;        }
+        inline const std::vector<int>  & vectorTriangles() const { return tris;          }
+        inline const std::vector<real> & vectorVertexNormals() const { return vertexNormals; }
+        inline const std::vector<std::vector<int>> & vectorAdjTri2Tri() const {return tri2tri;}
 
         inline int numVertices()  const { return coords.size()/3; }
         inline int numTriangles() const { return tris.size()/3;   }

@@ -8,11 +8,38 @@ CGALInterface::AABBTree::AABBTree(const CGALInterface::AABBTree& other) : forDis
     mapDcelVerticesToCgalPoints = other.mapDcelVerticesToCgalPoints;
     mapCgalTrianglesToDcelFaces = other.mapCgalTrianglesToDcelFaces;
     #endif
+    #ifdef TRIMESH_DEFINED
+    mapTrimeshVerticesToCgalPoints = other.mapTrimeshVerticesToCgalPoints;
+    mapCgalTrianglesToTrimeshTriangles = other.mapCgalTrianglesToTrimeshTriangles;
+    #endif
     tree.insert(triangles.begin(), triangles.end());
 
     if (forDistanceQueries)
         tree.accelerate_distance_queries();
 }
+
+#ifdef TRIMESH_DEFINED
+CGALInterface::AABBTree::AABBTree(const Trimesh<double>& t, bool forDistanceQueries) {
+    for (int i = 0; i < t.numVertices(); i++){
+        Pointd p = t.vertex(i);
+        CGALPoint pp(p.x(), p.y(), p.z());
+        mapTrimeshVerticesToCgalPoints[i]= pp;
+    }
+    for (int i = 0; i < t.numTriangles(); ++i){
+        int i1 = t.tri_vertex_id(i, 0), i2 = t.tri_vertex_id(i, 1), i3 = t.tri_vertex_id(i, 2);
+        assert(mapTrimeshVerticesToCgalPoints.find(i1) != mapTrimeshVerticesToCgalPoints.end());
+        assert(mapTrimeshVerticesToCgalPoints.find(i2) != mapTrimeshVerticesToCgalPoints.end());
+        assert(mapTrimeshVerticesToCgalPoints.find(i3) != mapTrimeshVerticesToCgalPoints.end());
+        CGALTriangle tr(mapTrimeshVerticesToCgalPoints[i1], mapTrimeshVerticesToCgalPoints[i2], mapTrimeshVerticesToCgalPoints[i3]);
+        mapCgalTrianglesToTrimeshTriangles[tr] = i;
+        triangles.push_back(tr);
+    }
+    tree.insert(triangles.begin(), triangles.end());
+
+    if (forDistanceQueries)
+        tree.accelerate_distance_queries();
+}
+#endif
 
 #ifdef DCEL_DEFINED
 CGALInterface::AABBTree::AABBTree(const Dcel& d, bool forDistanceQueries) : forDistanceQueries(forDistanceQueries){

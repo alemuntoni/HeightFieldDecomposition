@@ -53,7 +53,7 @@ void loadObj(const char     * filename,
     file.close();
 }
 
-void saveObj(const char *filename, std::vector<double> &xyz, std::vector<int> &tri)
+void saveObj(const char *filename, const std::vector<double> &xyz, const std::vector<int> &tri)
 {
     std::ofstream fp;
     fp.open (filename);

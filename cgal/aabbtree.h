@@ -8,6 +8,10 @@
 #include "../dcel/dcel.h"
 #endif
 
+#ifdef TRIMESH_DEFINED
+#include "../trimesh/trimesh.h"
+#endif
+
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/AABB_tree.h>
 #include <CGAL/AABB_traits.h>
@@ -24,7 +28,9 @@ namespace CGALInterface {
             #ifdef DCEL_DEFINED
             AABBTree(const Dcel &d, bool forDistanceQueries = false);
             #endif
-
+            #ifdef TRIMESH_DEFINED
+            AABBTree(const Trimesh<double> &t, bool forDistanceQueries = false);
+            #endif
             AABBTree& operator=(const AABBTree& other);
 
             int getNumberIntersectedPrimitives(const Pointd& p1, const Pointd &p2);
@@ -64,6 +70,10 @@ namespace CGALInterface {
             #ifdef DCEL_DEFINED
             std::map<const Dcel::Vertex*, CGALPoint> mapDcelVerticesToCgalPoints;
             std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle> mapCgalTrianglesToDcelFaces;
+            #endif
+            #ifdef TRIMESH_DEFINED
+            std::map<int, CGALPoint> mapTrimeshVerticesToCgalPoints;
+            std::map<CGALTriangle, int, cmpCGALTriangle> mapCgalTrianglesToTrimeshTriangles;
             #endif
             std::list<CGALTriangle> triangles;
     };
