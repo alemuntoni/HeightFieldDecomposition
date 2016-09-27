@@ -4,12 +4,17 @@
 #include "../dcel/dcel.h"
 #endif
 
+#ifdef TRIMESH_DEFINED
+#include "../trimesh/trimesh.h"
+#endif
+
 namespace IGLInterface {
     SimpleIGLMesh::SimpleIGLMesh() {
     }
 
     SimpleIGLMesh::SimpleIGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F) {
     }
+
 
     #ifdef DCEL_DEFINED
     SimpleIGLMesh::SimpleIGLMesh(const Dcel& dcel) {

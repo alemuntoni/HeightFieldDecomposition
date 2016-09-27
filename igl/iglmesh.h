@@ -21,6 +21,11 @@
 class Dcel;
 #endif
 
+#ifdef TRIMESH_DEFINED
+template<typename T>
+    class Trimesh;
+#endif
+
 namespace IGLInterface {
     class SimpleIGLMesh : public SerializableObject {
         public:
@@ -28,6 +33,10 @@ namespace IGLInterface {
             SimpleIGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F);
             #ifdef DCEL_DEFINED
             SimpleIGLMesh(const Dcel& dcel);
+            #endif
+            #ifdef TRIMESH_DEFINED
+            template<typename T>
+            SimpleIGLMesh(const Trimesh<T>& trimesh);
             #endif
             void setVertex(unsigned int i, const Eigen::VectorXd &p);
             void setVertex(unsigned int i, double x, double y, double z);
@@ -115,6 +124,34 @@ namespace IGLInterface {
             Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
             Eigen::RowVector3d BBmin, BBmax;
     };
+
+    #ifdef TRIMESH_DEFINED
+    template <typename T>
+    inline SimpleIGLMesh::SimpleIGLMesh(const Trimesh<T>& trimesh)
+    {
+        int numV=trimesh.numVertices();
+        int numF=trimesh.numTriangles();
+
+        clear();
+        V.resize(numV,3);
+        F.resize(numF,3);
+
+        for(int i=0;i<numV;++i)
+        {
+            V(i,0)=trimesh.vertex(i).x();
+            V(i,1)=trimesh.vertex(i).y();
+            V(i,2)=trimesh.vertex(i).z();
+        }
+
+        for(int i=0;i<numF;++i)
+        {
+            F(i,0)=trimesh.tri_vertex_id(i,0);
+            F(i,1)=trimesh.tri_vertex_id(i,1);
+            F(i,2)=trimesh.tri_vertex_id(i,2);
+        }
+    }
+    #endif
+
 
     inline void SimpleIGLMesh::setVertex(unsigned int i, const Eigen::VectorXd& p) {
         assert (i < V.rows());

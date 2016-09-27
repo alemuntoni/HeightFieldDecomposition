@@ -1,5 +1,3 @@
-MODULES += TRIMESH_MANAGER
-
 !contains(DEFINES, VIEWER_DEFINED){
     error(TrimeshManager module requires Viewer module!)
 }
@@ -14,3 +12,4 @@ HEADERS += \
 SOURCES += \
     $$PWD/trimeshmanager.cpp \
     $$PWD/drawable_trimesh.cpp
+

@@ -17,6 +17,10 @@
 #include "../common/point.h"
 #include "load_save_trimesh.h"
 
+#ifdef IGL_DEFINED
+#include "../igl/iglmesh.h"
+#endif
+
 //using namespace std;
 
 typedef std::pair<int,int> edge;
@@ -31,13 +35,11 @@ inline edge uniqueEdge(int v0, int v1)
     return e;
 }
 
-#ifdef DEBUG
 template<typename C>
 inline void checkBounds(const C & container, int index)
 {
     assert(index < (int)container.size());
 }
-#endif
 
 /*-------------- INLINE UTILITY FUNCTIONS --------------*/
 
@@ -62,9 +64,43 @@ template<typename real> class Trimesh
             init();
         }
 
+        Trimesh(const IGLInterface::SimpleIGLMesh& simpleIGLMesh)
+        {
+            unsigned int nVertices=simpleIGLMesh.getNumberVertices();
+            unsigned int nFaces=simpleIGLMesh.getNumberFaces();
+
+            coords.resize(nVertices*3);
+            tris.resize(nFaces*3);
+
+            for(unsigned int i=0;i<nVertices;++i)
+            {
+                unsigned int j=i*3;
+                coords[j]=simpleIGLMesh.getVertex(i).x();
+                coords[j+1]=simpleIGLMesh.getVertex(i).y();
+                coords[j+2]=simpleIGLMesh.getVertex(i).z();
+
+            }
+
+            for(unsigned int i=0;i<nFaces;++i)
+            {
+                unsigned int j=i*3;
+                tris[j]=simpleIGLMesh.getFace(i).x();
+                tris[j+1]=simpleIGLMesh.getFace(i).y();
+                tris[j+2]=simpleIGLMesh.getFace(i).z();
+            }
+
+            init();
+
+        }
+
+        inline BoundingBox getBoundingBox() const {
+            return bbox;
+        }
+
+
     protected:
 
-        BoundingBox           bbox;
+        BoundingBox                bbox;
         std::vector<real>          coords;
         std::vector<int>           tris;
         std::vector<real>          vertexNormals;
@@ -181,35 +217,35 @@ template<typename real> class Trimesh
 
         void updateVertexNormals()
         {
-            vertexNormals.clear();
-            vertexNormals.resize(numVertices()*3);
+                    vertexNormals.clear();
+                    vertexNormals.resize(numVertices()*3);
 
-            for(int vid=0; vid<numVertices(); ++vid)
-            {
-                std::vector<int> nbrs = adj_vtx2tri(vid);
-                int vid_ptr = vid * 3;
-                if (nbrs.size() == 0) {
-                    vertexNormals[vid_ptr + 0] = 0;
-                    vertexNormals[vid_ptr + 1] = 0;
-                    vertexNormals[vid_ptr + 2] = 0;
-                }
-                else {
-                    Point<real> sum(0,0,0);
-                    for(int i=0; i<(int)nbrs.size(); ++i)
+                    for(int vid=0; vid<numVertices(); ++vid)
                     {
-                        sum += triangleNormal(nbrs[i]);
+                        std::vector<int> nbrs = adj_vtx2tri(vid);
+                        int vid_ptr = vid * 3;
+                        if (nbrs.size() == 0) {
+                            vertexNormals[vid_ptr + 0] = 0;
+                            vertexNormals[vid_ptr + 1] = 0;
+                            vertexNormals[vid_ptr + 2] = 0;
+                        }
+                        else {
+                            Point<real> sum(0,0,0);
+                            for(int i=0; i<(int)nbrs.size(); ++i)
+                            {
+                                sum += triangleNormal(nbrs[i]);
+                            }
+
+                            assert(nbrs.size() > 0);
+                            sum /= nbrs.size();
+                            sum.normalize();
+
+
+                            vertexNormals[vid_ptr + 0] = sum.x();
+                            vertexNormals[vid_ptr + 1] = sum.y();
+                            vertexNormals[vid_ptr + 2] = sum.z();
+                        }
                     }
-
-                    assert(nbrs.size() > 0);
-                    sum /= nbrs.size();
-                    sum.normalize();
-
-
-                    vertexNormals[vid_ptr + 0] = sum.x();
-                    vertexNormals[vid_ptr + 1] = sum.y();
-                    vertexNormals[vid_ptr + 2] = sum.z();
-                }
-            }
         }
 
         void load(const char * filename)
@@ -243,77 +279,67 @@ template<typename real> class Trimesh
 
     public:
 
-        inline const std::vector<real> & vectorCoords()    const { return coords; }
-        inline const std::vector<int>  & vectorTriangles() const { return tris;   }
+        inline std::vector<real> & vectorCoords()     { return coords;        }
+        inline std::vector<int>  & vectorTriangles()  { return tris;          }
+        inline std::vector<real> & vectorVertexNormals()    { return vertexNormals; }
+        inline const std::vector<std::vector<int>> & vectorAdjTri2Tri() {return tri2tri;}
 
         inline int numVertices()  const { return coords.size()/3; }
         inline int numTriangles() const { return tris.size()/3;   }
 
-        inline std::vector<int> adj_vtx2tri(int vid) const {
-            #ifdef DEBUG
-            checkBounds(vtx2tri, vid);
-            #endif
-            return vtx2tri[vid];
-        }
-        inline std::vector<int> adj_vtx2vtx(int vid) const {
-            #ifdef DEBUG
-            checkBounds(vtx2vtx, vid);
-            #endif
-            return vtx2vtx[vid];
-        }
-        inline std::vector<int> adj_tri2tri(int tid) const {
-            #ifdef DEBUG
-            checkBounds(tri2tri, tid);
-            #endif
-            return tri2tri[tid];
+        inline std::vector<int> adj_vtx2tri(int vid) const { checkBounds(vtx2tri, vid); return vtx2tri[vid]; }
+        inline std::vector<int> adj_vtx2vtx(int vid) const { checkBounds(vtx2vtx, vid); return vtx2vtx[vid]; }
+        inline std::vector<int> adj_tri2tri(int tid) const { checkBounds(tri2tri, tid); return tri2tri[tid]; }
+
+        inline int tri_vertex_id(int t_id, int v_id) const
+        {
+            return tris[t_id*3 + v_id];
         }
 
-        inline Point<real> triangleNormal(int tid) const {
+        inline Point<real> triangleNormal(int tid) const
+        {
             int tid_ptr = tid * 3;
-            #ifdef DEBUG
             checkBounds(triangleNormals, tid_ptr+2);
-            #endif
             return Point<real>(triangleNormals[tid_ptr + 0],
                               triangleNormals[tid_ptr + 1],
                               triangleNormals[tid_ptr + 2]);
         }
 
-        inline Point<real> vertexNormal(int vid) const {
+        inline Point<real> vertexNormal(int vid) const
+        {
             int vid_ptr = vid * 3;
-            #ifdef DEBUG
             checkBounds(vertexNormals, vid_ptr+2);
-            #endif
             return Point<real>(vertexNormals[vid_ptr + 0],
                               vertexNormals[vid_ptr + 1],
                               vertexNormals[vid_ptr + 2]);
         }
 
-        inline Point<real> vertex(int vid) const {
+        inline Point<real> vertex(int vid) const
+        {
             int vid_ptr = vid * 3;
-            #ifdef DEBUG
             checkBounds(coords, vid_ptr+2);
-            #endif
             return Point<real>(coords[vid_ptr + 0],
                               coords[vid_ptr + 1],
                               coords[vid_ptr + 2]);
         }
 
-        inline void setVertex(int vid, Point<real> pos) {
+        inline void setVertex(int vid, Point<real> pos)
+        {
             int vid_ptr = vid * 3;
-            #ifdef DEBUG
             checkBounds(coords, vid_ptr+2);
-            #endif
             coords[vid_ptr + 0] = pos.x();
             coords[vid_ptr + 1] = pos.y();
             coords[vid_ptr + 2] = pos.z();
         }
 
-        void updateNormals() {
+        void updateNormals()
+        {
             updateTriangleNormals();
             updateVertexNormals();
         }
 
-        void updateBbox() {
+        void updateBbox()
+        {
             bbox.reset();
             for(int vid=0; vid<numVertices(); ++vid)
             {
@@ -322,6 +348,8 @@ template<typename real> class Trimesh
                 bbox.setMax(bbox.getMax().max(Pointd(v.x(), v.y(), v.z())));
             }
         }
+
+
 };
 
 #endif // TRIMESH_H

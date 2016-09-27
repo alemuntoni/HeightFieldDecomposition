@@ -17,6 +17,13 @@ class TrimeshManager : public QFrame
         explicit TrimeshManager(QWidget *parent = 0);
         ~TrimeshManager();
         void setButtonsTrimeshLoaded(bool b);
+        template <typename  T>
+        void setTriMesh(const Trimesh<T>& m);
+
+        inline DrawableTrimesh** getTrimesh()
+        {
+            return &trimesh;
+        }
 
     private slots:
         void on_butLoadTrimesh_clicked();
@@ -50,5 +57,17 @@ class TrimeshManager : public QFrame
         MainWindow* mainWindow;
         DrawableTrimesh* trimesh;
 };
+
+template <typename  T>
+inline void TrimeshManager::setTriMesh(const Trimesh<T>& m) {
+    if (trimesh != nullptr){
+        mainWindow->deleteObj(trimesh);
+        delete trimesh;
+    }
+    trimesh = new DrawableTrimesh(m);
+    mainWindow->pushObj(trimesh, "TriMesh");
+    setButtonsTrimeshLoaded(true);
+    mainWindow->updateGlCanvas();
+}
 
 #endif // TRIMESHMANAGER_H

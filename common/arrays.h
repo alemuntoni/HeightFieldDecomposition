@@ -9,7 +9,8 @@ template <class T> class Array2D : public SerializableObject{
 
     public:
         Array2D();
-        Array2D(size_t sizeX, size_t sizeY, const T& value = 0);
+        Array2D(size_t sizeX, size_t sizeY);
+        Array2D(size_t sizeX, size_t sizeY, const T& value);
         T& operator () (size_t i, size_t j);
         T operator () (size_t i, size_t j) const;
         const T* operator () (size_t i) const;
@@ -20,6 +21,7 @@ template <class T> class Array2D : public SerializableObject{
         void setConstant(const T& c);
 
         void resize (size_t x, size_t y);
+        void resize (size_t x, size_t y, const T& value);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -36,7 +38,8 @@ template <class T> class Array3D : public SerializableObject{
 
     public:
         Array3D();
-        Array3D(size_t sizeX, size_t sizeY, size_t sizeZ, const T& value = 0);
+        Array3D(size_t sizeX, size_t sizeY, size_t sizeZ);
+        Array3D(size_t sizeX, size_t sizeY, size_t sizeZ, const T& value);
         T& operator () (size_t i, size_t j, size_t k);
         T operator () (size_t i, size_t j, size_t k) const;
         const T* operator () (size_t i, size_t j) const;
@@ -48,6 +51,7 @@ template <class T> class Array3D : public SerializableObject{
         void setConstant(const T& c);
 
         void resize (size_t x, size_t y, size_t z);
+        void resize (size_t x, size_t y, size_t z, const T& value);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -64,7 +68,8 @@ template <class T> class Array4D : public SerializableObject{
 
     public:
         Array4D();
-        Array4D(size_t sizeX, size_t sizeY, size_t sizeZ, size_t sizeW, const T& value = 0);
+        Array4D(size_t sizeX, size_t sizeY, size_t sizeZ, size_t sizeW);
+        Array4D(size_t sizeX, size_t sizeY, size_t sizeZ, size_t sizeW, const T& value);
         T& operator () (size_t i, size_t j, size_t k, size_t l);
         T operator () (size_t i, size_t j, size_t k, size_t l) const;
         const T* operator () (size_t i, size_t j, size_t k) const;
@@ -77,6 +82,7 @@ template <class T> class Array4D : public SerializableObject{
         void setConstant(const T& c);
 
         void resize (size_t x, size_t y, size_t z, size_t w);
+        void resize (size_t x, size_t y, size_t z, size_t w, const T& value);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -96,6 +102,11 @@ template <class T> class Array4D : public SerializableObject{
 template <class T>
 inline Array2D<T>::Array2D() : sizeX(0), sizeY(0) {
     v.resize(0);
+}
+
+template <class T>
+inline Array2D<T>::Array2D(size_t sizeX, size_t sizeY) : sizeX(sizeX), sizeY(sizeY) {
+    v.resize(sizeX*sizeY);
 }
 
 template <class T>
@@ -142,6 +153,13 @@ inline void Array2D<T>::resize(size_t x, size_t y) {
 }
 
 template <class T>
+inline void Array2D<T>::resize(size_t x, size_t y, const T& value) {
+    v.resize(x*y, value);
+    sizeX = x;
+    sizeY = y;
+}
+
+template <class T>
 inline void Array2D<T>::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(sizeX, binaryFile);
     Serializer::serialize(sizeY, binaryFile);
@@ -172,6 +190,11 @@ inline size_t Array2D<T>::getIndex(size_t i, size_t j) const {
 template <class T>
 inline Array3D<T>::Array3D() : sizeX(0), sizeY(0), sizeZ(0) {
     v.resize(0);
+}
+
+template <class T>
+inline Array3D<T>::Array3D(size_t sizeX, size_t sizeY, size_t sizeZ) : sizeX(sizeX), sizeY(sizeY), sizeZ(sizeZ) {
+    v.resize(sizeX*sizeY*sizeZ);
 }
 
 template <class T>
@@ -225,6 +248,14 @@ inline void Array3D<T>::resize(size_t x, size_t y, size_t z) {
 }
 
 template <class T>
+inline void Array3D<T>::resize(size_t x, size_t y, size_t z, const T& value) {
+    v.resize(x*y*z, value);
+    sizeX = x;
+    sizeY = y;
+    sizeZ = z;
+}
+
+template <class T>
 inline void Array3D<T>::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(sizeX, binaryFile);
     Serializer::serialize(sizeY, binaryFile);
@@ -258,6 +289,11 @@ inline size_t Array3D<T>::getIndex(size_t i, size_t j, size_t k) const {
 template <class T>
 inline Array4D<T>::Array4D() : sizeX(0), sizeY(0), sizeZ(0), sizeW(0) {
     v.resize(0);
+}
+
+template <class T>
+inline Array4D<T>::Array4D(size_t sizeX, size_t sizeY, size_t sizeZ, size_t sizeW) : sizeX(sizeX), sizeY(sizeY), sizeZ(sizeZ), sizeW(sizeW) {
+    v.resize(sizeX*sizeY*sizeZ*sizeW);
 }
 
 template <class T>
@@ -311,6 +347,15 @@ inline void Array4D<T>::setConstant(const T& c) {
 template <class T>
 inline void Array4D<T>::resize(size_t x, size_t y, size_t z, size_t w) {
     v.resize(x*y*z*w);
+    sizeX = x;
+    sizeY = y;
+    sizeZ = z;
+    sizeW = w;
+}
+
+template <class T>
+inline void Array4D<T>::resize(size_t x, size_t y, size_t z, size_t w, const T& value) {
+    v.resize(x*y*z*w, value);
     sizeX = x;
     sizeY = y;
     sizeZ = z;

@@ -1018,6 +1018,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         mainWindow->pushObj(entirePieces, "Entire Pieces");
         mainWindow->updateGlCanvas();
         ui->showAllSolutionsCheckBox->setEnabled(true);
+        he->explode(40);
         solutions->setVisibleBox(0);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
         ui->allHeightfieldsCheckBox->setChecked(true);
@@ -1057,7 +1058,7 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
     }
     if (d!=nullptr){
         deleteDrawableObject(solutions);
-        deleteDrawableObject(g);
+        //deleteDrawableObject(g);
         solutions = new BoxList();
         mainWindow->pushObj(solutions, "Solutions");
         double kernelDistance = ui->distanceSpinBox->value();
@@ -1176,7 +1177,7 @@ void EngineManager::on_createIrregularGridButton_clicked() {
         for (unsigned int i = 0; i < irregularGrid->getResolutionX()-1; i++){
             for (unsigned int j = 0; j < irregularGrid->getResolutionY()-1; j++){
                 for (unsigned int k = 0; k < irregularGrid->getResolutionZ()-1; k++){
-                    if (irregularGrid->getNumberTargets(i,j,k) == 1 || irregularGrid->getNumberTargets(i,j,k) == 0)
+                    if (irregularGrid->getNumberPossibleTargets(i,j,k) == 1 || irregularGrid->getNumberPossibleTargets(i,j,k) == 0)
                         count++;
                     else
                         othercount++;

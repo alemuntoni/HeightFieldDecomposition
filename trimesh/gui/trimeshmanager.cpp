@@ -37,32 +37,40 @@ void TrimeshManager::setButtonsTrimeshLoaded(bool b) {
     ui->butSetVColor->setEnabled(b);
 }
 
+
 void TrimeshManager::on_butLoadTrimesh_clicked() {
-    QString filename = QFileDialog::getOpenFileName(NULL,
+    QString filename = QFileDialog::getOpenFileName(mainWindow,
                        "Open Trimesh",
                        ".",
                        "OBJ(*.obj)");
 
-    std::cout << "load: " << filename.toStdString() << std::endl;
+    if(filename != NULL){
 
-    if (!filename.isEmpty()) {
-        trimesh = new DrawableTrimesh(filename.toStdString().c_str());
+        std::cout << "load: " << filename.toStdString() << std::endl;
 
-        mainWindow->pushObj(trimesh, "Triemsh");
-        setButtonsTrimeshLoaded(true);
-        mainWindow->updateGlCanvas();
+        if (!filename.isEmpty()) {
+            trimesh = new DrawableTrimesh(filename.toStdString().c_str());
+
+            mainWindow->pushObj(trimesh, "Triemsh");
+            setButtonsTrimeshLoaded(true);
+            mainWindow->updateGlCanvas();
+        }
+
     }
 }
 
 void TrimeshManager::on_butSaveTrimesh_clicked() {
-    QString filename = QFileDialog::getSaveFileName(nullptr,
+    QString filename = QFileDialog::getSaveFileName(mainWindow,
                        "Save Trimesh",
                        ".",
                        "OBJ(*.obj)");
 
-    std::cout << "save: " << filename.toStdString() << std::endl;
-    //Trimesh Save missing!!
-    saveObj(filename.toStdString().c_str(), trimesh->vectorCoords(), trimesh->vectorTriangles());
+    if(filename != NULL){
+
+        std::cout << "save: " << filename.toStdString() << std::endl;
+        saveObj(filename.toStdString().c_str(), trimesh->vectorCoords(), trimesh->vectorTriangles());
+
+    }
 
 }
 

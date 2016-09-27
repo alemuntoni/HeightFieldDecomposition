@@ -141,3 +141,9 @@ SERVER_MODE_BOOLEAN_OPERATIONS {
 
 message(Included modules: $$MODULES)
 
+HEADERS += \
+    engine/reconstruction.h
+
+SOURCES += \
+    engine/reconstruction.cpp
+

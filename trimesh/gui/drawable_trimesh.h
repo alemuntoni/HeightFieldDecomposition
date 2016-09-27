@@ -30,6 +30,7 @@ class DrawableTrimesh : public Trimesh<double> ,
         };
 
         DrawableTrimesh();
+        DrawableTrimesh(const Trimesh<double> &t);
         DrawableTrimesh(const char *filename);
 
         void init();

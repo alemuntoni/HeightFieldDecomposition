@@ -16,6 +16,11 @@ DrawableTrimesh::DrawableTrimesh() : Trimesh<double>()
     init();
 }
 
+DrawableTrimesh::DrawableTrimesh(const Trimesh<double> &t) : Trimesh<double>(t)
+{
+    init();
+}
+
 DrawableTrimesh::DrawableTrimesh(const char *filename) : Trimesh<double>(filename)
 {
     init();

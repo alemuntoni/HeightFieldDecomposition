@@ -466,7 +466,7 @@ void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions) 
             for (unsigned int j = 0; j < yCoord.size()-1; j++) {
                 for (unsigned int k = 0; k < zCoord.size()-1; k++) {
                     if (b.isIntern(grid.getPoint(i,j,k)) && b.isIntern(grid.getPoint(i+1, j+1, k+1)))
-                        grid.setTarget(i,j,k, b.getTarget());
+                        grid.addPossibleTarget(i,j,k, b.getTarget());
                 }
             }
         }

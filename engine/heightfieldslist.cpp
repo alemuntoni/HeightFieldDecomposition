@@ -125,6 +125,25 @@ void HeightfieldsList::setHeightfield(const IGLInterface::IGLMesh& he, unsigned 
     heightfields[i] = he;
 }
 
+void HeightfieldsList::explode(double dist) {
+    for (unsigned int i = 0; i < heightfields.size(); ++i) {
+        Pointd translation;
+        if (targets[i] == XYZ[0])
+            translation.setX(dist);
+        else if (targets[i] == XYZ[1])
+            translation.setY(dist);
+        else if (targets[i] == XYZ[2])
+            translation.setZ(dist);
+        else if (targets[i] == XYZ[3])
+            translation.setX(-dist);
+        else if (targets[i] == XYZ[4])
+            translation.setY(-dist);
+        else if (targets[i] == XYZ[5])
+            translation.setZ(-dist);
+        heightfields[i].translate(translation);
+    }
+}
+
 void HeightfieldsList::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(heightfields, binaryFile);
     Serializer::serialize(targets, binaryFile);

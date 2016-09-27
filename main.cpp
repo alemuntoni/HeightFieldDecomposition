@@ -42,19 +42,9 @@ int main(int argc, char *argv[]) {
     //BooleansManager bm(&gui);
     //gui.addManager(&bm, "Booleans Manager");
 
-
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
     gui.updateGlCanvas();
     gui.show();
-
-    /*Box3D b;
-    b.setMin(-10,-2,-10);
-    b.setMax(10,2,10);
-    IGLInterface::SimpleIGLMesh mesh1 = b.getIGLMesh();
-    mesh1.saveOnObj("box1.obj");
-    IGLInterface::SimpleIGLMesh mesh2 = b.getIGLMesh(21);
-    mesh2.saveOnObj("box2.obj");*/
-
 
     return app.exec();
 
