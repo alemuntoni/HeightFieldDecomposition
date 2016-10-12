@@ -18,10 +18,11 @@ namespace IGLInterface {
     }
 
     void SimpleIGLMesh::deleteDuplicatedVertices(Eigen::Matrix<int, Eigen::Dynamic, 1> &I) {
-        Eigen::MatrixXd V = this->V, NV;
-        Eigen::MatrixXi F = this->F, NF;
-        //Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NV;
-        //Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
+        //Eigen::MatrixXd V = this->V, NV; //if missing templates in iglstatic
+        //Eigen::MatrixXi F = this->F, NF;
+        Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NV;
+        Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
+
 
         igl::remove_duplicates(V,F,NV,NF,I);
 
@@ -29,7 +30,6 @@ namespace IGLInterface {
         this->F = NF;
         //TODO: pull request on libigl with new template function remove_duplicates
     }
-
 
     #ifdef DCEL_DEFINED
     SimpleIGLMesh::SimpleIGLMesh(const Dcel& dcel) {

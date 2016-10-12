@@ -6,13 +6,13 @@
 #ifndef SERVER_MODE
 #include "viewer/mainwindow.h"
 #include "dcel/gui/dcelmanager.h"
-#include "igl/gui/iglmeshmanager.h"
-#include "igl/gui/booleansmanager.h"
+//#include "igl/gui/iglmeshmanager.h"
+//#include "igl/gui/booleansmanager.h"
 #include "viewer/managers/windowmanager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
 #include <QApplication>
-#include "common/comparators.h"
+//#include "common/comparators.h"
 #else
 #include "engine/engine.h"
 #endif

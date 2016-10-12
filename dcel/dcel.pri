@@ -1,11 +1,10 @@
 DEFINES += DCEL_DEFINED
 CONFIG += DCEL_DEFINED
-MODULES +=  DCEL
+MODULES += DCEL
 
 !contains(DEFINES, COMMON_DEFINED){
     error(Dcel module requires common module!)
 }
-
 
 HEADERS += \
     $$PWD/dcel.h \

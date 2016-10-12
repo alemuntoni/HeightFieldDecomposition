@@ -64,6 +64,8 @@ class BoundingBox : public SerializableObject{
         bool isStrictlyIntern(double px, double py, double pz)     const;
         bool isIntern(const Pointd& p)     const;
         bool isIntern(double px, double py, double pz)     const;
+        bool isEpsilonIntern(const Pointd& p, double epsilon = 1e-6)     const;
+        bool isEpsilonIntern(double px, double py, double pz, double epsilon = 1e-6)     const;
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -289,6 +291,16 @@ inline bool BoundingBox::isIntern(const Pointd &p) const {
 inline bool BoundingBox::isIntern(double px, double py, double pz) const {
     return (px >= min.x() && py >= min.y() && pz >= min.z() &&
             px <= max.x() && py <= max.y() && pz <= max.z());
+}
+
+inline bool BoundingBox::isEpsilonIntern(const Pointd& p, double epsilon) const {
+    return (p.x() >= min.x()-epsilon && p.y() >= min.y()-epsilon && p.z() >= min.z()-epsilon &&
+            p.x() <= max.x()+epsilon && p.y() <= max.y()+epsilon && p.z() <= max.z()+epsilon);
+}
+
+inline bool BoundingBox::isEpsilonIntern(double px, double py, double pz, double epsilon) const {
+    return (px >= min.x()-epsilon && py >= min.y()-epsilon && pz >= min.z()-epsilon &&
+            px <= max.x()+epsilon && py <= max.y()+epsilon && pz <= max.z()+epsilon);
 }
 
 /**

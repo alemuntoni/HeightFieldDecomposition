@@ -28,7 +28,6 @@
 #define TARGETS 6
 
 namespace Engine {
-    #if SERVER_MODE != 2
     Vec3 getClosestTarget(const Vec3 &n);
 
     void serializeAsEngineManager(std::ofstream &binaryfile, const Grid& g, const Dcel& d, const BoxList& bl);
@@ -57,12 +56,10 @@ namespace Engine {
     void createIrregularGrid(IrregularGrid &grid, const BoxList& solutions);
 
     static HeightfieldsList dummyhe;
-    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, bool onlyTouchingSurface=false, HeightfieldsList &entirePieces = dummyhe);
+    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, HeightfieldsList &entirePieces = dummyhe);
 
     void gluePortionsToBaseComplex(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
-    #endif
 
-    #ifndef SERVER_MODE
     void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<bool> > >& vectorTriples, const BoxList& boxList, const Dcel &d);
 
     int deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);
@@ -72,19 +69,6 @@ namespace Engine {
     int deleteBoxesMemorySafe(BoxList& boxList, const Dcel &d);
 
     void largeScaleFabrication(const Dcel &input, double kernelDistance = 6, bool heightfields = false);
-     #endif
-    namespace Server {
-        #if SERVER_MODE==1
-        void expandBoxesFromFile(const std::string& inputFile, const std::string& outputFile, double kernelDistance = 6, bool heightfields = false);
-
-        void expandBoxesFromPreprocessing(const std::string &inputFile, const std::string &outputFile);
-        #endif
-
-        #if SERVER_MODE==2
-        void booleanOperationsFromSolutions(const std::string &inputFile, const std::string &outputFile);
-        #endif
-    }
-
 }
 
 #endif // ENGINE_H

@@ -14,11 +14,13 @@ class IrregularGrid {
         unsigned int getIndexK(double z) const;
         void reset(unsigned int resX, unsigned int resY, unsigned int resZ);
         void addPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& target);
-        Pointd getPoint(unsigned int i, unsigned int j, unsigned int k);
-        int getNumberPossibleTargets(unsigned int i, unsigned int j, unsigned int k);
-        unsigned int getResolutionX();
-        unsigned int getResolutionY();
-        unsigned int getResolutionZ();
+        Pointd getPoint(unsigned int i, unsigned int j, unsigned int k) const;
+        int getNumberPossibleTargets(unsigned int i, unsigned int j, unsigned int k) const;
+        std::vector<Vec3> getPossibleTargets(unsigned int i, unsigned int j, unsigned int k) const;
+        double getVolumeOfBox(unsigned int i, unsigned int j, unsigned int k) const;
+        unsigned int getResolutionX() const;
+        unsigned int getResolutionY() const;
+        unsigned int getResolutionZ() const;
         bool boxHasPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& target) const;
         bool isDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k) const;
         void setDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& definitveTarget);
@@ -75,29 +77,46 @@ inline void IrregularGrid::addPossibleTarget(unsigned int i, unsigned int j, uns
     possibleTargets(i,j,k).insert(target);
 }
 
-inline Pointd IrregularGrid::getPoint(unsigned int i, unsigned int j, unsigned int k) {
+inline Pointd IrregularGrid::getPoint(unsigned int i, unsigned int j, unsigned int k) const{
     assert(i < resX);
     assert(j < resY);
     assert(k < resZ);
     return points(i,j,k);
 }
 
-inline int IrregularGrid::getNumberPossibleTargets(unsigned int i, unsigned int j, unsigned int k) {
+inline int IrregularGrid::getNumberPossibleTargets(unsigned int i, unsigned int j, unsigned int k) const{
     assert(i < resX-1);
     assert(j < resY-1);
     assert(k < resZ-1);
     return possibleTargets(i,j,k).size();
 }
 
-inline unsigned int IrregularGrid::getResolutionX() {
+inline std::vector<Vec3> IrregularGrid::getPossibleTargets(unsigned int i, unsigned int j, unsigned int k) const {
+    assert(i < resX-1);
+    assert(j < resY-1);
+    assert(k < resZ-1);
+    std::vector<Vec3> tmp;
+    std::set<Vec3> tmp2 = possibleTargets(i,j,k);
+    std::copy(tmp2.begin(), tmp2.end(), std::back_inserter(tmp));
+    return tmp;
+}
+
+inline double IrregularGrid::getVolumeOfBox(unsigned int i, unsigned int j, unsigned int k) const {
+    assert(i < resX-1);
+    assert(j < resY-1);
+    assert(k < resZ-1);
+    return (points(i+1,j,k).x() - points(i,j,k).x()) * (points(i,j+1,k).y() - points(i,j,k).y()) * (points(i,j,k+1).z() - points(i,j,k).z());
+}
+
+inline unsigned int IrregularGrid::getResolutionX() const{
     return resX;
 }
 
-inline unsigned int IrregularGrid::getResolutionY() {
+inline unsigned int IrregularGrid::getResolutionY() const{
     return resY;
 }
 
-inline unsigned int IrregularGrid::getResolutionZ() {
+inline unsigned int IrregularGrid::getResolutionZ() const{
     return resZ;
 }
 

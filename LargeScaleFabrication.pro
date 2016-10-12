@@ -62,7 +62,8 @@ ALL {
         engine/engine.h \
         engine/heightfieldslist.h \
         lib/grid/drawableirregulargrid.h \
-        lib/grid/irregulargrid.h
+        lib/grid/irregulargrid.h \
+        engine/reconstruction.h
 
 
 
@@ -79,7 +80,8 @@ ALL {
         engine/engine.cpp \
         engine/heightfieldslist.cpp \
         lib/grid/drawableirregulargrid.cpp \
-        lib/grid/irregulargrid.cpp
+        lib/grid/irregulargrid.cpp \
+        engine/reconstruction.cpp
 
 
     FORMS += \
@@ -89,61 +91,7 @@ ALL {
         README.txt
 }
 
-SERVER_MODE_GRADIENT_DESCENT {
-    QMAKE_CXXFLAGS += -std=c++11  -fopenmp
-    QMAKE_LFLAGS +=  -fopenmp
-    DEFINES += "SERVER_MODE=1"
-    include (common/common.pri)
-    include (dcel/dcel.pri)
-    include (igl/igl.pri)
-
-    HEADERS += \
-        common.h \
-        lib/grid/grid.h \
-        engine/tricubic.h \
-        engine/energy.h \
-        engine/box.h \
-        engine/boxlist.h \
-        engine/engine.h
-
-    SOURCES += \
-        main.cpp \
-        common.cpp \
-        lib/grid/grid.cpp \
-        engine/tricubic.cpp \
-        engine/energy.cpp \
-        engine/box.cpp \
-        engine/boxlist.cpp \
-        engine/engine.cpp
-}
-
-SERVER_MODE_BOOLEAN_OPERATIONS {
-    DEFINES += "SERVER_MODE=2"
-    include (common/common.pri)
-    include (cgal/cgal.pri)
-    include (igl/igl.pri)
-
-    HEADERS += \
-        common.h \
-        engine/box.h \
-        engine/boxlist.h \
-        engine/engine.h \
-        engine/heightfieldslist.h
-
-    SOURCES += \
-        main.cpp \
-        common.cpp \
-        engine/box.cpp \
-        engine/boxlist.cpp \
-        engine/engine.cpp \
-        engine/heightfieldslist.cpp
-}
-
 message(Included modules: $$MODULES)
 
-HEADERS += \
-    engine/reconstruction.h
 
-SOURCES += \
-    engine/reconstruction.cpp
 

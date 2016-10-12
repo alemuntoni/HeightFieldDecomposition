@@ -919,7 +919,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         mainWindow->pushObj(entirePieces, "Entire Pieces");
         mainWindow->updateGlCanvas();
         IGLInterface::SimpleIGLMesh bc((IGLInterface::SimpleIGLMesh)*baseComplex);
-        Engine::booleanOperations(*he, bc, *solutions, *d, ui->cutHEightfieldsCheckBox->isChecked(), *entirePieces);
+        Engine::booleanOperations(*he, bc, *solutions, *d, *entirePieces);
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
@@ -1018,7 +1018,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         mainWindow->pushObj(entirePieces, "Entire Pieces");
         mainWindow->updateGlCanvas();
         ui->showAllSolutionsCheckBox->setEnabled(true);
-        he->explode(40);
+        //he->explode(40);
         solutions->setVisibleBox(0);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
         ui->allHeightfieldsCheckBox->setChecked(true);
@@ -1187,4 +1187,17 @@ void EngineManager::on_createIrregularGridButton_clicked() {
         std::cerr << count << "\n";
         std::cerr << othercount << "\n";
     }
+}
+
+void EngineManager::on_createPieces_clicked() {
+    std::vector<Vec3> targets;
+    std::vector<IGLInterface::IGLMesh> pieces = Reconstruction::getPieces(*irregularGrid, targets);
+    deleteDrawableObject(entirePieces);
+    entirePieces = new HeightfieldsList();
+    for (unsigned int i = 0; i < pieces.size(); i++){
+        entirePieces->addHeightfield(IGLInterface::DrawableIGLMesh(pieces[i]), targets[i]);
+    }
+    entirePieces->setVisibleHeightfield(0);
+    mainWindow->pushObj(entirePieces, "Pieces");
+    mainWindow->updateGlCanvas();
 }

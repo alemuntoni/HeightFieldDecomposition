@@ -2,6 +2,7 @@
 #define RECONSTRUCTION_H
 
 #include "lib/grid/irregulargrid.h"
+#include "igl/iglmesh.h"
 
 namespace Reconstruction {
     Pointi getGrowthStep(const Vec3& target);
@@ -14,7 +15,13 @@ namespace Reconstruction {
 
     void recursiveGrowth(std::set<Pointi>& conqueredBoxes, const IrregularGrid &g, const Pointi &startingBaseBox, const Vec3 &target);
 
-    void growPiece(IrregularGrid& g, const Pointi &startingBox, const Vec3 &target);
+    std::set<Pointi> growPiece(const IrregularGrid& g, const Pointi &startingBox, const Vec3 &target);
+
+    void setDefinitivePiece(IrregularGrid& g, const std::set<Pointi>& piece, const Vec3 &target);
+
+    IGLInterface::IGLMesh getSurfaceOfPiece(const std::set<Pointi> &boxes, const IrregularGrid& g);
+
+    std::vector<IGLInterface::IGLMesh> getPieces(IrregularGrid &g, std::vector<Vec3>& targets);
 
 }
 

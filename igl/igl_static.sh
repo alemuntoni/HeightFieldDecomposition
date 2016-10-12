@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sudo apt-get install libcgal-qt5-dev -y
+sudo apt-get install cmake libcgal-qt5-dev -y
 sudo apt-get install libblas-dev liblapack-dev -y
 sudo apt-get install xorg-dev libglu1-mesa-dev -y
 

@@ -71,7 +71,7 @@
        <item row="0" column="0">
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -1309,6 +1309,13 @@
              <widget class="QPushButton" name="createIrregularGridButton">
               <property name="text">
                <string>Create Irregular Grid</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="createPieces">
+              <property name="text">
+               <string>Create Pieces</string>
               </property>
              </widget>
             </item>

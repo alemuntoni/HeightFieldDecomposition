@@ -1,6 +1,5 @@
 #include "engine.h"
 
-#if SERVER_MODE != 2
 Vec3 Engine::getClosestTarget(const Vec3& n) {
     double angle = n.dot(XYZ[0]);
     int k = 0;
@@ -446,6 +445,9 @@ void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions) 
         zCoord.insert(b.getMinZ());
         zCoord.insert(b.getMaxZ());
     }
+    // compacting
+
+
     grid.reset(xCoord.size(), yCoord.size(), zCoord.size());
     unsigned int i = 0, j = 0, k = 0;
     for (double x : xCoord){
@@ -473,96 +475,22 @@ void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions) 
     }
 }
 
-void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, bool onlyTouchingSurface, HeightfieldsList& entirePieces) {
+void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, HeightfieldsList& entirePieces) {
     double average = 0;
     for (const Dcel::HalfEdge* he : inputMesh.halfEdgeIterator())
         average += he->getLength();
     average /= inputMesh.getNumberHalfEdges();
-    CGALInterface::AABBTree aabb(inputMesh, true);
     Timer timer("Boolean Operations");
     he.resize(solutions.getNumberBoxes());
     entirePieces.resize(solutions.getNumberBoxes());
     IGLInterface::SimpleIGLMesh inputIGL = inputMesh;
     for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
-    //for (int i = solutions.getNumberBoxes()-1; i >= 0 ; i--){
         IGLInterface::SimpleIGLMesh box;
         IGLInterface::SimpleIGLMesh intersection;
         IGLInterface::SimpleIGLMesh entirep;
         box = solutions.getBox(i).getIGLMesh(average*7);
         IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
         IGLInterface::SimpleIGLMesh::intersection(entirep, inputIGL, box);
-        /*bool b = true;
-        for (unsigned int j = 0; j < intersection.getNumberVertices(); j++) {
-            Pointd p = intersection.getVertex(j);
-            double dist = aabb.getSquaredDistance(p);
-            if (dist < EPSILON) {
-                b = false;
-                break;
-            }
-        }
-        if (!b) {
-            if (onlyTouchingSurface){
-                std::vector<Pointd> pointsOnSurface;
-                for (unsigned int j = 0; j < intersection.getNumberVertices(); j++){
-                    Pointd p = intersection.getVertex(j);
-                    if (aabb.getSquaredDistance(p) < EPSILON) pointsOnSurface.push_back(p);
-                }
-                Eigen::Matrix3d m = solutions.getBox(i).getRotationMatrix(), mt;
-                Eigen::Matrix3d arr[4];
-                arr[0] = Eigen::Matrix3d::Identity();
-                getRotationMatrix(Vec3(0,0,-1), M_PI/4, arr[1]);
-                getRotationMatrix(Vec3(0,-1,0), M_PI/4, arr[2]);
-                getRotationMatrix(Vec3(-1,0,0), M_PI/4, arr[3]);
-                if (m == arr[0])
-                    mt = arr[0];
-                else if (m == arr[1])
-                    getRotationMatrix(Vec3(0,0,1), M_PI/4, mt);
-                else if (m == arr[2])
-                    getRotationMatrix(Vec3(0,1,0), M_PI/4, mt);
-                else if (m == arr[3])
-                    getRotationMatrix(Vec3(1,0,0), M_PI/4, mt);
-                else assert(0);
-                pointsOnSurface[0].rotate(mt);
-                Pointd min = pointsOnSurface[0], max = pointsOnSurface[0];
-                for (unsigned int j = 1; j < pointsOnSurface.size(); j++){
-                    pointsOnSurface[j].rotate(mt);
-                    min = min.min(pointsOnSurface[j]);
-                    max = max.max(pointsOnSurface[j]);
-                }
-                Vec3 target = solutions.getBox(i).getTarget();
-                Box3D b;
-                if (target == XYZ[0] || target == XYZ[3]){
-                    b = solutions.getBox(i);
-                    b.setMinY(min.y());
-                    b.setMinZ(min.z());
-                    b.setMaxY(max.y());
-                    b.setMaxZ(max.z());
-                    //b.setMinX(b.getMinX()-5*EPSILON);
-                    //b.setMaxX(b.getMaxX()+5*EPSILON);
-                }
-                else if (target == XYZ[1] || target == XYZ[4]) {
-                    b = solutions.getBox(i);
-                    b.setMinX(min.x());
-                    b.setMinZ(min.z());
-                    b.setMaxX(max.x());
-                    b.setMaxZ(max.z());
-                    //b.setMinY(b.getMinY()-5*EPSILON);
-                    //b.setMaxY(b.getMaxY()+5*EPSILON);
-                }
-                else if (target == XYZ[2] || target == XYZ[5]) {
-                    b = solutions.getBox(i);
-                    b.setMinY(min.y());
-                    b.setMinX(min.x());
-                    b.setMaxY(max.y());
-                    b.setMaxX(max.x());
-                    //b.setMinZ(b.getMinZ()-5*EPSILON);
-                    //b.setMaxZ(b.getMaxZ()+5*EPSILON);
-                }
-                else assert(0);
-                box = b.getIGLMesh(average*7);
-                IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
-            }
-        }*/
         IGLInterface::SimpleIGLMesh::difference(bc, bc, box);
         IGLInterface::DrawableIGLMesh dimm(intersection);
         IGLInterface::DrawableIGLMesh dent(entirep);
@@ -668,9 +596,7 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, IGLInterface::Simpl
     }
 
 }
-#endif
 
-#ifndef SERVER_MODE
 void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, const BoxList& boxList, const Dcel& d) {
     CGALInterface::AABBTree t(d);
 
@@ -960,166 +886,3 @@ void Engine::largeScaleFabrication(const Dcel& input, double kernelDistance, boo
     }
 
 }
-#endif
-
-#if SERVER_MODE==1
-void Engine::Server::expandBoxesFromFile(const std::string& inputFile, const std::string& outputFile, double kernelDistance, bool heightfields) {
-    Dcel scaled[ORIENTATIONS];
-    Eigen::Matrix3d m[ORIENTATIONS];
-    for (unsigned int i = 0; i < ORIENTATIONS; i++){
-        scaled[i].loadFromObjFile(inputFile);
-        m[i] = scaleAndRotateDcel(scaled[i], i);
-    }
-
-    if (!heightfields){
-        Grid g[ORIENTATIONS];
-        BoxList bl[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            generateGrid(g[i], scaled[i], kernelDistance);
-            calculateInitialBoxes(bl[i],scaled[i], m[i], false);
-        }
-        Timer t("Total Time Entire Process");
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            Engine::expandBoxes(bl[i], g[i]);
-        }
-        t.stopAndPrint();
-        std::ofstream myfile;
-        myfile.open (outputFile, std::ios::out | std::ios::binary);
-        scaled[0].serialize(myfile);
-        Serializer::serialize(heightfields, myfile);
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            g[i].serialize(myfile);
-            bl[i].serialize(myfile);
-        }
-
-        myfile.close();
-
-    }
-    else {
-        Grid g[ORIENTATIONS][TARGETS];
-        BoxList bl[ORIENTATIONS][TARGETS];
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j]);
-                calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
-            }
-        }
-        Timer t("Total Time Entire Process");
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                Engine::expandBoxes(bl[i][j], g[i][j]);
-            }
-        }
-        t.stopAndPrint();
-        std::ofstream myfile;
-        myfile.open (outputFile, std::ios::out | std::ios::binary);
-        scaled[0].serialize(myfile);
-        Serializer::serialize(heightfields, myfile);
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                g[i][j].serialize(myfile);
-                bl[i][j].serialize(myfile);
-            }
-        }
-        myfile.close();
-    }
-}
-
-void Engine::Server::expandBoxesFromPreprocessing(const std::string& inputFile, const std::string& outputFile) {
-    Dcel d;
-    bool heightfields;
-
-    std::ifstream input;
-    input.open (inputFile, std::ios::in | std::ios::binary);
-    d.deserialize(input);
-    Serializer::deserialize(heightfields, input);
-    if (!heightfields){
-        Grid g[ORIENTATIONS];
-        BoxList bl[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            g[i].deserialize(input);
-            bl[i].deserialize(input);
-        }
-        input.close();
-        Timer t("Total Time Entire Process");
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            Engine::expandBoxes(bl[i], g[i]);
-        }
-        t.stopAndPrint();
-        std::ofstream myfile;
-        myfile.open (outputFile, std::ios::out | std::ios::binary);
-        d.serialize(myfile);
-        Serializer::serialize(heightfields, myfile);
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            g[i].serialize(myfile);
-            bl[i].serialize(myfile);
-        }
-        myfile.close();
-    }
-    else {
-        Grid g[ORIENTATIONS][TARGETS];
-        BoxList bl[ORIENTATIONS][TARGETS];
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                g[i][j].deserialize(input);
-                bl[i][j].deserialize(input);
-            }
-        }
-        input.close();
-        Timer t("Total Time Entire Process");
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                Engine::expandBoxes(bl[i][j], g[i][j]);
-            }
-        }
-        t.stopAndPrint();
-        std::ofstream myfile;
-        myfile.open (outputFile, std::ios::out | std::ios::binary);
-        d.serialize(myfile);
-        Serializer::serialize(heightfields, myfile);
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                g[i][j].serialize(myfile);
-                bl[i][j].serialize(myfile);
-            }
-        }
-        myfile.close();;
-    }
-}
-#endif
-
-#if SERVER_MODE==2
-void Engine::Server::booleanOperationsFromSolutions(const std::string& inputFile, const std::string& outputFile) {
-
-    std::ifstream ifile;
-    ifile.open (inputFile, std::ios::in | std::ios::binary);
-    BoxList bl;
-    IGLInterface::IGLMesh tbc;
-    std::vector<SimpleIGLMesh> hf;
-    bl.deserialize(ifile);
-    tbc.deserialize(ifile);
-    Serializer::deserialize(hf, ifile);
-    ifile.close();
-    SimpleIGLMesh bc(tbc);
-    hf.clear();
-    hf.resize(bl.getNumberBoxes());
-    Timer t("Boolean Operations");
-    for (int i = bl.getNumberBoxes()-1; i >= 0 ; i--){
-        IGLInterface::SimpleIGLMesh box;
-        IGLInterface::SimpleIGLMesh intersection;
-        bl.getBox(i).getIGLMesh(box);
-        IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
-        IGLInterface::SimpleIGLMesh::difference(bc, bc, box);
-        hf[i] = intersection;
-        std::cerr << "Difference and intersection: " << i << "\n";
-    }
-    t.stopAndPrint();
-
-    std::ofstream ofile;
-    ofile.open (outputFile, std::ios::out | std::ios::binary);
-    bl.serialize(ofile);
-    bc.serialize(ofile);
-    Serializer::serialize(hf, ofile);
-    ofile.close();
-}
-#endif

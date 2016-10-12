@@ -36,9 +36,9 @@ inline edge uniqueEdge(int v0, int v1)
 }
 
 template<typename C>
-inline void checkBounds(const C & container, int index)
+inline bool checkBounds(const C & container, int index)
 {
-    assert(index < (int)container.size());
+    return (index < (int)container.size());
 }
 
 /*-------------- INLINE UTILITY FUNCTIONS --------------*/
@@ -289,9 +289,9 @@ template<typename real> class Trimesh
         inline int numVertices()  const { return coords.size()/3; }
         inline int numTriangles() const { return tris.size()/3;   }
 
-        inline std::vector<int> adj_vtx2tri(int vid) const { checkBounds(vtx2tri, vid); return vtx2tri[vid]; }
-        inline std::vector<int> adj_vtx2vtx(int vid) const { checkBounds(vtx2vtx, vid); return vtx2vtx[vid]; }
-        inline std::vector<int> adj_tri2tri(int tid) const { checkBounds(tri2tri, tid); return tri2tri[tid]; }
+        inline std::vector<int> adj_vtx2tri(int vid) const { assert(checkBounds(vtx2tri, vid)); return vtx2tri[vid]; }
+        inline std::vector<int> adj_vtx2vtx(int vid) const { assert(checkBounds(vtx2vtx, vid)); return vtx2vtx[vid]; }
+        inline std::vector<int> adj_tri2tri(int tid) const { assert(checkBounds(tri2tri, tid)); return tri2tri[tid]; }
 
         inline int tri_vertex_id(int t_id, int v_id) const
         {
@@ -301,7 +301,7 @@ template<typename real> class Trimesh
         inline Point<real> triangleNormal(int tid) const
         {
             int tid_ptr = tid * 3;
-            checkBounds(triangleNormals, tid_ptr+2);
+            assert(checkBounds(triangleNormals, tid_ptr+2));
             return Point<real>(triangleNormals[tid_ptr + 0],
                               triangleNormals[tid_ptr + 1],
                               triangleNormals[tid_ptr + 2]);
@@ -310,7 +310,7 @@ template<typename real> class Trimesh
         inline Point<real> vertexNormal(int vid) const
         {
             int vid_ptr = vid * 3;
-            checkBounds(vertexNormals, vid_ptr+2);
+            assert(checkBounds(vertexNormals, vid_ptr+2));
             return Point<real>(vertexNormals[vid_ptr + 0],
                               vertexNormals[vid_ptr + 1],
                               vertexNormals[vid_ptr + 2]);
@@ -319,7 +319,7 @@ template<typename real> class Trimesh
         inline Point<real> vertex(int vid) const
         {
             int vid_ptr = vid * 3;
-            checkBounds(coords, vid_ptr+2);
+            assert(checkBounds(coords, vid_ptr+2));
             return Point<real>(coords[vid_ptr + 0],
                               coords[vid_ptr + 1],
                               coords[vid_ptr + 2]);
@@ -328,7 +328,7 @@ template<typename real> class Trimesh
         inline void setVertex(int vid, Point<real> pos)
         {
             int vid_ptr = vid * 3;
-            checkBounds(coords, vid_ptr+2);
+            assert(checkBounds(coords, vid_ptr+2));
             coords[vid_ptr + 0] = pos.x();
             coords[vid_ptr + 1] = pos.y();
             coords[vid_ptr + 2] = pos.z();

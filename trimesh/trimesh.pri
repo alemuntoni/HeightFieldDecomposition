@@ -1,4 +1,5 @@
 DEFINES += TRIMESH_DEFINED
+MODULES +=  TRIMESH
 
 !contains(DEFINES, COMMON_DEFINED){
     error(Trimesh module requires common module!)
