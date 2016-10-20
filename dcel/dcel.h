@@ -191,6 +191,14 @@
  * }
  * \endcode
  *
+ * oppure utilizzando il for compatto:\n
+ *
+ * \code{.cpp}
+ * for (Dcel::Vertex* v : d.vertexIterator()){
+ *     v->setCoordinate(Pointd(0.1, 0.2, 0.3));
+ * }
+ * \endcode
+ *
  * L'insieme di vertici (come anche quello degli half edge e delle facce) è gestito mediante un array. L'id di ogni vertice rappresenta la posizione
  * stessa del vertice all'interno dell'array. Non è possibile tuttavia ciclare direttamente su questo array per via della gestione dell'eliminazione
  * degli elementi. Nel momento in cui in vertice viene eliminato, la sua posizione verrà settata nullptr. Gli iteratori permettono di saltare automaticamente

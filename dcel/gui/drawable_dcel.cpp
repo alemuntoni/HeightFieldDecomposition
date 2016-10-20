@@ -113,6 +113,7 @@ void DrawableDcel::update() {
     tris.clear();
     colors.clear();
     t_norm.clear();
+    faces_wireframe.clear();
     coords.reserve(getNumberVertices()*3);
     v_norm.reserve(getNumberVertices()*3);
     tris.reserve(getNumberFaces()*3);
@@ -137,6 +138,15 @@ void DrawableDcel::update() {
     #ifdef CGAL_DEFINED
     triangles_face.clear();
     for (FaceIterator fit = faceBegin(); fit != faceEnd(); ++fit) {
+        for(Dcel::Face::IncidentHalfEdgeIterator heit = (*fit)->incidentHalfEdgeBegin(); heit != (*fit)->incidentHalfEdgeEnd(); heit++){
+            unsigned int p1, p2;
+            p1 = v_ids[(*heit)->getFromVertex()->getId()];
+            p2 = v_ids[(*heit)->getToVertex()->getId()];
+            std::pair<unsigned int, unsigned int> edge(p1,p2);
+            std::vector<std::pair<unsigned int, unsigned int> >::iterator it = std::find(faces_wireframe.begin(), faces_wireframe.end(), edge);
+            if(it==faces_wireframe.end())
+                faces_wireframe.push_back(edge);
+        }
         if ((*fit)->isTriangle()){
             Dcel::Face::ConstIncidentVertexIterator vit = (*fit)->incidentVertexBegin();
             tris.push_back(v_ids[(*vit)->getId()]);
@@ -153,7 +163,6 @@ void DrawableDcel::update() {
             triangles_face.push_back((*fit)->getId());
         }
         else {
-            /*******************************Andreas*********************************/
             //Si ottiene la triangolazione della faccia e si inseriscono i triangoli
             //prodotti nell'array tris.
             std::vector<std::array<const Dcel::Vertex*, 3> > face_triangles;
@@ -296,6 +305,19 @@ void DrawableDcel::renderPass() const {
             glEnd();
         }
     }
+
+    if(drawMode & DRAW_FACES_WIREFRAME){
+
+        for(unsigned int i=0; i<faces_wireframe.size(); i++){
+            glLineWidth(1);
+            glColor3f(0.0, 0.0, 0.0);
+            glBegin(GL_LINES);
+            glVertex3dv(&(coords[3*(faces_wireframe[i].first)]));
+            glVertex3dv(&(coords[3*(faces_wireframe[i].second)]));
+            glEnd();
+        }
+
+    }
 }
 
 /**
@@ -348,9 +370,7 @@ void DrawableDcel::draw() const {
                     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 }
             }
-        }
-
-        else {
+        }else {
             if (drawMode & DRAW_POINTS) {
                 glDisable(GL_LIGHTING);
                 //glPointSize(10);
@@ -376,6 +396,11 @@ void DrawableDcel::draw() const {
 void DrawableDcel::setWireframe(bool b) {
     if (b) drawMode |=  DRAW_WIREFRAME;
     else   drawMode &= ~DRAW_WIREFRAME;
+}
+
+void DrawableDcel::setFacesWireframe(bool b) {
+    if (b) drawMode |=  DRAW_FACES_WIREFRAME;
+    else   drawMode &= ~DRAW_FACES_WIREFRAME;
 }
 
 void DrawableDcel::setFlatShading() {

@@ -1170,7 +1170,7 @@ void EngineManager::on_createIrregularGridButton_clicked() {
     if (solutions!=nullptr){
         irregularGrid = new DrawableIrregularGrid();
         Engine::createIrregularGrid(*irregularGrid, *solutions);
-        mainWindow->pushObj(irregularGrid, "Irregular Grid");
+        mainWindow->pushObj(irregularGrid, "Irregular Grid", false);
         mainWindow->updateGlCanvas();
 
         int count = 0, othercount=0;

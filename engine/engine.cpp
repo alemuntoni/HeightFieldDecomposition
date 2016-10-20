@@ -434,7 +434,27 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
     }
 }
 
-void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions) {
+void Engine::compactSet(std::set<double>& set, double epsilon) {
+    std::set<double>::iterator it = set.begin();
+    std::set<double> toDelete;
+    double last = *it;
+    ++it;
+    double actual;
+    for (; it != set.end();++it){
+        actual = *it;
+        if (epsilonEqual(last, actual, epsilon)){
+            toDelete.insert(actual);
+        }
+        else {
+            last = actual;
+        }
+    }
+    for (double actual : toDelete){
+        set.erase(actual);
+    }
+}
+
+void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions, double epsilon) {
     std::set<double> xCoord, yCoord, zCoord;
     for (unsigned int i = 0; i < solutions.getNumberBoxes(); ++i){
         Box3D b = solutions.getBox(i);
@@ -446,6 +466,9 @@ void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions) 
         zCoord.insert(b.getMaxZ());
     }
     // compacting
+    compactSet(xCoord, epsilon);
+    compactSet(yCoord, epsilon);
+    compactSet(zCoord, epsilon);
 
 
     grid.reset(xCoord.size(), yCoord.size(), zCoord.size());
@@ -467,12 +490,15 @@ void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions) 
         for (unsigned int i = 0; i < xCoord.size()-1; i++) {
             for (unsigned int j = 0; j < yCoord.size()-1; j++) {
                 for (unsigned int k = 0; k < zCoord.size()-1; k++) {
-                    if (b.isIntern(grid.getPoint(i,j,k)) && b.isIntern(grid.getPoint(i+1, j+1, k+1)))
+                    Pointd min = grid.getPoint(i,j,k);
+                    Pointd max = grid.getPoint(i+1, j+1, k+1);
+                    if (b.isEpsilonIntern(min, epsilon) && b.isEpsilonIntern(max, epsilon))
                         grid.addPossibleTarget(i,j,k, b.getTarget());
                 }
             }
         }
     }
+    std::cout << "end\n";
 }
 
 void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, HeightfieldsList& entirePieces) {

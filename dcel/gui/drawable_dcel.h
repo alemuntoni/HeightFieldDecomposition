@@ -59,6 +59,7 @@ class DrawableDcel : public Dcel, public DrawableObject {
 
         // rendering options
         //
+        void setFacesWireframe(bool b);
         void setWireframe(bool b);
         void setFlatShading();
         void setSmoothShading();
@@ -73,19 +74,21 @@ class DrawableDcel : public Dcel, public DrawableObject {
         void renderPass() const;
 
         enum {
-            DRAW_MESH           = 0b00000001,
-            DRAW_POINTS         = 0b00000010,
-            DRAW_FLAT           = 0b00000100,
-            DRAW_SMOOTH         = 0b00001000,
-            DRAW_WIREFRAME      = 0b00010000,
-            DRAW_FACECOLOR      = 0b00100000,
-            DRAW_VERTEXCOLOR    = 0b01000000,
+            DRAW_MESH               = 0b00000001,
+            DRAW_POINTS             = 0b00000010,
+            DRAW_FLAT               = 0b00000100,
+            DRAW_SMOOTH             = 0b00001000,
+            DRAW_WIREFRAME          = 0b00010000,
+            DRAW_FACECOLOR          = 0b00100000,
+            DRAW_VERTEXCOLOR        = 0b01000000,
+            DRAW_FACES_WIREFRAME    = 0b10000000,
         };
 
         int   drawMode; /** \~Italian @brief intero interpretato come stringa di bit rappresentante la modalità di visualizzazione della dcel*/
         int   wireframeWidth; /** \~Italian @brief dimensione del wireframe */
         float wireframeColor[4]; /** \~Italian @brief colore del wireframe (rgb float [0:1]) */
 
+        std::vector<std::pair<unsigned int, unsigned int> > faces_wireframe; /** \~Italian @brief vettore di coppie usate per renderizzare degli edge: per aggiornare utilizzare metodo update() */
         std::vector<double> coords; /** \~Italian @brief vettore di coordinate usate per la visualizzazione: per aggiornare utilizzare metodo update() */
         std::vector<double> v_norm; /** \~Italian @brief vettore di normali ai vertici usate per la visualizzazione: per aggiornare utilizzare il metodo update() */
         std::vector<int> tris; /** \~Italian @brief vettore di triangoli (da considerare a triple di indici) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */

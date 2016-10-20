@@ -124,8 +124,9 @@ inline bool IrregularGrid::boxHasPossibleTarget(unsigned int i, unsigned int j, 
     assert(i < resX-1);
     assert(j < resY-1);
     assert(k < resZ-1);
+    const std::set<Vec3>& pt =  possibleTargets(i,j,k);
 
-    return (possibleTargets(i,j,k).find(target) != possibleTargets(i,j,k).end());
+    return (pt.find(target) != pt.end());
 }
 
 inline bool IrregularGrid::isDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k) const{

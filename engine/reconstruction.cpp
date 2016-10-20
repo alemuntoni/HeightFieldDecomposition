@@ -22,16 +22,16 @@ Pointi Reconstruction::getGrowthStep(const Vec3& target) {
 
 void Reconstruction::getAdjacents(Pointi& s1, Pointi& s2, Pointi& s3, Pointi& s4, const Pointi& base, const Vec3& target) {
     if (target == XYZ[0] || target == XYZ[3]){
-        s1 = base + Pointi(0, 1, 0);
-        s2 = base + Pointi(0, 0, 1);
-        s3 = base + Pointi(0,-1, 0);
-        s4 = base + Pointi(0, 0,-1);
+        s1 = base + Pointi( 0, 1, 0);
+        s2 = base + Pointi( 0, 0, 1);
+        s3 = base + Pointi( 0,-1, 0);
+        s4 = base + Pointi( 0, 0,-1);
     }
     else if (target == XYZ[1] || target == XYZ[4]){
-        s1 = base + Pointi( 1,0, 0);
-        s2 = base + Pointi( 0,0, 1);
-        s3 = base + Pointi(-1,0, 0);
-        s4 = base + Pointi( 0,0,-1);
+        s1 = base + Pointi( 1, 0, 0);
+        s2 = base + Pointi( 0, 0, 1);
+        s3 = base + Pointi(-1, 0, 0);
+        s4 = base + Pointi( 0, 0,-1);
     }
     else if (target == XYZ[2] || target == XYZ[5]){
         s1 = base + Pointi( 0, 1, 0);
@@ -42,6 +42,10 @@ void Reconstruction::getAdjacents(Pointi& s1, Pointi& s2, Pointi& s3, Pointi& s4
     else assert(0);
 }
 
+bool Reconstruction::isBounded(const Pointi &box, const IrregularGrid& g){
+    return (box.x() >= 0 && box.y() >= 0 && box.z() >= 0) && (box.x() < (int)g.getResolutionX()-1 && box.y() < (int)g.getResolutionY()-1 && box.z() < (int)g.getResolutionZ()-1);
+}
+
 Pointi Reconstruction::getBase(const IrregularGrid& g, const Pointi& startingBox, const Vec3& target) {
     assert(g.boxHasPossibleTarget(startingBox.x(), startingBox.y(), startingBox.z(), target) && !(g.isDefinitiveTarget(startingBox.x(), startingBox.y(), startingBox.z())));
     Pointi step = getGrowthStep(target);
@@ -49,14 +53,10 @@ Pointi Reconstruction::getBase(const IrregularGrid& g, const Pointi& startingBox
     Pointi base = startingBox;
     do {
         base -= step;
-    } while (g.boxHasPossibleTarget(base.x(), base.y(), base.z(), target) && !(g.isDefinitiveTarget(base.x(), base.y(), base.z())));
+    } while (isBounded(base, g) && g.boxHasPossibleTarget(base.x(), base.y(), base.z(), target) && !(g.isDefinitiveTarget(base.x(), base.y(), base.z())));
     base += step;
 
     return base;
-}
-
-bool isBounded(const Pointi &box, const IrregularGrid& g){
-    return (box.x() >= 0 && box.y() >= 0 && box.z() >= 0) && (box.x() < (int)g.getResolutionX()-1 && box.y() < (int)g.getResolutionY()-1 && box.z() < (int)g.getResolutionZ()-1);
 }
 
 void Reconstruction::growTarget(std::set<Pointi>& conqueredBoxes, const IrregularGrid& g, const Pointi& startingBox, const Vec3& target) {
@@ -66,7 +66,7 @@ void Reconstruction::growTarget(std::set<Pointi>& conqueredBoxes, const Irregula
     do {
         conqueredBoxes.insert(base);
         base += step;
-    } while (isBounded(base, g) && g.boxHasPossibleTarget(base.x(), base.y(), base.z(), target) && !(g.isDefinitiveTarget(base.x(), base.y(), base.z())));
+    } while (isBounded(base, g) && g.boxHasPossibleTarget(base.x(), base.y(), base.z(), target));
 }
 
 void Reconstruction::recursiveGrowth(std::set<Pointi>& conqueredBoxes, const IrregularGrid& g, const Pointi& startingBaseBox, const Vec3& target) {
@@ -210,12 +210,12 @@ IGLInterface::IGLMesh Reconstruction::getSurfaceOfPiece(const std::set<Pointi>& 
 
 std::vector<IGLInterface::IGLMesh> Reconstruction::getPieces(IrregularGrid& g, std::vector<Vec3> &targets) {
     std::vector<IGLInterface::IGLMesh> meshes;
-//    for (unsigned int i = 0; i < g.getResolutionX()-1; i++) {
-//        for (unsigned int j = 0; j < g.getResolutionY()-1; j++) {
-//            for (unsigned int k = 0; k < g.getResolutionZ()-1; k++) {
-    for (int i = g.getResolutionX()-2; i >= 0; i--) {
-        for (int j = 0; j < g.getResolutionY()-1; j++) {
-            for (int k = 0; k < g.getResolutionZ()-1; k++) {
+    for (unsigned int i = 0; i < g.getResolutionX()-1; i++) {
+        for (unsigned int j = 0; j < g.getResolutionY()-1; j++) {
+            for (unsigned int k = 0; k < g.getResolutionZ()-1; k++) {
+//    for (int i = g.getResolutionX()-2; i >= 0; i--) {
+//        for (int j = 0; j < g.getResolutionY()-1; j++) {
+//            for (int k = 0; k < g.getResolutionZ()-1; k++) {
                 if (g.getNumberPossibleTargets(i,j,k) > 0) {
                     std::vector<Vec3> possibleTargets = g.getPossibleTargets(i,j,k);
                     std::vector<std::set<Pointi> > pieces(possibleTargets.size());

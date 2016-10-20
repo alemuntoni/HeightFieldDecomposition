@@ -53,7 +53,9 @@ namespace Engine {
 
     void createAndMinimizeAllBoxes(BoxList &solutions, const Dcel &d, double kernelDistance, bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0);
 
-    void createIrregularGrid(IrregularGrid &grid, const BoxList& solutions);
+    void compactSet(std::set<double> &set, double epsilon = 1e-6);
+
+    void createIrregularGrid(IrregularGrid &grid, const BoxList& solutions, double epsilon = 0.01);
 
     static HeightfieldsList dummyhe;
     void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, HeightfieldsList &entirePieces = dummyhe);

@@ -12,15 +12,18 @@
 #endif
 
 PickableDcel::PickableDcel(){
+    selection_color = QColor::fromRgb(244,196,48);
+    selection_width = 3;
 }
 
 PickableDcel::PickableDcel(const Dcel& d) : DrawableDcel(d) {
+    selection_color = QColor::fromRgb(244,196,48);
+    selection_width = 3;
 }
 
-/********************************Andreas*********************************/
 /**
  * \~Italian
- * @brief DrawableDcel::drawWithNames Metodo che si occupa di disegnare le facce assegnando a esse un identificativo
+ * @brief PickableDcel::drawWithNames Metodo che si occupa di disegnare le facce assegnando a esse un identificativo
  * riconoscibile nella postSelection (classe glCanvas) in modo da poterne effettuare il picking.
  */
 void PickableDcel::drawWithNames() const{
@@ -42,6 +45,35 @@ void PickableDcel::drawWithNames() const{
     glDisableClientState(GL_VERTEX_ARRAY);
 }
 
+/**
+ * \~Italian
+ * @brief PickableDcel::draw Metodo che si occupa di disegnare il contorno delle facce selezionate durante il picking (selezione multipla).
+ */
+void PickableDcel::draw() const{
+
+    DrawableDcel::draw();
+    foreach(Dcel::HalfEdge* he, selected_faces_contour){
+        glDisable(GL_LIGHTING);
+        glLineWidth(selection_width);
+        int r, g, b;
+        selection_color.getRgb(&r,&g,&b);
+        glColor3ub(r,g,b);
+        glBegin(GL_LINES);
+        Pointd p1 = he->getFromVertex()->getCoordinate();
+        Pointd p2 = he->getToVertex()->getCoordinate();
+        glVertex3d(p1.x(), p1.y(), p1.z());
+        glVertex3d(p2.x(), p2.y(), p2.z());
+        glEnd();
+    }
+}
+
+void PickableDcel::setSelectionColor(QColor color){
+    selection_color = color;
+}
+
+void PickableDcel::setSelectionWidth(int value){
+    selection_width = 2*value;
+}
 
 /**
  * \~Italian
@@ -76,4 +108,9 @@ std::vector<int> PickableDcel::obtainFaceTriangles(const Face* f) const{
 
     return face_triangles;
 }
+
+void PickableDcel::setSelectedFacesContour(std::vector<Dcel::HalfEdge*> selected_faces_contour){
+    this->selected_faces_contour = selected_faces_contour;
+}
+
 /************************************************************************/

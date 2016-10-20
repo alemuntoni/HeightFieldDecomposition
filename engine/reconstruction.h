@@ -9,6 +9,8 @@ namespace Reconstruction {
 
     void getAdjacents(Pointi &s1, Pointi &s2, Pointi &s3, Pointi &s4, const Pointi &base, const Vec3 &target);
 
+    bool isBounded(const Pointi &box, const IrregularGrid& g);
+
     Pointi getBase(const IrregularGrid &g, const Pointi &startingBox, const Vec3 &target);
 
     void growTarget(std::set<Pointi>& conqueredBoxes, const IrregularGrid &g, const Pointi &startingBox, const Vec3 &target);
