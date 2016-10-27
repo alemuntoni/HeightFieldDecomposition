@@ -3,6 +3,7 @@
 
 #include "lib/grid/irregulargrid.h"
 #include "igl/iglmesh.h"
+#include "heightfieldslist.h"
 
 namespace Reconstruction {
     Pointi getGrowthStep(const Vec3& target);
@@ -25,6 +26,7 @@ namespace Reconstruction {
 
     std::vector<IGLInterface::IGLMesh> getPieces(IrregularGrid &g, std::vector<Vec3>& targets);
 
+    void booleanOperations(HeightfieldsList &heightfields, IGLInterface::SimpleIGLMesh &baseComplex, HeightfieldsList &polycubes);
 }
 
 #endif // RECONSTRUCTION_H

@@ -1295,7 +1295,7 @@
              <x>10</x>
              <y>10</y>
              <width>361</width>
-             <height>151</height>
+             <height>281</height>
             </rect>
            </property>
            <property name="frameShape">
@@ -1316,6 +1316,23 @@
              <widget class="QPushButton" name="createPieces">
               <property name="text">
                <string>Create Pieces</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QSlider" name="recBoxesSlider">
+              <property name="maximum">
+               <number>0</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QPushButton" name="intersectionsPushButton">
+              <property name="text">
+               <string>Intersections</string>
               </property>
              </widget>
             </item>

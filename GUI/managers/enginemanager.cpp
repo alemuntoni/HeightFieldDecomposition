@@ -18,7 +18,10 @@ EngineManager::EngineManager(QWidget *parent) :
     baseComplex(nullptr),
     he(nullptr),
     entirePieces(nullptr),
-    irregularGrid(nullptr) {
+    recBoxes(nullptr),
+    irregularGrid(nullptr),
+    newPieces(nullptr),
+    newBaseComplex(nullptr){
     ui->setupUi(this);
     ui->iterationsSlider->setMaximum(0);
 
@@ -45,6 +48,9 @@ EngineManager::~EngineManager() {
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
     deleteDrawableObject(entirePieces);
+    deleteDrawableObject(recBoxes);
+    deleteDrawableObject(newPieces);
+    deleteDrawableObject(newBaseComplex);
 }
 
 void EngineManager::updateLabel(double value, QLabel* label) {
@@ -1167,9 +1173,9 @@ void EngineManager::on_cleanAllPushButton_clicked() {
 }
 
 void EngineManager::on_createIrregularGridButton_clicked() {
-    if (solutions!=nullptr){
+    if (solutions != nullptr && d != nullptr) {
         irregularGrid = new DrawableIrregularGrid();
-        Engine::createIrregularGrid(*irregularGrid, *solutions);
+        Engine::createIrregularGrid(*irregularGrid, *solutions, *d);
         mainWindow->pushObj(irregularGrid, "Irregular Grid", false);
         mainWindow->updateGlCanvas();
 
@@ -1192,12 +1198,46 @@ void EngineManager::on_createIrregularGridButton_clicked() {
 void EngineManager::on_createPieces_clicked() {
     std::vector<Vec3> targets;
     std::vector<IGLInterface::IGLMesh> pieces = Reconstruction::getPieces(*irregularGrid, targets);
-    deleteDrawableObject(entirePieces);
-    entirePieces = new HeightfieldsList();
+    deleteDrawableObject(recBoxes);
+    recBoxes = new HeightfieldsList();
     for (unsigned int i = 0; i < pieces.size(); i++){
-        entirePieces->addHeightfield(IGLInterface::DrawableIGLMesh(pieces[i]), targets[i]);
+        recBoxes->addHeightfield(IGLInterface::DrawableIGLMesh(pieces[i]), targets[i]);
     }
-    entirePieces->setVisibleHeightfield(0);
-    mainWindow->pushObj(entirePieces, "Pieces");
+    recBoxes->setVisibleHeightfield(0);
+    std::cerr << recBoxes->getNumHeightfields() << "\n";
+    mainWindow->pushObj(recBoxes, "Boxes");
     mainWindow->updateGlCanvas();
+    ui->recBoxesSlider->setMaximum(recBoxes->getNumHeightfields()-1);
+    ui->recBoxesSlider->setValue(0);
+}
+
+void EngineManager::on_recBoxesSlider_valueChanged(int value) {
+    if (recBoxes != nullptr) {
+        recBoxes->setVisibleHeightfield(value);
+        if (newPieces != nullptr)
+            newPieces->setVisibleHeightfield(value);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_intersectionsPushButton_clicked() {
+    if (recBoxes != nullptr && d != nullptr) {
+        deleteDrawableObject(newBaseComplex);
+        IGLInterface::IGLMesh m = (Dcel)*d;
+        newBaseComplex = new IGLInterface::DrawableIGLMesh(m);
+        mainWindow->pushObj(newBaseComplex, "New Base Complex");
+
+        newPieces = new HeightfieldsList();
+
+        Reconstruction::booleanOperations(*newPieces, *newBaseComplex, *recBoxes);
+
+        mainWindow->pushObj(newPieces, "New Heightfields");
+
+        recBoxes->setVisibleHeightfield(0);
+        newPieces->setVisibleHeightfield(0);
+        ui->recBoxesSlider->setMaximum(recBoxes->getNumHeightfields()-1);
+        ui->recBoxesSlider->setValue(0);
+
+        mainWindow->updateGlCanvas();
+    }
 }

@@ -155,6 +155,10 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_createPieces_clicked();
 
+        void on_recBoxesSlider_valueChanged(int value);
+
+        void on_intersectionsPushButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
@@ -167,7 +171,10 @@ class EngineManager : public QFrame, public SerializableObject {
         Energy e;
         HeightfieldsList *he;
         HeightfieldsList* entirePieces;
+        HeightfieldsList* recBoxes;
         DrawableIrregularGrid* irregularGrid;
+        HeightfieldsList* newPieces;
+        IGLInterface::DrawableIGLMesh* newBaseComplex;
 };
 
 #endif // ENGINEMANAGER_H

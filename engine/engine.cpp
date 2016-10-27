@@ -454,7 +454,8 @@ void Engine::compactSet(std::set<double>& set, double epsilon) {
     }
 }
 
-void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions, double epsilon) {
+void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions, const Dcel &d, double epsilon) {
+    //CGALInterface::AABBTree aabb(d);
     std::set<double> xCoord, yCoord, zCoord;
     for (unsigned int i = 0; i < solutions.getNumberBoxes(); ++i){
         Box3D b = solutions.getBox(i);
@@ -492,8 +493,12 @@ void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions, 
                 for (unsigned int k = 0; k < zCoord.size()-1; k++) {
                     Pointd min = grid.getPoint(i,j,k);
                     Pointd max = grid.getPoint(i+1, j+1, k+1);
-                    if (b.isEpsilonIntern(min, epsilon) && b.isEpsilonIntern(max, epsilon))
-                        grid.addPossibleTarget(i,j,k, b.getTarget());
+                    if (b.isEpsilonIntern(min, epsilon) && b.isEpsilonIntern(max, epsilon)){
+                        //int n = aabb.getNumberIntersectedPrimitives(BoundingBox(min, max));
+                        //if (n > 0) {
+                            grid.addPossibleTarget(i,j,k, b.getTarget());
+                        //}
+                    }
                 }
             }
         }

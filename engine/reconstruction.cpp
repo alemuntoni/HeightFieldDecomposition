@@ -1,6 +1,7 @@
 #include "reconstruction.h"
 
 #include "common.h"
+#include "common/timer.h"
 
 Pointi Reconstruction::getGrowthStep(const Vec3& target) {
     Pointi step;
@@ -177,7 +178,7 @@ IGLInterface::IGLMesh Reconstruction::getSurfaceOfPiece(const std::set<Pointi>& 
             }
             quads.push_back(quad);
         }
-        if (boxes.find(Pointi(box.x(), box.y(), box.z())+1) == boxes.end()) {
+        if (boxes.find(Pointi(box.x(), box.y(), box.z()+1)) == boxes.end()) {
             std::array<Pointd, 4> quad;
             quad[0] = g.getPoint(box.x()  , box.y()  , box.z()+1);
             quad[1] = g.getPoint(box.x()+1, box.y()  , box.z()+1);
@@ -213,9 +214,6 @@ std::vector<IGLInterface::IGLMesh> Reconstruction::getPieces(IrregularGrid& g, s
     for (unsigned int i = 0; i < g.getResolutionX()-1; i++) {
         for (unsigned int j = 0; j < g.getResolutionY()-1; j++) {
             for (unsigned int k = 0; k < g.getResolutionZ()-1; k++) {
-//    for (int i = g.getResolutionX()-2; i >= 0; i--) {
-//        for (int j = 0; j < g.getResolutionY()-1; j++) {
-//            for (int k = 0; k < g.getResolutionZ()-1; k++) {
                 if (g.getNumberPossibleTargets(i,j,k) > 0) {
                     std::vector<Vec3> possibleTargets = g.getPossibleTargets(i,j,k);
                     std::vector<std::set<Pointi> > pieces(possibleTargets.size());
@@ -245,4 +243,25 @@ std::vector<IGLInterface::IGLMesh> Reconstruction::getPieces(IrregularGrid& g, s
         }
     }
     return meshes;
+}
+
+
+void Reconstruction::booleanOperations(HeightfieldsList &heightfields, IGLInterface::SimpleIGLMesh &baseComplex, HeightfieldsList &polycubes) {
+    Timer timer("Boolean Operations");
+
+    for (unsigned int i = 0; i < polycubes.getNumHeightfields(); i++){
+        IGLInterface::SimpleIGLMesh intersection;
+        IGLInterface::SimpleIGLMesh polycube = polycubes.getHeightfield(i);
+        IGLInterface::SimpleIGLMesh::intersection(intersection, baseComplex, polycube);
+        if (intersection.getNumberVertices() > 0) {
+            IGLInterface::SimpleIGLMesh::difference(baseComplex, baseComplex, polycube);
+            heightfields.addHeightfield(intersection, polycubes.getTarget(i));
+        }
+        else {
+            polycubes.removeHeightfield(i);
+            i--;
+        }
+    }
+
+    timer.stopAndPrint();
 }

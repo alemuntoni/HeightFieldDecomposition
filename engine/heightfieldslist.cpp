@@ -53,6 +53,11 @@ Pointd HeightfieldsList::getVertexOfHeightfield(int he, int v) const {
     return heightfields[he].getVertex(v);
 }
 
+Vec3 HeightfieldsList::getTarget(int i) const {
+    assert(i < (int)heightfields.size());
+    return targets[i];
+}
+
 void HeightfieldsList::setWireframe(bool b) {
     for (unsigned int i = 0; i < heightfields.size(); ++i){
         heightfields[i].setWireframe(b);

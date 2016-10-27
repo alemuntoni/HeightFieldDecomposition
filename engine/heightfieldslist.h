@@ -17,6 +17,7 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         void resize(int n);
         unsigned int getNumberVerticesHeightfield(int i) const;
         Pointd getVertexOfHeightfield(int he, int v) const;
+        Vec3 getTarget(int i) const;
         void setWireframe(bool b);
         void setPointShading();
         void setFlatShading();
