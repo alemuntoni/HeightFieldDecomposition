@@ -80,7 +80,6 @@ ALL {
         engine/engine.cpp \
         engine/heightfieldslist.cpp \
         lib/grid/drawableirregulargrid.cpp \
-        lib/grid/irregulargrid.cpp \
         engine/reconstruction.cpp
 
 
@@ -92,6 +91,5 @@ ALL {
 }
 
 message(Included modules: $$MODULES)
-
 
 

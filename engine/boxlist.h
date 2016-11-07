@@ -8,7 +8,7 @@ class BoxList : public DrawableObject, public SerializableObject{
         BoxList();
         BoxList(bool cylinders);
 
-        void addBox(const Box3D &b);
+        void addBox(const Box3D &b, int i = -1);
 
         void clearBoxes();
         unsigned int getNumberBoxes() const;

@@ -2,6 +2,87 @@
 
 #include "common.h"
 #include "common/timer.h"
+#include "cgal/aabbtree.h"
+
+void Reconstruction::compactSet(std::set<double>& set, double epsilon) {
+    std::set<double>::iterator it = set.begin();
+    std::set<double> toDelete;
+    double last = *it;
+    ++it;
+    double actual;
+    for (; it != set.end();++it){
+        actual = *it;
+        if (epsilonEqual(last, actual, epsilon)){
+            toDelete.insert(actual);
+        }
+        else {
+            last = actual;
+        }
+    }
+    for (double actual : toDelete){
+        set.erase(actual);
+    }
+}
+
+void Reconstruction::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions, const Dcel &d, double epsilon) {
+    CGALInterface::AABBTree aabb(d);
+    std::set<double> xCoord, yCoord, zCoord;
+    for (unsigned int i = 0; i < solutions.getNumberBoxes(); ++i){
+        Box3D b = solutions.getBox(i);
+        xCoord.insert(b.getMinX());
+        xCoord.insert(b.getMaxX());
+        yCoord.insert(b.getMinY());
+        yCoord.insert(b.getMaxY());
+        zCoord.insert(b.getMinZ());
+        zCoord.insert(b.getMaxZ());
+    }
+    // compacting
+    compactSet(xCoord, epsilon);
+    compactSet(yCoord, epsilon);
+    compactSet(zCoord, epsilon);
+
+
+    grid.reset(xCoord.size(), yCoord.size(), zCoord.size());
+    unsigned int i = 0, j = 0, k = 0;
+    for (double x : xCoord){
+        j = 0;
+        for (double y : yCoord) {
+            k = 0;
+            for (double z: zCoord) {
+                grid.addPoint(i,j,k, Pointd(x,y,z));
+                k++;
+            }
+            j++;
+        }
+        i++;
+    }
+    assert(aabb.isInside(Pointd(0,0,0)));
+    for (unsigned int sol = 0; sol < solutions.getNumberBoxes(); ++sol){
+        Box3D b = solutions.getBox(sol);
+        for (unsigned int i = 0; i < xCoord.size()-1; i++) {
+            for (unsigned int j = 0; j < yCoord.size()-1; j++) {
+                for (unsigned int k = 0; k < zCoord.size()-1; k++) {
+                    Pointd min = grid.getPoint(i,j,k);
+                    Pointd max = grid.getPoint(i+1, j+1, k+1);
+                    //se almeno un punto è interno alla shape in input
+                    Pointd p1 = grid.getPoint(i+1,j  ,k  );
+                    Pointd p2 = grid.getPoint(i  ,j+1,k  );
+                    Pointd p3 = grid.getPoint(i+1,j+1,k  );
+                    Pointd p4 = grid.getPoint(i  ,j  ,k+1);
+                    Pointd p5 = grid.getPoint(i+1,j  ,k+1);
+                    Pointd p6 = grid.getPoint(i  ,j+1,k+1);
+                    if (aabb.getNumberIntersectedPrimitives(BoundingBox(min,max)) > 0
+                            || aabb.isInside(min) || aabb.isInside(max) || aabb.isInside(p1)  || aabb.isInside(p2)
+                            || aabb.isInside(p3)  || aabb.isInside(p4)  || aabb.isInside(p5)  || aabb.isInside(p6)) {
+                        if (b.isEpsilonIntern(min, epsilon) && b.isEpsilonIntern(max, epsilon)){
+                            grid.addPossibleTarget(i,j,k, b.getTarget());
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 Pointi Reconstruction::getGrowthStep(const Vec3& target) {
     Pointi step;
@@ -100,6 +181,15 @@ void Reconstruction::setDefinitivePiece(IrregularGrid& g, const std::set<Pointi>
     for (Pointi box : piece){
         g.setDefinitiveTarget(box.x(), box.y(), box.z(), target);
     }
+}
+
+/// Brute Force
+std::set<Pointi> Reconstruction::findConnectedComponent(IrregularGrid& g, const Pointi& startingBox, const Vec3& target) {
+    assert(g.boxHasPossibleTarget(startingBox.x(), startingBox.y(), startingBox.z(), target));
+    assert(g.flag(startingBox.x(), startingBox.y(), startingBox.z()) == 0);
+    g.flag(startingBox.x(), startingBox.y(), startingBox.z()) = 1;
+
+
 }
 
 IGLInterface::IGLMesh Reconstruction::getSurfaceOfPiece(const std::set<Pointi>& boxes, const IrregularGrid& g) {
@@ -214,7 +304,7 @@ std::vector<IGLInterface::IGLMesh> Reconstruction::getPieces(IrregularGrid& g, s
     for (unsigned int i = 0; i < g.getResolutionX()-1; i++) {
         for (unsigned int j = 0; j < g.getResolutionY()-1; j++) {
             for (unsigned int k = 0; k < g.getResolutionZ()-1; k++) {
-                if (g.getNumberPossibleTargets(i,j,k) > 0) {
+                if (!(g.isDefinitiveTarget(i,j,k)) && g.getNumberPossibleTargets(i,j,k) > 0) {
                     std::vector<Vec3> possibleTargets = g.getPossibleTargets(i,j,k);
                     std::vector<std::set<Pointi> > pieces(possibleTargets.size());
                     double maxVol = -1;

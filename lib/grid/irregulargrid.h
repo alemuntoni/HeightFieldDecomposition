@@ -24,6 +24,8 @@ class IrregularGrid {
         bool boxHasPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& target) const;
         bool isDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k) const;
         void setDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& definitveTarget);
+        int& flag(unsigned int i, unsigned int j, unsigned int k);
+        int getFlag(unsigned int i, unsigned int j, unsigned int k) const;
 
     protected:
         unsigned int resX, resY, resZ;
@@ -31,7 +33,21 @@ class IrregularGrid {
         std::map<double, unsigned int> mapX, mapY, mapZ;
         Array3D<std::set<Vec3> > possibleTargets;
         Array3D<Vec3> definitiveTargets;
+        Array3D<int> flags;
 };
+
+inline IrregularGrid::IrregularGrid(){
+}
+
+inline IrregularGrid::IrregularGrid(unsigned int resX, unsigned int resY, unsigned int resZ): resX(resX), resY(resY), resZ(resZ) {
+    mapX.clear();
+    mapY.clear();
+    mapZ.clear();
+    points.resize(resX, resY, resZ);
+    possibleTargets.resize(resX-1, resY-1, resZ-1);
+    definitiveTargets.resize(resX-1, resY-1, resZ-1, Vec3());
+    flags.resize(resX-1, resY-1, resZ-1, 0);
+}
 
 inline void IrregularGrid::addPoint(unsigned int i, unsigned int j, unsigned int k, const Pointd& p) {
     assert(i < resX);
@@ -65,6 +81,7 @@ inline void IrregularGrid::reset(unsigned int resX, unsigned int resY, unsigned 
     points.resize(resX, resY, resZ);
     possibleTargets.resize(resX-1, resY-1, resZ-1);
     definitiveTargets.resize(resX-1, resY-1, resZ-1, Vec3());
+    flags.resize(resX-1, resY-1, resZ-1, 0);
     this->resX = resX;
     this->resY = resY;
     this->resZ = resZ;
@@ -134,7 +151,7 @@ inline bool IrregularGrid::isDefinitiveTarget(unsigned int i, unsigned int j, un
     assert(j < resY-1);
     assert(k < resZ-1);
 
-    return possibleTargets(i,j,k).size() == 0 || definitiveTargets(i,j,k) != Vec3();
+    return definitiveTargets(i,j,k) != Vec3();
 }
 
 inline void IrregularGrid::setDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3 &definitveTarget) {
@@ -142,8 +159,22 @@ inline void IrregularGrid::setDefinitiveTarget(unsigned int i, unsigned int j, u
     assert(j < resY-1);
     assert(k < resZ-1);
 
-    possibleTargets(i,j,k).clear();
+    //possibleTargets(i,j,k).clear();
     definitiveTargets(i,j,k) = definitveTarget;
+}
+
+inline int& IrregularGrid::flag(unsigned int i, unsigned int j, unsigned int k) {
+    assert(i < resX-1);
+    assert(j < resY-1);
+    assert(k < resZ-1);
+    return flags(i,j,k);
+}
+
+inline int IrregularGrid::getFlag(unsigned int i, unsigned int j, unsigned int k) const{
+    assert(i < resX-1);
+    assert(j < resY-1);
+    assert(k < resZ-1);
+    return flags(i,j,k);
 }
 
 

@@ -1017,6 +1017,11 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         d->update();
         d->setPointsShading();
         d->setWireframe(true);
+        ///
+        //Box3D bb = solutions->getBox(5);
+        //solutions->removeBox(5);
+        //solutions->addBox(bb,0);
+        ///
         mainWindow->pushObj(d, "Input Mesh");
         mainWindow->pushObj(solutions, "Boxes");
         mainWindow->pushObj(baseComplex, "Base Complex");
@@ -1175,7 +1180,7 @@ void EngineManager::on_cleanAllPushButton_clicked() {
 void EngineManager::on_createIrregularGridButton_clicked() {
     if (solutions != nullptr && d != nullptr) {
         irregularGrid = new DrawableIrregularGrid();
-        Engine::createIrregularGrid(*irregularGrid, *solutions, *d);
+        Reconstruction::createIrregularGrid(*irregularGrid, *solutions, *d);
         mainWindow->pushObj(irregularGrid, "Irregular Grid", false);
         mainWindow->updateGlCanvas();
 
@@ -1196,19 +1201,21 @@ void EngineManager::on_createIrregularGridButton_clicked() {
 }
 
 void EngineManager::on_createPieces_clicked() {
-    std::vector<Vec3> targets;
-    std::vector<IGLInterface::IGLMesh> pieces = Reconstruction::getPieces(*irregularGrid, targets);
-    deleteDrawableObject(recBoxes);
-    recBoxes = new HeightfieldsList();
-    for (unsigned int i = 0; i < pieces.size(); i++){
-        recBoxes->addHeightfield(IGLInterface::DrawableIGLMesh(pieces[i]), targets[i]);
+    if (irregularGrid != nullptr) {
+        std::vector<Vec3> targets;
+        std::vector<IGLInterface::IGLMesh> pieces = Reconstruction::getPieces(*irregularGrid, targets);
+        deleteDrawableObject(recBoxes);
+        recBoxes = new HeightfieldsList();
+        for (unsigned int i = 0; i < pieces.size(); i++){
+            recBoxes->addHeightfield(IGLInterface::DrawableIGLMesh(pieces[i]), targets[i]);
+        }
+        recBoxes->setVisibleHeightfield(0);
+        std::cerr << recBoxes->getNumHeightfields() << "\n";
+        mainWindow->pushObj(recBoxes, "Boxes");
+        mainWindow->updateGlCanvas();
+        ui->recBoxesSlider->setMaximum(recBoxes->getNumHeightfields()-1);
+        ui->recBoxesSlider->setValue(0);
     }
-    recBoxes->setVisibleHeightfield(0);
-    std::cerr << recBoxes->getNumHeightfields() << "\n";
-    mainWindow->pushObj(recBoxes, "Boxes");
-    mainWindow->updateGlCanvas();
-    ui->recBoxesSlider->setMaximum(recBoxes->getNumHeightfields()-1);
-    ui->recBoxesSlider->setValue(0);
 }
 
 void EngineManager::on_recBoxesSlider_valueChanged(int value) {

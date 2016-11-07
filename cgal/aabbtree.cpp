@@ -1,9 +1,10 @@
 #include "aabbtree.h"
 
 CGALInterface::AABBTree::AABBTree() {
+    e2 = std::mt19937(rd());
 }
 
-CGALInterface::AABBTree::AABBTree(const CGALInterface::AABBTree& other) : forDistanceQueries(other.forDistanceQueries), triangles(other.triangles) {
+CGALInterface::AABBTree::AABBTree(const CGALInterface::AABBTree& other) : forDistanceQueries(other.forDistanceQueries), triangles(other.triangles), bb(other.bb) {
     #ifdef DCEL_DEFINED
     mapDcelVerticesToCgalPoints = other.mapDcelVerticesToCgalPoints;
     mapCgalTrianglesToDcelFaces = other.mapCgalTrianglesToDcelFaces;
@@ -16,6 +17,7 @@ CGALInterface::AABBTree::AABBTree(const CGALInterface::AABBTree& other) : forDis
 
     if (forDistanceQueries)
         tree.accelerate_distance_queries();
+    e2 = std::mt19937(rd());
 }
 
 #ifdef TRIMESH_DEFINED
@@ -38,6 +40,9 @@ CGALInterface::AABBTree::AABBTree(const Trimesh<double>& t, bool forDistanceQuer
 
     if (forDistanceQueries)
         tree.accelerate_distance_queries();
+
+    bb  = t.getBoundingBox();
+    e2 = std::mt19937(rd());
 }
 #endif
 
@@ -62,6 +67,9 @@ CGALInterface::AABBTree::AABBTree(const Dcel& d, bool forDistanceQueries) : forD
 
     if (forDistanceQueries)
         tree.accelerate_distance_queries();
+
+    bb = d.getBoundingBox();
+    e2 = std::mt19937(rd());
 }
 #endif
 
@@ -77,6 +85,8 @@ CGALInterface::AABBTree&CGALInterface::AABBTree::operator=(const CGALInterface::
 
     if (forDistanceQueries)
         tree.accelerate_distance_queries();
+
+    bb = other.bb;
     return *this;
 }
 
@@ -101,6 +111,59 @@ Pointd CGALInterface::AABBTree::getNearestPoint(const Pointd& p) {
     CGALPoint query(p.x(), p.y(), p.z());
     CGALPoint closest = tree.closest_point(query);
     return Pointd(closest.x(), closest.y(), closest.z());
+}
+
+bool CGALInterface::AABBTree::isInside(const Pointd& p, int numberOfChecks) {
+    assert(numberOfChecks % 2 == 1);
+    int inside = 0, outside = 0;
+    std::uniform_real_distribution<> dist(0, 6);
+    std::uniform_real_distribution<> distx(bb.getMinX(), bb.getMaxX());
+    std::uniform_real_distribution<> disty(bb.getMinY(), bb.getMaxY());
+    std::uniform_real_distribution<> distz(bb.getMinZ(), bb.getMaxZ());
+    for (int i = 0; i < numberOfChecks; i++) {
+        Pointd boundingPoint;
+        double n1, n2;
+        int side = std::floor(dist(e2));
+        switch(side % 3){
+            case 0: // x
+                n1 = disty(e2);
+                n2 = distz(e2);
+                boundingPoint.setY(n1);
+                boundingPoint.setZ(n2);
+                if (side == 0)
+                    boundingPoint.setX(bb.getMinX());
+                else
+                    boundingPoint.setX(bb.getMaxX());
+                break;
+            case 1: // y
+                n1 = distx(e2);
+                n2 = distz(e2);
+                boundingPoint.setX(n1);
+                boundingPoint.setZ(n2);
+                if (side == 1)
+                    boundingPoint.setY(bb.getMinY());
+                else
+                    boundingPoint.setY(bb.getMaxY());
+                break;
+            case 2: // z
+                n1 = distx(e2);
+                n2 = disty(e2);
+                boundingPoint.setX(n1);
+                boundingPoint.setY(n2);
+                if (side == 2)
+                    boundingPoint.setZ(bb.getMinZ());
+                else
+                    boundingPoint.setZ(bb.getMaxZ());
+                break;
+        }
+
+        int numberIntersected = getNumberIntersectedPrimitives(p, boundingPoint);
+        if (numberIntersected % 2 == 1)
+            inside++;
+        else
+            outside++;
+    }
+    return inside > outside;
 }
 
 #ifdef DCEL_DEFINED

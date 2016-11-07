@@ -434,78 +434,6 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
     }
 }
 
-void Engine::compactSet(std::set<double>& set, double epsilon) {
-    std::set<double>::iterator it = set.begin();
-    std::set<double> toDelete;
-    double last = *it;
-    ++it;
-    double actual;
-    for (; it != set.end();++it){
-        actual = *it;
-        if (epsilonEqual(last, actual, epsilon)){
-            toDelete.insert(actual);
-        }
-        else {
-            last = actual;
-        }
-    }
-    for (double actual : toDelete){
-        set.erase(actual);
-    }
-}
-
-void Engine::createIrregularGrid(IrregularGrid& grid, const BoxList& solutions, const Dcel &d, double epsilon) {
-    //CGALInterface::AABBTree aabb(d);
-    std::set<double> xCoord, yCoord, zCoord;
-    for (unsigned int i = 0; i < solutions.getNumberBoxes(); ++i){
-        Box3D b = solutions.getBox(i);
-        xCoord.insert(b.getMinX());
-        xCoord.insert(b.getMaxX());
-        yCoord.insert(b.getMinY());
-        yCoord.insert(b.getMaxY());
-        zCoord.insert(b.getMinZ());
-        zCoord.insert(b.getMaxZ());
-    }
-    // compacting
-    compactSet(xCoord, epsilon);
-    compactSet(yCoord, epsilon);
-    compactSet(zCoord, epsilon);
-
-
-    grid.reset(xCoord.size(), yCoord.size(), zCoord.size());
-    unsigned int i = 0, j = 0, k = 0;
-    for (double x : xCoord){
-        j = 0;
-        for (double y : yCoord) {
-            k = 0;
-            for (double z: zCoord) {
-                grid.addPoint(i,j,k, Pointd(x,y,z));
-                k++;
-            }
-            j++;
-        }
-        i++;
-    }
-    for (unsigned int sol = 0; sol < solutions.getNumberBoxes(); ++sol){
-        Box3D b = solutions.getBox(sol);
-        for (unsigned int i = 0; i < xCoord.size()-1; i++) {
-            for (unsigned int j = 0; j < yCoord.size()-1; j++) {
-                for (unsigned int k = 0; k < zCoord.size()-1; k++) {
-                    Pointd min = grid.getPoint(i,j,k);
-                    Pointd max = grid.getPoint(i+1, j+1, k+1);
-                    if (b.isEpsilonIntern(min, epsilon) && b.isEpsilonIntern(max, epsilon)){
-                        //int n = aabb.getNumberIntersectedPrimitives(BoundingBox(min, max));
-                        //if (n > 0) {
-                            grid.addPossibleTarget(i,j,k, b.getTarget());
-                        //}
-                    }
-                }
-            }
-        }
-    }
-    std::cout << "end\n";
-}
-
 void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, HeightfieldsList& entirePieces) {
     double average = 0;
     for (const Dcel::HalfEdge* he : inputMesh.halfEdgeIterator())
@@ -530,7 +458,7 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
         std::cerr << i << "\n";
     }
     timer.stopAndPrint();
-    for (int i = he.getNumHeightfields()-1; i >= 0 ; i--){
+    for (int i = he.getNumHeightfields()-1; i >= 0 ; i--) {
         if (he.getNumberVerticesHeightfield(i) == 0){
             he.removeHeightfield(i);
             entirePieces.removeHeightfield(i);

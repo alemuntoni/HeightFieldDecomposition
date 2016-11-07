@@ -7,8 +7,12 @@ BoxList::BoxList() : visible(true), visibleBox(-1), cylinder(true){
 BoxList::BoxList(bool cylinders) : visible(true), visibleBox(-1), cylinder(cylinders){
 }
 
-void BoxList::addBox(const Box3D& b) {
-    boxes.push_back(b);
+void BoxList::addBox(const Box3D& b, int i) {
+    if (i == -1)
+        boxes.push_back(b);
+    else {
+        boxes.insert(boxes.begin()+i, b);
+    }
 }
 
 void BoxList::clearBoxes() {

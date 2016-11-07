@@ -37,6 +37,7 @@ namespace CGALInterface {
             int getNumberIntersectedPrimitives(const BoundingBox& b);
             double getSquaredDistance(const Pointd &p);
             Pointd getNearestPoint(const Pointd &p);
+            bool isInside(const Pointd &p, int numberOfChecks = 7);
             #ifdef DCEL_DEFINED
             void getIntersectedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b);
             void getCompletelyContainedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b);
@@ -76,6 +77,10 @@ namespace CGALInterface {
             std::map<CGALTriangle, int, cmpCGALTriangle> mapCgalTrianglesToTrimeshTriangles;
             #endif
             std::list<CGALTriangle> triangles;
+            BoundingBox bb;
+
+            std::random_device rd;
+            std::mt19937 e2;
     };
 
 }
