@@ -1038,7 +1038,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
         ui->setFromSolutionSpinBox->setValue(0);
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
         //Engine::gluePortionsToBaseComplex(*he, *baseComplex, *solutions, *d);
-        IGLInterface::IGLMesh m(*d);
+        /*IGLInterface::IGLMesh m(*d);
         m.saveOnObj("results/input_model.obj");
         baseComplex->saveOnObj("results/base_complex.obj");
         for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
@@ -1047,7 +1047,8 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
             std::stringstream ss;
             ss << "results/heightfield" << i << ".obj";
             h.saveOnObj(ss.str());
-        }
+        }*/
+        Reconstruction::getOrdering(*solutions, *d);
     }
 }
 
@@ -1188,15 +1189,18 @@ void EngineManager::on_createIrregularGridButton_clicked() {
         for (unsigned int i = 0; i < irregularGrid->getResolutionX()-1; i++){
             for (unsigned int j = 0; j < irregularGrid->getResolutionY()-1; j++){
                 for (unsigned int k = 0; k < irregularGrid->getResolutionZ()-1; k++){
-                    if (irregularGrid->getNumberPossibleTargets(i,j,k) == 1 || irregularGrid->getNumberPossibleTargets(i,j,k) == 0)
+                    if (irregularGrid->getNumberPossibleTargets(i,j,k) == 1)
                         count++;
-                    else
+                    else if (irregularGrid->getNumberPossibleTargets(i,j,k) >= 2)
                         othercount++;
                 }
             }
         }
-        std::cerr << count << "\n";
-        std::cerr << othercount << "\n";
+        std::cerr << "Res: " << irregularGrid->getResolutionX()-1  << "x" << irregularGrid->getResolutionY()-1  << "x" << irregularGrid->getResolutionZ()-1  << "\n";
+        std::cerr << "Indecisi: " << othercount << "\n";
+        std::cerr << "Totali Non vuote" << count + othercount << "\n";
+
+        Reconstruction::generateAllPossibleTargets(*irregularGrid);
     }
 }
 

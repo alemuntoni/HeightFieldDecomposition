@@ -2452,7 +2452,7 @@ void Dcel::copyFrom(const Dcel &d) {
         f->setNormal(of->getNormal());
         f->setArea(of->getArea());
         f->setOuterHalfEdge(mapHalfEdges[of->getOuterHalfEdge()]);
-        for (Dcel::Face::ConstInnerHalfEdgeIterator heit = f->innerHalfEdgeBegin(); heit != f->innerHalfEdgeEnd(); ++heit){
+        for (Dcel::Face::ConstInnerHalfEdgeIterator heit = of->innerHalfEdgeBegin(); heit != of->innerHalfEdgeEnd(); ++heit){
             f->addInnerHalfEdge(mapHalfEdges[*heit]);
         }
         mapFaces[of] = f;

@@ -33,15 +33,15 @@ namespace CGALInterface {
             #endif
             AABBTree& operator=(const AABBTree& other);
 
-            int getNumberIntersectedPrimitives(const Pointd& p1, const Pointd &p2);
-            int getNumberIntersectedPrimitives(const BoundingBox& b);
-            double getSquaredDistance(const Pointd &p);
-            Pointd getNearestPoint(const Pointd &p);
+            int getNumberIntersectedPrimitives(const Pointd& p1, const Pointd &p2) const;
+            int getNumberIntersectedPrimitives(const BoundingBox& b) const;
+            double getSquaredDistance(const Pointd &p) const;
+            Pointd getNearestPoint(const Pointd &p) const;
             bool isInside(const Pointd &p, int numberOfChecks = 7);
             #ifdef DCEL_DEFINED
-            void getIntersectedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b);
-            void getCompletelyContainedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b);
-            const Dcel::Face* getNearestDcelFace(const Pointd &p);
+            void getIntersectedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b) const;
+            void getCompletelyContainedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b) const;
+            const Dcel::Face* getNearestDcelFace(const Pointd &p) const;
             #endif
 
         protected:

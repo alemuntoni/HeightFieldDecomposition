@@ -182,13 +182,13 @@ inline bool Dcel::Vertex::ConstGenericIterator::operator !=(const ConstGenericIt
  * \~Italian
  * @brief Operatore di incremento prefisso dell'iteratore const.
  *
- * Esegue un'operazione di \c twin() e \c next() sull'half edge. Se l'half edge ottenuto è uguale
+ * Esegue un'operazione di \c prev() e \c twin() sull'half edge. Se l'half edge ottenuto è uguale
  * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
  *
  * @return L'iteratore appena incrementato
  */
 inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::operator ++ () {
-    pos = pos->getTwin()->getNext();
+    pos = pos->getPrev()->getTwin();
     if (pos == end) pos = nullptr;
     return *this;
 }
@@ -197,14 +197,14 @@ inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::op
  * \~Italian
  * @brief Operatore di incremento postfisso dell'iteratore const.
  *
- * Esegue un'operazione di \c twin() e \c next() sull'half edge. Se l'half edge ottenuto è uguale
+ * Esegue un'operazione di \c prev() e \c twin() sull'half edge. Se l'half edge ottenuto è uguale
  * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
  *
  * @return L'iteratore prima di essere incrementato
  */
 inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::operator ++ (int) {
     ConstGenericIterator old_value = *this;
-    pos = pos->getTwin()->getNext();
+    pos = pos->getPrev()->getTwin();
     if (pos == end) pos = nullptr;
     return old_value;
 }
@@ -213,14 +213,18 @@ inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::op
  * \~Italian
  * @brief Operatore di decremento prefisso dell'iteratore const.
  *
- * Esegue un'operazione di \c prev() e \c twin() sull'half edge. Se l'half edge ottenuto è uguale
+ * Esegue un'operazione di \c twin() e \c next() sull'half edge. Se l'half edge ottenuto è uguale
  * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
  *
  * @return L'iteratore appena decrementato
  */
 inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::operator -- () {
-    pos = pos->getPrev()->getTwin();
-    if (pos == end) pos = nullptr;
+    if (pos->getTwin() == nullptr)
+        pos = nullptr;
+    else {
+        pos = pos->getTwin()->getNext();
+        if (pos == end) pos = nullptr;
+    }
     return *this;
 }
 
@@ -228,15 +232,19 @@ inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::op
  * \~Italian
  * @brief Operatore di decremento postfisso dell'iteratore const.
  *
- * Esegue un'operazione di \c prev() e \c twin() sull'half edge. Se l'half edge ottenuto è uguale
+ * Esegue un'operazione di \c twin() e \c next() sull'half edge. Se l'half edge ottenuto è uguale
  * all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
  *
  * @return L'iteratore prima di essere decrementato
  */
 inline Dcel::Vertex::ConstGenericIterator Dcel::Vertex::ConstGenericIterator::operator -- (int) {
     ConstGenericIterator old_value = *this;
-    pos = pos->getPrev()->getTwin();
-    if (pos == end) pos = nullptr;
+    if (pos->getTwin() == nullptr)
+        pos = nullptr;
+    else {
+        pos = pos->getTwin()->getNext();
+        if (pos == end) pos = nullptr;
+    }
     return old_value;
 }
 
@@ -589,15 +597,15 @@ inline Dcel::HalfEdge* Dcel::Vertex::IncidentHalfEdgeIterator::operator * () con
  * \~Italian
  * @brief Operatore di incremento prefisso dell'IncidentHalfEdgeIterator.
  *
- * Esegue un'operazione di \c twin() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c next() se l'half edge attuale è entrante sul vertice. Se l'half edge
+ * Esegue un'operazione di \c prev() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
+ * mentre esegue un'operazione di \c twin() se l'half edge attuale è entrante sul vertice. Se l'half edge
  * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
  *
  * @return L'iteratore appena incrementato
  */
 inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIterator::operator ++ () {
-    if (pos->getFromVertex() == v) pos = pos->getTwin();
-    else pos = pos->getNext();
+    if (pos->getFromVertex() == v) pos = pos->getPrev();
+    else pos = pos->getTwin();
     if (pos == end) pos = nullptr;
     return *this;
 }
@@ -606,16 +614,16 @@ inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIter
  * \~Italian
  * @brief Operatore di incremento postfisso dell'IncidentHalfEdgeIterator.
  *
- * Esegue un'operazione di \c twin() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c next() se l'half edge attuale è entrante sul vertice. Se l'half edge
+ * Esegue un'operazione di \c prev() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
+ * mentre esegue un'operazione di \c twin() se l'half edge attuale è entrante sul vertice. Se l'half edge
  * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
  *
  * @return L'iteratore prima di essere incrementato
  */
 inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIterator::operator ++ (int) {
     IncidentHalfEdgeIterator old_value = *this;
-    if (pos->getFromVertex() == v) pos = pos->getTwin();
-    else pos = pos->getNext();
+    if (pos->getFromVertex() == v) pos = pos->getPrev();
+    else pos = pos->getTwin();
     if (pos == end) pos = nullptr;
     return old_value;
 }
@@ -624,15 +632,15 @@ inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIter
  * \~Italian
  * @brief Operatore di decremento prefisso dell'IncidentHalfEdgeIterator.
  *
- * Esegue un'operazione di \c prev() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c twin() se l'half edge attuale è entrante sul vertice. Se l'half edge
+ * Esegue un'operazione di \c twin() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
+ * mentre esegue un'operazione di \c next() se l'half edge attuale è entrante sul vertice. Se l'half edge
  * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
  *
  * @return L'iteratore appena decrementato
  */
 inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIterator::operator -- () {
-    if (pos->getFromVertex() == v) pos = pos->getPrev();
-    else pos = pos->getTwin();
+    if (pos->getFromVertex() == v) pos = pos->getTwin();
+    else pos = pos->getNext();
     if (pos == end) pos = nullptr;
     return *this;
 }
@@ -641,16 +649,16 @@ inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIter
  * \~Italian
  * @brief Operatore di decremento postfisso dell'IncidentHalfEdgeIterator.
  *
- * Esegue un'operazione di \c prev() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
- * mentre esegue un'operazione di \c twin() se l'half edge attuale è entrante sul vertice. Se l'half edge
+ * Esegue un'operazione di \c twin() se l'half edge attuale è uscente dal vertice su cui cicla l'iteratore,
+ * mentre esegue un'operazione di \c next() se l'half edge attuale è entrante sul vertice. Se l'half edge
  * ottenuto è uguale all'half edge end, allora l'iteratore diventa uguale all'iteratore \c end().
  *
  * @return L'iteratore prima di essere decrementato
  */
 inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::IncidentHalfEdgeIterator::operator -- (int) {
     IncidentHalfEdgeIterator old_value = *this;
-    if (pos->getFromVertex() == v) pos = pos->getPrev();
-    else pos = pos->getTwin();
+    if (pos->getFromVertex() == v) pos = pos->getTwin();
+    else pos = pos->getNext();
     if (pos == end) pos = nullptr;
     return old_value;
 }

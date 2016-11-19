@@ -2,7 +2,6 @@
 
 #include "common.h"
 #include "common/timer.h"
-#include "cgal/aabbtree.h"
 
 void Reconstruction::compactSet(std::set<double>& set, double epsilon) {
     std::set<double>::iterator it = set.begin();
@@ -10,7 +9,7 @@ void Reconstruction::compactSet(std::set<double>& set, double epsilon) {
     double last = *it;
     ++it;
     double actual;
-    for (; it != set.end();++it){
+    for (; it != set.end(); ++it) {
         actual = *it;
         if (epsilonEqual(last, actual, epsilon)){
             toDelete.insert(actual);
@@ -56,8 +55,9 @@ void Reconstruction::createIrregularGrid(IrregularGrid& grid, const BoxList& sol
         }
         i++;
     }
-    assert(aabb.isInside(Pointd(0,0,0)));
-    for (unsigned int sol = 0; sol < solutions.getNumberBoxes(); ++sol){
+    int nBoxes = solutions.getNumberBoxes();
+    #pragma omp parallel for
+    for (int sol = 0; sol < nBoxes; ++sol){
         Box3D b = solutions.getBox(sol);
         for (unsigned int i = 0; i < xCoord.size()-1; i++) {
             for (unsigned int j = 0; j < yCoord.size()-1; j++) {
@@ -75,7 +75,10 @@ void Reconstruction::createIrregularGrid(IrregularGrid& grid, const BoxList& sol
                             || aabb.isInside(min) || aabb.isInside(max) || aabb.isInside(p1)  || aabb.isInside(p2)
                             || aabb.isInside(p3)  || aabb.isInside(p4)  || aabb.isInside(p5)  || aabb.isInside(p6)) {
                         if (b.isEpsilonIntern(min, epsilon) && b.isEpsilonIntern(max, epsilon)){
-                            grid.addPossibleTarget(i,j,k, b.getTarget());
+                            #pragma omp critical
+                            {
+                                grid.addPossibleTarget(i,j,k, b.getTarget());
+                            }
                         }
                     }
                 }
@@ -184,11 +187,52 @@ void Reconstruction::setDefinitivePiece(IrregularGrid& g, const std::set<Pointi>
 }
 
 /// Brute Force
-std::set<Pointi> Reconstruction::findConnectedComponent(IrregularGrid& g, const Pointi& startingBox, const Vec3& target) {
-    assert(g.boxHasPossibleTarget(startingBox.x(), startingBox.y(), startingBox.z(), target));
-    assert(g.flag(startingBox.x(), startingBox.y(), startingBox.z()) == 0);
-    g.flag(startingBox.x(), startingBox.y(), startingBox.z()) = 1;
+void Reconstruction::generateAllPossibleTargets(const IrregularGrid& g) {
+    std::vector<Pointi> subdivisions;
+    std::vector< std::vector<int> > possibleTargets;
+    for (unsigned int i = 0; i < g.getResolutionX()-1; i++){
+        for (unsigned int j = 0; j < g.getResolutionY()-1; j++){
+            for (unsigned int k = 0; k < g.getResolutionZ()-1; k++){
+                if (g.getNumberPossibleTargets(i,j,k) > 1){
+                    subdivisions.push_back(Pointi(i,j,k));
+                    std::vector<Vec3> tmpv = g.getPossibleTargets(i,j,k);
+                    std::vector<int> tmpi;
 
+                    for (Vec3 n: tmpv){
+                        bool fl = false;
+                        for (int l = 0; l < 6 && fl == false; l++){
+                            if (n == XYZ[l]) {
+                                tmpi.push_back(l);
+                                fl = true;
+                            }
+                        }
+                        assert(fl);
+                    }
+                    possibleTargets.push_back(tmpi);
+                }
+            }
+        }
+    }
+
+    long int numberPossibleCombinations = 1;
+    for (unsigned int i = 0; i < possibleTargets.size(); i++){
+        numberPossibleCombinations *= possibleTargets[i].size();
+    }
+    std::cerr << "Number possible Combinations: "<< numberPossibleCombinations << "\n";
+
+    /*std::vector< std::vector<int> > allPossibleCombinations(numberPossibleCombinations);
+    std::vector<int> indices(subdivisions.size(), 0);
+    int actualIndex = 0;
+    for (long int i = 0; i < numberPossibleCombinations; i++){
+        std::vector<int> actualCombination(subdivisions.size());
+        for (unsigned int j = 0; j < actualCombination.size(); j++){
+            actualCombination[j] = possibleTargets[j][indices[j]];
+        }
+        allPossibleCombinations[i] = actualCombination;
+
+        //aggiornamento indici
+
+    }*/
 
 }
 
@@ -310,11 +354,14 @@ std::vector<IGLInterface::IGLMesh> Reconstruction::getPieces(IrregularGrid& g, s
                     double maxVol = -1;
                     int maxVolId = -1;
                     for (unsigned int l = 0; l < possibleTargets.size(); l++){
+                        Timer t("Recursive Growth");
                         pieces[l] = growPiece(g, Pointi(i,j,k), possibleTargets[l]);
+                        t.stopAndPrint();
                         double volume = 0;
                         for (Pointi box : pieces[l]){
                             volume += g.getVolumeOfBox(box.x(), box.y(), box.z());
                         }
+                        std::cout << "Volume: " << volume << "\n";
                         if (volume > maxVol){
                             maxVol = volume;
                             maxVolId = l;
@@ -354,4 +401,96 @@ void Reconstruction::booleanOperations(HeightfieldsList &heightfields, IGLInterf
     }
 
     timer.stopAndPrint();
+}
+
+bool Reconstruction::boxesIntersect(const Box3D& b1, const Box3D& b2) {
+    if (b1.getMaxX() < b2.getMinX()) return false; // a is left of b
+    if (b1.getMinX() > b2.getMaxX()) return false; // a is right of b
+    if (b1.getMaxY() < b2.getMinY()) return false; // a is above b
+    if (b1.getMinY() > b2.getMaxY()) return false; // a is below b
+    if (b1.getMaxZ() < b2.getMinZ()) return false; // a is behind b
+    if (b1.getMinZ() > b2.getMaxZ()) return false; // a is in front b
+    return true; //boxes overlap
+}
+
+bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const CGALInterface::AABBTree &tree) {
+    Vec3 target2 = b2.getTarget();
+    BoundingBox bb = b1;
+    double base;
+    if (target2 == XYZ[0]){ //+x
+        base = b2.getMinX();
+        if (b1.getMinX() < base && b1.getMaxX() > base){
+            //check if bb is empty
+            bb.setMinX(b1.getMaxX()-EPSILON);
+            if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                return true;
+        }
+    } else if (target2 == XYZ[1]){ //+y
+        base = b2.getMinY();
+        if (b1.getMinY() < base && b1.getMaxY() > base){
+            bb.setMinY(b1.getMaxY()-EPSILON);
+            if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                return true;
+        }
+    } else if (target2 == XYZ[2]){ //+z
+        base = b2.getMinZ();
+        if (b1.getMinZ() < base && b1.getMaxZ() > base){
+            bb.setMinZ(b1.getMaxZ()-EPSILON);
+            if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                return true;
+        }
+    } else if (target2 == XYZ[3]){ //-x
+        base = b2.getMaxX();
+        if (b1.getMinX() < base && b1.getMaxX() > base){
+            bb.setMaxX(b1.getMinX()+EPSILON);
+            if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                return true;
+        }
+    } else if (target2 == XYZ[4]){ //-y
+        base = b2.getMaxY();
+        if (b1.getMinY() < base && b1.getMaxY() > base){
+            bb.setMaxY(b1.getMinY()+EPSILON);
+            if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                return true;
+        }
+    } else if (target2 == XYZ[5]){ //-z
+        base = b2.getMaxZ();
+        if (b1.getMinZ() < base && b1.getMaxZ() > base){
+            bb.setMaxZ(b1.getMinZ()+EPSILON);
+            if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                return true;
+        }
+    } else
+        assert(0);
+    return false;
+}
+
+Array2D<int> Reconstruction::getOrdering(const BoxList& bl, const Dcel& d) {
+    std::vector<std::pair<int, int> > edges;
+    Array2D<int> ordering(bl.getNumberBoxes(), bl.getNumberBoxes(), false); // false -> "<"
+    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
+        for (unsigned int j = 0; j < i; j++){
+            ordering(i,j) = true; // true -> ">"
+        }
+    }
+    CGALInterface::AABBTree tree(d);
+    for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
+        Box3D b1 = bl.getBox(i);
+        for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
+            Box3D b2 = bl.getBox(j);
+            if (boxesIntersect(b1,b2)){
+                if (isDangerousIntersection(b1, b2, tree)){
+                    edges.push_back(std::pair<int, int>(i,j));
+                    std::cerr << i << " -> " << j << "\n";
+                }
+                if (isDangerousIntersection(b2, b1, tree)){
+                    edges.push_back(std::pair<int, int>(j,i));
+                    std::cerr << j << " -> " << i << "\n";
+                }
+            }
+        }
+    }
+
+    return ordering;
+
 }

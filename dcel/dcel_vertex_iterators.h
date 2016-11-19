@@ -77,8 +77,8 @@ class Dcel::Vertex::ConstGenericIterator {
  * dal vertice su cui è inizializzaro l'iteratore, permette di ciclare su tutti i toVertex degli
  * half edge uscenti compresi tra start e end (ossia di ciclare sui vertici adiacenti). \n
  *
- * Le operazioni di incremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
- * le operazioni di decremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * Le operazioni di incremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * le operazioni di decremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
  * e l'operazione di dereferenziazione restituisce il toVertex dell'half edge puntato dall'iteratore.
  *
  * Per questi motivi, utilizzare questo iteratore solamente quando tutti gli half edge incidenti
@@ -89,7 +89,7 @@ class Dcel::Vertex::ConstGenericIterator {
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
  * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
@@ -132,8 +132,8 @@ class Dcel::Vertex::AdjacentVertexIterator : public Dcel::Vertex::GenericIterato
  * dal vertice su cui è inizializzaro l'iteratore, permette di ciclare su tutti i toVertex degli
  * half edge uscenti compresi tra start e end (ossia di ciclare sui vertici adiacenti). \n
  *
- * Le operazioni di incremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
- * le operazioni di decremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * Le operazioni di incremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * le operazioni di decremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
  * e l'operazione di dereferenziazione restituisce il toVertex dell'half edge puntato dall'iteratore.
  *
  * Per questi motivi, utilizzare questo iteratore solamente quando tutti gli half edge incidenti
@@ -144,7 +144,7 @@ class Dcel::Vertex::AdjacentVertexIterator : public Dcel::Vertex::GenericIterato
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
  * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
@@ -188,8 +188,8 @@ class Dcel::Vertex::ConstAdjacentVertexIterator : public Dcel::Vertex::ConstGene
  * dal vertice su cui è inizializzato l'iteratore, permette di ciclare su tutti gli half edge uscenti
  * compresi tra start e end. \n
  *
- * Le operazioni di incremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
- * le operazioni di decremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * Le operazioni di incremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * le operazioni di decremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
  * e l'operazione di dereferenziazione restituisce l'half edge puntato dall'iteratore.
  *
  * Per questi motivi, utilizzare questo iteratore solamente quando tutti gli half edge incidenti
@@ -200,8 +200,8 @@ class Dcel::Vertex::ConstAdjacentVertexIterator : public Dcel::Vertex::ConstGene
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
- * su tutti gli half edge uscenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
+ * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
  * for (Dcel::Vertex::OutgoingHalfEdgeIterator heit = v->outgoingHalfEdgeBegin(); heit != v->outgoingHalfEdgeEnd(); ++heit){
@@ -243,8 +243,8 @@ class Dcel::Vertex::OutgoingHalfEdgeIterator : public Dcel::Vertex::GenericItera
  * dal vertice su cui è inizializzato l'iteratore, permette di ciclare su tutti gli half edge uscenti
  * compresi tra start e end. \n
  *
- * Le operazioni di incremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
- * le operazioni di decremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * Le operazioni di incremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * le operazioni di decremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
  * e l'operazione di dereferenziazione restituisce l'half edge puntato dall'iteratore.
  *
  * Per questi motivi, utilizzare questo iteratore solamente quando tutti gli half edge incidenti
@@ -255,8 +255,8 @@ class Dcel::Vertex::OutgoingHalfEdgeIterator : public Dcel::Vertex::GenericItera
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
- * su tutti gli half edge uscenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
+ * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
  * for (Dcel::Vertex::ConstOutgoingHalfEdgeIterator heit = v->outgoingHalfEdgeBegin(); heit != v->outgoingHalfEdgeEnd(); ++heit){
@@ -299,8 +299,8 @@ class Dcel::Vertex::ConstOutgoingHalfEdgeIterator : public Dcel::Vertex::ConstGe
  * dal vertice su cui è inizializzato l'iteratore, permette di ciclare su tutti gli half edge entranti
  * compresi tra start e end. \n
  *
- * Le operazioni di incremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
- * le operazioni di decremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * Le operazioni di incremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * le operazioni di decremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
  * e l'operazione di dereferenziazione restituisce il twin dell'half edge puntato dall'iteratore.
  *
  * Per questi motivi, utilizzare questo iteratore solamente quando tutti gli half edge incidenti
@@ -311,8 +311,8 @@ class Dcel::Vertex::ConstOutgoingHalfEdgeIterator : public Dcel::Vertex::ConstGe
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
- * su tutti gli half edge entranti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
+ * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
  * for (Dcel::Vertex::IncomingHalfEdgeIterator heit = v->incomingHalfEdgeBegin(); heit != v->incomingHalfEdgeEnd(); ++heit){
@@ -354,8 +354,8 @@ class Dcel::Vertex::IncomingHalfEdgeIterator : public GenericIterator {
  * dal vertice su cui è inizializzato l'iteratore, permette di ciclare su tutti gli half edge entranti
  * compresi tra start e end. \n
  *
- * Le operazioni di incremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
- * le operazioni di decremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * Le operazioni di incremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * le operazioni di decremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
  * e l'operazione di dereferenziazione restituisce il twin dell'half edge puntato dall'iteratore.
  *
  * Per questi motivi, utilizzare questo iteratore solamente quando tutti gli half edge incidenti
@@ -366,8 +366,8 @@ class Dcel::Vertex::IncomingHalfEdgeIterator : public GenericIterator {
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
- * su tutti gli half edge entranti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
+ * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
  * for (Dcel::Vertex::ConstIncomingHalfEdgeIterator heit = v->incomingHalfEdgeBegin(); heit != v->incomingHalfEdgeEnd(); ++heit){
@@ -410,9 +410,9 @@ class Dcel::Vertex::ConstIncomingHalfEdgeIterator : public Dcel::Vertex::ConstGe
  * sul vertice su cui è inizializzato l'iteratore, permette di ciclare su tutti gli half edge
  * compresi tra start e end. \n
  *
- * Le operazioni di incremento eseguono un'operazione di \c twin() se l'half edge è uscente e \c next()
- * se l'half edge è entrante nel vertice, le operazioni di decremento eseguono un'operazione di \c prev()
- * se l'half edge è uscente e \c twin() se l'half edge è entrante nel vertice, e l'operazione di
+ * Le operazioni di incremento eseguono un'operazione di \c prev() se l'half edge è uscente e \c twin()
+ * se l'half edge è entrante nel vertice, le operazioni di decremento eseguono un'operazione di \c twin()
+ * se l'half edge è uscente e \c next() se l'half edge è entrante nel vertice, e l'operazione di
  * dereferenziazione restituisce l'half edge puntato dall'iteratore.
  *
  * Per questi motivi, utilizzare questo iteratore solamente quando tutti gli half edge incidenti
@@ -423,8 +423,8 @@ class Dcel::Vertex::ConstIncomingHalfEdgeIterator : public Dcel::Vertex::ConstGe
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
- * su tutti gli half edge incidenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
+ * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
  * for (Dcel::Vertex::IncidentHalfEdgeIterator heit = v->incidentHalfEdgeBegin(); heit != v->incidentHalfEdgeEnd(); ++heit){
@@ -471,9 +471,9 @@ class Dcel::Vertex::IncidentHalfEdgeIterator : public Dcel::Vertex::GenericItera
  * sul vertice su cui è inizializzato l'iteratore, permette di ciclare su tutti gli half edge
  * compresi tra start e end. \n
  *
- * Le operazioni di incremento eseguono un'operazione di \c twin() se l'half edge è uscente e \c next()
- * se l'half edge è entrante nel vertice, le operazioni di decremento eseguono un'operazione di \c prev()
- * se l'half edge è uscente e \c twin() se l'half edge è entrante nel vertice, e l'operazione di
+ * Le operazioni di incremento eseguono un'operazione di \c prev() se l'half edge è uscente e \c twin()
+ * se l'half edge è entrante nel vertice, le operazioni di decremento eseguono un'operazione di \c twin()
+ * se l'half edge è uscente e \c next() se l'half edge è entrante nel vertice, e l'operazione di
  * dereferenziazione restituisce l'half edge puntato dall'iteratore.
  *
  * Per questi motivi, utilizzare questo iteratore solamente quando tutti gli half edge incidenti
@@ -484,8 +484,8 @@ class Dcel::Vertex::IncidentHalfEdgeIterator : public Dcel::Vertex::GenericItera
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
- * su tutti i gli half edge incidenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
+ * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
  * for (Dcel::Vertex::ConstIncidentHalfEdgeIterator heit = v->incidentHalfEdgeBegin(); heit != v->incidentHalfEdgeEnd(); ++heit){
@@ -533,8 +533,8 @@ class Dcel::Vertex::ConstIncidentHalfEdgeIterator : public ConstGenericIterator{
  * sul vertice su cui è inizializzato l'iteratore, permette di ciclare su tutte le facce
  * incidenti sugli half edge compresi tra start e end. \n
  *
- * Le operazioni di incremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
- * le operazioni di decremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * Le operazioni di incremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * le operazioni di decremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
  * e l'operazione di dereferenziazione restituisce la faccia incidente sull'half edge puntato
  * dall'iteratore.
  *
@@ -546,8 +546,8 @@ class Dcel::Vertex::ConstIncidentHalfEdgeIterator : public ConstGenericIterator{
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
- * su tutti le facce incidenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
+ * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
  * for (Dcel::Vertex::IncidentFaceIterator heit = v->incidentFaceBegin(); heit != v->incidentFaceEnd(); ++heit){
@@ -591,8 +591,8 @@ class Dcel::Vertex::IncidentFaceIterator : public Dcel::Vertex::GenericIterator{
  * sul vertice su cui è inizializzato l'iteratore, permette di ciclare su tutte le facce
  * incidenti sugli half edge compresi tra start e end. \n
  *
- * Le operazioni di incremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
- * le operazioni di decremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * Le operazioni di incremento eseguono le due operazioni di \c prev() e \c twin() sull'half edge,
+ * le operazioni di decremento eseguono le due operazioni di \c twin() e \c next() sull'half edge,
  * e l'operazione di dereferenziazione restituisce la faccia incidente sull'half edge puntato
  * dall'iteratore.
  *
@@ -604,8 +604,8 @@ class Dcel::Vertex::IncidentFaceIterator : public Dcel::Vertex::GenericIterator{
  * - next (per le operazioni di incremento)
  * - prev (per le operazioni di decremento)
  *
- * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso orario o antiorario (operatore \--)
- * su tutti le facce incidenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
+ * È possibile utilizzare l'iteratore in diversi modi. Il più semplice è ciclare in senso antiorario (operatore \++) o orario (operatore \--)
+ * su tutti i vertici adiacenti ad un dato vertice \c v. In questo caso, sarà sufficiente scrivere:
  *
  * \code{.cpp}
  * for (Dcel::Vertex::ConstIncidentFaceIterator heit = v->incidentFaceBegin(); heit != v->incidentFaceEnd(); ++heit){

@@ -90,24 +90,24 @@ CGALInterface::AABBTree&CGALInterface::AABBTree::operator=(const CGALInterface::
     return *this;
 }
 
-int CGALInterface::AABBTree::getNumberIntersectedPrimitives(const Pointd& p1, const Pointd& p2) {
+int CGALInterface::AABBTree::getNumberIntersectedPrimitives(const Pointd& p1, const Pointd& p2) const {
     CGALPoint pa(p1.x(), p1.y(), p1.z());
     CGALPoint pb(p2.x(), p2.y(), p2.z());
     CGALRay ray_query(pa,pb);
     return tree.number_of_intersected_primitives(ray_query);
 }
 
-int CGALInterface::AABBTree::getNumberIntersectedPrimitives(const BoundingBox& b) {
+int CGALInterface::AABBTree::getNumberIntersectedPrimitives(const BoundingBox& b) const {
     CGALBoundingBox bb(b.getMinX(), b.getMinY(), b.getMinZ(), b.getMaxX(), b.getMaxY(), b.getMaxZ());
     return tree.number_of_intersected_primitives(bb);
 }
 
-double CGALInterface::AABBTree::getSquaredDistance(const Pointd& p) {
+double CGALInterface::AABBTree::getSquaredDistance(const Pointd& p) const {
     CGALPoint query(p.x(), p.y(), p.z());
     return tree.squared_distance(query);
 }
 
-Pointd CGALInterface::AABBTree::getNearestPoint(const Pointd& p) {
+Pointd CGALInterface::AABBTree::getNearestPoint(const Pointd& p) const {
     CGALPoint query(p.x(), p.y(), p.z());
     CGALPoint closest = tree.closest_point(query);
     return Pointd(closest.x(), closest.y(), closest.z());
@@ -167,20 +167,20 @@ bool CGALInterface::AABBTree::isInside(const Pointd& p, int numberOfChecks) {
 }
 
 #ifdef DCEL_DEFINED
-void CGALInterface::AABBTree::getIntersectedDcelFaces(std::list<const Dcel::Face*>& outputList, const BoundingBox& b) {
+void CGALInterface::AABBTree::getIntersectedDcelFaces(std::list<const Dcel::Face*>& outputList, const BoundingBox& b) const {
     CGALBoundingBox bb(b.getMinX(), b.getMinY(), b.getMinZ(), b.getMaxX(), b.getMaxY(), b.getMaxZ());
     std::list< Tree::Primitive_id > trianglesIds;
     tree.all_intersected_primitives(bb, std::back_inserter(trianglesIds));
     for (std::list< Tree::Primitive_id >::const_iterator it = trianglesIds.begin(); it != trianglesIds.end(); ++it){
         const Tree::Primitive_id id = *it;
         const CGALTriangle t = *id;
-        std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle>::iterator mit = mapCgalTrianglesToDcelFaces.find(t);
+        std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle>::const_iterator mit = mapCgalTrianglesToDcelFaces.find(t);
         assert(mit != mapCgalTrianglesToDcelFaces.end());
         outputList.push_back(mit->second);
     }
 }
 
-void CGALInterface::AABBTree::getCompletelyContainedDcelFaces(std::list<const Dcel::Face*>& outputList, const BoundingBox& b) {
+void CGALInterface::AABBTree::getCompletelyContainedDcelFaces(std::list<const Dcel::Face*>& outputList, const BoundingBox& b) const {
     getIntersectedDcelFaces(outputList, b);
 
     std::list<const Dcel::Face*>::iterator i = outputList.begin();
@@ -195,12 +195,12 @@ void CGALInterface::AABBTree::getCompletelyContainedDcelFaces(std::list<const Dc
     }
 }
 
-const Dcel::Face* CGALInterface::AABBTree::getNearestDcelFace(const Pointd& p) {
+const Dcel::Face* CGALInterface::AABBTree::getNearestDcelFace(const Pointd& p) const {
     CGALPoint query(p.x(), p.y(), p.z());
     AABB_triangle_traits::Point_and_primitive_id ppid = tree.closest_point_and_primitive(query);
     const Tree::Primitive_id tp = ppid.second;
     const CGALTriangle t = *tp;
-    std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle>::iterator mit = mapCgalTrianglesToDcelFaces.find(t);
+    std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle>::const_iterator mit = mapCgalTrianglesToDcelFaces.find(t);
     assert(mit != mapCgalTrianglesToDcelFaces.end());
     return mit->second;
 

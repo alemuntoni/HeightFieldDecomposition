@@ -5,12 +5,13 @@
 #include "igl/iglmesh.h"
 #include "heightfieldslist.h"
 #include "boxlist.h"
+#include "cgal/aabbtree.h"
 
 namespace Reconstruction {
     //Creation Irregular Grid
     void compactSet(std::set<double> &set, double epsilon = 1e-6);
 
-    void createIrregularGrid(IrregularGrid &grid, const BoxList& solutions, const Dcel& d, double epsilon = 0.01);
+    void createIrregularGrid(IrregularGrid &grid, const BoxList& solutions, const Dcel& d, double epsilon = 0.1);
 
     //Naive Reconstruction
     Pointi getGrowthStep(const Vec3& target);
@@ -30,7 +31,9 @@ namespace Reconstruction {
     void setDefinitivePiece(IrregularGrid& g, const std::set<Pointi>& piece, const Vec3 &target);
 
     //BruteForce
-    std::set<Pointi> findConnectedComponent(IrregularGrid &g, const Pointi& startingBox, const Vec3& target);
+    void generateAllPossibleTargets(const IrregularGrid& g);
+
+    //Piling
 
 
     //Getting pieces from Irregular Grid
@@ -40,6 +43,13 @@ namespace Reconstruction {
 
     //Booleans
     void booleanOperations(HeightfieldsList &heightfields, IGLInterface::SimpleIGLMesh &baseComplex, HeightfieldsList &polycubes);
+
+    //Naive splitting
+    bool boxesIntersect(const Box3D &b1, const Box3D &b2);
+
+    bool isDangerousIntersection(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree);
+
+    Array2D<int> getOrdering(const BoxList &bl, const Dcel &d);
 }
 
 #endif // RECONSTRUCTION_H

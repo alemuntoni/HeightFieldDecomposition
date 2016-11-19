@@ -112,7 +112,11 @@ namespace Serializer {
 
     template <typename T, typename ...A> void deserialize(std::set<T, A...> &s, std::ifstream& binaryFile);
 
+    template <typename ...A> void serialize(const std::vector<bool, A...> &v, std::ofstream& binaryFile);
+
     template <typename T, typename ...A> void serialize(const std::vector<T, A...> &v, std::ofstream& binaryFile);
+
+    template <typename ...A> void deserialize(std::vector<bool, A...> &v, std::ifstream& binaryFile);
 
     template <typename T, typename ...A> void deserialize(std::vector<T, A...> &v, std::ifstream& binaryFile);
 
@@ -258,12 +262,49 @@ inline void Serializer::deserialize(std::set<T, A...> &s, std::ifstream& binaryF
  * @param[in] v: std::vector
  * @param binaryFile
  */
+template <typename ...A>
+inline void Serializer::serialize(const std::vector<bool, A...> &v, std::ofstream& binaryFile){
+    bool tmp;
+    size_t size = v.size();
+    Serializer::serialize(size, binaryFile);
+    for (typename std::vector<bool, A...>::const_iterator it = v.begin(); it != v.end(); ++it){
+        if (*it) tmp = 1;
+        else tmp = 0;
+        Serializer::serialize(tmp, binaryFile);
+    }
+}
+
+/**
+ * \~English
+ * @brief Serializer::serialize
+ * @param[in] v: std::vector
+ * @param binaryFile
+ */
 template <typename T, typename ...A>
 inline void Serializer::serialize(const std::vector<T, A...> &v, std::ofstream& binaryFile){
     size_t size = v.size();
     Serializer::serialize(size, binaryFile);
     for (typename std::vector<T, A...>::const_iterator it = v.begin(); it != v.end(); ++it)
         Serializer::serialize((*it), binaryFile);
+}
+
+/**
+ * \~English
+ * @brief Serializer::deserialize
+ * @warning please make sure that the input vector is an empty vector (it will be overwritten)
+ * @param[out] v: std::vector
+ * @param binaryFile
+ */
+template <typename ...A>
+inline void Serializer::deserialize(std::vector<bool, A...> &v, std::ifstream& binaryFile){
+    size_t size;
+    Serializer::deserialize(size, binaryFile);
+    v.resize(size);
+    bool tmp;
+    for (unsigned int it = 0; it < size; ++it){
+        Serializer::deserialize(tmp, binaryFile);
+        v[it] = tmp;
+    }
 }
 
 /**
