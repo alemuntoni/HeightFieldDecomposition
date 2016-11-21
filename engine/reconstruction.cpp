@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "common/timer.h"
+#include "lib/graph/directedgraph.h"
 
 void Reconstruction::compactSet(std::set<double>& set, double epsilon) {
     std::set<double>::iterator it = set.begin();
@@ -466,13 +467,9 @@ bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, c
 }
 
 Array2D<int> Reconstruction::getOrdering(const BoxList& bl, const Dcel& d) {
-    std::vector<std::pair<int, int> > edges;
-    Array2D<int> ordering(bl.getNumberBoxes(), bl.getNumberBoxes(), false); // false -> "<"
-    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
-        for (unsigned int j = 0; j < i; j++){
-            ordering(i,j) = true; // true -> ">"
-        }
-    }
+    DirectedGraph g(bl.getNumberBoxes());
+    Array2D<int> ordering(bl.getNumberBoxes(), bl.getNumberBoxes(), -1); // true -> "<", false -> ">="
+
     CGALInterface::AABBTree tree(d);
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
@@ -480,16 +477,45 @@ Array2D<int> Reconstruction::getOrdering(const BoxList& bl, const Dcel& d) {
             Box3D b2 = bl.getBox(j);
             if (boxesIntersect(b1,b2)){
                 if (isDangerousIntersection(b1, b2, tree)){
-                    edges.push_back(std::pair<int, int>(i,j));
+                    g.addEdge(i,j);
                     std::cerr << i << " -> " << j << "\n";
                 }
                 if (isDangerousIntersection(b2, b1, tree)){
-                    edges.push_back(std::pair<int, int>(j,i));
+                    g.addEdge(j,i);
                     std::cerr << j << " -> " << i << "\n";
                 }
             }
         }
     }
+    ///Detect and delete cycles on graph (modifying bl)
+
+    //works only if graph has no cycles
+    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
+        std::set<unsigned int> visited;
+        g.visit(visited, i);
+        for (unsigned int node : visited){ // i must be > than all nodes in visited
+            ordering(node,i) = true;
+            ordering(i,node) = false;
+        }
+    }
+    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
+        for (unsigned int j = 0; j < i; j++){
+            if (ordering(i,j) == -1) {
+                ordering(i,j) = false;
+                ordering(j,i) = true;
+                for (unsigned int k = 0; k < bl.getNumberBoxes(); k++){
+                    //j now is the row
+                    if (ordering(j,k) == false){
+                        assert(ordering(i,k) == 0 || ordering(i,k) == -1);
+                        ordering(i,k) = false;
+                        ordering(k,i) = true;
+                    }
+                }
+            }
+        }
+    }
+
+    std::cerr << ordering;
 
     return ordering;
 

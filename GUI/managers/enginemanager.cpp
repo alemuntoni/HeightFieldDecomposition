@@ -1048,7 +1048,13 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
             ss << "results/heightfield" << i << ".obj";
             h.saveOnObj(ss.str());
         }*/
-        Reconstruction::getOrdering(*solutions, *d);
+        Array2D<int> ordering = Reconstruction::getOrdering(*solutions, *d);
+        solutions->setIds();
+        solutions->sort(ordering);
+        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
+            std::cerr << solutions->getBox(i).getId() << " ";
+        }
+        std::cerr << "\n";
     }
 }
 

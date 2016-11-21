@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <assert.h>
+#include <iomanip>
 #include "serialize.h"
 
 template <class T> class Array2D : public SerializableObject{
@@ -33,6 +34,9 @@ template <class T> class Array2D : public SerializableObject{
         size_t sizeX, sizeY;
         std::vector<T> v;
 };
+
+template <class T>
+std::ostream& operator<< (std::ostream& inputStream, const Array2D<T>& a);
 
 template <class T> class Array3D : public SerializableObject{
 
@@ -181,6 +185,17 @@ inline size_t Array2D<T>::getIndex(size_t i, size_t j) const {
     assert (i < sizeX);
     assert (j < sizeY);
     return j + sizeY*i;
+}
+
+template <class T>
+std::ostream& operator<< (std::ostream& inputStream, const Array2D<T>& a) {
+    for (unsigned int i = 0; i < a.getSizeX(); i++){
+        for (unsigned int j = 0; j < a.getSizeY(); j++){
+            inputStream << std::setw(4) <<a(i,j) << " ";
+        }
+        inputStream << "\n";
+    }
+    return inputStream;
 }
 
 ///

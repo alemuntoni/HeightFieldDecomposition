@@ -380,6 +380,14 @@ Vec3 Box3D::getRotatedTarget() const {
     return std::move(r);
 }
 
+int Box3D::getId() const {
+    return id;
+}
+
+void Box3D::setId(int value) {
+    id = value;
+}
+
 #ifdef VIEWER_DEFINED
 void Box3D::drawLine(const Pointd &a, const Pointd &b, const QColor& c) const {
     glBegin(GL_LINES);

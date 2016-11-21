@@ -54,6 +54,28 @@ void BoxList::getSubBoxLists(std::vector<BoxList>& v, int nPerBoxList) {
     }
 }
 
+void BoxList::setIds() {
+    for (unsigned int i = 0; i < boxes.size(); i++){
+        boxes[i].setId(i);
+    }
+}
+
+void BoxList::sort(const Array2D<int>& ordering) {
+    struct cmp {
+        Array2D<int> order;
+        cmp(const Array2D<int>& ord){
+            order = ord;
+        }
+        bool operator()(const Box3D &a, const Box3D &b) const {
+            bool val = order(a.getId(),b.getId());
+            return val;
+        }
+    };
+
+    std::sort(boxes.begin(), boxes.end(), cmp(ordering));
+
+}
+
 void BoxList::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(boxes, binaryFile);
 }

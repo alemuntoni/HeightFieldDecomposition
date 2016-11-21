@@ -92,4 +92,9 @@ ALL {
 
 message(Included modules: $$MODULES)
 
+HEADERS += \
+    lib/graph/directedgraph.h
+
+SOURCES +=
+
 

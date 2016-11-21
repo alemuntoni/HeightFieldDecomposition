@@ -55,6 +55,9 @@ class Box3D : public BoundingBox, public DrawableObject{
         Vec3 getRotatedTarget() const;
 
 
+        int getId() const;
+        void setId(int value);
+
     protected:
         //Pointd min, max;
         Pointd c1, c2, c3;
@@ -62,6 +65,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         bool visible;
         Vec3 target;
         Eigen::Matrix3d rotation;
+        int id;
 
         void drawLine(const Pointd& a, const Pointd& b, const QColor& c) const;
         void drawCube() const;
