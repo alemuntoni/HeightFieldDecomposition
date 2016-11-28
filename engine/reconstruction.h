@@ -49,7 +49,9 @@ namespace Reconstruction {
 
     bool isDangerousIntersection(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree);
 
-    Array2D<int> getOrdering(const BoxList &bl, const Dcel &d);
+    BoxList splitBox(const Box3D &b1, const Box3D &b2);
+
+    Array2D<int> getOrdering(BoxList& bl, const Dcel &d);
 }
 
 #endif // RECONSTRUCTION_H

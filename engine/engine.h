@@ -7,7 +7,6 @@
 #include "boxlist.h"
 #include "common.h"
 
-#ifndef SERVER_MODE
 #include "dcel/dcel.h"
 #include "lib/grid/grid.h"
 #include "energy.h"
@@ -15,14 +14,7 @@
 #include "igl/iglinterface.h"
 #include "heightfieldslist.h"
 #include "lib/grid/irregulargrid.h"
-#elif SERVER_MODE==1
-#include "dcel/dcel.h"
-#include "lib/grid/grid.h"
-#include "energy.h"
-#include "igl/iglinterface.h"
-#elif SERVER_MODE==2
-#include "igl/iglinterface.h"
-#endif
+
 
 #define ORIENTATIONS 1
 #define TARGETS 6

@@ -32,6 +32,9 @@ class EngineManager : public QFrame, public SerializableObject {
         void updateBoxValues();
         void updateColors(double angleThreshold, double areaThreshold);
 
+        void serializeBC(const std::string& filename);
+        void deserializeBC(const std::string& filename);
+
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);

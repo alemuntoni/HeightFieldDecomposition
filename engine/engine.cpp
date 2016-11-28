@@ -345,6 +345,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
         }
 
         Engine::deleteBoxes(solutions, allVectorTriples, d.getNumberFaces());
+        solutions.generatePieces(d.getAverageHalfEdgesLength()*7);
     }
     else {
         Grid g[ORIENTATIONS][TARGETS];
@@ -431,6 +432,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
         }
 
         Engine::deleteBoxes(solutions, allVectorTriples, d.getNumberFaces());
+        solutions.generatePieces(d.getAverageHalfEdgesLength()*7);
     }
 }
 
@@ -447,7 +449,7 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
         IGLInterface::SimpleIGLMesh box;
         IGLInterface::SimpleIGLMesh intersection;
         IGLInterface::SimpleIGLMesh entirep;
-        box = solutions.getBox(i).getIGLMesh(average*7);
+        box = solutions.getBox(i).getIGLMesh();
         IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
         IGLInterface::SimpleIGLMesh::intersection(entirep, inputIGL, box);
         IGLInterface::SimpleIGLMesh::difference(bc, bc, box);

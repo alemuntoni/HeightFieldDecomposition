@@ -1642,7 +1642,7 @@ inline Dcel::Vertex::IncidentHalfEdgeIterator Dcel::Vertex::incidentHalfEdgeBegi
  * @return Un iteratore che punta alla faccia incidente sull'incidentHalfEdge del vertice
  */
 inline Dcel::Vertex::IncidentFaceIterator Dcel::Vertex::incidentFaceBegin() {
-    assert(checkIncidentHalfEdge() && "Incident half edge is nullptr.");
+    //assert(checkIncidentHalfEdge() && "Incident half edge is nullptr.");
     return IncidentFaceIterator(incidentHalfEdge, incidentHalfEdge, this);
 }
 

@@ -76,6 +76,12 @@ void BoxList::sort(const Array2D<int>& ordering) {
 
 }
 
+void BoxList::generatePieces(double minimumDistance) {
+    for (unsigned int i= 0; i < boxes.size(); i++){
+        boxes[i].generatePiece(minimumDistance);
+    }
+}
+
 void BoxList::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(boxes, binaryFile);
 }

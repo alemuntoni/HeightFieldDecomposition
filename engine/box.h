@@ -4,15 +4,13 @@
 #include "viewer/interfaces/drawable_object.h"
 #include "common/bounding_box.h"
 #include "viewer/objects/objects.h"
-#ifdef IGL_DEFINED
 #include "igl/iglmesh.h"
-#endif
 
 class Box3D : public BoundingBox, public DrawableObject{
     public:
         Box3D();
-        Box3D(const Pointd &min, const Pointd &max, const Pointd &c1 = Pointd(), const Pointd &c2 = Pointd(), const Pointd &c3 = Pointd(), const QColor c = QColor(0,0,0));
-        Box3D(const Pointd &min, const Pointd &max, const QColor c);
+        Box3D(const Pointd &minCoord, const Pointd &maxCoord, const Pointd &c1 = Pointd(), const Pointd &c2 = Pointd(), const Pointd &c3 = Pointd(), const QColor c = QColor(0,0,0));
+        Box3D(const Pointd &minCoord, const Pointd &maxCoord, const QColor c);
 
         void setColor(const QColor &c);
         QColor getColor() const;
@@ -35,9 +33,9 @@ class Box3D : public BoundingBox, public DrawableObject{
         void moveX(double d);
         void moveY(double d);
         void moveZ(double d);
-        #ifdef IGL_DEFINED
-        IGLInterface::SimpleIGLMesh getIGLMesh(double minimumEdge = -1) const;
-        #endif
+        IGLInterface::SimpleIGLMesh calculateIGLMesh(double minimumEdge = -1) const;
+        IGLInterface::SimpleIGLMesh getIGLMesh() const;
+        void generatePiece(double minimumEdge = -1);
 
         // DrawableObject interface
         void draw() const;
@@ -66,6 +64,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         Vec3 target;
         Eigen::Matrix3d rotation;
         int id;
+        IGLInterface::SimpleIGLMesh piece;
 
         void drawLine(const Pointd& a, const Pointd& b, const QColor& c) const;
         void drawCube() const;
@@ -112,34 +111,34 @@ inline const Eigen::Matrix3d&Box3D::getRotationMatrix() const {
 }
 
 inline double Box3D::getVolume() const {
-    return (max.x()-min.x())*(max.y()-min.y())*(max.z()-min.z());
+    return (maxCoord.x()-minCoord.x())*(maxCoord.y()-minCoord.y())*(maxCoord.z()-minCoord.z());
 }
 
 inline void Box3D::setW(double d) {
-    max.setX(min.x()+d);
+    maxCoord.setX(minCoord.x()+d);
 }
 
 inline void Box3D::setH(double d) {
-    max.setY(min.y()+d);
+    maxCoord.setY(minCoord.y()+d);
 }
 
 inline void Box3D::setD(double d) {
-    max.setZ(min.z()+d);
+    maxCoord.setZ(minCoord.z()+d);
 }
 
 inline void Box3D::moveX(double d) {
-    min.setX(min.x() + d);
-    max.setX(max.x() + d);
+    minCoord.setX(minCoord.x() + d);
+    maxCoord.setX(maxCoord.x() + d);
 }
 
 inline void Box3D::moveY(double d) {
-    min.setY(min.y() + d);
-    max.setY(max.y() + d);
+    minCoord.setY(minCoord.y() + d);
+    maxCoord.setY(maxCoord.y() + d);
 }
 
 inline void Box3D::moveZ(double d) {
-    min.setZ(min.z() + d);
-    max.setZ(max.z() + d);
+    minCoord.setZ(minCoord.z() + d);
+    maxCoord.setZ(maxCoord.z() + d);
 }
 
 #endif // BOX_H

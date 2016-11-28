@@ -92,8 +92,74 @@ void EngineManager::updateColors(double angleThreshold, double areaThreshold) {
     mainWindow->updateGlCanvas();
 }
 
+void EngineManager::serializeBC(const std::string& filename) {
+    std::ofstream myfile;
+    myfile.open (filename, std::ios::out | std::ios::binary);
+    d->serialize(myfile);
+    solutions->serialize(myfile);
+    baseComplex->serialize(myfile);
+    he->serialize(myfile);
+    entirePieces->serialize(myfile);
+    myfile.close();
+}
+
+void EngineManager::deserializeBC(const std::string& filename) {
+    deleteDrawableObject(d);
+    deleteDrawableObject(solutions);
+    deleteDrawableObject(baseComplex);
+    deleteDrawableObject(he);
+    deleteDrawableObject(entirePieces);
+    d = new DrawableDcel();
+    solutions = new BoxList();
+    baseComplex = new IGLInterface::DrawableIGLMesh();
+    he = new HeightfieldsList();
+    entirePieces = new HeightfieldsList();
+    std::ifstream myfile;
+    myfile.open (filename, std::ios::in | std::ios::binary);
+    d->deserialize(myfile);
+    solutions->deserialize(myfile);
+    baseComplex->deserialize(myfile);
+    he->deserialize(myfile);
+    entirePieces->deserialize(myfile);
+    myfile.close();
+    d->update();
+    d->setPointsShading();
+    d->setWireframe(true);
+    //
+    /*double average = d->getAverageHalfEdgesLength();
+    solutions->generatePieces(average*7);
+    size_t last = filename.find_last_of("/");
+    std::string name = filename.substr(last+1, filename.size());
+    std::cerr << name << "\n";
+    serializeBC("heightfields/new/" + name);*/
+    //
+    mainWindow->pushObj(d, "Input Mesh");
+    mainWindow->pushObj(solutions, "Boxes");
+    mainWindow->pushObj(baseComplex, "Base Complex");
+    mainWindow->pushObj(he, "Heightfields");
+    mainWindow->pushObj(entirePieces, "Entire Pieces");
+    mainWindow->updateGlCanvas();
+    ui->showAllSolutionsCheckBox->setEnabled(true);
+    //he->explode(40);
+    solutions->setVisibleBox(0);
+    ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
+    ui->allHeightfieldsCheckBox->setChecked(true);
+    ui->solutionsSlider->setEnabled(true);
+    ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+    ui->setFromSolutionSpinBox->setValue(0);
+    ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+
+    /*Array2D<int> ordering = Reconstruction::getOrdering(*solutions, *d);
+    solutions->setIds();
+    solutions->sort(ordering);
+    for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
+        std::cerr << solutions->getBox(i).getId() << " ";
+    }
+    std::cerr << "\n";*/
+}
+
 void EngineManager::serialize(std::ofstream& binaryFile) const {
-    g->serialize(binaryFile);
+    //g->serialize(binaryFile);
     d->serialize(binaryFile);
     bool bb = false;
 
@@ -108,26 +174,26 @@ void EngineManager::serialize(std::ofstream& binaryFile) const {
 }
 
 void EngineManager::deserialize(std::ifstream& binaryFile) {
-    deleteDrawableObject(g);
+    //deleteDrawableObject(g);
     deleteDrawableObject(d);
-    g = new DrawableGrid();
+    //g = new DrawableGrid();
     d = new DrawableDcel();
-    g->deserialize(binaryFile);
+    //g->deserialize(binaryFile);
     d->deserialize(binaryFile);
     bool bb = false;
     for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit)
         (*fit)->setColor(QColor(128,128,128));
     d->setWireframe(true);
     d->setPointsShading();
-    updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
+    //updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
     d->update();
     mainWindow->pushObj(d, "Scaled Mesh");
-    mainWindow->pushObj(g, "Grid");
-    e = Energy(*g);
+    //mainWindow->pushObj(g, "Grid");
+    //e = Energy(*g);
     ui->weigthsRadioButton->setChecked(true);
     ui->sliceCheckBox->setChecked(true);
-    g->setDrawBorders();
-    g->setSlice(1);
+    //g->setDrawBorders();
+    //g->setSlice(1);
 
 
     Serializer::deserialize(bb, binaryFile);
@@ -976,14 +1042,7 @@ void EngineManager::on_serializeBCPushButton_clicked() {
                            ".",
                            "BIN(*.bin)");
         if (!filename.isEmpty()) {
-            std::ofstream myfile;
-            myfile.open (filename.toStdString(), std::ios::out | std::ios::binary);
-            d->serialize(myfile);
-            solutions->serialize(myfile);
-            baseComplex->serialize(myfile);
-            he->serialize(myfile);
-            entirePieces->serialize(myfile);
-            myfile.close();
+            serializeBC(filename.toStdString());
         }
     }
 
@@ -996,65 +1055,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
                        "BIN(*.bin)");
 
     if (!filename.isEmpty()) {
-        deleteDrawableObject(d);
-        deleteDrawableObject(solutions);
-        deleteDrawableObject(baseComplex);
-        deleteDrawableObject(he);
-        deleteDrawableObject(entirePieces);
-        d = new DrawableDcel();
-        solutions = new BoxList();
-        baseComplex = new IGLInterface::DrawableIGLMesh();
-        he = new HeightfieldsList();
-        entirePieces = new HeightfieldsList();
-        std::ifstream myfile;
-        myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
-        d->deserialize(myfile);
-        solutions->deserialize(myfile);
-        baseComplex->deserialize(myfile);
-        he->deserialize(myfile);
-        entirePieces->deserialize(myfile);
-        myfile.close();
-        d->update();
-        d->setPointsShading();
-        d->setWireframe(true);
-        ///
-        //Box3D bb = solutions->getBox(5);
-        //solutions->removeBox(5);
-        //solutions->addBox(bb,0);
-        ///
-        mainWindow->pushObj(d, "Input Mesh");
-        mainWindow->pushObj(solutions, "Boxes");
-        mainWindow->pushObj(baseComplex, "Base Complex");
-        mainWindow->pushObj(he, "Heightfields");
-        mainWindow->pushObj(entirePieces, "Entire Pieces");
-        mainWindow->updateGlCanvas();
-        ui->showAllSolutionsCheckBox->setEnabled(true);
-        //he->explode(40);
-        solutions->setVisibleBox(0);
-        ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
-        ui->allHeightfieldsCheckBox->setChecked(true);
-        ui->solutionsSlider->setEnabled(true);
-        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-        ui->setFromSolutionSpinBox->setValue(0);
-        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        //Engine::gluePortionsToBaseComplex(*he, *baseComplex, *solutions, *d);
-        /*IGLInterface::IGLMesh m(*d);
-        m.saveOnObj("results/input_model.obj");
-        baseComplex->saveOnObj("results/base_complex.obj");
-        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            IGLInterface::IGLMesh h;
-            h = he->getHeightfield(i);
-            std::stringstream ss;
-            ss << "results/heightfield" << i << ".obj";
-            h.saveOnObj(ss.str());
-        }*/
-        Array2D<int> ordering = Reconstruction::getOrdering(*solutions, *d);
-        solutions->setIds();
-        solutions->sort(ordering);
-        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
-            std::cerr << solutions->getBox(i).getId() << " ";
-        }
-        std::cerr << "\n";
+        deserializeBC(filename.toStdString());
     }
 }
 

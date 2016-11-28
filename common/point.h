@@ -64,6 +64,8 @@ template <class T> class Point : SerializableObject {
         void serialize(std::ofstream &myfile)               const;
 
         // Operators
+        const T& operator[](unsigned int i)                 const;
+        const T& operator()(unsigned int i)                 const;
         bool operator == (const Point<T>& otherPoint)       const;
         bool operator != (const Point<T>& otherPoint)       const;
         bool operator < (const Point<T>& otherPoint)        const;
@@ -95,6 +97,8 @@ template <class T> class Point : SerializableObject {
         void deserialize(std::ifstream &myfile);
 
         // Operators
+        T& operator[](unsigned int i);
+        T& operator()(unsigned int i);
         Point<T> operator += (const Point<T>& otherPoint);
         Point<T> operator -= (const Point<T>& otherPoint);
         Point<T> operator *= (const T& scalar);
@@ -344,6 +348,26 @@ inline void Point<T>::serialize(std::ofstream &myfile) const{
     Serializer::serialize(xCoord, myfile);
     Serializer::serialize(yCoord, myfile);
     Serializer::serialize(zCoord, myfile);
+}
+
+template <class T>
+inline const T& Point<T>::operator[](unsigned int i) const {
+    assert(i < 3);
+    switch (i){
+        case 0: return xCoord;
+        case 1: return yCoord;
+        case 2: return zCoord;
+    }
+}
+
+template <class T>
+inline const T& Point<T>::operator()(unsigned int i) const {
+    assert(i < 3);
+    switch (i){
+        case 0: return xCoord;
+        case 1: return yCoord;
+        case 2: return zCoord;
+    }
 }
 
 /**
@@ -627,6 +651,26 @@ inline void Point<T>::deserialize(std::ifstream& myfile) {
     Serializer::deserialize(xCoord, myfile);
     Serializer::deserialize(yCoord, myfile);
     Serializer::deserialize(zCoord, myfile);
+}
+
+template <class T>
+inline T& Point<T>::operator[](unsigned int i) {
+    assert(i < 3);
+    switch (i){
+        case 0: return xCoord;
+        case 1: return yCoord;
+        case 2: return zCoord;
+    }
+}
+
+template <class T>
+inline T& Point<T>::operator()(unsigned int i) {
+    assert(i < 3);
+    switch (i){
+        case 0: return xCoord;
+        case 1: return yCoord;
+        case 2: return zCoord;
+    }
 }
 
 /**

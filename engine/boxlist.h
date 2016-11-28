@@ -20,6 +20,7 @@ class BoxList : public DrawableObject, public SerializableObject{
         void getSubBoxLists(std::vector<BoxList> &v, int nPerBoxList);
         void setIds();
         void sort(const Array2D<int> &ordering);
+        void generatePieces(double minimumDistance = -1);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;

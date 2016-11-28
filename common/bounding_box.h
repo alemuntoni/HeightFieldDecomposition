@@ -47,13 +47,21 @@ class BoundingBox : public SerializableObject{
         *************************/
 
         const Pointd& getMin()     const;
+        const Pointd& min()        const;
         const Pointd& getMax()     const;
+        const Pointd& max()        const;
         const double& getMinX()    const;
+        const double& minX()       const;
         const double& getMinY()    const;
+        const double& minY()       const;
         const double& getMinZ()    const;
+        const double& minZ()       const;
         const double& getMaxX()    const;
+        const double& maxX()       const;
         const double& getMaxY()    const;
+        const double& maxY()       const;
         const double& getMaxZ()    const;
+        const double& maxZ()       const;
         double getLengthX()        const;
         double getLengthY()        const;
         double getLengthZ()        const;
@@ -67,21 +75,37 @@ class BoundingBox : public SerializableObject{
         bool isEpsilonIntern(const Pointd& p, double epsilon = 1e-6)     const;
         bool isEpsilonIntern(double px, double py, double pz, double epsilon = 1e-6)     const;
 
+        //Operators
+        const double& operator[](unsigned int i)                 const;
+        const double& operator()(unsigned int i)                 const;
+
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
 
 
         void setMin(const Pointd& min);
+        Pointd& min();
         void setMax(const Pointd& max);
+        Pointd& max();
         void setMin(double x, double y, double z);
         void setMax(double x, double y, double z);
         void setMinX(double x);
+        double& minX();
         void setMinY(double y);
+        double& minY();
         void setMinZ(double z);
+        double& minZ();
         void setMaxX(double x);
+        double& maxX();
         void setMaxY(double y);
+        double& maxY();
         void setMaxZ(double z);
+        double& maxZ();
         void reset();
+
+        //Operators
+        double& operator[](unsigned int i);
+        double& operator()(unsigned int i);
 
         // SerializableObject interface
         void deserialize(std::ifstream& binaryFile);
@@ -92,9 +116,9 @@ class BoundingBox : public SerializableObject{
         * Attributes *
         **************/
 
-        Pointd min; /**< \~English @brief Minimum point of the bounding box
+        Pointd minCoord; /**< \~English @brief Minimum point of the bounding box
                          \~Italian @brief Punto minimo del bounding box*/
-        Pointd max; /**< \~English @brief Maximum point of the bounding box
+        Pointd maxCoord; /**< \~English @brief Maximum point of the bounding box
                          \~Italian @brief Punto massimo del bounding box*/
 };
 
@@ -124,7 +148,7 @@ inline BoundingBox::BoundingBox() {
  * @param[in] min: punto minimo che verrà settato
  * @param[in] max: punto massimo che verrà settato
  */
-inline BoundingBox::BoundingBox(const Pointd& min, const Pointd& max) : min(min), max(max) {
+inline BoundingBox::BoundingBox(const Pointd& min, const Pointd& max) : minCoord(min), maxCoord(max) {
 }
 
 /*************************
@@ -141,7 +165,11 @@ inline BoundingBox::BoundingBox(const Pointd& min, const Pointd& max) : min(min)
  * @return Il punto minimo
  */
 inline const Pointd& BoundingBox::getMin() const {
-    return min;
+    return minCoord;
+}
+
+inline const Pointd& BoundingBox::min() const {
+    return minCoord;
 }
 
 /**
@@ -154,7 +182,11 @@ inline const Pointd& BoundingBox::getMin() const {
  * @return Il punto massimo
  */
 inline const Pointd& BoundingBox::getMax() const {
-    return max;
+    return maxCoord;
+}
+
+inline const Pointd& BoundingBox::max() const {
+    return maxCoord;
 }
 
 /**
@@ -167,7 +199,11 @@ inline const Pointd& BoundingBox::getMax() const {
  * @return La componente x del punto minimo
  */
 inline const double& BoundingBox::getMinX() const {
-    return min.x();
+    return minCoord.x();
+}
+
+inline const double& BoundingBox::minX() const {
+    return minCoord.x();
 }
 
 /**
@@ -180,7 +216,11 @@ inline const double& BoundingBox::getMinX() const {
  * @return La componente y del punto minimo
  */
 inline const double& BoundingBox::getMinY() const {
-    return min.y();
+    return minCoord.y();
+}
+
+inline const double& BoundingBox::minY() const {
+    return minCoord.y();
 }
 
 /**
@@ -193,7 +233,11 @@ inline const double& BoundingBox::getMinY() const {
  * @return La componente z del punto minimo
  */
 inline const double& BoundingBox::getMinZ() const {
-    return min.z();
+    return minCoord.z();
+}
+
+inline const double& BoundingBox::minZ() const {
+    return minCoord.z();
 }
 
 /**
@@ -206,7 +250,11 @@ inline const double& BoundingBox::getMinZ() const {
  * @return La componente x del punto massimo
  */
 inline const double& BoundingBox::getMaxX() const {
-    return max.x();
+    return maxCoord.x();
+}
+
+inline const double& BoundingBox::maxX() const {
+    return maxCoord.x();
 }
 
 /**
@@ -219,7 +267,11 @@ inline const double& BoundingBox::getMaxX() const {
  * @return La componente y del punto massimo
  */
 inline const double& BoundingBox::getMaxY() const {
-    return max.y();
+    return maxCoord.y();
+}
+
+inline const double& BoundingBox::maxY() const {
+    return maxCoord.y();
 }
 
 /**
@@ -232,19 +284,23 @@ inline const double& BoundingBox::getMaxY() const {
  * @return La componente z del punto massimo
  */
 inline const double& BoundingBox::getMaxZ() const {
-    return max.z();
+    return maxCoord.z();
+}
+
+inline const double& BoundingBox::maxZ() const {
+    return maxCoord.z();
 }
 
 inline double BoundingBox::getLengthX() const {
-    return max.x() - min.x();
+    return maxCoord.x() - minCoord.x();
 }
 
 inline double BoundingBox::getLengthY() const {
-    return max.y() - min.y();
+    return maxCoord.y() - minCoord.y();
 }
 
 inline double BoundingBox::getLengthZ() const {
-    return max.z() - min.z();
+    return maxCoord.z() - minCoord.z();
 }
 
 /**
@@ -257,7 +313,7 @@ inline double BoundingBox::getLengthZ() const {
  * @return Il punto al centro del bounding box
  */
 inline Pointd BoundingBox::center() const {
-    return (min + max) * 0.5;
+    return (minCoord + maxCoord) * 0.5;
 }
 
 /**
@@ -270,37 +326,61 @@ inline Pointd BoundingBox::center() const {
  * @return La lunghezza della diagonale del bounding box
  */
 inline double BoundingBox::diag() const {
-    return (min - max).getLength();
+    return (minCoord - maxCoord).getLength();
 }
 
 inline bool BoundingBox::isStrictlyIntern(const Pointd &p) const {
-    return (p.x() > min.x() && p.y() > min.y() && p.z() > min.z() &&
-            p.x() < max.x() && p.y() < max.y() && p.z() < max.z());
+    return (p.x() > minCoord.x() && p.y() > minCoord.y() && p.z() > minCoord.z() &&
+            p.x() < maxCoord.x() && p.y() < maxCoord.y() && p.z() < maxCoord.z());
 }
 
 inline bool BoundingBox::isStrictlyIntern(double px, double py, double pz) const {
-    return (px > min.x() && py > min.y() && pz > min.z() &&
-            px < max.x() && py < max.y() && pz < max.z());
+    return (px > minCoord.x() && py > minCoord.y() && pz > minCoord.z() &&
+            px < maxCoord.x() && py < maxCoord.y() && pz < maxCoord.z());
 }
 
 inline bool BoundingBox::isIntern(const Pointd &p) const {
-    return (p.x() >= min.x() && p.y() >= min.y() && p.z() >= min.z() &&
-            p.x() <= max.x() && p.y() <= max.y() && p.z() <= max.z());
+    return (p.x() >= minCoord.x() && p.y() >= minCoord.y() && p.z() >= minCoord.z() &&
+            p.x() <= maxCoord.x() && p.y() <= maxCoord.y() && p.z() <= maxCoord.z());
 }
 
 inline bool BoundingBox::isIntern(double px, double py, double pz) const {
-    return (px >= min.x() && py >= min.y() && pz >= min.z() &&
-            px <= max.x() && py <= max.y() && pz <= max.z());
+    return (px >= minCoord.x() && py >= minCoord.y() && pz >= minCoord.z() &&
+            px <= maxCoord.x() && py <= maxCoord.y() && pz <= maxCoord.z());
 }
 
 inline bool BoundingBox::isEpsilonIntern(const Pointd& p, double epsilon) const {
-    return (p.x() >= min.x()-epsilon && p.y() >= min.y()-epsilon && p.z() >= min.z()-epsilon &&
-            p.x() <= max.x()+epsilon && p.y() <= max.y()+epsilon && p.z() <= max.z()+epsilon);
+    return (p.x() >= minCoord.x()-epsilon && p.y() >= minCoord.y()-epsilon && p.z() >= minCoord.z()-epsilon &&
+            p.x() <= maxCoord.x()+epsilon && p.y() <= maxCoord.y()+epsilon && p.z() <= maxCoord.z()+epsilon);
 }
 
 inline bool BoundingBox::isEpsilonIntern(double px, double py, double pz, double epsilon) const {
-    return (px >= min.x()-epsilon && py >= min.y()-epsilon && pz >= min.z()-epsilon &&
-            px <= max.x()+epsilon && py <= max.y()+epsilon && pz <= max.z()+epsilon);
+    return (px >= minCoord.x()-epsilon && py >= minCoord.y()-epsilon && pz >= minCoord.z()-epsilon &&
+            px <= maxCoord.x()+epsilon && py <= maxCoord.y()+epsilon && pz <= maxCoord.z()+epsilon);
+}
+
+inline const double& BoundingBox::operator[](unsigned int i) const{
+    assert(i < 6);
+    switch (i){
+        case 0: return minCoord.x();
+        case 1: return minCoord.y();
+        case 2: return minCoord.z();
+        case 3: return maxCoord.x();
+        case 4: return maxCoord.y();
+        case 5: return maxCoord.z();
+    }
+}
+
+inline const double& BoundingBox::operator()(unsigned int i) const {
+    assert(i < 6);
+    switch (i){
+        case 0: return minCoord.x();
+        case 1: return minCoord.y();
+        case 2: return minCoord.z();
+        case 3: return maxCoord.x();
+        case 4: return maxCoord.y();
+        case 5: return maxCoord.z();
+    }
 }
 
 /**
@@ -313,8 +393,8 @@ inline bool BoundingBox::isEpsilonIntern(double px, double py, double pz, double
  * @param Un std::ofstream aperto in modalità binaria
  */
 inline void BoundingBox::serialize(std::ofstream& binaryFile) const {
-    min.serialize(binaryFile);
-    max.serialize(binaryFile);
+    minCoord.serialize(binaryFile);
+    maxCoord.serialize(binaryFile);
 }
 
 /**
@@ -327,7 +407,11 @@ inline void BoundingBox::serialize(std::ofstream& binaryFile) const {
  * @param[in] min: punto settato come punto minimo
  */
 inline void BoundingBox::setMin(const Pointd& min) {
-    this->min = min;
+    this->minCoord = min;
+}
+
+inline Pointd&BoundingBox::min() {
+    return minCoord;
 }
 
 /**
@@ -340,7 +424,11 @@ inline void BoundingBox::setMin(const Pointd& min) {
  * @param[in] max: punto settato come punto massimo
  */
 inline void BoundingBox::setMax(const Pointd& max) {
-    this->max = max;
+    this->maxCoord = max;
+}
+
+inline Pointd&BoundingBox::max() {
+    return maxCoord;
 }
 
 /**
@@ -357,7 +445,7 @@ inline void BoundingBox::setMax(const Pointd& max) {
  * @param[in] z: valore settato come componente \c z del punto minimo
  */
 inline void BoundingBox::setMin(double x, double y, double z) {
-    min.set(x, y, z);
+    minCoord.set(x, y, z);
 }
 
 /**
@@ -374,7 +462,7 @@ inline void BoundingBox::setMin(double x, double y, double z) {
  * @param[in] z: valore settato come componente \c z del punto massimo
  */
 inline void BoundingBox::setMax(double x, double y, double z) {
-    max.set(x, y, z);
+    maxCoord.set(x, y, z);
 }
 
 /**
@@ -387,7 +475,11 @@ inline void BoundingBox::setMax(double x, double y, double z) {
  * @param[in] x: valore settato come componente \c x del punto minimo
  */
 inline void BoundingBox::setMinX(double x) {
-    min.setX(x);
+    minCoord.setX(x);
+}
+
+inline double& BoundingBox::minX() {
+    return minCoord.x();
 }
 
 /**
@@ -400,7 +492,11 @@ inline void BoundingBox::setMinX(double x) {
  * @param[in] y: valore settato come componente \c y del punto minimo
  */
 inline void BoundingBox::setMinY(double y) {
-    min.setY(y);
+    minCoord.setY(y);
+}
+
+inline double& BoundingBox::minY() {
+    return minCoord.y();
 }
 
 /**
@@ -413,7 +509,11 @@ inline void BoundingBox::setMinY(double y) {
  * @param[in] z: valore settato come componente \c z del punto minimo
  */
 inline void BoundingBox::setMinZ(double z) {
-    min.setZ(z);
+    minCoord.setZ(z);
+}
+
+inline double& BoundingBox::minZ() {
+    return minCoord.z();
 }
 
 /**
@@ -426,7 +526,11 @@ inline void BoundingBox::setMinZ(double z) {
  * @param[in] x: valore settato come componente \c x del punto massimo
  */
 inline void BoundingBox::setMaxX(double x) {
-    max.setX(x);
+    maxCoord.setX(x);
+}
+
+inline double&BoundingBox::maxX() {
+    return maxCoord.x();
 }
 
 /**
@@ -439,7 +543,11 @@ inline void BoundingBox::setMaxX(double x) {
  * @param[in] y: valore settato come componente \c y del punto massimo
  */
 inline void BoundingBox::setMaxY(double y) {
-    max.setY(y);
+    maxCoord.setY(y);
+}
+
+inline double&BoundingBox::maxY() {
+    return maxCoord.y();
 }
 
 /**
@@ -452,7 +560,11 @@ inline void BoundingBox::setMaxY(double y) {
  * @param[in] z: valore settato come componente \c z del punto massimo
  */
 inline void BoundingBox::setMaxZ(double z) {
-    max.setZ(z);
+    maxCoord.setZ(z);
+}
+
+inline double& BoundingBox::maxZ() {
+    return maxCoord.z();
 }
 
 /**
@@ -471,8 +583,32 @@ inline void BoundingBox::setMaxZ(double z) {
  * std::numeric_limits<double>::max()).
  */
 inline void BoundingBox::reset() {
-    min = Pointd( std::numeric_limits<double>::max(),  std::numeric_limits<double>::max(),  std::numeric_limits<double>::max());
-    max = Pointd(-std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
+    minCoord = Pointd( std::numeric_limits<double>::max(),  std::numeric_limits<double>::max(),  std::numeric_limits<double>::max());
+    maxCoord = Pointd(-std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
+}
+
+inline double& BoundingBox::operator[](unsigned int i) {
+    assert(i < 6);
+    switch (i){
+        case 0: return minCoord.x();
+        case 1: return minCoord.y();
+        case 2: return minCoord.z();
+        case 3: return maxCoord.x();
+        case 4: return maxCoord.y();
+        case 5: return maxCoord.z();
+    }
+}
+
+inline double& BoundingBox::operator()(unsigned int i) {
+    assert(i < 6);
+    switch (i){
+        case 0: return minCoord.x();
+        case 1: return minCoord.y();
+        case 2: return minCoord.z();
+        case 3: return maxCoord.x();
+        case 4: return maxCoord.y();
+        case 5: return maxCoord.z();
+    }
 }
 
 /**
@@ -485,8 +621,8 @@ inline void BoundingBox::reset() {
  * @param[in] binaryFile: std::ifstream aperto in modalità binaria, avente il cursore in una posizione dove è salvato un bounding box
  */
 inline void BoundingBox::deserialize(std::ifstream& binaryFile) {
-    min.deserialize(binaryFile);
-    max.deserialize(binaryFile);
+    minCoord.deserialize(binaryFile);
+    maxCoord.deserialize(binaryFile);
 }
 
 #endif // BOUNDING_BOX_H

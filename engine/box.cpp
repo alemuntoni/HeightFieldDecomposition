@@ -30,34 +30,33 @@ void Box3D::setRotationMatrix(const Eigen::Matrix3d& rot) {
 
 void Box3D::getRotatedExtremes(std::vector<Pointd>& v) const {
     v.resize(8);
-    Pointd p = min;
+    Pointd p = minCoord;
     p.rotate(rotation);
     v[0] = p;
-    p.set(max.x(), min.y(), min.z());
+    p.set(maxCoord.x(), minCoord.y(), minCoord.z());
     p.rotate(rotation);
     v[1] = p;
-    p.set(max.x(), min.y(), max.z());
+    p.set(maxCoord.x(), minCoord.y(), maxCoord.z());
     p.rotate(rotation);
     v[2] = p;
-    p.set(min.x(), min.y(), max.z());
+    p.set(minCoord.x(), minCoord.y(), maxCoord.z());
     p.rotate(rotation);
     v[3] = p;
-    p.set(min.x(), max.y(), min.z());
+    p.set(minCoord.x(), maxCoord.y(), minCoord.z());
     p.rotate(rotation);
     v[4] = p;
-    p.set(max.x(), max.y(), min.z());
+    p.set(maxCoord.x(), maxCoord.y(), minCoord.z());
     p.rotate(rotation);
     v[5] = p;
-    p = max;
+    p = maxCoord;
     p.rotate(rotation);
     v[6] = p;
-    p.set(min.x(), max.y(), max.z());
+    p.set(minCoord.x(), maxCoord.y(), maxCoord.z());
     p.rotate(rotation);
     v[7] = p;
 }
 
-#ifdef IGL_DEFINED
-IGLInterface::SimpleIGLMesh Box3D::getIGLMesh(double minimumEdge) const {
+IGLInterface::SimpleIGLMesh Box3D::calculateIGLMesh(double minimumEdge) const {
     IGLInterface::SimpleIGLMesh box;
     if (minimumEdge <= 0) {
         std::vector<Pointd> extremes;
@@ -291,7 +290,14 @@ IGLInterface::SimpleIGLMesh Box3D::getIGLMesh(double minimumEdge) const {
     }
     return box;
 }
-#endif
+
+IGLInterface::SimpleIGLMesh Box3D::getIGLMesh() const {
+    return piece;
+}
+
+void Box3D::generatePiece(double minimumEdge) {
+    piece = calculateIGLMesh(minimumEdge);
+}
 
 void Box3D::draw() const {
     #ifdef VIEWER_DEFINED
@@ -325,7 +331,7 @@ void Box3D::draw() const {
 }
 
 Pointd Box3D::sceneCenter() const {
-    return (max+min)/2;
+    return (maxCoord+minCoord)/2;
 }
 
 double Box3D::sceneRadius() const {
@@ -343,26 +349,24 @@ void Box3D::setVisible(bool b) {
 
 void Box3D::serialize(std::ofstream& binaryFile) const {
     BoundingBox::serialize(binaryFile);
-    //min.serialize(binaryFile);
-    //max.serialize(binaryFile);
     c1.serialize(binaryFile);
     c2.serialize(binaryFile);
     c3.serialize(binaryFile);
     Serializer::serialize(color, binaryFile);
     target.serialize(binaryFile);
     Serializer::serialize(rotation, binaryFile);
+    piece.serialize(binaryFile);
 }
 
 void Box3D::deserialize(std::ifstream& binaryFile) {
     BoundingBox::deserialize(binaryFile);
-    //min.deserialize(binaryFile);
-    //max.deserialize(binaryFile);
     c1.deserialize(binaryFile);
     c2.deserialize(binaryFile);
     c3.deserialize(binaryFile);
     Serializer::deserialize(color, binaryFile);
     target.deserialize(binaryFile);
     Serializer::deserialize(rotation, binaryFile);
+    piece.deserialize(binaryFile);
 }
 
 const Vec3& Box3D::getTarget() const {

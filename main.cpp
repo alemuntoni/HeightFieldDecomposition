@@ -3,7 +3,6 @@
  * @copyright Alessandro Muntoni 2016.
  */
 
-#ifndef SERVER_MODE
 #include "viewer/mainwindow.h"
 #include "dcel/gui/dcelmanager.h"
 //#include "igl/gui/iglmeshmanager.h"
@@ -13,9 +12,7 @@
 #include "common.h"
 #include <QApplication>
 //#include "common/comparators.h"
-#else
 #include "engine/engine.h"
-#endif
 
 int main(int argc, char *argv[]) {
 
@@ -48,23 +45,28 @@ int main(int argc, char *argv[]) {
 
     return app.exec();
 
-    #elif SERVER_MODE==1
-    /*bool b = false;
-    if (argc > 1) {
-        b = true;
+    #else
+    if (argc > 3){
+        std::string filename(argv[1]);
         Dcel d;
-        d.loadFromObjFile(argv[1]);
-        Engine::largeScaleFabrication(d);
+        BoxList solutions;
+        d.loadFromObjFile(filename);
+        int scale = std::stoi(argv[2]);
+        Engine::scaleAndRotateDcel(d, 0, scale);
+        double kernelDistance = std::stod(argv[3]);
+        Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, 0.05);
+        size_t lastindex = filename.find_last_of(".");
+        std::string rawname = filename.substr(0, lastindex);
+        std::ofstream myfile;
+        myfile.open (rawname + std::to_string(kernelDistance) + ".bin", std::ios::out | std::ios::binary);
+        d.serialize(myfile);
+        bool b = true;
+        Serializer::serialize(b, myfile);
+        solutions.serialize(myfile);
+        myfile.close();
     }
-
-    return !b;*/
-
-    //Dcel d;
-    //d.loadFromObjFile(argv[1]);
-    //Engine::makePreprocessingAndSave(d, argv[2], 15);
-    Engine::Server::expandBoxesFromFile(argv[1], argv[2], std::stoi(argv[3]), std::stod(argv[4]), (bool)std::stoi(argv[5]));
-    #elif SERVER_MODE==2
-    Engine::Server::booleanOperationsFromSolutions(argv[1], argv[2]);
+    else
+        std::cerr << "Error! Number argument lower than 3\n";
     #endif
     return 0;
 }

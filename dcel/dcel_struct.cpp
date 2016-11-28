@@ -167,6 +167,15 @@ double Dcel::getSurfaceArea() const {
     return area;
 }
 
+double Dcel::getAverageHalfEdgesLength() const {
+    double average = 0;
+    for (const HalfEdge* he : halfEdgeIterator()){
+        average += he->getLength();
+    }
+    average /= nHalfEdges;
+    return average;
+}
+
 /**
  * \~Italian
  * @brief Salva un file nel formato obj rappresentante la mesh contenuta nella Dcel.

@@ -15,8 +15,7 @@ FINAL_RELEASE {
 }
 
 CONFIG += ALL
-#CONFIG += SERVER_MODE_GRADIENT_DESCENT
-#CONFIG += SERVER_MODE_BOOLEAN_OPERATIONS
+#CONFIG += SERVER_MODE
 
 ALL {
     #Add or remove all the modules you need
@@ -88,6 +87,10 @@ ALL {
 
     DISTFILES += \
         README.txt
+}
+
+SERVER_MODE {
+    DEFINES += SERVER_MODE
 }
 
 message(Included modules: $$MODULES)

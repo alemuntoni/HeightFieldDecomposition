@@ -151,7 +151,7 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
             }
             alfa *= 2;
         }
-    }while (alfa > 1e-10 && gradient.norm() > 1e-7 && nIterations < 500);
+    }while (alfa > 1e-10 && gradient.norm() > 1e-7 && nIterations < 100);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);

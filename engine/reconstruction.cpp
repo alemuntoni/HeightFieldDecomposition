@@ -3,6 +3,7 @@
 #include "common.h"
 #include "common/timer.h"
 #include "lib/graph/directedgraph.h"
+#include <map>
 
 void Reconstruction::compactSet(std::set<double>& set, double epsilon) {
     std::set<double>::iterator it = set.begin();
@@ -421,75 +422,148 @@ bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, c
     if (target2 == XYZ[0]){ //+x
         base = b2.getMinX();
         if (b1.getMinX() < base && b1.getMaxX() > base){
-            //check if bb is empty
-            bb.setMinX(b1.getMaxX()-EPSILON);
-            if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                return true;
+            if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ()))
+                //check if bb is empty
+                bb.setMinX(b1.getMaxX()-EPSILON);
+                if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                    return true;
         }
     } else if (target2 == XYZ[1]){ //+y
         base = b2.getMinY();
         if (b1.getMinY() < base && b1.getMaxY() > base){
-            bb.setMinY(b1.getMaxY()-EPSILON);
-            if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                return true;
+            if (!(b1.getMinX() < b2.getMinX() && b1.getMinZ() < b2.getMinZ() && b1.getMaxX() > b2.getMaxX() && b1.getMaxZ() > b2.getMaxZ()))
+                bb.setMinY(b1.getMaxY()-EPSILON);
+                if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                    return true;
         }
     } else if (target2 == XYZ[2]){ //+z
         base = b2.getMinZ();
         if (b1.getMinZ() < base && b1.getMaxZ() > base){
-            bb.setMinZ(b1.getMaxZ()-EPSILON);
-            if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                return true;
+            if (!(b1.getMinX() < b2.getMinX() && b1.getMinY() < b2.getMinY() && b1.getMaxX() > b2.getMaxX() && b1.getMaxY() > b2.getMaxY()))
+                bb.setMinZ(b1.getMaxZ()-EPSILON);
+                if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                    return true;
         }
     } else if (target2 == XYZ[3]){ //-x
         base = b2.getMaxX();
         if (b1.getMinX() < base && b1.getMaxX() > base){
-            bb.setMaxX(b1.getMinX()+EPSILON);
-            if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                return true;
+            if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ()))
+                bb.setMaxX(b1.getMinX()+EPSILON);
+                if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                    return true;
         }
     } else if (target2 == XYZ[4]){ //-y
         base = b2.getMaxY();
         if (b1.getMinY() < base && b1.getMaxY() > base){
-            bb.setMaxY(b1.getMinY()+EPSILON);
-            if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                return true;
+            if (!(b1.getMinX() < b2.getMinX() && b1.getMinZ() < b2.getMinZ() && b1.getMaxX() > b2.getMaxX() && b1.getMaxZ() > b2.getMaxZ()))
+                bb.setMaxY(b1.getMinY()+EPSILON);
+                if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                    return true;
         }
     } else if (target2 == XYZ[5]){ //-z
         base = b2.getMaxZ();
         if (b1.getMinZ() < base && b1.getMaxZ() > base){
-            bb.setMaxZ(b1.getMinZ()+EPSILON);
-            if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                return true;
+            if (!(b1.getMinX() < b2.getMinX() && b1.getMinY() < b2.getMinY() && b1.getMaxX() > b2.getMaxX() && b1.getMaxY() > b2.getMaxY()))
+                bb.setMaxZ(b1.getMinZ()+EPSILON);
+                if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                    return true;
         }
     } else
         assert(0);
     return false;
 }
 
-Array2D<int> Reconstruction::getOrdering(const BoxList& bl, const Dcel& d) {
-    DirectedGraph g(bl.getNumberBoxes());
-    Array2D<int> ordering(bl.getNumberBoxes(), bl.getNumberBoxes(), -1); // true -> "<", false -> ">="
+BoxList Reconstruction::splitBox(const Box3D& b1, const Box3D& b2) {
+    Vec3 target = b2.getTarget();
+    if(target == XYZ[0]){
+        int count = 0;
+        bool minyminz, maxyminz, maxymaxz, minymaxz;
+        minyminz = b2.isIntern(b1.getMaxX(), b1.getMinY(), b1.getMinZ());
+        maxyminz = b2.isIntern(b1.getMaxX(), b1.getMaxY(), b1.getMinZ());
+        maxymaxz = b2.isIntern(b1.getMaxX(), b1.getMaxY(), b1.getMaxZ());
+        minymaxz = b2.isIntern(b1.getMaxX(), b1.getMinY(), b1.getMaxZ());
+        if (minyminz) count++;
+        if (maxyminz) count++;
+        if (maxymaxz) count++;
+        if (minymaxz) count++;
+        assert(count != 0 && count != 3 && count < 5);
 
+    }
+    else if (target == XYZ[1]){
+
+    }
+    else if (target == XYZ[2]){
+
+    }
+    else if (target == XYZ[3]){
+
+    }
+    else if (target == XYZ[4]){
+
+    }
+    else if (target == XYZ[5]){
+
+    }
+}
+
+Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
     CGALInterface::AABBTree tree(d);
-    for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
-        Box3D b1 = bl.getBox(i);
-        for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
-            Box3D b2 = bl.getBox(j);
-            if (boxesIntersect(b1,b2)){
-                if (isDangerousIntersection(b1, b2, tree)){
-                    g.addEdge(i,j);
-                    std::cerr << i << " -> " << j << "\n";
-                }
-                if (isDangerousIntersection(b2, b1, tree)){
-                    g.addEdge(j,i);
-                    std::cerr << j << " -> " << i << "\n";
+    std::vector<std::vector<unsigned int> > loops;
+    DirectedGraph g;
+    do {
+        g = DirectedGraph(bl.getNumberBoxes());
+
+
+
+        for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
+            Box3D b1 = bl.getBox(i);
+            for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
+                Box3D b2 = bl.getBox(j);
+                if (boxesIntersect(b1,b2)){
+                    if (isDangerousIntersection(b1, b2, tree)){
+                        g.addEdge(i,j);
+                        std::cerr << i << " -> " << j << "\n";
+                    }
+                    if (isDangerousIntersection(b2, b1, tree)){
+                        g.addEdge(j,i);
+                        std::cerr << j << " -> " << i << "\n";
+                    }
                 }
             }
         }
-    }
-    ///Detect and delete cycles on graph (modifying bl)
+        ///Detect and delete cycles on graph (modifying bl)
+
+        g.getLoops(loops);
+        std::cerr << "Number loops: " << loops.size() << "\n";
+        if (loops.size() > 0){ // I need to modify bl
+            std::map<std::pair<unsigned int, unsigned int>, int> arcs;
+            for (std::vector<unsigned int> loop : loops){
+                unsigned int node = 0;
+                for (node = 0; node < loop.size()-1; node++){
+                    std::cerr << node << " -> ";
+                    std::pair<unsigned int, unsigned int> arc(loop[node], loop[node+1]);
+                    std::map<std::pair<unsigned int, unsigned int>, int>::iterator it = arcs.find(arc);
+                    if (it == arcs.end())
+                        arcs[arc] = 1;
+                    else
+                        arcs[arc]++;
+                }
+                std::cerr << node << " \n";
+            }
+            std::multimap<int,std::pair<unsigned int, unsigned int> > rev = flipMap(arcs);
+
+            unsigned int size ; // size of the last element
+            // if size == 1, only one arc can be eliminated
+            // otherwise, more than one arc can be eliminated.
+            // I have to choose which one.
+            // biggest small split
+        }
+    }while (loops.size() > 0);
+
+
 
     //works only if graph has no cycles
+    Array2D<int> ordering(bl.getNumberBoxes(), bl.getNumberBoxes(), -1); // true -> "<", false -> ">=", undefined -> "-1"
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         std::set<unsigned int> visited;
         g.visit(visited, i);
@@ -514,8 +588,6 @@ Array2D<int> Reconstruction::getOrdering(const BoxList& bl, const Dcel& d) {
             }
         }
     }
-
-    std::cerr << ordering;
 
     return ordering;
 
