@@ -74,6 +74,8 @@ class BoundingBox : public SerializableObject{
         bool isIntern(double px, double py, double pz)     const;
         bool isEpsilonIntern(const Pointd& p, double epsilon = 1e-6)     const;
         bool isEpsilonIntern(double px, double py, double pz, double epsilon = 1e-6)     const;
+        void getExtremes(std::vector<Pointd> &extremes) const;
+        std::vector<Pointd> getExtremes() const;
 
         //Operators
         const double& operator[](unsigned int i)                 const;
@@ -359,9 +361,27 @@ inline bool BoundingBox::isEpsilonIntern(double px, double py, double pz, double
             px <= maxCoord.x()+epsilon && py <= maxCoord.y()+epsilon && pz <= maxCoord.z()+epsilon);
 }
 
+inline void BoundingBox::getExtremes(std::vector<Pointd>& extremes) const {
+    extremes.resize(8);
+    extremes[0] = minCoord;
+    extremes[1].set(maxCoord.x(), minCoord.y(), minCoord.z());
+    extremes[2].set(maxCoord.x(), minCoord.y(), maxCoord.z());
+    extremes[3].set(minCoord.x(), minCoord.y(), maxCoord.z());
+    extremes[4].set(minCoord.x(), maxCoord.y(), minCoord.z());
+    extremes[5].set(maxCoord.x(), maxCoord.y(), minCoord.z());
+    extremes[6] = maxCoord;
+    extremes[7].set(minCoord.x(), maxCoord.y(), maxCoord.z());
+}
+
+inline std::vector<Pointd> BoundingBox::getExtremes() const {
+    std::vector<Pointd> extremes;
+    getExtremes(extremes);
+    return extremes;
+}
+
 inline const double& BoundingBox::operator[](unsigned int i) const{
     assert(i < 6);
-    switch (i){
+    switch (i%6){
         case 0: return minCoord.x();
         case 1: return minCoord.y();
         case 2: return minCoord.z();
@@ -369,11 +389,12 @@ inline const double& BoundingBox::operator[](unsigned int i) const{
         case 4: return maxCoord.y();
         case 5: return maxCoord.z();
     }
+    return minCoord.x();
 }
 
 inline const double& BoundingBox::operator()(unsigned int i) const {
     assert(i < 6);
-    switch (i){
+    switch (i%6){
         case 0: return minCoord.x();
         case 1: return minCoord.y();
         case 2: return minCoord.z();
@@ -381,6 +402,7 @@ inline const double& BoundingBox::operator()(unsigned int i) const {
         case 4: return maxCoord.y();
         case 5: return maxCoord.z();
     }
+    return minCoord.x();
 }
 
 /**
@@ -589,7 +611,7 @@ inline void BoundingBox::reset() {
 
 inline double& BoundingBox::operator[](unsigned int i) {
     assert(i < 6);
-    switch (i){
+    switch (i%6){
         case 0: return minCoord.x();
         case 1: return minCoord.y();
         case 2: return minCoord.z();
@@ -597,11 +619,12 @@ inline double& BoundingBox::operator[](unsigned int i) {
         case 4: return maxCoord.y();
         case 5: return maxCoord.z();
     }
+    return minCoord.x();
 }
 
 inline double& BoundingBox::operator()(unsigned int i) {
     assert(i < 6);
-    switch (i){
+    switch (i%6){
         case 0: return minCoord.x();
         case 1: return minCoord.y();
         case 2: return minCoord.z();
@@ -609,6 +632,7 @@ inline double& BoundingBox::operator()(unsigned int i) {
         case 4: return maxCoord.y();
         case 5: return maxCoord.z();
     }
+    return minCoord.x();
 }
 
 /**

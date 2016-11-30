@@ -35,6 +35,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         void moveZ(double d);
         IGLInterface::SimpleIGLMesh calculateIGLMesh(double minimumEdge = -1) const;
         IGLInterface::SimpleIGLMesh getIGLMesh() const;
+        void setIGLMesh(const IGLInterface::SimpleIGLMesh &piece);
         void generatePiece(double minimumEdge = -1);
 
         // DrawableObject interface
@@ -56,6 +57,9 @@ class Box3D : public BoundingBox, public DrawableObject{
         int getId() const;
         void setId(int value);
 
+        int getTrianglesCovered() const;
+        void setTrianglesCovered(int value);
+
     protected:
         //Pointd min, max;
         Pointd c1, c2, c3;
@@ -65,6 +69,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         Eigen::Matrix3d rotation;
         int id;
         IGLInterface::SimpleIGLMesh piece;
+        int trianglesCovered;
 
         void drawLine(const Pointd& a, const Pointd& b, const QColor& c) const;
         void drawCube() const;
@@ -139,6 +144,22 @@ inline void Box3D::moveY(double d) {
 inline void Box3D::moveZ(double d) {
     minCoord.setZ(minCoord.z() + d);
     maxCoord.setZ(maxCoord.z() + d);
+}
+
+inline int Box3D::getId() const {
+    return id;
+}
+
+inline void Box3D::setId(int value) {
+    id = value;
+}
+
+inline int Box3D::getTrianglesCovered() const {
+    return trianglesCovered;
+}
+
+inline void Box3D::setTrianglesCovered(int value) {
+    trianglesCovered = value;
 }
 
 #endif // BOX_H

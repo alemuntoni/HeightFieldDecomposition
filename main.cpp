@@ -6,7 +6,7 @@
 #include "viewer/mainwindow.h"
 #include "dcel/gui/dcelmanager.h"
 //#include "igl/gui/iglmeshmanager.h"
-//#include "igl/gui/booleansmanager.h"
+#include "igl/gui/booleansmanager.h"
 #include "viewer/managers/windowmanager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
@@ -36,8 +36,8 @@ int main(int argc, char *argv[]) {
     //IGLMeshManager mm(&gui);
     //gui.addManager(&mm, "IGL Mesh Manager");
 
-    //BooleansManager bm(&gui);
-    //gui.addManager(&bm, "Booleans Manager");
+    BooleansManager bm(&gui);
+    gui.addManager(&bm, "Booleans Manager");
 
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
     gui.updateGlCanvas();

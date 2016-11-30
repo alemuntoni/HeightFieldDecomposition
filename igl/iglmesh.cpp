@@ -114,6 +114,15 @@ namespace IGLInterface {
         result.F = M.F();
     }
 
+    SimpleIGLMesh SimpleIGLMesh::intersection(const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
+        SimpleIGLMesh result;
+        igl::copyleft::cgal::CSGTree M;
+        M = {{m1.V,m1.F},{m2.V,m2.F},"i"};
+        result.V = M.cast_V<Eigen::MatrixXd>();
+        result.F = M.F();
+        return result;
+    }
+
     void SimpleIGLMesh::difference(SimpleIGLMesh& result, const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
         igl::copyleft::cgal::CSGTree M;
         M = {{m1.V,m1.F},{m2.V,m2.F},"m"};
@@ -121,11 +130,29 @@ namespace IGLInterface {
         result.F = M.F();
     }
 
+    SimpleIGLMesh SimpleIGLMesh::difference(const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
+        SimpleIGLMesh result;
+        igl::copyleft::cgal::CSGTree M;
+        M = {{m1.V,m1.F},{m2.V,m2.F},"m"};
+        result.V = M.cast_V<Eigen::MatrixXd>();
+        result.F = M.F();
+        return result;
+    }
+
     void SimpleIGLMesh::unionn(SimpleIGLMesh& result, const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
         igl::copyleft::cgal::CSGTree M;
         M = {{m1.V,m1.F},{m2.V,m2.F},"u"};
         result.V = M.cast_V<Eigen::MatrixXd>();
         result.F = M.F();
+    }
+
+    SimpleIGLMesh SimpleIGLMesh::unionn(const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
+        SimpleIGLMesh result;
+        igl::copyleft::cgal::CSGTree M;
+        M = {{m1.V,m1.F},{m2.V,m2.F},"u"};
+        result.V = M.cast_V<Eigen::MatrixXd>();
+        result.F = M.F();
+        return result;
     }
     #endif
 
@@ -249,7 +276,7 @@ namespace IGLInterface {
         }
     }
 
-    BoundingBox IGLMesh::getBoundingBox() {
+    BoundingBox IGLMesh::getBoundingBox() const {
         BoundingBox  bb;
         bb.setMin(BBmin(0), BBmin(1), BBmin(2));
         bb.setMax(BBmax(0), BBmax(1), BBmax(2));
@@ -478,6 +505,18 @@ namespace IGLInterface {
         result.updateVertexAndFaceNormals();
     }
 
+    IGLMesh IGLMesh::intersection(const IGLMesh& m1, const IGLMesh& m2) {
+        IGLMesh result;
+        SimpleIGLMesh sres;
+        SimpleIGLMesh::intersection(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
+        result = IGLMesh(sres);
+        result.CF = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+        result.NV.resize(result.V.rows(), 3);
+        result.NF.resize(result.F.rows(), 3);
+        result.updateVertexAndFaceNormals();
+        return result;
+    }
+
     void IGLMesh::difference(IGLMesh& result, const IGLMesh& m1, const IGLMesh& m2) {
         SimpleIGLMesh sres;
         SimpleIGLMesh::difference(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
@@ -488,6 +527,18 @@ namespace IGLInterface {
         result.updateVertexAndFaceNormals();
     }
 
+    IGLMesh IGLMesh::difference(const IGLMesh& m1, const IGLMesh& m2) {
+        IGLMesh result;
+        SimpleIGLMesh sres;
+        SimpleIGLMesh::difference(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
+        result = IGLMesh(sres);
+        result.CF = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+        result.NV.resize(result.V.rows(), 3);
+        result.NF.resize(result.F.rows(), 3);
+        result.updateVertexAndFaceNormals();
+        return result;
+    }
+
     void IGLMesh::unionn(IGLMesh& result, const IGLMesh& m1, const IGLMesh& m2) {
         SimpleIGLMesh sres;
         SimpleIGLMesh::unionn(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
@@ -496,6 +547,18 @@ namespace IGLInterface {
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
+    }
+
+    IGLMesh IGLMesh::unionn(const IGLMesh& m1, const IGLMesh& m2) {
+        IGLMesh result;
+        SimpleIGLMesh sres;
+        SimpleIGLMesh::unionn(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
+        result = IGLMesh(sres);
+        result.CF = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+        result.NV.resize(result.V.rows(), 3);
+        result.NF.resize(result.F.rows(), 3);
+        result.updateVertexAndFaceNormals();
+        return result;
     }
     #endif
 

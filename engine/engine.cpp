@@ -366,8 +366,9 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
                 std::cerr << "Generated grid or " << i << " t " << j << "\n";
             }
         }
+        bool end = false;
 
-        while (coveredFaces.size() < scaled[0].getNumberFaces()){
+        while (coveredFaces.size() < scaled[0].getNumberFaces() && !end){
             BoxList tmp[ORIENTATIONS][TARGETS];
             Eigen::VectorXi faces[ORIENTATIONS];
             for (unsigned int i = 0; i < ORIENTATIONS; i++){
@@ -417,6 +418,14 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
 
             std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
             std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
+            if (numberFaces == scaled[0].getNumberFaces()){
+                end = true;
+                if (coveredFaces.size() != scaled[0].getNumberFaces()){
+                    std::cerr << "WARNING: Not every face has been covered by a box.\n";
+                    std::cerr << "Number uncovered faces: " << scaled[0].getNumberFaces() - coveredFaces.size() << "\n";
+                }
+
+            }
             numberFaces*=2;
             if (numberFaces > scaled[0].getNumberFaces())
                 numberFaces = scaled[0].getNumberFaces();

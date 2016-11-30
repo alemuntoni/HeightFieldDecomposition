@@ -125,14 +125,6 @@ void EngineManager::deserializeBC(const std::string& filename) {
     d->update();
     d->setPointsShading();
     d->setWireframe(true);
-    //
-    /*double average = d->getAverageHalfEdgesLength();
-    solutions->generatePieces(average*7);
-    size_t last = filename.find_last_of("/");
-    std::string name = filename.substr(last+1, filename.size());
-    std::cerr << name << "\n";
-    serializeBC("heightfields/new/" + name);*/
-    //
     mainWindow->pushObj(d, "Input Mesh");
     mainWindow->pushObj(solutions, "Boxes");
     mainWindow->pushObj(baseComplex, "Base Complex");
@@ -149,13 +141,13 @@ void EngineManager::deserializeBC(const std::string& filename) {
     ui->setFromSolutionSpinBox->setValue(0);
     ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
 
-    /*Array2D<int> ordering = Reconstruction::getOrdering(*solutions, *d);
+    Array2D<int> ordering = Reconstruction::getOrdering(*solutions, *d);
     solutions->setIds();
     solutions->sort(ordering);
     for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
         std::cerr << solutions->getBox(i).getId() << " ";
     }
-    std::cerr << "\n";*/
+    std::cerr << "\n";
 }
 
 void EngineManager::serialize(std::ofstream& binaryFile) const {

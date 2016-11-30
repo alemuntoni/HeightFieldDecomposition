@@ -3,6 +3,7 @@
 #include <vector>
 #include <set>
 #include <queue>
+#include <assert.h>
 
 class DirectedGraph {
     public:
@@ -10,6 +11,9 @@ class DirectedGraph {
         DirectedGraph(unsigned int numberNodes);
         unsigned int addNode();
         void addEdge(unsigned int node1, unsigned int node2);
+        void removeEdge(unsigned int node1, unsigned int node2);
+        std::vector<unsigned int> getIncomingNodes(unsigned int node);
+        std::vector<unsigned int> getOutgoingNodes(unsigned int node);
 
         void visit(std::set<unsigned int> &visitedNodes, unsigned int startingNode);
         std::vector< std::vector<unsigned int> > getSpanningTree(unsigned int radix);
@@ -37,6 +41,31 @@ void DirectedGraph::addEdge(unsigned int node1, unsigned int node2) {
     assert(node1 < nodes.size());
     assert(node2 < nodes.size());
     nodes[node1].push_back(node2);
+}
+
+void DirectedGraph::removeEdge(unsigned int node1, unsigned int node2) {
+    assert(node1 < nodes.size());
+    assert(node2 < nodes.size());
+    std::vector<unsigned int>::iterator it = std::find(nodes[node1].begin(), nodes[node1].end(), node2);
+    assert(it != nodes[node1].end());
+    if (it != nodes[node1].end()){
+        nodes[node1].erase(it);
+    }
+}
+
+std::vector<unsigned int> DirectedGraph::getIncomingNodes(unsigned int node) {
+    assert(node < nodes.size());
+    std::vector<unsigned int> incoming;
+    for (unsigned int i = 0; i < nodes.size(); i++){
+        if(std::find(nodes[i].begin(), nodes[i].end(), node) != nodes[i].end())
+            incoming.push_back(i);
+    }
+    return incoming;
+}
+
+std::vector<unsigned int> DirectedGraph::getOutgoingNodes(unsigned int node) {
+    assert(node < nodes.size());
+    return nodes[node];
 }
 
 void DirectedGraph::visit(std::set<unsigned int>& visitedNodes, unsigned int startingNode) {

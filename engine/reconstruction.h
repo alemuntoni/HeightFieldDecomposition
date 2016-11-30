@@ -47,9 +47,13 @@ namespace Reconstruction {
     //Naive splitting
     bool boxesIntersect(const Box3D &b1, const Box3D &b2);
 
-    bool isDangerousIntersection(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree);
+    bool isDangerousIntersection(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree, bool checkMeshes = false);
 
-    BoxList splitBox(const Box3D &b1, const Box3D &b2);
+    double getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3);
+
+    void splitBox(const Box3D &b1, Box3D& b2, Box3D& b3);
+
+    double minimumSplit(const Box3D &b1, const Box3D &b2);
 
     Array2D<int> getOrdering(BoxList& bl, const Dcel &d);
 }

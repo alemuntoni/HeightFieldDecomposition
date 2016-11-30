@@ -415,124 +415,217 @@ bool Reconstruction::boxesIntersect(const Box3D& b1, const Box3D& b2) {
     return true; //boxes overlap
 }
 
-bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const CGALInterface::AABBTree &tree) {
+bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const CGALInterface::AABBTree &tree, bool checkMeshes) {
     Vec3 target2 = b2.getTarget();
     BoundingBox bb = b1;
     double base;
     if (target2 == XYZ[0]){ //+x
         base = b2.getMinX();
         if (b1.getMinX() < base && b1.getMaxX() > base){
-            if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ()))
+            if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ())){
                 //check if bb is empty
                 bb.setMinX(b1.getMaxX()-EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                    return true;
+                if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                    if (!checkMeshes){
+                        return true;
+                    }
+                    else {
+                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                        if (intersection.getNumberVertices() != 0)
+                            return true;
+                    }
+                }
+            }
         }
     } else if (target2 == XYZ[1]){ //+y
         base = b2.getMinY();
         if (b1.getMinY() < base && b1.getMaxY() > base){
-            if (!(b1.getMinX() < b2.getMinX() && b1.getMinZ() < b2.getMinZ() && b1.getMaxX() > b2.getMaxX() && b1.getMaxZ() > b2.getMaxZ()))
+            if (!(b1.getMinX() < b2.getMinX() && b1.getMinZ() < b2.getMinZ() && b1.getMaxX() > b2.getMaxX() && b1.getMaxZ() > b2.getMaxZ())){
                 bb.setMinY(b1.getMaxY()-EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                    return true;
+                if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                    if (!checkMeshes){
+                        return true;
+                    }
+                    else {
+                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                        if (intersection.getNumberVertices() != 0)
+                            return true;
+                    }
+                }
+            }
         }
     } else if (target2 == XYZ[2]){ //+z
         base = b2.getMinZ();
         if (b1.getMinZ() < base && b1.getMaxZ() > base){
-            if (!(b1.getMinX() < b2.getMinX() && b1.getMinY() < b2.getMinY() && b1.getMaxX() > b2.getMaxX() && b1.getMaxY() > b2.getMaxY()))
+            if (!(b1.getMinX() < b2.getMinX() && b1.getMinY() < b2.getMinY() && b1.getMaxX() > b2.getMaxX() && b1.getMaxY() > b2.getMaxY())){
                 bb.setMinZ(b1.getMaxZ()-EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                    return true;
+                if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                    if (!checkMeshes){
+                        return true;
+                    }
+                    else {
+                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                        if (intersection.getNumberVertices() != 0)
+                            return true;
+                    }
+                }
+            }
         }
     } else if (target2 == XYZ[3]){ //-x
         base = b2.getMaxX();
         if (b1.getMinX() < base && b1.getMaxX() > base){
-            if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ()))
+            if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ())){
                 bb.setMaxX(b1.getMinX()+EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                    return true;
+                if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                    if (!checkMeshes){
+                        return true;
+                    }
+                    else {
+                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                        if (intersection.getNumberVertices() != 0)
+                            return true;
+                    }
+                }
+            }
         }
     } else if (target2 == XYZ[4]){ //-y
         base = b2.getMaxY();
         if (b1.getMinY() < base && b1.getMaxY() > base){
-            if (!(b1.getMinX() < b2.getMinX() && b1.getMinZ() < b2.getMinZ() && b1.getMaxX() > b2.getMaxX() && b1.getMaxZ() > b2.getMaxZ()))
+            if (!(b1.getMinX() < b2.getMinX() && b1.getMinZ() < b2.getMinZ() && b1.getMaxX() > b2.getMaxX() && b1.getMaxZ() > b2.getMaxZ())){
                 bb.setMaxY(b1.getMinY()+EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                    return true;
+                if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                    if (!checkMeshes){
+                        return true;
+                    }
+                    else {
+                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                        if (intersection.getNumberVertices() != 0)
+                            return true;
+                    }
+                }
+            }
         }
     } else if (target2 == XYZ[5]){ //-z
         base = b2.getMaxZ();
         if (b1.getMinZ() < base && b1.getMaxZ() > base){
-            if (!(b1.getMinX() < b2.getMinX() && b1.getMinY() < b2.getMinY() && b1.getMaxX() > b2.getMaxX() && b1.getMaxY() > b2.getMaxY()))
+            if (!(b1.getMinX() < b2.getMinX() && b1.getMinY() < b2.getMinY() && b1.getMaxX() > b2.getMaxX() && b1.getMaxY() > b2.getMaxY())){
                 bb.setMaxZ(b1.getMinZ()+EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                    return true;
+                if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                    if (!checkMeshes){
+                        return true;
+                    }
+                    else {
+                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                        if (intersection.getNumberVertices() != 0)
+                            return true;
+                    }
+                }
+            }
         }
     } else
         assert(0);
     return false;
 }
 
-BoxList Reconstruction::splitBox(const Box3D& b1, const Box3D& b2) {
+double Reconstruction::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
+    Box3D b4;
+    b3.setColor(b2.getColor());
+    b3.setTarget(b2.getTarget());
     Vec3 target = b2.getTarget();
-    if(target == XYZ[0]){
-        int count = 0;
-        bool minyminz, maxyminz, maxymaxz, minymaxz;
-        minyminz = b2.isIntern(b1.getMaxX(), b1.getMinY(), b1.getMinZ());
-        maxyminz = b2.isIntern(b1.getMaxX(), b1.getMaxY(), b1.getMinZ());
-        maxymaxz = b2.isIntern(b1.getMaxX(), b1.getMaxY(), b1.getMaxZ());
-        minymaxz = b2.isIntern(b1.getMaxX(), b1.getMinY(), b1.getMaxZ());
-        if (minyminz) count++;
-        if (maxyminz) count++;
-        if (maxymaxz) count++;
-        if (minymaxz) count++;
-        assert(count != 0 && count != 3 && count < 5);
+    for (unsigned int t = 0; t < 6; t++){
+        if (target == XYZ[t]){
+            if (t < 3){
+                assert(b1[t+3] < b2[t+3]);
+                b3[t] = b1[t+3];
+                b3[t+3] = b2[t+3];
+                b4[t] = b2[t];
+                b4[t+3] = b1[t+3];
+                for (unsigned u = 0; u < 3; u++){
+                    if (u != t){
+                        b3[u] = b4[u] = std::max(b1[u], b2[u]);
+                        b3[u+3] = b4[u+3] = std::min(b1[u+3], b2[u+3]);
+                        assert(b3[u] < b3[u+3]);
+                    }
+                }
+            }
+            else if (t >= 3){
+                assert(b1[t-3] > b2[t-3]);
+                b3[t-3] = b2[t-3];
+                b3[t] = b1[t-3];
+                for (unsigned u = 3; u < 6; u++){
+                    if (u != t){
+                        b3[u-3] = b4[u-3] = std::max(b1[u-3], b2[u-3]);
+                        b3[u] = b4[u] = std::min(b1[u], b2[u]);
+                        assert(b3[u-3] < b3[u]);
+                    }
+                }
 
+            }
+        }
     }
-    else if (target == XYZ[1]){
+    return b4.getVolume();
+}
 
-    }
-    else if (target == XYZ[2]){
+void Reconstruction::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3) {
+    getSplits(b1, b2, b3);
+    b3.generatePiece();
+    IGLInterface::SimpleIGLMesh oldBox = b2.getIGLMesh();
+    oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b1.getIGLMesh());
+    IGLInterface::SimpleIGLMesh tmp = oldBox;
+    oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b3.getIGLMesh());
+    b2.setIGLMesh(oldBox);
+    BoundingBox newBBb2 = oldBox.getBoundingBox();
+    b2.setMin(newBBb2.min());
+    b2.setMax(newBBb2.max());
+    tmp = IGLInterface::SimpleIGLMesh::intersection(tmp, b3.getIGLMesh());
+    b3.setIGLMesh(tmp);
+    BoundingBox newBBb3 = tmp.getBoundingBox();
+    b3.setMin(newBBb3.min());
+    b3.setMax(newBBb3.max());
+}
 
-    }
-    else if (target == XYZ[3]){
-
-    }
-    else if (target == XYZ[4]){
-
-    }
-    else if (target == XYZ[5]){
-
-    }
+double Reconstruction::minimumSplit(const Box3D &b1, const Box3D &b2){
+    Box3D b3;
+    double volumeb4 = getSplits(b1, b2, b3);
+    double volumeb2 = b2.getVolume();
+    double volumeb3 = b3.getVolume();
+    double remainingSplit = volumeb2 - volumeb3 - volumeb4;
+    assert (remainingSplit >= 0);
+    return std::min(remainingSplit, volumeb3);
 }
 
 Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
     CGALInterface::AABBTree tree(d);
+    bl.calculateTrianglesCovered(tree);
+    bl.sortByTrianglesCovered();
+    std::cerr << "Triangles Covered: \n";
+    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
+        std::cerr << bl.getBox(i).getTrianglesCovered() << "; ";
+    }
+    std::cerr << "\n";
     std::vector<std::vector<unsigned int> > loops;
     DirectedGraph g;
-    do {
-        g = DirectedGraph(bl.getNumberBoxes());
 
-
-
-        for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
-            Box3D b1 = bl.getBox(i);
-            for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
-                Box3D b2 = bl.getBox(j);
-                if (boxesIntersect(b1,b2)){
-                    if (isDangerousIntersection(b1, b2, tree)){
-                        g.addEdge(i,j);
-                        std::cerr << i << " -> " << j << "\n";
-                    }
-                    if (isDangerousIntersection(b2, b1, tree)){
-                        g.addEdge(j,i);
-                        std::cerr << j << " -> " << i << "\n";
-                    }
+    g = DirectedGraph(bl.getNumberBoxes());
+    for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
+        Box3D b1 = bl.getBox(i);
+        for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
+            Box3D b2 = bl.getBox(j);
+            if (boxesIntersect(b1,b2)){
+                if (isDangerousIntersection(b1, b2, tree)){
+                    g.addEdge(i,j);
+                    std::cerr << i << " -> " << j << "\n";
+                }
+                if (isDangerousIntersection(b2, b1, tree)){
+                    g.addEdge(j,i);
+                    std::cerr << j << " -> " << i << "\n";
                 }
             }
         }
-        ///Detect and delete cycles on graph (modifying bl)
+    }
+    ///Detect and delete cycles on graph (modifying bl)
 
+    do {
         g.getLoops(loops);
         std::cerr << "Number loops: " << loops.size() << "\n";
         if (loops.size() > 0){ // I need to modify bl
@@ -540,7 +633,7 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
             for (std::vector<unsigned int> loop : loops){
                 unsigned int node = 0;
                 for (node = 0; node < loop.size()-1; node++){
-                    std::cerr << node << " -> ";
+                    std::cerr << loop[node] << " -> ";
                     std::pair<unsigned int, unsigned int> arc(loop[node], loop[node+1]);
                     std::map<std::pair<unsigned int, unsigned int>, int>::iterator it = arcs.find(arc);
                     if (it == arcs.end())
@@ -548,21 +641,63 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
                     else
                         arcs[arc]++;
                 }
-                std::cerr << node << " \n";
+                std::cerr << loop[node] << " \n";
             }
             std::multimap<int,std::pair<unsigned int, unsigned int> > rev = flipMap(arcs);
 
-            unsigned int size ; // size of the last element
-            // if size == 1, only one arc can be eliminated
-            // otherwise, more than one arc can be eliminated.
-            // I have to choose which one.
-            // biggest small split
+            for (std::multimap<int,std::pair<unsigned int, unsigned int> >::reverse_iterator it = rev.rbegin(); it != rev.rend(); ++it){
+                std::cerr << "K : " << (*it).first << "; V: (" << (*it).second.first << " -> " << (*it).second.second << ")\n";
+            }
+
+            std::multimap<int,std::pair<unsigned int, unsigned int> >::reverse_iterator it = rev.rbegin();
+
+            unsigned int size = rev.count((*it).first); // number of arcs that belongs with the maximum number of loops
+            std::pair<unsigned int, unsigned int> arcToRemove;
+            if (size == 1){ // if I remove this arc, I will remove the maximum number of loops
+                arcToRemove = (*it).second;
+                std::cerr << "Eliminate Arc: " << arcToRemove.first << " -> " << arcToRemove.second << "\n";
+            }
+            else { // I need to choose wich arc I want to eliminate -> maximum split
+                std::cerr << "Eliminate Arcs: \n";
+                std::vector<std::pair<unsigned int, unsigned int> > candidateArcs;
+                for (auto i=rev.equal_range((*it).first).first; i!=rev.equal_range((*it).first).second; ++i){
+                    std::pair<unsigned int, unsigned int> arc = (*i).second;
+                    std::cerr << "\t" << arc.first << " -> " << arc.second << "\n";
+                    candidateArcs.push_back(arc);
+                }
+                double volmin = minimumSplit(bl.getBox(candidateArcs[0].first), bl.getBox(candidateArcs[0].second));
+                int minarc = 0;
+
+                for (unsigned int i = 1; i < candidateArcs.size(); i++) {
+                    std::pair<unsigned int, unsigned int> arc = candidateArcs[i];
+                    double tmp = minimumSplit(bl.getBox(arc.first), bl.getBox(arc.second));
+                    if (tmp < volmin)
+                        minarc = i;
+                }
+                arcToRemove = candidateArcs[minarc];
+            }
+
+            // now I can remove "arcToRemove"
+            Box3D b1 = bl.getBox(arcToRemove.first), b2 = bl.getBox(arcToRemove.second), b3;
+            splitBox(b1, b2, b3);
+            b3.setId(bl.getNumberBoxes());
+            b3.setTrianglesCovered(tree.getNumberIntersectedPrimitives(b3));
+            b2.setTrianglesCovered(b2.getTrianglesCovered()-b3.getTrianglesCovered());
+            bl.setBox(b2.getId(), b2);
+            bl.addBox(b3);
+            g.removeEdge(arcToRemove.first, arcToRemove.second);
+            //get incoming arcs on node b2
+            //get outgoing arcs on node b2
+            //check these arcs on b2 AND b3
         }
     }while (loops.size() > 0);
 
-
+    //TODO: update node and boxlist ids
+    // sort boxlist by getTrianglesCovered, map old sorting -> new sorting
 
     //works only if graph has no cycles
+    g.getLoops(loops);
+    assert(loops.size() == 0);
     Array2D<int> ordering(bl.getNumberBoxes(), bl.getNumberBoxes(), -1); // true -> "<", false -> ">=", undefined -> "-1"
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         std::set<unsigned int> visited;

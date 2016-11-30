@@ -26,7 +26,8 @@ unix:!macx{
 
 HEADERS += \
     $$PWD/iglinterface.h \
-    $$PWD/iglmesh.h
+    $$PWD/iglmesh.h \
+    $$PWD/utils.h
 
 SOURCES += \
     $$PWD/iglinterface.cpp \

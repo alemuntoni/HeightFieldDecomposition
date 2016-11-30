@@ -38,6 +38,20 @@ void BoxList::insert(const BoxList& o) {
     boxes.insert(boxes.end(), o.boxes.begin(), o.boxes.end());
 }
 
+void BoxList::insert(const Box3D& b, int i) {
+    if (i < 0){
+        boxes.push_back(b);
+        boxes[boxes.size()-1].setId(boxes.size()-1);
+    }
+    else {
+        assert ((unsigned int)i < boxes.size());
+        boxes.insert(boxes.begin()+i, b);
+        for (; (unsigned int)i < boxes.size(); i++){
+            boxes[i].setId(i);
+        }
+    }
+}
+
 void BoxList::removeBox(unsigned int i) {
     assert (i < boxes.size());
     boxes.erase(boxes.begin()+i);
@@ -76,9 +90,27 @@ void BoxList::sort(const Array2D<int>& ordering) {
 
 }
 
+void BoxList::sortByTrianglesCovered() {
+    struct cmp {
+        bool operator()(const Box3D &a, const Box3D &b) const {
+            if (a.getTrianglesCovered() == b.getTrianglesCovered())
+                return a.getVolume() < b.getVolume();
+            return a.getTrianglesCovered() < b.getTrianglesCovered();
+        }
+    };
+    std::sort(boxes.begin(), boxes.end(), cmp());
+
+}
+
 void BoxList::generatePieces(double minimumDistance) {
     for (unsigned int i= 0; i < boxes.size(); i++){
         boxes[i].generatePiece(minimumDistance);
+    }
+}
+
+void BoxList::calculateTrianglesCovered(const CGALInterface::AABBTree& tree) {
+    for (unsigned int i = 0; i < boxes.size(); i++){
+        boxes[i].setTrianglesCovered(tree.getNumberIntersectedPrimitives((BoundingBox)boxes[i]));
     }
 }
 

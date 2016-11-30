@@ -3,6 +3,7 @@
 
 #include "box.h"
 #include "common/arrays.h"
+#include "cgal/aabbtree.h"
 
 class BoxList : public DrawableObject, public SerializableObject{
     public:
@@ -16,11 +17,14 @@ class BoxList : public DrawableObject, public SerializableObject{
         Box3D getBox(unsigned int i) const;
         void setBox(unsigned int i, const Box3D &b);
         void insert(const BoxList &o);
+        void insert(const Box3D &b, int i = -1);
         void removeBox(unsigned int i);
         void getSubBoxLists(std::vector<BoxList> &v, int nPerBoxList);
         void setIds();
         void sort(const Array2D<int> &ordering);
+        void sortByTrianglesCovered();
         void generatePieces(double minimumDistance = -1);
+        void calculateTrianglesCovered(const CGALInterface::AABBTree &tree);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
