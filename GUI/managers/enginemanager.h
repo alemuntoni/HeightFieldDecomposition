@@ -162,6 +162,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_intersectionsPushButton_clicked();
 
+        void on_reorderBoxes_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow

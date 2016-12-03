@@ -62,9 +62,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-194</y>
         <width>406</width>
-        <height>1036</height>
+        <height>1064</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -466,13 +466,6 @@
                 </property>
                </widget>
               </item>
-              <item row="6" column="1">
-               <widget class="QPushButton" name="subtractPushButton">
-                <property name="text">
-                 <string>Boolean Operations</string>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="0" colspan="2">
                <widget class="Line" name="line_3">
                 <property name="orientation">
@@ -566,6 +559,20 @@
                 </property>
                 <property name="checked">
                  <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0">
+               <widget class="QPushButton" name="reorderBoxes">
+                <property name="text">
+                 <string>Reorder Boxes</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QPushButton" name="subtractPushButton">
+                <property name="text">
+                 <string>Boolean Operations</string>
                 </property>
                </widget>
               </item>

@@ -728,9 +728,9 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
             bl.setBox(b2.getId(), b2);
             bl.addBox(b3);
             ///
-            b1.getIGLMesh().saveOnObj("b1.obj");
-            b2.getIGLMesh().saveOnObj("b2.obj");
-            b3.getIGLMesh().saveOnObj("b3.obj");
+            //b1.getIGLMesh().saveOnObj("b1.obj");
+            //b2.getIGLMesh().saveOnObj("b2.obj");
+            //b3.getIGLMesh().saveOnObj("b3.obj");
             ///
             g.removeEdge(arcToRemove.first, arcToRemove.second);
             g.removeEdge(arcToRemove.second, arcToRemove.first);
