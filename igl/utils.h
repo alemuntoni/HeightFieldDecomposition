@@ -30,22 +30,22 @@ inline IGLInterface::SimpleIGLMesh makeBox(const BoundingBox &bb, double minimum
     else {
         unsigned int nSubdX, nSubdY, nSubdZ;
         //minimumEdge /= std::sqrt(2.f);
-        nSubdX = getLengthX() / minimumEdge; nSubdX++;
-        nSubdY = getLengthY() / minimumEdge; nSubdY++;
-        nSubdZ = getLengthZ() / minimumEdge; nSubdZ++;
-        double edgeLengthX = getLengthX() / nSubdX;
-        double edgeLengthY = getLengthY() / nSubdY;
-        double edgeLengthZ = getLengthZ() / nSubdZ;
+        nSubdX = bb.getLengthX() / minimumEdge; nSubdX++;
+        nSubdY = bb.getLengthY() / minimumEdge; nSubdY++;
+        nSubdZ = bb.getLengthZ() / minimumEdge; nSubdZ++;
+        double edgeLengthX = bb.getLengthX() / nSubdX;
+        double edgeLengthY = bb.getLengthY() / nSubdY;
+        double edgeLengthZ = bb.getLengthZ() / nSubdZ;
         //creation vertices
         std::map<Pointi, Pointd> vertices;
         double x, y, z;
         unsigned int i, j , k;
 
         // fix z - k = 0;
-        k = 0; z = getMinZ();
-        x = getMinX();
+        k = 0; z = bb.getMinZ();
+        x = bb.getMinX();
         for (i = 0; i <= nSubdX; i++){
-            y = getMinY();
+            y = bb.getMinY();
             for (j = 0; j <= nSubdY; j++){
                 Pointi pi(i,j,k);
                 Pointd pd(x,y,z);
@@ -55,10 +55,10 @@ inline IGLInterface::SimpleIGLMesh makeBox(const BoundingBox &bb, double minimum
             x+=edgeLengthX;
         }
         // fix z - k = nSubdZ;
-        k = nSubdZ; z = getMaxZ();
-        x = getMinX();
+        k = nSubdZ; z = bb.getMaxZ();
+        x = bb.getMinX();
         for (i = 0; i <= nSubdX; i++){
-            y = getMinY();
+            y = bb.getMinY();
             for (j = 0; j <= nSubdY; j++){
                 Pointi pi(i,j,k);
                 Pointd pd(x,y,z);
@@ -68,10 +68,10 @@ inline IGLInterface::SimpleIGLMesh makeBox(const BoundingBox &bb, double minimum
             x+=edgeLengthX;
         }
         // fix y - j = 0;
-        j = 0; y = getMinY();
-        x = getMinX();
+        j = 0; y = bb.getMinY();
+        x = bb.getMinX();
         for (i = 0; i <= nSubdX; i++){
-            z = getMinZ();
+            z = bb.getMinZ();
             for (k = 0; k <= nSubdZ; k++){
                 Pointi pi(i,j,k);
                 Pointd pd(x,y,z);
@@ -81,10 +81,10 @@ inline IGLInterface::SimpleIGLMesh makeBox(const BoundingBox &bb, double minimum
             x+=edgeLengthX;
         }
         // fix y - j = nSubdY;
-        j = nSubdY; y = getMaxY();
-        x = getMinX();
+        j = nSubdY; y = bb.getMaxY();
+        x = bb.getMinX();
         for (i = 0; i <= nSubdX; i++){
-            z = getMinZ();
+            z = bb.getMinZ();
             for (k = 0; k <= nSubdZ; k++){
                 Pointi pi(i,j,k);
                 Pointd pd(x,y,z);
@@ -94,10 +94,10 @@ inline IGLInterface::SimpleIGLMesh makeBox(const BoundingBox &bb, double minimum
             x+=edgeLengthX;
         }
         // fix x - i = 0;
-        i = 0; x = getMinX();
-        y = getMinY();
+        i = 0; x = bb.getMinX();
+        y = bb.getMinY();
         for (j = 0; j <= nSubdY; j++){
-            z = getMinZ();
+            z = bb.getMinZ();
             for (k = 0; k <= nSubdZ; k++){
                 Pointi pi(i,j,k);
                 Pointd pd(x,y,z);
@@ -107,10 +107,10 @@ inline IGLInterface::SimpleIGLMesh makeBox(const BoundingBox &bb, double minimum
             y+=edgeLengthY;
         }
         // fix x - i = nSubdX;
-        i = nSubdX; x = getMaxX();
-        y = getMinY();
+        i = nSubdX; x = bb.getMaxX();
+        y = bb.getMinY();
         for (j = 0; j <= nSubdY; j++){
-            z = getMinZ();
+            z = bb.getMinZ();
             for (k = 0; k <= nSubdZ; k++){
                 Pointi pi(i,j,k);
                 Pointd pd(x,y,z);

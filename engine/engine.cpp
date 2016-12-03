@@ -418,7 +418,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
 
             std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
             std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
-            if (numberFaces == scaled[0].getNumberFaces()){
+            if (numberFaces == scaled[0].getNumberFaces()) {
                 end = true;
                 if (coveredFaces.size() != scaled[0].getNumberFaces()){
                     std::cerr << "WARNING: Not every face has been covered by a box.\n";

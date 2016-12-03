@@ -406,12 +406,12 @@ void Reconstruction::booleanOperations(HeightfieldsList &heightfields, IGLInterf
 }
 
 bool Reconstruction::boxesIntersect(const Box3D& b1, const Box3D& b2) {
-    if (b1.getMaxX() < b2.getMinX()) return false; // a is left of b
-    if (b1.getMinX() > b2.getMaxX()) return false; // a is right of b
-    if (b1.getMaxY() < b2.getMinY()) return false; // a is above b
-    if (b1.getMinY() > b2.getMaxY()) return false; // a is below b
-    if (b1.getMaxZ() < b2.getMinZ()) return false; // a is behind b
-    if (b1.getMinZ() > b2.getMaxZ()) return false; // a is in front b
+    if (b1.getMaxX() <= b2.getMinX()) return false; // a is left of b
+    if (b1.getMinX() >= b2.getMaxX()) return false; // a is right of b
+    if (b1.getMaxY() <= b2.getMinY()) return false; // a is above b
+    if (b1.getMinY() >= b2.getMaxY()) return false; // a is below b
+    if (b1.getMaxZ() <= b2.getMinZ()) return false; // a is behind b
+    if (b1.getMinZ() >= b2.getMaxZ()) return false; // a is in front b
     return true; //boxes overlap
 }
 
@@ -431,8 +431,12 @@ bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, c
                     }
                     else {
                         IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0)
+                        if (intersection.getNumberVertices() != 0){
+                            ////
+                            intersection.saveOnObj("int.obj");
+                            ////
                             return true;
+                        }
                     }
                 }
             }
@@ -448,8 +452,12 @@ bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, c
                     }
                     else {
                         IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0)
+                        if (intersection.getNumberVertices() != 0){
+                            ////
+                            intersection.saveOnObj("int.obj");
+                            ////
                             return true;
+                        }
                     }
                 }
             }
@@ -465,8 +473,12 @@ bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, c
                     }
                     else {
                         IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0)
+                        if (intersection.getNumberVertices() != 0){
+                            ////
+                            intersection.saveOnObj("int.obj");
+                            ////
                             return true;
+                        }
                     }
                 }
             }
@@ -482,8 +494,12 @@ bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, c
                     }
                     else {
                         IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0)
+                        if (intersection.getNumberVertices() != 0){
+                            ////
+                            intersection.saveOnObj("int.obj");
+                            ////
                             return true;
+                        }
                     }
                 }
             }
@@ -499,8 +515,12 @@ bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, c
                     }
                     else {
                         IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0)
+                        if (intersection.getNumberVertices() != 0){
+                            ////
+                            intersection.saveOnObj("int.obj");
+                            ////
                             return true;
+                        }
                     }
                 }
             }
@@ -516,8 +536,12 @@ bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, c
                     }
                     else {
                         IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0)
+                        if (intersection.getNumberVertices() != 0){
+                            ////
+                            intersection.saveOnObj("int.obj");
+                            ////
                             return true;
+                        }
                     }
                 }
             }
@@ -552,6 +576,8 @@ double Reconstruction::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
                 assert(b1[t-3] > b2[t-3]);
                 b3[t-3] = b2[t-3];
                 b3[t] = b1[t-3];
+                b4[t-3] = b1[t-3];
+                b4[t] = b2[t];
                 for (unsigned u = 3; u < 6; u++){
                     if (u != t){
                         b3[u-3] = b4[u-3] = std::max(b1[u-3], b2[u-3]);
@@ -568,11 +594,25 @@ double Reconstruction::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
 
 void Reconstruction::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3) {
     getSplits(b1, b2, b3);
+    //
+    Box3D b3tmp = b3;
+    for (unsigned int i = 0; i < 6; i++){
+        if (b3tmp[i] == b2[i]){
+            if (i < 3)
+                b3tmp[i]-=EPSILON;
+            else
+                b3tmp[i]+=EPSILON;
+        }
+    }
+    b3tmp.generatePiece();
+    //
     b3.generatePiece();
     IGLInterface::SimpleIGLMesh oldBox = b2.getIGLMesh();
     oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b1.getIGLMesh());
     IGLInterface::SimpleIGLMesh tmp = oldBox;
-    oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b3.getIGLMesh());
+    //this difference makes problems. I need to grow b3 only with some directions
+    //and just for this boolean operation
+    oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b3tmp.getIGLMesh());
     b2.setIGLMesh(oldBox);
     BoundingBox newBBb2 = oldBox.getBoundingBox();
     b2.setMin(newBBb2.min());
@@ -598,15 +638,14 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
     CGALInterface::AABBTree tree(d);
     bl.calculateTrianglesCovered(tree);
     bl.sortByTrianglesCovered();
+    bl.setIds();
     std::cerr << "Triangles Covered: \n";
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         std::cerr << bl.getBox(i).getTrianglesCovered() << "; ";
     }
     std::cerr << "\n";
     std::vector<std::vector<unsigned int> > loops;
-    DirectedGraph g;
-
-    g = DirectedGraph(bl.getNumberBoxes());
+    DirectedGraph g(bl.getNumberBoxes());
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
         for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
@@ -629,6 +668,7 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
         g.getLoops(loops);
         std::cerr << "Number loops: " << loops.size() << "\n";
         if (loops.size() > 0){ // I need to modify bl
+            d.saveOnObjFile("tmp.obj");
             std::map<std::pair<unsigned int, unsigned int>, int> arcs;
             for (std::vector<unsigned int> loop : loops){
                 unsigned int node = 0;
@@ -665,16 +705,18 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
                     std::cerr << "\t" << arc.first << " -> " << arc.second << "\n";
                     candidateArcs.push_back(arc);
                 }
-                double volmin = minimumSplit(bl.getBox(candidateArcs[0].first), bl.getBox(candidateArcs[0].second));
-                int minarc = 0;
+                double volmax = minimumSplit(bl.getBox(candidateArcs[0].first), bl.getBox(candidateArcs[0].second));
+                int maxarc = 0;
 
                 for (unsigned int i = 1; i < candidateArcs.size(); i++) {
                     std::pair<unsigned int, unsigned int> arc = candidateArcs[i];
                     double tmp = minimumSplit(bl.getBox(arc.first), bl.getBox(arc.second));
-                    if (tmp < volmin)
-                        minarc = i;
+                    if (tmp > volmax){
+                        volmax = tmp;
+                        maxarc = i;
+                    }
                 }
-                arcToRemove = candidateArcs[minarc];
+                arcToRemove = candidateArcs[maxarc];
             }
 
             // now I can remove "arcToRemove"
@@ -685,23 +727,85 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
             b2.setTrianglesCovered(b2.getTrianglesCovered()-b3.getTrianglesCovered());
             bl.setBox(b2.getId(), b2);
             bl.addBox(b3);
+            ///
+            b1.getIGLMesh().saveOnObj("b1.obj");
+            b2.getIGLMesh().saveOnObj("b2.obj");
+            b3.getIGLMesh().saveOnObj("b3.obj");
+            ///
             g.removeEdge(arcToRemove.first, arcToRemove.second);
-            //get incoming arcs on node b2
-            //get outgoing arcs on node b2
-            //check these arcs on b2 AND b3
+            g.removeEdge(arcToRemove.second, arcToRemove.first);
+            std::vector<unsigned int> incomingb2 = g.getIncomingNodes(b2.getId());
+            std::vector<unsigned int> outgoingb2 = g.getOutgoingNodes(b2.getId());
+            g.deleteAllIncomingNodes(b2.getId());
+            g.deleteAllOutgoingNodes(b2.getId());
+            unsigned int tmp = g.addNode();
+            assert(tmp == (unsigned int)b3.getId());
+            for (unsigned int incoming : incomingb2){
+                Box3D other = bl.getBox(incoming);
+                ///
+                //other.getIGLMesh().saveOnObj("checkother.obj");
+                //b2.getIGLMesh().saveOnObj("checkb2.obj");
+                //b3.getIGLMesh().saveOnObj("checkb3.obj");
+                ///
+                if (boxesIntersect(other,b2)){
+                    if (isDangerousIntersection(other, b2, tree, true)){
+                        g.addEdge(incoming,b2.getId());
+                        std::cerr << incoming << " -> " << b2.getId() << "\n";
+                    }
+                }
+                if (boxesIntersect(other,b3)){
+                    if (isDangerousIntersection(other, b3, tree, true)){
+                        g.addEdge(incoming,b3.getId());
+                        std::cerr << incoming << " -> " << b3.getId() << "\n";
+                    }
+                }
+            }
+            for (unsigned int outgoing : outgoingb2){
+                Box3D other = bl.getBox(outgoing);
+                ///
+                //other.getIGLMesh().saveOnObj("checkother.obj");
+                //b2.getIGLMesh().saveOnObj("checkb2.obj");
+                //b3.getIGLMesh().saveOnObj("checkb3.obj");
+                ///
+                if (boxesIntersect(b2, other)){
+                    if (isDangerousIntersection(b2, other, tree, true)){
+                        g.addEdge(b2.getId(), outgoing);
+                        std::cerr << b2.getId() << " -> " << outgoing << "\n";
+                    }
+                }
+                if (boxesIntersect(b3, other)){
+                    if (isDangerousIntersection(b3, other, tree, true)){
+                        g.addEdge(b3.getId(), outgoing);
+                        std::cerr << b3.getId() << " -> " << outgoing << "\n";
+                    }
+                }
+            }
         }
     }while (loops.size() > 0);
 
-    //TODO: update node and boxlist ids
-    // sort boxlist by getTrianglesCovered, map old sorting -> new sorting
+    //resorting and map old with new graph
+    //this is necessary because small indices prevails if
+    //no arcs are on the graph
+    bl.sortByTrianglesCovered();
+    std::map<unsigned int, unsigned int> mapping;
+    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
+        mapping[bl.getBox(i).getId()] = i;
+    }
+    DirectedGraph newGraph(bl.getNumberBoxes());
+    for (unsigned int node = 0; node < g.size(); ++node){
+        std::vector<unsigned int> outgoing = g.getOutgoingNodes(node);
+        for (unsigned int o : outgoing){
+            newGraph.addEdge(mapping[node], mapping[o]);
+        }
+    }
 
     //works only if graph has no cycles
-    g.getLoops(loops);
+    newGraph.getLoops(loops);
     assert(loops.size() == 0);
     Array2D<int> ordering(bl.getNumberBoxes(), bl.getNumberBoxes(), -1); // true -> "<", false -> ">=", undefined -> "-1"
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         std::set<unsigned int> visited;
-        g.visit(visited, i);
+        newGraph.visit(visited, i);
         for (unsigned int node : visited){ // i must be > than all nodes in visited
             ordering(node,i) = true;
             ordering(i,node) = false;

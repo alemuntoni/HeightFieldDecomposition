@@ -9,11 +9,14 @@ class DirectedGraph {
     public:
         DirectedGraph();
         DirectedGraph(unsigned int numberNodes);
+        unsigned int size() const;
         unsigned int addNode();
         void addEdge(unsigned int node1, unsigned int node2);
         void removeEdge(unsigned int node1, unsigned int node2);
         std::vector<unsigned int> getIncomingNodes(unsigned int node);
         std::vector<unsigned int> getOutgoingNodes(unsigned int node);
+        void deleteAllIncomingNodes(unsigned int node);
+        void deleteAllOutgoingNodes(unsigned int node);
 
         void visit(std::set<unsigned int> &visitedNodes, unsigned int startingNode);
         std::vector< std::vector<unsigned int> > getSpanningTree(unsigned int radix);
@@ -30,6 +33,10 @@ DirectedGraph::DirectedGraph() {
 
 DirectedGraph::DirectedGraph(unsigned int numberNodes) {
     nodes.resize(numberNodes);
+}
+
+unsigned int DirectedGraph::size() const {
+    return nodes.size();
 }
 
 unsigned int DirectedGraph::addNode() {
@@ -66,6 +73,20 @@ std::vector<unsigned int> DirectedGraph::getIncomingNodes(unsigned int node) {
 std::vector<unsigned int> DirectedGraph::getOutgoingNodes(unsigned int node) {
     assert(node < nodes.size());
     return nodes[node];
+}
+
+void DirectedGraph::deleteAllIncomingNodes(unsigned int node) {
+    assert(node < nodes.size());
+    for (unsigned int i = 0; i < nodes.size(); i++){
+        std::vector<unsigned int>::iterator it = std::find(nodes[i].begin(), nodes[i].end(), node);
+        if(it != nodes[i].end())
+            nodes[i].erase(it);
+    }
+}
+
+void DirectedGraph::deleteAllOutgoingNodes(unsigned int node) {
+    assert(node < nodes.size());
+    nodes[node].clear();
 }
 
 void DirectedGraph::visit(std::set<unsigned int>& visitedNodes, unsigned int startingNode) {

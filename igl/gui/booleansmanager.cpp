@@ -3,6 +3,7 @@
 
 #include <QFileDialog>
 #include "common/utils.h"
+#include "igl/utils.h"
 
 BooleansManager::BooleansManager(QWidget *parent) :
     QFrame(parent),

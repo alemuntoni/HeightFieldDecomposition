@@ -12,6 +12,10 @@
 #include "../trimesh/trimesh.h"
 #endif
 
+#ifdef TRIMESH_DEFINED
+#include "../igl/iglmesh.h"
+#endif
+
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/AABB_tree.h>
 #include <CGAL/AABB_traits.h>
@@ -30,6 +34,9 @@ namespace CGALInterface {
             #endif
             #ifdef TRIMESH_DEFINED
             AABBTree(const Trimesh<double> &t, bool forDistanceQueries = false);
+            #endif
+            #ifdef IGL_DEFINED
+            AABBTree(const IGLInterface::IGLMesh &m, bool forDistanceQueries = false);
             #endif
             AABBTree& operator=(const AABBTree& other);
 

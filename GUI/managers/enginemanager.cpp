@@ -140,14 +140,6 @@ void EngineManager::deserializeBC(const std::string& filename) {
     ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
     ui->setFromSolutionSpinBox->setValue(0);
     ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-
-    Array2D<int> ordering = Reconstruction::getOrdering(*solutions, *d);
-    solutions->setIds();
-    solutions->sort(ordering);
-    for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
-        std::cerr << solutions->getBox(i).getId() << " ";
-    }
-    std::cerr << "\n";
 }
 
 void EngineManager::serialize(std::ofstream& binaryFile) const {
@@ -1249,5 +1241,17 @@ void EngineManager::on_intersectionsPushButton_clicked() {
         ui->recBoxesSlider->setValue(0);
 
         mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_reorderBoxes_clicked() {
+    if (d != nullptr && solutions != nullptr){
+        Array2D<int> ordering = Reconstruction::getOrdering(*solutions, *d);
+        solutions->setIds();
+        solutions->sort(ordering);
+        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
+            std::cerr << solutions->getBox(i).getId() << " ";
+        }
+        std::cerr << "\n";
     }
 }

@@ -46,6 +46,32 @@ CGALInterface::AABBTree::AABBTree(const Trimesh<double>& t, bool forDistanceQuer
 }
 #endif
 
+#ifdef IGL_DEFINED
+CGALInterface::AABBTree::AABBTree(const IGLInterface::IGLMesh& m, bool forDistanceQueries){
+    for (unsigned int i = 0; i < m.getNumberVertices(); i++){
+        Pointd p = m.getVertex(i);
+        CGALPoint pp(p.x(), p.y(), p.z());
+        mapTrimeshVerticesToCgalPoints[i]= pp;
+    }
+    for (unsigned int i = 0; i < m.getNumberFaces(); ++i){
+        Pointi f = m.getFace(i);
+        int i1 = f(0), i2 = f(1), i3 = f(2);
+        assert(mapTrimeshVerticesToCgalPoints.find(i1) != mapTrimeshVerticesToCgalPoints.end());
+        assert(mapTrimeshVerticesToCgalPoints.find(i2) != mapTrimeshVerticesToCgalPoints.end());
+        assert(mapTrimeshVerticesToCgalPoints.find(i3) != mapTrimeshVerticesToCgalPoints.end());
+        CGALTriangle tr(mapTrimeshVerticesToCgalPoints[i1], mapTrimeshVerticesToCgalPoints[i2], mapTrimeshVerticesToCgalPoints[i3]);
+        mapCgalTrianglesToTrimeshTriangles[tr] = i;
+        triangles.push_back(tr);
+    }
+    tree.insert(triangles.begin(), triangles.end());
+
+    if (forDistanceQueries)
+        tree.accelerate_distance_queries();
+
+    bb  = m.getBoundingBox();
+}
+#endif
+
 #ifdef DCEL_DEFINED
 CGALInterface::AABBTree::AABBTree(const Dcel& d, bool forDistanceQueries) : forDistanceQueries(forDistanceQueries){
     for (Dcel::ConstVertexIterator vit = d.vertexBegin(); vit != d.vertexEnd(); ++vit){
