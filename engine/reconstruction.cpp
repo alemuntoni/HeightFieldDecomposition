@@ -418,8 +418,96 @@ bool Reconstruction::boxesIntersect(const Box3D& b1, const Box3D& b2) {
 bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const CGALInterface::AABBTree &tree, bool checkMeshes) {
     Vec3 target2 = b2.getTarget();
     BoundingBox bb = b1;
-    double base;
-    if (target2 == XYZ[0]){ //+x
+    for (unsigned int t = 0; t < 6; t++){
+        if (t < 3){
+            if (target2 == XYZ[t]){ //+x
+                //if (!(b1.min()[t] < b2.min()[t] && b1.max()[t] > b2.max()[t])){
+                if (b1.max()[t] < b2.max()[t]){
+                    bool b = false;
+                    for (unsigned int i = 0; i < 3; i++){
+                        if (i != t){
+                            if (b1.min()[i] > b2.min()[i])
+                                b = true;
+                            if (b1.max()[i] < b2.max()[i])
+                                b = true;
+                        }
+                    }
+                    if (b){
+                        //check if bb is empty
+                        bb.min()[t]= b1.max()[t]-EPSILON;
+                        for (unsigned int i = 0; i < 3; i++){
+                            if (i != t){
+                                bb.min()[i] = std::max(b1.min()[i], b2.min()[i]);
+                                bb.max()[i] = std::min(b1.max()[i], b2.max()[i]);
+                                assert(bb.min()[i] < bb.max()[i]);
+                            }
+                        }
+                        if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                            if (!checkMeshes){
+                                return true;
+                            }
+                            else {
+                                IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                                if (intersection.getNumberVertices() != 0){
+                                    ////
+                                    //intersection.saveOnObj("int.obj");
+                                    ////
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                //if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ())){
+
+                //}
+            }
+        }
+        else {
+            if (target2 == XYZ[t]){ //-x
+                unsigned int ot = t-3;
+                //if (b1.min()[ot] < base && b1.max()[ot] > base && !(b1.min()[ot] < b2.min()[ot])){
+                if(b1.min()[ot] > b2.min()[ot]){
+                    bool b = false;
+                    for (unsigned int i = 0; i < 3; i++){
+                        if (i != ot){
+                            if (b1.min()[i] > b2.min()[i])
+                                b = true;
+                            if (b1.max()[i] < b2.max()[i])
+                                b = true;
+                        }
+                    }
+                    if (b){
+                        //check if bb is empty
+                        bb.max()[ot] = (b1.min()[ot]+EPSILON);
+                        for (unsigned int i = 0; i < 3; i++){
+                            if (i != ot){
+                                bb.min()[i] = std::max(b1.min()[i], b2.min()[i]);
+                                bb.max()[i] = std::min(b1.max()[i], b2.max()[i]);
+                                assert(bb.min()[i] < bb.max()[i]);
+                            }
+                        }
+                        if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                            if (!checkMeshes){
+                                return true;
+                            }
+                            else {
+                                IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                                if (intersection.getNumberVertices() != 0){
+                                    ////
+                                    //intersection.saveOnObj("int.obj");
+                                    ////
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+    /*if (target2 == XYZ[0]){ //+x
         base = b2.getMinX();
         if (b1.getMinX() < base && b1.getMaxX() > base){
             if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ())){
@@ -548,7 +636,7 @@ bool Reconstruction::isDangerousIntersection(const Box3D& b1, const Box3D& b2, c
         }
     } else
         assert(0);
-    return false;
+    return false;*/
 }
 
 double Reconstruction::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
@@ -559,30 +647,33 @@ double Reconstruction::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
     for (unsigned int t = 0; t < 6; t++){
         if (target == XYZ[t]){
             if (t < 3){
-                assert(b1[t+3] < b2[t+3]);
-                b3[t] = b1[t+3];
-                b3[t+3] = b2[t+3];
-                b4[t] = b2[t];
-                b4[t+3] = b1[t+3];
+                assert(b1.max()[t] < b2.max()[t]);
+                b3.min()[t] = b1.max()[t];
+                b3.max()[t] = b2.max()[t];
+                b4.min()[t] = b2.min()[t];
+                b4.max()[t] = b1.max()[t];
                 for (unsigned u = 0; u < 3; u++){
                     if (u != t){
-                        b3[u] = b4[u] = std::max(b1[u], b2[u]);
-                        b3[u+3] = b4[u+3] = std::min(b1[u+3], b2[u+3]);
-                        assert(b3[u] < b3[u+3]);
+                        b3.min()[u] = b4.min()[u] = std::max(b1.min()[u], b2.min()[u]);
+                        b3.max()[u] = b4.max()[u] = std::min(b1.max()[u], b2.max()[u]);
+                        assert(b3.min()[u] < b3.max()[u]);
                     }
                 }
             }
             else if (t >= 3){
-                assert(b1[t-3] > b2[t-3]);
-                b3[t-3] = b2[t-3];
-                b3[t] = b1[t-3];
-                b4[t-3] = b1[t-3];
-                b4[t] = b2[t];
-                for (unsigned u = 3; u < 6; u++){
-                    if (u != t){
-                        b3[u-3] = b4[u-3] = std::max(b1[u-3], b2[u-3]);
-                        b3[u] = b4[u] = std::min(b1[u], b2[u]);
-                        assert(b3[u-3] < b3[u]);
+                unsigned int i = t-3;
+                b1.getIGLMesh().saveOnObj("b1.obj");
+                b2.getIGLMesh().saveOnObj("b2.obj");
+                assert(b1.min()[i] > b2.min()[i]);
+                b3.min()[i] = b2.min()[i];
+                b3.max()[i] = b1.min()[i];
+                b4.min()[i] = b1.min()[i];
+                b4.max()[i] = b2.max()[i];
+                for (unsigned int u = 0; u < 3; u++){
+                    if (u != i){
+                        b3.min()[u] = b4.min()[u] = std::max(b1.min()[u], b2.min()[u]);
+                        b3.max()[u] = b4.max()[u] = std::min(b1.max()[u], b2.max()[u]);
+                        assert(b3.min()[u] < b3.max()[u]);
                     }
                 }
 
@@ -646,11 +737,16 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
     std::cerr << "\n";
     std::vector<std::vector<unsigned int> > loops;
     DirectedGraph g(bl.getNumberBoxes());
+    //
+    //d.saveOnObjFile("tmp.obj");
+    //
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
         for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
             Box3D b2 = bl.getBox(j);
             if (boxesIntersect(b1,b2)){
+                //b1.getIGLMesh().saveOnObj("b1.obj");
+                //b2.getIGLMesh().saveOnObj("b2.obj");
                 if (isDangerousIntersection(b1, b2, tree)){
                     g.addEdge(i,j);
                     std::cerr << i << " -> " << j << "\n";
@@ -668,7 +764,7 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
         g.getLoops(loops);
         std::cerr << "Number loops: " << loops.size() << "\n";
         if (loops.size() > 0){ // I need to modify bl
-            d.saveOnObjFile("tmp.obj");
+
             std::map<std::pair<unsigned int, unsigned int>, int> arcs;
             for (std::vector<unsigned int> loop : loops){
                 unsigned int node = 0;

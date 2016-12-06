@@ -205,5 +205,15 @@ inline std::multimap<B,A> flipMap(const M<A,B,Args...> &src) {
     return dst;
 }
 
+template <typename T>
+    bool isInBounds(const T& value, const T& low, const T& high) {
+    return !(value < low) && !(high < value);
+}
+
+template <typename T, typename R, typename Comparator>
+    bool isInBounds(const T& value, const R& low, const R& high, Comparator comp) {
+    return !comp(value, low) && !comp(high, value);
+}
+
 #endif // LIB_UTILS_H
 

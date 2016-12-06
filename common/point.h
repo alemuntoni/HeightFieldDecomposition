@@ -358,6 +358,7 @@ inline const T& Point<T>::operator[](unsigned int i) const {
         case 1: return yCoord;
         case 2: return zCoord;
     }
+    return xCoord;
 }
 
 template <class T>
@@ -368,6 +369,7 @@ inline const T& Point<T>::operator()(unsigned int i) const {
         case 1: return yCoord;
         case 2: return zCoord;
     }
+    return xCoord;
 }
 
 /**
