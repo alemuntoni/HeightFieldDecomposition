@@ -154,8 +154,15 @@ void HeightfieldsList::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(targets, binaryFile);
 }
 
-void HeightfieldsList::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserialize(heightfields, binaryFile);
-    Serializer::deserialize(targets, binaryFile);
-    nVisible = -1;
+bool HeightfieldsList::deserialize(std::ifstream& binaryFile) {
+    std::vector<IGLInterface::DrawableIGLMesh> tmp;
+    if (Serializer::deserialize(tmp, binaryFile) &&
+            Serializer::deserialize(targets, binaryFile)){
+        heightfields = std::move(tmp);
+        nVisible = -1;
+        return true;
+    }
+    else
+        return false;
+
 }

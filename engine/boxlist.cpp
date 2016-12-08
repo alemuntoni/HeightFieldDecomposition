@@ -118,10 +118,14 @@ void BoxList::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(boxes, binaryFile);
 }
 
-void BoxList::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserialize(boxes, binaryFile);
-    visibleBox = 0;
-    cylinder = false;
+bool BoxList::deserialize(std::ifstream& binaryFile) {
+    if (Serializer::deserialize(boxes, binaryFile)){
+        visibleBox = 0;
+        cylinder = false;
+        return true;
+    }
+    else
+        return false;
 }
 
 void BoxList::setVisibleBox(int i) {

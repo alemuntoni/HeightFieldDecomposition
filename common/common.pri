@@ -35,4 +35,5 @@ HEADERS += \
     $$PWD/timer.h \
     $$PWD/utils.h \
     $$PWD/hashlib.h \
-    $$PWD/file_conversions.h
+    $$PWD/file_conversions.h \
+    $$PWD/serializable_object.h

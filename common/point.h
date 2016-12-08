@@ -94,7 +94,7 @@ template <class T> class Point : SerializableObject {
         void rotate(double matrix[3][3], const Point<T>& centroid = Point<T>());
 
         // SerializableObject interface
-        void deserialize(std::ifstream &myfile);
+        bool deserialize(std::ifstream &myfile);
 
         // Operators
         T& operator[](unsigned int i);
@@ -649,10 +649,16 @@ inline void Point<T>::rotate(double matrix[3][3], const Point<T>& centroid) {
  * @param[in] myfile: l'ifstream (file) dal quale verrà deserializzato il punto
  */
 template <class T>
-inline void Point<T>::deserialize(std::ifstream& myfile) {
-    Serializer::deserialize(xCoord, myfile);
-    Serializer::deserialize(yCoord, myfile);
-    Serializer::deserialize(zCoord, myfile);
+inline bool Point<T>::deserialize(std::ifstream& myfile) {
+    Point<T> tmp;
+    if (Serializer::deserialize(tmp.xCoord, myfile) &&
+        Serializer::deserialize(tmp.yCoord, myfile) &&
+        Serializer::deserialize(tmp.zCoord, myfile)){
+        *this = std::move(tmp);
+        return true;
+    }
+    else
+        return false;
 }
 
 template <class T>

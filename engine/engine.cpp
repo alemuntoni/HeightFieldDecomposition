@@ -25,28 +25,28 @@ Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
     if (rot > 0){
         switch (rot){
             case 1:
-                getRotationMatrix(Vec3(0,0,1), M_PI/4, m);
+                Common::getRotationMatrix(Vec3(0,0,1), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 //m.transpose();
-                getRotationMatrix(Vec3(0,0,-1), M_PI/4, m);
+                Common::getRotationMatrix(Vec3(0,0,-1), M_PI/4, m);
                 break;
             case 2:
-                getRotationMatrix(Vec3(0,1,0), M_PI/4, m);
+                Common::getRotationMatrix(Vec3(0,1,0), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 //m.transpose();
-                getRotationMatrix(Vec3(0,-1,0), M_PI/4, m);
+                Common::getRotationMatrix(Vec3(0,-1,0), M_PI/4, m);
                 break;
             case 3:
-                getRotationMatrix(Vec3(1,0,0), M_PI/4, m);
+                Common::getRotationMatrix(Vec3(1,0,0), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 //m.transpose();
-                getRotationMatrix(Vec3(-1,0,0), M_PI/4, m);
+                Common::getRotationMatrix(Vec3(-1,0,0), M_PI/4, m);
                 break;
             default:
                 assert(0);
@@ -504,17 +504,17 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, IGLInterface::Simpl
         Eigen::Matrix3d m = solutions.getBox(i).getRotationMatrix(), mt;
         Eigen::Matrix3d arr[4];
         arr[0] = Eigen::Matrix3d::Identity();
-        getRotationMatrix(Vec3(0,0,-1), M_PI/4, arr[1]);
-        getRotationMatrix(Vec3(0,-1,0), M_PI/4, arr[2]);
-        getRotationMatrix(Vec3(-1,0,0), M_PI/4, arr[3]);
+        Common::getRotationMatrix(Vec3(0,0,-1), M_PI/4, arr[1]);
+        Common::getRotationMatrix(Vec3(0,-1,0), M_PI/4, arr[2]);
+        Common::getRotationMatrix(Vec3(-1,0,0), M_PI/4, arr[3]);
         if (m == arr[0])
             mt = arr[0];
         else if (m == arr[1])
-            getRotationMatrix(Vec3(0,0,1), M_PI/4, mt);
+            Common::getRotationMatrix(Vec3(0,0,1), M_PI/4, mt);
         else if (m == arr[2])
-            getRotationMatrix(Vec3(0,1,0), M_PI/4, mt);
+            Common::getRotationMatrix(Vec3(0,1,0), M_PI/4, mt);
         else if (m == arr[3])
-            getRotationMatrix(Vec3(1,0,0), M_PI/4, mt);
+            Common::getRotationMatrix(Vec3(1,0,0), M_PI/4, mt);
         else assert(0);
         pointsOnSurface[0].rotate(mt);
         Pointd min = pointsOnSurface[0], max = pointsOnSurface[0];

@@ -533,12 +533,17 @@ namespace IGLInterface {
         Serializer::serialize(NF, binaryFile);
     }
 
-    void IGLMesh::deserialize(std::ifstream& binaryFile) {
-        Serializer::deserialize(V, binaryFile);
-        Serializer::deserialize(F, binaryFile);
-        Serializer::deserialize(CF, binaryFile);
-        Serializer::deserialize(NV, binaryFile);
-        Serializer::deserialize(NF, binaryFile);
-        updateBoundingBox();
+    bool IGLMesh::deserialize(std::ifstream& binaryFile) {
+        IGLMesh tmp;
+        if (Serializer::deserialize(tmp.V, binaryFile) &&
+                Serializer::deserialize(tmp.F, binaryFile) &&
+                Serializer::deserialize(tmp.CF, binaryFile) &&
+                Serializer::deserialize(tmp.NV, binaryFile) &&
+                Serializer::deserialize(tmp.NF, binaryFile)){
+            tmp.updateBoundingBox();
+            *this = std::move(tmp);
+            return true;
+        }
+        return false;
     }
 }

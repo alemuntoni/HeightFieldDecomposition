@@ -173,9 +173,7 @@ class Dcel : public SerializableObject {
         std::string loadFromObjFile(const std::string& filename, bool regular = true);
         std::string loadFromPlyFile(const std::string& filename, bool regular = true);
         std::string loadFromDcelFile(const std::string& filename);
-        void deserialize(std::ifstream& binaryFile);
-        std::string loadFromOldDcelFile(const std::string& filename);
-        std::string loadFromOldOldDcelFile(const std::string& filename);
+        bool deserialize(std::ifstream& binaryFile);
         Dcel& operator= (const Dcel& dcel);
         Dcel& operator= (Dcel&& dcel);
         #ifdef IGL_DEFINED

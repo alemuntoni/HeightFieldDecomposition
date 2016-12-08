@@ -13,7 +13,7 @@ void Reconstruction::compactSet(std::set<double>& set, double epsilon) {
     double actual;
     for (; it != set.end(); ++it) {
         actual = *it;
-        if (epsilonEqual(last, actual, epsilon)){
+        if (Common::epsilonEqual(last, actual, epsilon)){
             toDelete.insert(actual);
         }
         else {
@@ -779,7 +779,7 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
                 }
                 std::cerr << loop[node] << " \n";
             }
-            std::multimap<int,std::pair<unsigned int, unsigned int> > rev = flipMap(arcs);
+            std::multimap<int,std::pair<unsigned int, unsigned int> > rev = Common::flipMap(arcs);
 
             for (std::multimap<int,std::pair<unsigned int, unsigned int> >::reverse_iterator it = rev.rbegin(); it != rev.rend(); ++it){
                 std::cerr << "K : " << (*it).first << "; V: (" << (*it).second.first << " -> " << (*it).second.second << ")\n";

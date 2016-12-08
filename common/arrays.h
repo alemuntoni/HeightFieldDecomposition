@@ -26,7 +26,7 @@ template <class T> class Array2D : public SerializableObject{
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
-        void deserialize(std::ifstream& binaryFile);
+        bool deserialize(std::ifstream& binaryFile);
 
     private:
         size_t getIndex(size_t i, size_t j) const;
@@ -59,7 +59,7 @@ template <class T> class Array3D : public SerializableObject{
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
-        void deserialize(std::ifstream& binaryFile);
+        bool deserialize(std::ifstream& binaryFile);
 
     private:
         size_t getIndex(size_t i, size_t j, size_t k) const;
@@ -90,7 +90,7 @@ template <class T> class Array4D : public SerializableObject{
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
-        void deserialize(std::ifstream& binaryFile);
+        bool deserialize(std::ifstream& binaryFile);
 
     private:
         size_t getIndex(size_t i, size_t j, size_t k, size_t l);
@@ -172,12 +172,20 @@ inline void Array2D<T>::serialize(std::ofstream& binaryFile) const {
 }
 
 template <class T>
-inline void Array2D<T>::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserialize(sizeX, binaryFile);
-    Serializer::deserialize(sizeY, binaryFile);
-    v.resize(sizeX*sizeY);
-    for (unsigned int i = 0; i < v.size(); ++i)
-        Serializer::deserialize(v[i], binaryFile);
+inline bool Array2D<T>::deserialize(std::ifstream& binaryFile) {
+    Array2D<T> tmp;
+    if (Serializer::deserialize(tmp.sizeX, binaryFile) &&
+            Serializer::deserialize(tmp.sizeY, binaryFile)) {
+        tmp.v.resize(tmp.sizeX*tmp.sizeY);
+        for (unsigned int i = 0; i < tmp.v.size(); ++i){
+            if (! Serializer::deserialize(tmp.v[i], binaryFile))
+                return false;
+        }
+        *this = std::move(tmp);
+        return true;
+    }
+    else
+        return false;
 }
 
 template <class T>
@@ -280,13 +288,21 @@ inline void Array3D<T>::serialize(std::ofstream& binaryFile) const {
 }
 
 template <class T>
-inline void Array3D<T>::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserialize(sizeX, binaryFile);
-    Serializer::deserialize(sizeY, binaryFile);
-    Serializer::deserialize(sizeZ, binaryFile);
-    v.resize(sizeX*sizeY*sizeZ);
-    for (unsigned int i = 0; i < v.size(); ++i)
-        Serializer::deserialize(v[i], binaryFile);
+inline bool Array3D<T>::deserialize(std::ifstream& binaryFile) {
+    Array3D<T> tmp;
+    if (Serializer::deserialize(tmp.sizeX, binaryFile) &&
+            Serializer::deserialize(tmp.sizeY, binaryFile) &&
+            Serializer::deserialize(tmp.sizeZ, binaryFile)) {
+        tmp.v.resize(tmp.sizeX*tmp.sizeY*tmp.sizeZ);
+        for (unsigned int i = 0; i < tmp.v.size(); ++i){
+            if (! Serializer::deserialize(tmp.v[i], binaryFile))
+                return false;
+        }
+        *this = std::move(tmp);
+        return true;
+    }
+    else
+        return false;
 }
 
 template <class T>
@@ -388,14 +404,22 @@ inline void Array4D<T>::serialize(std::ofstream& binaryFile) const {
 }
 
 template <class T>
-inline void Array4D<T>::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserialize(sizeX, binaryFile);
-    Serializer::deserialize(sizeY, binaryFile);
-    Serializer::deserialize(sizeZ, binaryFile);
-    Serializer::deserialize(sizeW, binaryFile);
-    v.resize(sizeX*sizeY*sizeZ*sizeW);
-    for (unsigned int i = 0; i < v.size(); ++i)
-        Serializer::deserialize(v[i], binaryFile);
+inline bool Array4D<T>::deserialize(std::ifstream& binaryFile) {
+    Array4D<T> tmp;
+    if (Serializer::deserialize(tmp.sizeX, binaryFile) &&
+            Serializer::deserialize(tmp.sizeY, binaryFile) &&
+            Serializer::deserialize(tmp.sizeZ, binaryFile) &&
+            Serializer::deserialize(tmp.sizeW, binaryFile)) {
+        tmp.v.resize(tmp.sizeX*tmp.sizeY*tmp.sizeZ*tmp.sizeW);
+        for (unsigned int i = 0; i < tmp.v.size(); ++i){
+            if (! Serializer::deserialize(tmp.v[i], binaryFile))
+                return false;
+        }
+        *this = std::move(tmp);
+        return true;
+    }
+    else
+        return false;
 }
 
 template <class T>

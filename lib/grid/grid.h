@@ -44,7 +44,7 @@ class Grid : public SerializableObject{
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
-        void deserialize(std::ifstream& binaryFile);
+        bool deserialize(std::ifstream& binaryFile);
 
         void resetSignedDistances();
 

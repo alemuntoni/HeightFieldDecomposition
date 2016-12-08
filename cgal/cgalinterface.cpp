@@ -107,8 +107,8 @@ namespace CGALInterface{
                     v = Vec3(1,0,0);
                     v2 = Vec3(-1,0,0);
                 }
-                getRotationMatrix(v, angle, r);
-                getRotationMatrix(v2, angle, r2);
+                Common::getRotationMatrix(v, angle, r);
+                Common::getRotationMatrix(v2, angle, r2);
             }
             else {
                 r[0][0] = r[1][1] = r[2][2] = 1;

@@ -362,15 +362,24 @@ void Box3D::serialize(std::ofstream& binaryFile) const {
     piece.serialize(binaryFile);
 }
 
-void Box3D::deserialize(std::ifstream& binaryFile) {
-    BoundingBox::deserialize(binaryFile);
-    c1.deserialize(binaryFile);
-    c2.deserialize(binaryFile);
-    c3.deserialize(binaryFile);
-    Serializer::deserialize(color, binaryFile);
-    target.deserialize(binaryFile);
-    Serializer::deserialize(rotation, binaryFile);
-    piece.deserialize(binaryFile);
+bool Box3D::deserialize(std::ifstream& binaryFile) {
+    Box3D tmp;
+    BoundingBox tmpbb;
+    if (tmpbb.deserialize(binaryFile) &&
+            tmp.c1.deserialize(binaryFile) &&
+            tmp.c2.deserialize(binaryFile) &&
+            tmp.c3.deserialize(binaryFile) &&
+            Serializer::deserialize(tmp.color, binaryFile) &&
+            tmp.target.deserialize(binaryFile) &&
+            Serializer::deserialize(tmp.rotation, binaryFile) &&
+            tmp.piece.deserialize(binaryFile)) {
+        tmp.min() = tmpbb.min();
+        tmp.max() = tmpbb.max();
+        *this = std::move(tmp);
+        return true;
+    }
+    else
+        return false;
 }
 
 const Vec3& Box3D::getTarget() const {

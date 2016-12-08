@@ -155,7 +155,6 @@ void Grid::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(resY, binaryFile);
     Serializer::serialize(resZ, binaryFile);
     signedDistances.serialize(binaryFile);
-    //Serializer::serialize(signedDistances, binaryFile);
     weights.serialize(binaryFile);
     coeffs.serialize(binaryFile);
     fullBoxValues.serialize(binaryFile);
@@ -163,18 +162,23 @@ void Grid::serialize(std::ofstream& binaryFile) const {
 
 }
 
-void Grid::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserialize(unit, binaryFile);
-    bb.deserialize(binaryFile);
-    Serializer::deserialize(resX, binaryFile);
-    Serializer::deserialize(resY, binaryFile);
-    Serializer::deserialize(resZ, binaryFile);
-    signedDistances.deserialize(binaryFile);
-    //Serializer::deserialize(signedDistances, binaryFile);
-    weights.deserialize(binaryFile);
-    coeffs.deserialize(binaryFile);
-    fullBoxValues.deserialize(binaryFile);
-    target.deserialize(binaryFile);
+bool Grid::deserialize(std::ifstream& binaryFile) {
+    Grid tmp;
+    if (Serializer::deserialize(tmp.unit, binaryFile) &&
+            tmp.bb.deserialize(binaryFile) &&
+            Serializer::deserialize(tmp.resX, binaryFile) &&
+            Serializer::deserialize(tmp.resY, binaryFile) &&
+            Serializer::deserialize(tmp.resZ, binaryFile) &&
+            tmp.signedDistances.deserialize(binaryFile) &&
+            tmp.weights.deserialize(binaryFile) &&
+            tmp.coeffs.deserialize(binaryFile) &&
+            tmp.fullBoxValues.deserialize(binaryFile) &&
+            tmp.target.deserialize(binaryFile)){
+        *this = std::move(tmp);
+        return true;
+    }
+    else
+        return false;
 }
 
 

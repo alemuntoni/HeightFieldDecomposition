@@ -322,7 +322,7 @@ Vec3 Dcel::Face::updateNormal() {
             if (normal == -zAxis){
                 v = Vec3(1,0,0);
             }
-            getRotationMatrix(v, angle, r);
+            Common::getRotationMatrix(v, angle, r);
         }
         else {
             r[0][0] = r[1][1] = r[2][2] = 1;

@@ -37,7 +37,7 @@ class EngineManager : public QFrame, public SerializableObject {
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
-        void deserialize(std::ifstream& binaryFile);
+        bool deserialize(std::ifstream& binaryFile);
 
     private slots:
         void on_generateGridPushButton_clicked();

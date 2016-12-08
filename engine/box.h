@@ -47,7 +47,7 @@ class Box3D : public BoundingBox, public DrawableObject{
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
-        void deserialize(std::ifstream& binaryFile);
+        bool deserialize(std::ifstream& binaryFile);
 
         const Vec3& getTarget() const;
         void setTarget(const Vec3& value);

@@ -159,13 +159,13 @@ void EngineManager::serialize(std::ofstream& binaryFile) const {
         Serializer::serialize(bb, binaryFile);
 }
 
-void EngineManager::deserialize(std::ifstream& binaryFile) {
+bool EngineManager::deserialize(std::ifstream& binaryFile) {
     //deleteDrawableObject(g);
     deleteDrawableObject(d);
     //g = new DrawableGrid();
     d = new DrawableDcel();
     //g->deserialize(binaryFile);
-    d->deserialize(binaryFile);
+    if (! d->deserialize(binaryFile)) return false;
     bool bb = false;
     for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit)
         (*fit)->setColor(QColor(128,128,128));
@@ -181,23 +181,27 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
     //g->setDrawBorders();
     //g->setSlice(1);
 
-
-    Serializer::deserialize(bb, binaryFile);
+    if (! Serializer::deserialize(bb, binaryFile)) return false;
     if (bb){
         deleteDrawableObject(solutions);
         solutions = new BoxList();
-        solutions->deserialize(binaryFile);
-        solutions->setVisibleBox(0);
-        solutions->setCylinders(false);
-        mainWindow->pushObj(solutions, "Solutions");
-        ui->showAllSolutionsCheckBox->setEnabled(true);
-        ui->solutionsSlider->setEnabled(true);
-        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-        ui->setFromSolutionSpinBox->setValue(0);
-        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+        if (! solutions->deserialize(binaryFile)) return false;
+        if (solutions->getNumberBoxes() > 0){
+            solutions->setVisibleBox(0);
+            solutions->setCylinders(false);
+            mainWindow->pushObj(solutions, "Solutions");
+            ui->showAllSolutionsCheckBox->setEnabled(true);
+            ui->solutionsSlider->setEnabled(true);
+            ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+            ui->setFromSolutionSpinBox->setValue(0);
+            ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+        }
+        else
+            std::cerr << "ERROR: no boxes in binary file. ???\n";
     }
 
     mainWindow->updateGlCanvas();
+    return true;
 }
 
 void EngineManager::on_generateGridPushButton_clicked() {

@@ -1875,35 +1875,36 @@ std::string Dcel::loadFromDcelFile(const std::string& filename) {
  *
  * @param[in] binaryFile : std::ifstream del file binario da dove si vuole caricare.
  */
-void Dcel::deserialize(std::ifstream &binaryFile) {
+bool Dcel::deserialize(std::ifstream &binaryFile) {
+    Dcel tmp;
     //BB
-    clear();
-    boundingBox.deserialize(binaryFile);
-    //N
-    Serializer::deserialize(nVertices, binaryFile);
-    Serializer::deserialize(nHalfEdges, binaryFile);
-    Serializer::deserialize(nFaces, binaryFile);
 
-    Serializer::deserialize(unusedVids, binaryFile);
-    Serializer::deserialize(unusedHeids, binaryFile);
-    Serializer::deserialize(unusedFids, binaryFile);
+    if (! tmp.boundingBox.deserialize(binaryFile)) return false;
+    //N
+    if (! Serializer::deserialize(tmp.nVertices, binaryFile)) return false;
+    if (! Serializer::deserialize(tmp.nHalfEdges, binaryFile)) return false;
+    if (! Serializer::deserialize(tmp.nFaces, binaryFile)) return false;
+
+    if (! Serializer::deserialize(tmp.unusedVids, binaryFile)) return false;
+    if (! Serializer::deserialize(tmp.unusedHeids, binaryFile)) return false;
+    if (! Serializer::deserialize(tmp.unusedFids, binaryFile)) return false;
 
     //Vertices
-    vertices.resize(nVertices+unusedVids.size(), nullptr);
+    tmp.vertices.resize(tmp.nVertices+tmp.unusedVids.size(), nullptr);
     std::map<int, int> vert;
 
-    for (unsigned int i = 0; i < nVertices; i++){
+    for (unsigned int i = 0; i < tmp.nVertices; i++){
         int id, heid;
         Pointd coord; Vec3 norm;
         int c, f;
-        Serializer::deserialize(id, binaryFile);
-        coord.deserialize(binaryFile);
-        norm.deserialize(binaryFile);
-        Serializer::deserialize(heid, binaryFile);
-        Serializer::deserialize(c, binaryFile);
-        Serializer::deserialize(f, binaryFile);
+        if (! Serializer::deserialize(id, binaryFile)) return false;
+        if (! coord.deserialize(binaryFile)) return false;
+        if (! norm.deserialize(binaryFile)) return false;
+        if (! Serializer::deserialize(heid, binaryFile)) return false;
+        if (! Serializer::deserialize(c, binaryFile)) return false;
+        if (! Serializer::deserialize(f, binaryFile)) return false;
 
-        Dcel::Vertex* v = addVertex(id);
+        Dcel::Vertex* v = tmp.addVertex(id);
         v->setCardinality(c);
         v->setCoordinate(coord);
         v->setNormal(norm);
@@ -1911,334 +1912,70 @@ void Dcel::deserialize(std::ifstream &binaryFile) {
         vert[id] = heid;
     }
     //HalfEdges
-    halfEdges.resize(nHalfEdges+unusedHeids.size(), nullptr);
+    tmp.halfEdges.resize(tmp.nHalfEdges+tmp.unusedHeids.size(), nullptr);
     std::map<int, std::array<int, 6> > edges;
 
-    for (unsigned int i = 0; i < nHalfEdges; i++){
+    for (unsigned int i = 0; i < tmp.nHalfEdges; i++){
         int id, fv, tv, tw, prev, next, face, flag;
-        Serializer::deserialize(id, binaryFile);
-        Serializer::deserialize(fv, binaryFile);
-        Serializer::deserialize(tv, binaryFile);
-        Serializer::deserialize(tw, binaryFile);
-        Serializer::deserialize(prev, binaryFile);
-        Serializer::deserialize(next, binaryFile);
-        Serializer::deserialize(face, binaryFile);
-        Serializer::deserialize(flag, binaryFile);
-        Dcel::HalfEdge* he = addHalfEdge(id);
+        if (! Serializer::deserialize(id, binaryFile)) return false;
+        if (! Serializer::deserialize(fv, binaryFile)) return false;
+        if (! Serializer::deserialize(tv, binaryFile)) return false;
+        if (! Serializer::deserialize(tw, binaryFile)) return false;
+        if (! Serializer::deserialize(prev, binaryFile)) return false;
+        if (! Serializer::deserialize(next, binaryFile)) return false;
+        if (! Serializer::deserialize(face, binaryFile)) return false;
+        if (! Serializer::deserialize(flag, binaryFile)) return false;
+        Dcel::HalfEdge* he = tmp.addHalfEdge(id);
         he->setFlag(flag);
         edges[id] = {fv, tv, tw, prev, next, face};
     }
 
     //Faces
-    faces.resize(nFaces+unusedFids.size(), nullptr);
-    for (unsigned int i = 0; i < nFaces; i++){
+    tmp.faces.resize(tmp.nFaces+tmp.unusedFids.size(), nullptr);
+    for (unsigned int i = 0; i < tmp.nFaces; i++){
         int id, ohe, /*cr, cg, cb,*/ flag, nihe;
         double /*nx, ny, nz,*/ area;
         QColor color;
         Vec3 norm;
-        Serializer::deserialize(id, binaryFile);
-        Serializer::deserialize(ohe, binaryFile);
-        norm.deserialize(binaryFile);
-        Serializer::deserialize(color, binaryFile);
-        Serializer::deserialize(area, binaryFile);
-        Serializer::deserialize(flag, binaryFile);
-        Serializer::deserialize(nihe, binaryFile);
+        if (! Serializer::deserialize(id, binaryFile)) return false;
+        if (! Serializer::deserialize(ohe, binaryFile)) return false;
+        if (! norm.deserialize(binaryFile)) return false;
+        if (! Serializer::deserialize(color, binaryFile)) return false;
+        if (! Serializer::deserialize(area, binaryFile)) return false;
+        if (! Serializer::deserialize(flag, binaryFile)) return false;
+        if (! Serializer::deserialize(nihe, binaryFile)) return false;
 
 
-        Dcel::Face* f = addFace(id);
+        Dcel::Face* f = tmp.addFace(id);
         f->setColor(color);
         f->setNormal(norm);
         f->setArea(area);
         f->setFlag(flag);
-        f->setOuterHalfEdge(getHalfEdge(ohe));
+        f->setOuterHalfEdge(tmp.getHalfEdge(ohe));
         for (int j = 0; j < nihe; j++){
             int idhe;
-            Serializer::deserialize(idhe, binaryFile);
-            f->addInnerHalfEdge(getHalfEdge(idhe));
+            if (! Serializer::deserialize(idhe, binaryFile)) return false;
+            f->addInnerHalfEdge(tmp.getHalfEdge(idhe));
         }
     }
 
-    for (VertexIterator vit = vertexBegin(); vit != vertexEnd(); ++vit){
+    for (VertexIterator vit = tmp.vertexBegin(); vit != tmp.vertexEnd(); ++vit){
         Dcel::Vertex* v = *vit;
-        v->setIncidentHalfEdge(getHalfEdge(vert[v->getId()]));
+        v->setIncidentHalfEdge(tmp.getHalfEdge(vert[v->getId()]));
     }
-    for (HalfEdgeIterator heit = halfEdgeBegin(); heit != halfEdgeEnd(); ++heit){
+    for (HalfEdgeIterator heit = tmp.halfEdgeBegin(); heit != tmp.halfEdgeEnd(); ++heit){
         Dcel::HalfEdge* he = *heit;
         std::array<int, 6> a = edges[he->getId()];
-        he->setFromVertex(getVertex(a[0]));
-        he->setToVertex(getVertex(a[1]));
-        he->setTwin(getHalfEdge(a[2]));
-        he->setPrev(getHalfEdge(a[3]));
-        he->setNext(getHalfEdge(a[4]));
-        he->setFace(getFace(a[5]));
-    }
-}
-
-std::string Dcel::loadFromOldDcelFile(const std::string& filename) {
-    clear();
-
-    std::ifstream myfile;
-    myfile.open (filename, std::ios::in | std::ios::binary);
-    if (myfile.is_open()) {
-        //BB
-        double minx, miny, minz, maxx, maxy, maxz;
-        myfile.read(reinterpret_cast<char*>(&minx), sizeof(double));
-        myfile.read(reinterpret_cast<char*>(&miny), sizeof(double));
-        myfile.read(reinterpret_cast<char*>(&minz), sizeof(double));
-        myfile.read(reinterpret_cast<char*>(&maxx), sizeof(double));
-        myfile.read(reinterpret_cast<char*>(&maxy), sizeof(double));
-        myfile.read(reinterpret_cast<char*>(&maxz), sizeof(double));
-        boundingBox.setMin(Pointd(minx, miny, minz));
-        boundingBox.setMax(Pointd(maxx, maxy, maxz));
-        //N
-        myfile.read(reinterpret_cast<char*>(&nVertices), sizeof(int));
-        myfile.read(reinterpret_cast<char*>(&nHalfEdges), sizeof(int));
-        myfile.read(reinterpret_cast<char*>(&nFaces), sizeof(int));
-        //Sets
-        int nv, nhe, nf;
-        myfile.read(reinterpret_cast<char*>(&nv), sizeof(int));
-        for (int i = 0; i < nv; i++){
-            int id;
-            myfile.read(reinterpret_cast<char*>(&id), sizeof(int));
-            unusedVids.insert(id);
-        }
-        myfile.read(reinterpret_cast<char*>(&nhe), sizeof(int));
-        for (int i = 0; i < nhe; i++){
-            int id;
-            myfile.read(reinterpret_cast<char*>(&id), sizeof(int));
-            unusedHeids.insert(id);
-        }
-        myfile.read(reinterpret_cast<char*>(&nf), sizeof(int));
-        for (int i = 0; i < nf; i++){
-            int id;
-            myfile.read(reinterpret_cast<char*>(&id), sizeof(int));
-            unusedFids.insert(id);
-        }
-        //Vertices
-        vertices.resize(nVertices+nv, nullptr);
-        std::map<int, int> vert;
-
-        for (unsigned int i = 0; i < nVertices; i++){
-            int id, heid;
-            double px, py, pz, nx, ny, nz;
-            int c, f;
-            myfile.read(reinterpret_cast<char*>(&id), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&px), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&py), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&pz), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&nx), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&ny), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&nz), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&heid), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&c), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&f), sizeof(int));
-
-            Dcel::Vertex* v = addVertex(id);
-            v->setCardinality(c);
-            v->setCoordinate(Pointd(px,py,pz));
-            v->setNormal(Vec3(nx, ny, nz));
-            v->setFlag(f);
-            vert[id] = heid;
-        }
-        //HalfEdges
-        halfEdges.resize(nHalfEdges+nhe, nullptr);
-        std::map<int, std::array<int, 6> > edges;
-
-        for (unsigned int i = 0; i < nHalfEdges; i++){
-            int id, fv, tv, tw, prev, next, face, flag;
-            myfile.read(reinterpret_cast<char*>(&id), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&fv), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&tv), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&tw), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&prev), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&next), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&face), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&flag), sizeof(int));
-            Dcel::HalfEdge* he = addHalfEdge(id);
-            he->setFlag(flag);
-            edges[id] = {fv, tv, tw, prev, next, face};
-        }
-
-        //Faces
-        faces.resize(nFaces+nhe, nullptr);
-        for (unsigned int i = 0; i < nFaces; i++){
-            int id, ohe, cr, cg, cb, flag, nihe;
-            double nx, ny, nz, area;
-            myfile.read(reinterpret_cast<char*>(&id), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&ohe), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&nx), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&ny), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&nz), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&cr), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&cg), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&cb), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&area), sizeof(double));
-            myfile.read(reinterpret_cast<char*>(&flag), sizeof(int));
-            myfile.read(reinterpret_cast<char*>(&nihe), sizeof(int));
-
-
-            Dcel::Face* f = addFace(id);
-            QColor c;
-            c.setRgb(cr, cg, cb);
-            f->setColor(c);
-            f->setNormal(Vec3(nx, ny, nz));
-            f->setArea(area);
-            f->setFlag(flag);
-            f->setOuterHalfEdge(getHalfEdge(ohe));
-            for (int j = 0; j < nihe; j++){
-                int idhe;
-                myfile.read(reinterpret_cast<char*>(&idhe), sizeof(int));
-                f->addInnerHalfEdge(getHalfEdge(idhe));
-            }
-        }
-
-        for (VertexIterator vit = vertexBegin(); vit != vertexEnd(); ++vit){
-            Dcel::Vertex* v = *vit;
-            v->setIncidentHalfEdge(getHalfEdge(vert[v->getId()]));
-        }
-        for (HalfEdgeIterator heit = halfEdgeBegin(); heit != halfEdgeEnd(); ++heit){
-            Dcel::HalfEdge* he = *heit;
-            std::array<int, 6> a = edges[he->getId()];
-            he->setFromVertex(getVertex(a[0]));
-            he->setToVertex(getVertex(a[1]));
-            he->setTwin(getHalfEdge(a[2]));
-            he->setPrev(getHalfEdge(a[3]));
-            he->setNext(getHalfEdge(a[4]));
-            he->setFace(getFace(a[5]));
-        }
-    }
-    myfile.close();
-
-    std::stringstream ss;
-    ss << "Vertices: " << nVertices << "; Half Edges: " << nHalfEdges << "; Faces: " << nFaces << ".";
-    return ss.str();
-}
-
-std::string Dcel::loadFromOldOldDcelFile(const std::string& filename) {
-    clear();
-    typedef boost::char_separator<char>     CharSeparator;
-    typedef boost::tokenizer<CharSeparator> Tokenizer;
-    typedef Tokenizer::iterator             TokenizerIterator;
-
-    CharSeparator spaceSeparator(" ");
-
-    std::ifstream file(filename.c_str());
-    std::string   line;
-
-    if(!file.is_open())
-    {
-        std::cerr << "ERROR : read() : could not open input file " << filename.c_str() << "\n";
-        assert(0);
+        he->setFromVertex(tmp.getVertex(a[0]));
+        he->setToVertex(tmp.getVertex(a[1]));
+        he->setTwin(tmp.getHalfEdge(a[2]));
+        he->setPrev(tmp.getHalfEdge(a[3]));
+        he->setNext(tmp.getHalfEdge(a[4]));
+        he->setFace(tmp.getFace(a[5]));
     }
 
-    std::getline(file,line);
-    std::getline(file,line);
-
-    Tokenizer spaceTokenizerBB(line, spaceSeparator);
-    TokenizerIterator token = spaceTokenizerBB.begin();
-    std::istringstream ibbminx(*(token++)), ibbminy(*(token++)), ibbminz(*(token++)), ibbmaxx(*(token++)), ibbmaxy(*(token++)), ibbmaxz(*(token++));
-    double bbminx, bbminy, bbminz, bbmaxx, bbmaxy, bbmaxz;
-    ibbminx >> bbminx; ibbminy >> bbminy; ibbminz >> bbminz; ibbmaxx >>bbmaxx; ibbmaxy >> bbmaxy; ibbmaxz >> bbmaxz;
-
-    boundingBox.setMin(Pointd(bbminx, bbminy, bbminz));
-    boundingBox.setMax(Pointd(bbmaxx, bbmaxy, bbmaxz));
-
-    std::getline(file,line);
-    Tokenizer spaceTokenizerIds(line, spaceSeparator);
-    token = spaceTokenizerIds.begin();
-    std::istringstream ivid(*(token++)), iheid(*(token++)), ifid(*(token++));
-    ivid >> nVertices; iheid >> nHalfEdges; ifid >> nFaces;
-
-    std::getline(file,line);
-    Tokenizer spaceTokenizerN(line, spaceSeparator);
-    token = spaceTokenizerN.begin();
-    std::istringstream inv(*(token++)), inhe(*(token++)), inf(*(token++));
-    unsigned int nv, nhe, nf;
-    inv >> nv; inhe >> nhe; inf >> nf;
-
-    std::map<int, int> vert;
-    vertices.resize(nVertices);
-    halfEdges.resize(nHalfEdges);
-    faces.resize(nFaces);
-
-    for (unsigned int i = 0; i < nv; i++){
-        std::getline(file,line);
-        Tokenizer spaceTokenizer(line, spaceSeparator);
-        TokenizerIterator token = spaceTokenizer.begin();
-        std::istringstream iid(*(token++)), ix(*(token++)), iy(*(token++)), iz(*(token++)), inx(*(token++)),
-                iny(*(token++)), inz(*(token++)), iihe(*(token++)), icard(*(token++)), iflag(*(token++));
-        int id, ihe, card, flag;
-        double x, y, z, nx, ny, nz;
-        iid >> id; iihe >> ihe; icard >> card; iflag >> flag;
-        ix >> x; iy >> y; iz >> z; inx >>nx; iny >> ny; inz >> nz;
-        Dcel::Vertex* v = addVertex(id);
-        v->setCardinality(card);
-        v->setCoordinate(Pointd(x,y,z));
-        v->setNormal(Vec3(nx, ny, nz));
-        v->setFlag(flag);
-        vert[id] = ihe;
-    }
-
-    std::map<int, std::array<int, 6> > edges;
-
-    for (unsigned int i = 0; i < nhe; i++){
-        std::getline(file,line);
-        Tokenizer spaceTokenizer(line, spaceSeparator);
-        TokenizerIterator token = spaceTokenizer.begin();
-        std::istringstream iid(*(token++)), ifv(*(token++)), itv(*(token++)), it(*(token++)), ip(*(token++)),
-                in(*(token++)), iff(*(token++)), iflag(*(token++));
-        int id, fv, tv, t, p, n, f, flag;
-        iid >> id; ifv >> fv; itv >> tv; it >> t; ip >> p; in >> n; iff >> f; iflag >> flag;
-        Dcel::HalfEdge* he = addHalfEdge(id);
-        he->setFlag(flag);
-        edges[id] = {fv, tv, t, p, n, f};
-    }
-
-    for (unsigned int i = 0; i < nf; i++){
-        std::getline(file,line);
-        Tokenizer spaceTokenizer(line, spaceSeparator);
-        TokenizerIterator token = spaceTokenizer.begin();
-        std::istringstream iid(*(token++)), io(*(token++)), inx(*(token++)), iny(*(token++)), inz(*(token++)),
-                icx(*(token++)), icy(*(token++)), icz(*(token++)), ia(*(token++)), iflag(*(token++)), inihe(*(token++));
-        int id, o, cx, cy, cz, flag, nihe;
-        double nx, ny, nz, a;
-        iid >> id; io >> o; icx >> cx; icy >> cy; icz >> cz; iflag >> flag; inihe >> nihe;
-        inx >> nx; iny >> ny; inz >> nz; ia >> a;
-
-        Dcel::Face* f = addFace(id);
-        QColor c;
-        c.setRgb(cx, cy, cz);
-        f->setColor(c);
-        f->setNormal(Vec3(nx, ny, nz));
-        f->setArea(a);
-        f->setFlag(flag);
-        f->setOuterHalfEdge(getHalfEdge(o));
-        for (int j = 0; j < nihe; j++){
-            std::istringstream iihe(*(token++));
-            int ihe;
-            iihe >> ihe;
-            f->addInnerHalfEdge(getHalfEdge(ihe));
-        }
-    }
-
-    for (VertexIterator vit = vertexBegin(); vit != vertexEnd(); ++vit){
-        Dcel::Vertex* v = *vit;
-        v->setIncidentHalfEdge(getHalfEdge(vert[v->getId()]));
-    }
-    for (HalfEdgeIterator heit = halfEdgeBegin(); heit != halfEdgeEnd(); ++heit){
-        Dcel::HalfEdge* he = *heit;
-        std::array<int, 6> a = edges[he->getId()];
-        he->setFromVertex(getVertex(a[0]));
-        he->setToVertex(getVertex(a[1]));
-        he->setTwin(getHalfEdge(a[2]));
-        he->setPrev(getHalfEdge(a[3]));
-        he->setNext(getHalfEdge(a[4]));
-        he->setFace(getFace(a[5]));
-    }
-
-    std::stringstream ss;
-    ss << "Vertices: " << vertices.size() << "; Half Edges: " << halfEdges.size() << "; Faces: " << faces.size() << ".";
-    return ss.str();
+    *this = std::move(tmp);
+    return true;
 }
 
 /**

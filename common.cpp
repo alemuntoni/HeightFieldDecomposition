@@ -11,7 +11,7 @@ int ENGINE_MANAGER_ID;
 
 QColor colorOfNormal(const Vec3& normal) {
     for (unsigned int i = 0; i < XYZ.size(); i++)
-        if (epsilonEqual(XYZ[i], normal)) return colors[i];
+        if (Common::epsilonEqual(XYZ[i], normal)) return colors[i];
     return QColor(128, 128, 128);
 }
 

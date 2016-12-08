@@ -110,7 +110,7 @@ class BoundingBox : public SerializableObject{
         double& operator()(unsigned int i);
 
         // SerializableObject interface
-        void deserialize(std::ifstream& binaryFile);
+        bool deserialize(std::ifstream& binaryFile);
 
     protected:
 
@@ -644,9 +644,15 @@ inline double& BoundingBox::operator()(unsigned int i) {
  * @brief Deserializza (legge) un bounding box da un std::ifstream aperto in modalità binaria
  * @param[in] binaryFile: std::ifstream aperto in modalità binaria, avente il cursore in una posizione dove è salvato un bounding box
  */
-inline void BoundingBox::deserialize(std::ifstream& binaryFile) {
-    minCoord.deserialize(binaryFile);
-    maxCoord.deserialize(binaryFile);
+inline bool BoundingBox::deserialize(std::ifstream& binaryFile) {
+    Pointd tmp;
+    if (tmp.deserialize(binaryFile) && maxCoord.deserialize(binaryFile)){
+        minCoord = std::move(tmp);
+        return true;
+    }
+    else
+        return false;
+
 }
 
 #endif // BOUNDING_BOX_H

@@ -86,7 +86,7 @@ namespace IGLInterface {
 
             // SerializableObject interface
             void serialize(std::ofstream& binaryFile) const;
-            void deserialize(std::ifstream& binaryFile);
+            bool deserialize(std::ifstream& binaryFile);
 
 
         protected:
@@ -145,7 +145,7 @@ namespace IGLInterface {
             #endif
 
             void serialize(std::ofstream& binaryFile) const;
-            void deserialize(std::ifstream& binaryFile);
+            bool deserialize(std::ifstream& binaryFile);
 
         protected:
 
@@ -304,9 +304,14 @@ namespace IGLInterface {
         Serializer::serialize(F, binaryFile);
     }
 
-    inline void SimpleIGLMesh::deserialize(std::ifstream& binaryFile) {
-        Serializer::deserialize(V, binaryFile);
-        Serializer::deserialize(F, binaryFile);
+    inline bool SimpleIGLMesh::deserialize(std::ifstream& binaryFile) {
+        SimpleIGLMesh tmp;
+        if (Serializer::deserialize(tmp.V, binaryFile) &&
+            Serializer::deserialize(tmp.F, binaryFile)){
+            *this = std::move(tmp);
+            return true;
+        }
+        return false;
     }
 
 
