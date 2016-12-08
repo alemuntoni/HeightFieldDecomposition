@@ -48,8 +48,8 @@ class DrawableObject
                                                       \~English @brief Returns the ray of the bounding sphere (or the bounding box)* of the object */
         virtual bool isVisible()      const = 0; /**< \~Italian @brief Restituisce true se l'oggetto è visibile, false altrimenti
                                                       \~English @brief Returns true if the object is visible, false otherwise */
-        virtual void setVisible(bool)       = 0; /**< \~Italian @brief Setta la visibilità dell'oggetto
-                                                      \~English @brief Sets the visibility of the object */
+        //virtual void setVisible(bool)       = 0; /**< \~Italian @brief Setta la visibilità dell'oggetto
+                                                      //\~English @brief Sets the visibility of the object */
 };
 
 #endif // DRAWABLE_OBJECT_H

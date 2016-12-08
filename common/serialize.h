@@ -108,6 +108,10 @@ namespace Serializer {
 
     void deserialize(QColor& obj, std::ifstream& binaryFile);
 
+    void serialize(const std::string& str, std::ofstream& binaryFile);
+
+    void deserialize(std::string& str, std::ifstream& binaryFile);
+
     template <typename T, typename ...A> void serialize(const std::set<T, A...> &s, std::ofstream& binaryFile);
 
     template <typename T, typename ...A> void deserialize(std::set<T, A...> &s, std::ifstream& binaryFile);
@@ -222,6 +226,19 @@ inline void Serializer::deserialize(QColor& obj, std::ifstream& binaryFile){
     Serializer::deserialize(b, binaryFile);
     Serializer::deserialize(a, binaryFile);
     obj.setRgb(r,g,b,a);
+}
+
+inline void Serializer::serialize(const std::string& str, std::ofstream& binaryFile){
+    size_t size=str.size();
+    Serializer::serialize(size, binaryFile);
+    binaryFile.write(&str[0],size);
+}
+
+inline void Serializer::deserialize(std::string& str, std::ifstream& binaryFile){
+    size_t size;
+    Serializer::deserialize(size, binaryFile);
+    str.resize(size);
+    binaryFile.read(&str[0], size);
 }
 
 /**

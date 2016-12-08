@@ -39,8 +39,9 @@ class MainWindow : public QMainWindow {
         ~MainWindow();
 
         void updateGlCanvas();
-        void pushObj(DrawableObject * obj, std::string checkBoxName, bool b = true);
-        void deleteObj(DrawableObject * obj, bool b = true);
+        void pushObj(const DrawableObject * obj, std::string checkBoxName, bool b = true);
+        void deleteObj(const DrawableObject * obj, bool b = true);
+        bool contains(const DrawableObject* obj);
         BoundingBox getFullBoundingBox();
         int getNumberVisibleObjects();
         void saveSnapshot();
@@ -86,7 +87,7 @@ class MainWindow : public QMainWindow {
         //
         QSignalMapper* checkBoxMapper;
         std::map<int, QCheckBox * > checkBoxes;
-        boost::bimap<int, DrawableObject*> mapObjects;
+        boost::bimap<int, const DrawableObject*> mapObjects;
         int nMeshes;
         bool first;
         DrawableDebugObjects* debugObjects;

@@ -164,6 +164,10 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_reorderBoxes_clicked();
 
+        void on_loadOriginalPushButton_clicked();
+
+        void on_loadSmoothedPushButton_clicked();
+
     private:
         Ui::EngineManager *ui;
         MainWindow* mainWindow; //puntatore alla mainWindow
@@ -180,6 +184,7 @@ class EngineManager : public QFrame, public SerializableObject {
         DrawableIrregularGrid* irregularGrid;
         HeightfieldsList* newPieces;
         IGLInterface::DrawableIGLMesh* newBaseComplex;
+        IGLInterface::DrawableIGLMesh originalMesh;
 };
 
 #endif // ENGINEMANAGER_H

@@ -106,6 +106,21 @@ namespace IGLInterface {
         V.rowwise() += centroid.transpose();
     }
 
+    void SimpleIGLMesh::scale(const BoundingBox& newBoundingBox) {
+        BoundingBox boundingBox = getBoundingBox();
+        Pointd oldCenter = boundingBox.center();
+        Pointd newCenter = newBoundingBox.center();
+        Pointd deltaOld = boundingBox.getMax() - boundingBox.getMin();
+        Pointd deltaNew = newBoundingBox.getMax() - newBoundingBox.getMin();
+        for (int i = 0; i < V.rows(); i++){
+            Pointd coord = getVertex(i);
+            coord -= oldCenter;
+            coord *= deltaNew / deltaOld;
+            coord += newCenter;
+            setVertex(i, coord);
+        }
+    }
+
     #ifdef CGAL_DEFINED
     void SimpleIGLMesh::intersection(SimpleIGLMesh& result, const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
         igl::copyleft::cgal::CSGTree M;
@@ -298,108 +313,21 @@ namespace IGLInterface {
         return b;
     }
 
+    void IGLMesh::scale(const BoundingBox& newBoundingBox) {
+        SimpleIGLMesh::scale(newBoundingBox);
+        BBmin(0) = newBoundingBox.min()[0];
+        BBmin(1) = newBoundingBox.min()[1];
+        BBmin(2) = newBoundingBox.min()[2];
+        BBmax(0) = newBoundingBox.max()[0];
+        BBmax(1) = newBoundingBox.max()[1];
+        BBmax(2) = newBoundingBox.max()[2];
+    }
+
     Eigen::MatrixXd IGLMesh::getVerticesColorMatrix() const {
         return CV;
     }
 
-    bool IGLMesh::readFromPly(const std::string &filename) {
-        typedef boost::char_separator<char>     CharSeparator;
-        typedef boost::tokenizer<CharSeparator> Tokenizer;
-        typedef Tokenizer::iterator             TokenizerIterator;
-
-        CharSeparator spaceSeparator(" ");
-
-        int vnum = -1, fnum = -1;
-
-        std::ifstream file(filename);
-        if (!file.is_open()) {
-            std::cerr << "ERROR : " << __FILE__ << ", line " << __LINE__ << " : load_PLY() : couldn't open input file " << filename << std::endl;
-            return false;
-        }
-
-        std::string line;
-        unsigned found;
-
-        //Retrieve informations from headers
-        while(getline(file, line)) {
-            if (line.find("element vertex") != std::string::npos) {
-                found = line.find_last_of(" ");
-                vnum = atoi(line.substr(found+1).c_str());
-            }
-            if (line.find("element face") != std::string::npos) {
-                found = line.find_last_of(" ");
-                fnum = atoi(line.substr(found+1).c_str());
-            }
-            if (line.find("end_header") != std::string::npos)
-                break;
-        }
-
-        assert(vnum >= 0 && "Ply file with no vertices number.");
-        assert(fnum >= 0 && "Ply file with no faces number.");
-
-        //std::cout << vnum << " " << fnum << endl;
-
-        int vi = 0, fi = 0;
-
-        V.resize(vnum,3);
-        CV.resize(vnum,3);
-        F.resize(fnum,3);
-        while(std::getline(file,line))
-        {
-            Tokenizer spaceTokenizer(line, spaceSeparator);
-
-            if (spaceTokenizer.begin() == spaceTokenizer.end()) continue;
-            TokenizerIterator token = spaceTokenizer.begin();
-
-            if (vi < vnum) {
-                std::string x = *(token);
-                std::string y = *(++token);
-                std::string z = *(++token);
-                std::string r = *(++token);
-                std::string g = *(++token);
-                std::string b = *(++token);
-                int ri, gi, bi;
-
-                std::istringstream xstr(x), ystr(y), zstr(z), rstr(r), gstr(g), bstr(b);
-                xstr >> V(vi,0);
-                ystr >> V(vi,1);
-                zstr >> V(vi,2);
-                rstr >> ri;
-                gstr >> gi;
-                bstr >> bi;
-                CV(vi,0) = (double) ri/256;
-                CV(vi,1) = (double) gi/256;
-                CV(vi,2) = (double) bi/256;
-                vi++;
-            }
-            else if (fi < fnum){
-                std::string x = *(++token);
-                std::string y = *(++token);
-                std::string z = *(++token);
-                std::istringstream xstr(x), ystr(y), zstr(z);
-
-                xstr >> F(fi,0);
-                ystr >> F(fi,1);
-                zstr >> F(fi,2);
-                fi++;
-            }
-
-        }
-        file.close();
-
-        CF = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
-        NV.resize(V.rows(), 3);
-        NF.resize(F.rows(), 3);
-        igl::per_face_normals(V,F,NF);
-        igl::per_vertex_normals(V,F,NV);
-        BBmin = V.colwise().minCoeff();
-        BBmax = V.colwise().maxCoeff();
-        return true;
-
-    }
-
-    bool IGLMesh::saveOnPly(const std::string &filename)
-    {
+    bool IGLMesh::saveOnPly(const std::string &filename) const {
         unsigned int numV=V.rows();
         unsigned int numF=F.rows();
 
@@ -421,15 +349,16 @@ namespace IGLInterface {
          <<"property uchar blue"<<std::endl;
         f<<"element face "<<numF<<std::endl;
         f<<"property list uchar int vertex_index"<<std::endl
+         <<"property uchar red"<<std::endl
+         <<"property uchar green"<<std::endl
+         <<"property uchar blue"<<std::endl
          <<"end_header"<<std::endl;
-        for(unsigned int i=0;i<numV;++i)
-        {
+        for(unsigned int i=0;i<numV;++i) {
             f<<V(i,0)<<" "<<V(i,1)<<" "<<V(i,2)<<" "<<(int)(CV(i,0)*255)<<" "<<(int)(CV(i,1)*255)<<" "<<(int)(CV(i,2)*255)<<std::endl;
         }
 
-        for(unsigned int i=0;i<numF;++i)
-        {
-            f<< "3 " << F(i,0)<<" "<<F(i,1)<<" "<<F(i,2)<<std::endl;
+        for(unsigned int i=0;i<numF;++i) {
+            f<< "3 " << F(i,0)<<" "<<F(i,1)<<" "<<F(i,2) <<(int)(CF(i,0)*255)<<" "<<(int)(CF(i,1)*255)<<" "<<(int)(CF(i,2)*255) <<std::endl;
         }
         f.close();
 
@@ -491,7 +420,6 @@ namespace IGLInterface {
         igl::per_vertex_normals(V,F,this->NV);
         BBmin = V.colwise().minCoeff();
         BBmax = V.colwise().maxCoeff();
-
     }
 
     #ifdef CGAL_DEFINED

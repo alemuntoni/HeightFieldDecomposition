@@ -1265,6 +1265,25 @@ void Dcel::triangulate() {
 }
 #endif
 
+bool Dcel::loadFromFile(const std::string& filename) {
+    std::string ext = filename.substr(filename.find_last_of(".") + 1);
+    if(ext == "obj" || ext == "OBJ") { //obj file
+        loadFromObjFile(filename);
+        return true;
+    }
+    else if(ext == "ply" || ext == "PLY") { //ply file
+        loadFromPlyFile(filename);
+        return true;
+    }
+    else if (ext == "dcel" || ext == "dcel") {
+        loadFromDcelFile(filename);
+        return true;
+    }
+    else
+        return false;
+}
+
+
 /**
  * \~Italian
  * @brief Funzione che carica una mesh salvta su file OBJ nella Dcel.

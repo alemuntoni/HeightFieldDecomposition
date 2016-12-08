@@ -3,6 +3,7 @@
 #include "common.h"
 #include <cstdio>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <omp.h>
 #include "cgal/aabbtree.h"
 
@@ -17,7 +18,7 @@ EngineManager::EngineManager(QWidget *parent) :
     solutions(nullptr),
     baseComplex(nullptr),
     he(nullptr),
-    entirePieces(nullptr),
+    //entirePieces(nullptr),
     recBoxes(nullptr),
     irregularGrid(nullptr),
     newPieces(nullptr),
@@ -31,7 +32,7 @@ EngineManager::EngineManager(QWidget *parent) :
 
 void EngineManager::deleteDrawableObject(DrawableObject* d) {
     if (d != nullptr){
-        d->setVisible(false);
+        //d->setVisible(false);
         mainWindow->deleteObj(d);
         delete d;
         d = nullptr;
@@ -47,7 +48,7 @@ EngineManager::~EngineManager() {
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
-    deleteDrawableObject(entirePieces);
+    //deleteDrawableObject(entirePieces);
     deleteDrawableObject(recBoxes);
     deleteDrawableObject(newPieces);
     deleteDrawableObject(newBaseComplex);
@@ -99,7 +100,7 @@ void EngineManager::serializeBC(const std::string& filename) {
     solutions->serialize(myfile);
     baseComplex->serialize(myfile);
     he->serialize(myfile);
-    entirePieces->serialize(myfile);
+    //entirePieces->serialize(myfile);
     myfile.close();
 }
 
@@ -113,14 +114,14 @@ void EngineManager::deserializeBC(const std::string& filename) {
     solutions = new BoxList();
     baseComplex = new IGLInterface::DrawableIGLMesh();
     he = new HeightfieldsList();
-    entirePieces = new HeightfieldsList();
+    //entirePieces = new HeightfieldsList();
     std::ifstream myfile;
     myfile.open (filename, std::ios::in | std::ios::binary);
     d->deserialize(myfile);
     solutions->deserialize(myfile);
     baseComplex->deserialize(myfile);
     he->deserialize(myfile);
-    entirePieces->deserialize(myfile);
+    //entirePieces->deserialize(myfile);
     myfile.close();
     d->update();
     d->setPointsShading();
@@ -129,7 +130,7 @@ void EngineManager::deserializeBC(const std::string& filename) {
     mainWindow->pushObj(solutions, "Boxes");
     mainWindow->pushObj(baseComplex, "Base Complex");
     mainWindow->pushObj(he, "Heightfields");
-    mainWindow->pushObj(entirePieces, "Entire Pieces");
+    //mainWindow->pushObj(entirePieces, "Entire Pieces");
     mainWindow->updateGlCanvas();
     ui->showAllSolutionsCheckBox->setEnabled(true);
     //he->explode(40);
@@ -140,6 +141,7 @@ void EngineManager::deserializeBC(const std::string& filename) {
     ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
     ui->setFromSolutionSpinBox->setValue(0);
     ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+    serializeBC("heightfields/new/" + filename.substr(filename.find_last_of("/") + 1));
 }
 
 void EngineManager::serialize(std::ofstream& binaryFile) const {
@@ -199,16 +201,11 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
 }
 
 void EngineManager::on_generateGridPushButton_clicked() {
-    DcelManager* dm = (DcelManager*)mainWindow->getManager(DCEL_MANAGER_ID);
-    DrawableDcel* dd = dm->getDcel();
-    if (dd != nullptr){
-        deleteDrawableObject(d);
-        d = new DrawableDcel(*dd);
-        mainWindow->pushObj(d, "Scaled Mesh");
-        deleteDrawableObject(g);
+    if (d != nullptr){
         g = new DrawableGrid();
 
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
+        originalMesh.scale(d->getBoundingBox());
         std::set<const Dcel::Face*> flippedFaces, savedFaces;
         Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()], savedFaces);
@@ -335,24 +332,24 @@ void EngineManager::on_deserializePushButton_clicked() {
 }
 
 void EngineManager::on_saveObjsButton_clicked() {
-    if (d != nullptr && baseComplex != nullptr && he != nullptr && entirePieces != nullptr) {
+    if (d != nullptr && baseComplex != nullptr && he != nullptr /*&& entirePieces != nullptr*/) {
         QString foldername = QFileDialog::getExistingDirectory(nullptr, "SaveObjs");
         if (!foldername.isEmpty()){
             QString inputMeshString = foldername + "/InputMesh.obj";
             QString baseComplexString = foldername + "/BaseComplex.obj";
             QString heightfieldString = foldername + "/Heightfield";
-            QString entirePieceString = foldername + "/EntirePiece";
+            //QString entirePieceString = foldername + "/EntirePiece";
             d->saveOnObjFile(inputMeshString.toStdString());
             baseComplex->saveOnObj(baseComplexString.toStdString());
             for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
                 IGLInterface::IGLMesh h = he->getHeightfield(i);
-                IGLInterface::IGLMesh ep = entirePieces->getHeightfield(i);
+                //IGLInterface::IGLMesh ep = entirePieces->getHeightfield(i);
                 std::stringstream ss;
-                std::stringstream ss1;
+                //std::stringstream ss1;
                 ss << heightfieldString.toStdString() << i << ".obj";
-                ss1 << entirePieceString.toStdString() << i << ".obj";
+                //ss1 << entirePieceString.toStdString() << i << ".obj";
                 h.saveOnObj(ss.str());
-                ep.saveOnObj(ss1.str());
+                //ep.saveOnObj(ss1.str());
             }
         }
     }
@@ -968,14 +965,14 @@ void EngineManager::on_baseComplexPushButton_clicked() {
 void EngineManager::on_subtractPushButton_clicked() {
     if (solutions!= nullptr && baseComplex != nullptr && d != nullptr){
         deleteDrawableObject(he);
-        deleteDrawableObject(entirePieces);
+        //deleteDrawableObject(entirePieces);
         he = new HeightfieldsList();
         entirePieces = new HeightfieldsList();
         mainWindow->pushObj(he, "Heightfields");
-        mainWindow->pushObj(entirePieces, "Entire Pieces");
+        //mainWindow->pushObj(entirePieces, "Entire Pieces");
         mainWindow->updateGlCanvas();
         IGLInterface::SimpleIGLMesh bc((IGLInterface::SimpleIGLMesh)*baseComplex);
-        Engine::booleanOperations(*he, bc, *solutions, *d, *entirePieces);
+        Engine::booleanOperations(*he, bc, *solutions, *d /*,*entirePieces*/);
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
@@ -1020,7 +1017,7 @@ void EngineManager::on_stickPushButton_clicked() {
 }
 
 void EngineManager::on_serializeBCPushButton_clicked() {
-    if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr && entirePieces != nullptr){
+    if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr /*&& entirePieces != nullptr*/){
         QString filename = QFileDialog::getSaveFileName(nullptr,
                            "Serialize",
                            ".",
@@ -1082,13 +1079,13 @@ void EngineManager::on_allHeightfieldsCheckBox_stateChanged(int arg1) {
     if (arg1 == Qt::Checked){
         if (he != nullptr){
             he->setVisibleHeightfield(-1);
-            if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(-1);
+            //if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(-1);
             mainWindow->updateGlCanvas();
         }
     }
     else {
         if (he != nullptr){
-            if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(ui->heightfieldsSlider->value());
+            //if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(ui->heightfieldsSlider->value());
             he->setVisibleHeightfield(ui->heightfieldsSlider->value());
             mainWindow->updateGlCanvas();
         }
@@ -1098,7 +1095,7 @@ void EngineManager::on_allHeightfieldsCheckBox_stateChanged(int arg1) {
 void EngineManager::on_heightfieldsSlider_valueChanged(int value) {
     if (he != nullptr){
         ui->solutionsSlider->setValue(value);
-        if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(value);
+        //if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(value);
         he->setVisibleHeightfield(value);
         mainWindow->updateGlCanvas();
     }
@@ -1166,7 +1163,7 @@ void EngineManager::on_cleanAllPushButton_clicked() {
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
-    deleteDrawableObject(entirePieces);
+    //deleteDrawableObject(entirePieces);
 }
 
 void EngineManager::on_createIrregularGridButton_clicked() {
@@ -1253,5 +1250,46 @@ void EngineManager::on_reorderBoxes_clicked() {
             std::cerr << solutions->getBox(i).getId() << " ";
         }
         std::cerr << "\n";
+    }
+}
+
+void EngineManager::on_loadOriginalPushButton_clicked() {
+    QString filename = QFileDialog::getOpenFileName(nullptr,
+                       "Open IGL Mesh",
+                       ".",
+                       "OBJ(*.obj);;PLY(*.ply)");
+    if (!filename.isEmpty()) {
+        originalMesh.readFromFile(filename.toStdString());
+        if (! (mainWindow->contains(&originalMesh)))
+            mainWindow->pushObj(&originalMesh, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_loadSmoothedPushButton_clicked() {
+    QString filename = QFileDialog::getOpenFileName(nullptr,
+                       "Open IGL Mesh",
+                       ".",
+                       "OBJ(*.obj);;PLY(*.ply)");
+    if (!filename.isEmpty()) {
+        std::string s = filename.toStdString();
+        deleteDrawableObject(d);
+        d = new DrawableDcel();
+        if (d->loadFromFile(s)){
+            std::cout << "load: " << filename.toStdString() << std::endl;
+            d->updateVertexNormals();
+            d->setWireframe(true);
+            d->setPointsShading();
+            d->update();
+            mainWindow->pushObj(d, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
+            mainWindow->updateGlCanvas();
+        }
+        else {
+            delete d;
+            d = nullptr;
+            QMessageBox msgBox;
+            msgBox.setText("Format file not supported.");
+            msgBox.exec();
+        }
     }
 }

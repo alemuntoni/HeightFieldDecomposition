@@ -43,6 +43,7 @@ namespace IGLInterface {
             SimpleIGLMesh(const Trimesh<T>& trimesh);
             #endif
             void setVertex(unsigned int i, const Eigen::VectorXd &p);
+            void setVertex(unsigned int i, const Pointd &p);
             void setVertex(unsigned int i, double x, double y, double z);
             void addVertex(const Eigen::VectorXd &p);
             void addVertex(double x, double y, double z);
@@ -73,6 +74,7 @@ namespace IGLInterface {
             void translate(const Pointd &p);
             void translate(const Eigen::Vector3d &p);
             void rotate(const Eigen::Matrix3d &m, const Eigen::Vector3d& centroid = Eigen::Vector3d::Zero());
+            void scale(const BoundingBox& newBoundingBox);
             #ifdef CGAL_DEFINED
             static void intersection(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
             static SimpleIGLMesh intersection(const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
@@ -122,11 +124,12 @@ namespace IGLInterface {
             BoundingBox getBoundingBox() const;
             void decimate(int numberDesiredFaces);
             bool getDecimatedMesh(IGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
+            void scale(const BoundingBox& newBoundingBox);
             Eigen::MatrixXd getVerticesColorMatrix() const;
 
-            bool readFromPly(const std::string &filename);
-            bool saveOnPly(const std::string &filename);
+            bool saveOnPly(const std::string &filename) const;
             void deleteVerticesLowerThanY(double y);
+
 
             #ifdef CGAL_DEFINED
             static void intersection(IGLMesh &result, const IGLMesh &m1, const IGLMesh &m2);
@@ -185,6 +188,11 @@ namespace IGLInterface {
         assert (i < V.rows());
         assert (p.size() == 3);
         V.row(i) =  p;
+    }
+
+    inline void SimpleIGLMesh::setVertex(unsigned int i, const Pointd& p) {
+        assert (i < V.rows());
+        V(i,0) = p[0]; V(i,1) = p[1]; V(i,2) = p[2];
     }
 
     inline void SimpleIGLMesh::setVertex(unsigned int i, double x, double y, double z) {

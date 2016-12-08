@@ -169,6 +169,7 @@ class Dcel : public SerializableObject {
         unsigned int triangulateFace(Dcel::Face* f);
         void triangulate();
         #endif
+        bool loadFromFile(const std::string& filename);
         std::string loadFromObjFile(const std::string& filename, bool regular = true);
         std::string loadFromPlyFile(const std::string& filename, bool regular = true);
         std::string loadFromDcelFile(const std::string& filename);

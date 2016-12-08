@@ -58,7 +58,7 @@ void MainWindow::updateGlCanvas() {
  * @param obj: nuovo oggetto da visualizzare nella canvas
  * @param checkBoxName: nome assegnato alla checkbox relativa al nuovo oggetto
  */
-void MainWindow::pushObj(DrawableObject *obj, std::string checkBoxName, bool b) {
+void MainWindow::pushObj(const DrawableObject* obj, std::string checkBoxName, bool b) {
     ui->glCanvas->pushObj(obj);
     if (b) ui->glCanvas->fitScene();
     ui->glCanvas->updateGL();
@@ -69,7 +69,7 @@ void MainWindow::pushObj(DrawableObject *obj, std::string checkBoxName, bool b) 
     cb->setChecked(true);
 
     checkBoxes[nMeshes] = cb;
-    mapObjects.insert( boost::bimap<int, DrawableObject*>::value_type(nMeshes, obj ) );
+    mapObjects.insert( boost::bimap<int, const DrawableObject*>::value_type(nMeshes, obj ) );
     connect(cb, SIGNAL(stateChanged(int)), checkBoxMapper, SLOT(map()));
     checkBoxMapper->setMapping(cb, nMeshes);
     nMeshes++;
@@ -85,7 +85,7 @@ void MainWindow::pushObj(DrawableObject *obj, std::string checkBoxName, bool b) 
  *
  * @param obj: oggetto che verrà rimosso dalla canvas
  */
-void MainWindow::deleteObj(DrawableObject* obj, bool b) {
+void MainWindow::deleteObj(const DrawableObject* obj, bool b) {
     int i = mapObjects.right.at(obj);
 
     QCheckBox * cb = checkBoxes[i];
@@ -101,6 +101,11 @@ void MainWindow::deleteObj(DrawableObject* obj, bool b) {
     ui->glCanvas->deleteObj(obj);
     if (b) ui->glCanvas->fitScene();
     ui->glCanvas->updateGL();
+}
+
+bool MainWindow::contains(const DrawableObject* obj) {
+    boost::bimap<int, const DrawableObject*>::right_const_iterator right_iter = mapObjects.right.find(obj);
+    return (right_iter != mapObjects.right.end());
 }
 
 /**
@@ -236,9 +241,11 @@ void MainWindow::clearDebugCylinders() {
  */
 void MainWindow::checkBoxClicked(int i) {
     QCheckBox * cb = checkBoxes[i];
-    DrawableObject * obj = mapObjects.left.at(i);
-    if (cb->isChecked()) obj->setVisible(true);
-    else obj->setVisible(false);
+    const DrawableObject * obj = mapObjects.left.at(i);
+    //if (cb->isChecked()) obj->setVisible(true);
+    //else obj->setVisible(false);
+    if (cb->isChecked()) ui->glCanvas->setVisibility(obj, true);
+    else ui->glCanvas->setVisibility(obj, false);
     ui->glCanvas->updateGL();
 }
 

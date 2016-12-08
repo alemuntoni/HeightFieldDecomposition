@@ -22,11 +22,11 @@ void GLcanvas::init() {
 
 void GLcanvas::clear() {
     drawlist.clear();
+    objVisibility.clear();
 }
 
 /*********************************Andreas***************************************/
-void GLcanvas::postSelection(const QPoint& point)
-{
+void GLcanvas::postSelection(const QPoint& point) {
   // Find the selectedPoint coordinates, using camera()->pointUnderPixel().
   bool found;
   selectedPoint = camera()->pointUnderPixel(point, found);
@@ -47,11 +47,11 @@ void GLcanvas::postSelection(const QPoint& point)
       }
 }
 
-void GLcanvas::drawWithNames(){
+void GLcanvas::drawWithNames() {
     setBackgroundColor(clearColor);
 
     for(int i=0; i<(int)drawlist.size(); ++i){
-        if ((drawlist[i])->isVisible()){
+        if ((drawlist[i])->isVisible() && objVisibility[i]){
             const PickableObject* obj = dynamic_cast<const PickableObject*>(drawlist[i]);
             if (obj) // se il drawable object è anche un pickable object, allora chiamo la draw with names
                 obj->drawWithNames();
@@ -64,12 +64,14 @@ void GLcanvas::draw() {
     setBackgroundColor(clearColor);
 
     for(int i=0; i<(int)drawlist.size(); ++i) {
-        drawlist[i]->draw();
+        if (objVisibility[i])
+            drawlist[i]->draw();
     }
 }
 
-int GLcanvas::pushObj(const DrawableObject* obj) {
+int GLcanvas::pushObj(const DrawableObject* obj, bool visible) {
     drawlist.push_back(obj);
+    objVisibility.push_back(visible);
     updateGL();
 
     return drawlist.size();
@@ -79,7 +81,26 @@ void GLcanvas::deleteObj(const DrawableObject* obj) {
     std::vector<const DrawableObject *>::iterator it = std::find(drawlist.begin(), drawlist.end(), obj);
     if (it != drawlist.end()) {
         drawlist.erase(it);
+        int pos = it - drawlist.begin();
+        objVisibility.erase(objVisibility.begin()+pos);
     }
+}
+
+void GLcanvas::setVisibility(const DrawableObject* obj, bool visible) {
+    std::vector<const DrawableObject *>::iterator it = std::find(drawlist.begin(), drawlist.end(), obj);
+    if (it != drawlist.end()) {
+        int pos = it - drawlist.begin();
+        objVisibility[pos] = visible;
+    }
+}
+
+bool GLcanvas::isVisible(const DrawableObject* obj) {
+    std::vector<const DrawableObject *>::iterator it = std::find(drawlist.begin(), drawlist.end(), obj);
+    if (it != drawlist.end()) {
+        int pos = it - drawlist.begin();
+        return objVisibility[pos];
+    }
+    return false;
 }
 
 void GLcanvas::fitScene() {
@@ -91,7 +112,7 @@ void GLcanvas::fitScene() {
     else {
         for(int i=0; i<(int)drawlist.size(); ++i) {
             const DrawableObject * obj = drawlist[i];
-            if (obj->isVisible() && obj->sceneRadius() > 0) {
+            if (objVisibility[i] && obj->isVisible() && obj->sceneRadius() > 0) {
                 center += obj->sceneCenter();
                 radius = std::max(radius, obj->sceneRadius());
                 ++count;
@@ -116,7 +137,7 @@ BoundingBox GLcanvas::getFullBoundingBox() {
     BoundingBox bb;
     for(int i=0; i<(int)drawlist.size(); ++i) {
         const DrawableObject * obj = drawlist[i];
-        if (obj->isVisible()) {
+        if (objVisibility[i] && obj->isVisible() && obj->sceneRadius() > 0) {
             Pointd center = obj->sceneCenter();
             bb.setMin(bb.getMin().min(Pointd(center.x() - obj->sceneRadius(), center.y() - obj->sceneRadius(), center.z() - obj->sceneRadius())));
             bb.setMax(bb.getMax().max(Pointd(center.x() + obj->sceneRadius(), center.y() + obj->sceneRadius(), center.z() + obj->sceneRadius())));
@@ -129,7 +150,7 @@ int GLcanvas::getNumberVisibleObjects() {
     int count = 0;
     for(int i=0; i<(int)drawlist.size(); ++i) {
         const DrawableObject * obj = drawlist[i];
-        if (obj->isVisible() && obj->sceneRadius() > 0) count++;
+        if (objVisibility[i] && obj->isVisible() && obj->sceneRadius() > 0) count++;
     }
     return count;
 }
