@@ -6,6 +6,8 @@
 #include <QMessageBox>
 #include <omp.h>
 #include "cgal/aabbtree.h"
+#include "engine/packing.h"
+#include "igl/utils.h"
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -109,7 +111,7 @@ void EngineManager::deserializeBC(const std::string& filename) {
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
-    deleteDrawableObject(entirePieces);
+    //deleteDrawableObject(entirePieces);
     d = new DrawableDcel();
     solutions = new BoxList();
     baseComplex = new IGLInterface::DrawableIGLMesh();
@@ -956,22 +958,16 @@ void EngineManager::on_stepDrawGridSpinBox_valueChanged(double arg1) {
     }
 }
 
-void EngineManager::on_baseComplexPushButton_clicked() {
-    if (d != nullptr){
+void EngineManager::on_subtractPushButton_clicked() {
+    if (solutions!= nullptr && d != nullptr){
         deleteDrawableObject(baseComplex);
         IGLInterface::IGLMesh m = (Dcel)*d;
         baseComplex = new IGLInterface::DrawableIGLMesh(m);
         mainWindow->pushObj(baseComplex, "Base Complex");
-        mainWindow->updateGlCanvas();
-    }
-}
-
-void EngineManager::on_subtractPushButton_clicked() {
-    if (solutions!= nullptr && baseComplex != nullptr && d != nullptr){
         deleteDrawableObject(he);
         //deleteDrawableObject(entirePieces);
         he = new HeightfieldsList();
-        entirePieces = new HeightfieldsList();
+        //entirePieces = new HeightfieldsList();
         mainWindow->pushObj(he, "Heightfields");
         //mainWindow->pushObj(entirePieces, "Entire Pieces");
         mainWindow->updateGlCanvas();
@@ -1170,81 +1166,6 @@ void EngineManager::on_cleanAllPushButton_clicked() {
     //deleteDrawableObject(entirePieces);
 }
 
-void EngineManager::on_createIrregularGridButton_clicked() {
-    if (solutions != nullptr && d != nullptr) {
-        irregularGrid = new DrawableIrregularGrid();
-        Reconstruction::createIrregularGrid(*irregularGrid, *solutions, *d);
-        mainWindow->pushObj(irregularGrid, "Irregular Grid", false);
-        mainWindow->updateGlCanvas();
-
-        int count = 0, othercount=0;
-        for (unsigned int i = 0; i < irregularGrid->getResolutionX()-1; i++){
-            for (unsigned int j = 0; j < irregularGrid->getResolutionY()-1; j++){
-                for (unsigned int k = 0; k < irregularGrid->getResolutionZ()-1; k++){
-                    if (irregularGrid->getNumberPossibleTargets(i,j,k) == 1)
-                        count++;
-                    else if (irregularGrid->getNumberPossibleTargets(i,j,k) >= 2)
-                        othercount++;
-                }
-            }
-        }
-        std::cerr << "Res: " << irregularGrid->getResolutionX()-1  << "x" << irregularGrid->getResolutionY()-1  << "x" << irregularGrid->getResolutionZ()-1  << "\n";
-        std::cerr << "Indecisi: " << othercount << "\n";
-        std::cerr << "Totali Non vuote" << count + othercount << "\n";
-
-        Reconstruction::generateAllPossibleTargets(*irregularGrid);
-    }
-}
-
-void EngineManager::on_createPieces_clicked() {
-    if (irregularGrid != nullptr) {
-        std::vector<Vec3> targets;
-        std::vector<IGLInterface::IGLMesh> pieces = Reconstruction::getPieces(*irregularGrid, targets);
-        deleteDrawableObject(recBoxes);
-        recBoxes = new HeightfieldsList();
-        for (unsigned int i = 0; i < pieces.size(); i++){
-            recBoxes->addHeightfield(IGLInterface::DrawableIGLMesh(pieces[i]), targets[i]);
-        }
-        recBoxes->setVisibleHeightfield(0);
-        std::cerr << recBoxes->getNumHeightfields() << "\n";
-        mainWindow->pushObj(recBoxes, "Boxes");
-        mainWindow->updateGlCanvas();
-        ui->recBoxesSlider->setMaximum(recBoxes->getNumHeightfields()-1);
-        ui->recBoxesSlider->setValue(0);
-    }
-}
-
-void EngineManager::on_recBoxesSlider_valueChanged(int value) {
-    if (recBoxes != nullptr) {
-        recBoxes->setVisibleHeightfield(value);
-        if (newPieces != nullptr)
-            newPieces->setVisibleHeightfield(value);
-        mainWindow->updateGlCanvas();
-    }
-}
-
-void EngineManager::on_intersectionsPushButton_clicked() {
-    if (recBoxes != nullptr && d != nullptr) {
-        deleteDrawableObject(newBaseComplex);
-        IGLInterface::IGLMesh m = (Dcel)*d;
-        newBaseComplex = new IGLInterface::DrawableIGLMesh(m);
-        mainWindow->pushObj(newBaseComplex, "New Base Complex");
-
-        newPieces = new HeightfieldsList();
-
-        Reconstruction::booleanOperations(*newPieces, *newBaseComplex, *recBoxes);
-
-        mainWindow->pushObj(newPieces, "New Heightfields");
-
-        recBoxes->setVisibleHeightfield(0);
-        newPieces->setVisibleHeightfield(0);
-        ui->recBoxesSlider->setMaximum(recBoxes->getNumHeightfields()-1);
-        ui->recBoxesSlider->setValue(0);
-
-        mainWindow->updateGlCanvas();
-    }
-}
-
 void EngineManager::on_reorderBoxes_clicked() {
     if (d != nullptr && solutions != nullptr){
         Array2D<int> ordering = Reconstruction::getOrdering(*solutions, *d);
@@ -1294,6 +1215,42 @@ void EngineManager::on_loadSmoothedPushButton_clicked() {
             QMessageBox msgBox;
             msgBox.setText("Format file not supported.");
             msgBox.exec();
+        }
+    }
+}
+
+void EngineManager::on_packPushButton_clicked() {
+    if (he != nullptr){
+        QString foldername = QFileDialog::getExistingDirectory(nullptr, "SaveObjs");
+        if (!foldername.isEmpty()){
+            HeightfieldsList myHe = *he;
+            Packing::rotateAllPieces(myHe);
+            BoundingBox packSize(Pointd(), Pointd(ui->sizeXPackSpinBox->value(), ui->sizeYPackSpinBox->value(), ui->sizeZPackSpinBox->value()));
+            BoundingBox limits = packSize;
+            switch(ui->limitComboBox->currentIndex()){
+                case 1:
+                    limits.setMaxX(ui->limitValueSpinBox->value());
+                    break;
+                case 2:
+                    limits.setMaxY(ui->limitValueSpinBox->value());
+                    break;
+                case 3:
+                    limits.setMaxZ(ui->limitValueSpinBox->value());
+                    break;
+            }
+            double factor;
+            Packing::getMaximum(myHe, limits, factor);
+            Packing::scaleAll(myHe, factor);
+            std::vector< std::vector<std::pair<int, Pointd> > > tmp = Packing::pack(myHe, packSize);
+            std::vector< std::vector<IGLInterface::IGLMesh> > packs = Packing::getPacks(tmp, myHe);
+            IGLInterface::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
+            for (unsigned int i = 0; i < packs.size(); i++){
+                QString bstring = foldername + "/b" + QString::number(i);
+                for (unsigned int j = 0; j < packs[i].size(); j++){
+                    QString meshName = bstring + "p" + QString::number(j) + ".obj";
+                    packs[i][j].saveOnObj(meshName.toStdString());
+                }
+            }
         }
     }
 }

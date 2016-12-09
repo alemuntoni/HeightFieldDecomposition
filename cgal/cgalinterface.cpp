@@ -94,25 +94,20 @@ namespace CGALInterface{
 
             //Rotation of the coordinates
             Vec3 zAxis(0,0,1);
-            Vec3 v = -(normal.cross(zAxis));
-            Vec3 v2 = normal.cross(zAxis);
-            v.normalize();
+            Vec3 axis = -(normal.cross(zAxis));
+            axis.normalize();
             double dot = normal.dot(zAxis);
             double angle = acos(dot);
 
             double r[3][3] = {0};
-            double r2[3][3] = {0};
             if (normal != zAxis){
                 if (normal == -zAxis){
-                    v = Vec3(1,0,0);
-                    v2 = Vec3(-1,0,0);
+                    axis = Vec3(1,0,0);
                 }
-                Common::getRotationMatrix(v, angle, r);
-                Common::getRotationMatrix(v2, angle, r2);
+                Common::getRotationMatrix(axis, angle, r);
             }
             else {
                 r[0][0] = r[1][1] = r[2][2] = 1;
-                r2[0][0] = r2[1][1] = r2[2][2] = 1;
             }
 
             //rotate points and make 2D polygon

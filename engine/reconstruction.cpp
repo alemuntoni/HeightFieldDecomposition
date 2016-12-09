@@ -701,18 +701,20 @@ void Reconstruction::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3) {
     IGLInterface::SimpleIGLMesh oldBox = b2.getIGLMesh();
     oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b1.getIGLMesh());
     IGLInterface::SimpleIGLMesh tmp = oldBox;
-    //this difference makes problems. I need to grow b3 only with some directions
-    //and just for this boolean operation
-    oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b3tmp.getIGLMesh());
-    b2.setIGLMesh(oldBox);
-    BoundingBox newBBb2 = oldBox.getBoundingBox();
-    b2.setMin(newBBb2.min());
-    b2.setMax(newBBb2.max());
     tmp = IGLInterface::SimpleIGLMesh::intersection(tmp, b3.getIGLMesh());
-    b3.setIGLMesh(tmp);
-    BoundingBox newBBb3 = tmp.getBoundingBox();
-    b3.setMin(newBBb3.min());
-    b3.setMax(newBBb3.max());
+    if (tmp.getNumberVertices() > 0){
+        oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b3tmp.getIGLMesh());
+        b2.setIGLMesh(oldBox);
+        BoundingBox newBBb2 = oldBox.getBoundingBox();
+        b2.setMin(newBBb2.min());
+        b2.setMax(newBBb2.max());
+        b3.setIGLMesh(tmp);
+        BoundingBox newBBb3 = tmp.getBoundingBox();
+        b3.setMin(newBBb3.min());
+        b3.setMax(newBBb3.max());
+    }
+    else
+        b3.min() = b3.max() = Pointd();
 }
 
 double Reconstruction::minimumSplit(const Box3D &b1, const Box3D &b2){
@@ -814,67 +816,72 @@ Array2D<int> Reconstruction::getOrdering(BoxList& bl, const Dcel& d) {
                 }
                 arcToRemove = candidateArcs[maxarc];
             }
-
             // now I can remove "arcToRemove"
             Box3D b1 = bl.getBox(arcToRemove.first), b2 = bl.getBox(arcToRemove.second), b3;
             splitBox(b1, b2, b3);
-            b3.setId(bl.getNumberBoxes());
-            b3.setTrianglesCovered(tree.getNumberIntersectedPrimitives(b3));
-            b2.setTrianglesCovered(b2.getTrianglesCovered()-b3.getTrianglesCovered());
-            bl.setBox(b2.getId(), b2);
-            bl.addBox(b3);
-            ///
-            //b1.getIGLMesh().saveOnObj("b1.obj");
-            //b2.getIGLMesh().saveOnObj("b2.obj");
-            //b3.getIGLMesh().saveOnObj("b3.obj");
-            ///
-            g.removeEdge(arcToRemove.first, arcToRemove.second);
-            g.removeEdge(arcToRemove.second, arcToRemove.first);
-            std::vector<unsigned int> incomingb2 = g.getIncomingNodes(b2.getId());
-            std::vector<unsigned int> outgoingb2 = g.getOutgoingNodes(b2.getId());
-            g.deleteAllIncomingNodes(b2.getId());
-            g.deleteAllOutgoingNodes(b2.getId());
-            unsigned int tmp = g.addNode();
-            assert(tmp == (unsigned int)b3.getId());
-            for (unsigned int incoming : incomingb2){
-                Box3D other = bl.getBox(incoming);
+            if (!(b3.min() == Pointd() && b3.max() == Pointd())){
+                b3.setId(bl.getNumberBoxes());
+                b3.setTrianglesCovered(tree.getNumberIntersectedPrimitives(b3));
+                b2.setTrianglesCovered(b2.getTrianglesCovered()-b3.getTrianglesCovered());
+                bl.setBox(b2.getId(), b2);
+                bl.addBox(b3);
                 ///
-                //other.getIGLMesh().saveOnObj("checkother.obj");
-                //b2.getIGLMesh().saveOnObj("checkb2.obj");
-                //b3.getIGLMesh().saveOnObj("checkb3.obj");
+                //b1.getIGLMesh().saveOnObj("b1.obj");
+                //b2.getIGLMesh().saveOnObj("b2.obj");
+                //b3.getIGLMesh().saveOnObj("b3.obj");
                 ///
-                if (boxesIntersect(other,b2)){
-                    if (isDangerousIntersection(other, b2, tree, true)){
-                        g.addEdge(incoming,b2.getId());
-                        std::cerr << incoming << " -> " << b2.getId() << "\n";
+                g.removeEdge(arcToRemove.first, arcToRemove.second);
+                g.removeEdge(arcToRemove.second, arcToRemove.first);
+                std::vector<unsigned int> incomingb2 = g.getIncomingNodes(b2.getId());
+                std::vector<unsigned int> outgoingb2 = g.getOutgoingNodes(b2.getId());
+                g.deleteAllIncomingNodes(b2.getId());
+                g.deleteAllOutgoingNodes(b2.getId());
+                unsigned int tmp = g.addNode();
+                assert(tmp == (unsigned int)b3.getId());
+                for (unsigned int incoming : incomingb2){
+                    Box3D other = bl.getBox(incoming);
+                    ///
+                    //other.getIGLMesh().saveOnObj("checkother.obj");
+                    //b2.getIGLMesh().saveOnObj("checkb2.obj");
+                    //b3.getIGLMesh().saveOnObj("checkb3.obj");
+                    ///
+                    if (boxesIntersect(other,b2)){
+                        if (isDangerousIntersection(other, b2, tree, true)){
+                            g.addEdge(incoming,b2.getId());
+                            std::cerr << incoming << " -> " << b2.getId() << "\n";
+                        }
+                    }
+                    if (boxesIntersect(other,b3)){
+                        if (isDangerousIntersection(other, b3, tree, true)){
+                            g.addEdge(incoming,b3.getId());
+                            std::cerr << incoming << " -> " << b3.getId() << "\n";
+                        }
                     }
                 }
-                if (boxesIntersect(other,b3)){
-                    if (isDangerousIntersection(other, b3, tree, true)){
-                        g.addEdge(incoming,b3.getId());
-                        std::cerr << incoming << " -> " << b3.getId() << "\n";
+                for (unsigned int outgoing : outgoingb2){
+                    Box3D other = bl.getBox(outgoing);
+                    ///
+                    //other.getIGLMesh().saveOnObj("checkother.obj");
+                    //b2.getIGLMesh().saveOnObj("checkb2.obj");
+                    //b3.getIGLMesh().saveOnObj("checkb3.obj");
+                    ///
+                    if (boxesIntersect(b2, other)){
+                        if (isDangerousIntersection(b2, other, tree, true)){
+                            g.addEdge(b2.getId(), outgoing);
+                            std::cerr << b2.getId() << " -> " << outgoing << "\n";
+                        }
+                    }
+                    if (boxesIntersect(b3, other)){
+                        if (isDangerousIntersection(b3, other, tree, true)){
+                            g.addEdge(b3.getId(), outgoing);
+                            std::cerr << b3.getId() << " -> " << outgoing << "\n";
+                        }
                     }
                 }
             }
-            for (unsigned int outgoing : outgoingb2){
-                Box3D other = bl.getBox(outgoing);
-                ///
-                //other.getIGLMesh().saveOnObj("checkother.obj");
-                //b2.getIGLMesh().saveOnObj("checkb2.obj");
-                //b3.getIGLMesh().saveOnObj("checkb3.obj");
-                ///
-                if (boxesIntersect(b2, other)){
-                    if (isDangerousIntersection(b2, other, tree, true)){
-                        g.addEdge(b2.getId(), outgoing);
-                        std::cerr << b2.getId() << " -> " << outgoing << "\n";
-                    }
-                }
-                if (boxesIntersect(b3, other)){
-                    if (isDangerousIntersection(b3, other, tree, true)){
-                        g.addEdge(b3.getId(), outgoing);
-                        std::cerr << b3.getId() << " -> " << outgoing << "\n";
-                    }
-                }
+            else {
+                g.removeEdge(arcToRemove.first, arcToRemove.second);
+                g.removeEdge(arcToRemove.second, arcToRemove.first);
             }
         }
     }while (loops.size() > 0);

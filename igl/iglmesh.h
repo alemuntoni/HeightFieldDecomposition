@@ -75,6 +75,7 @@ namespace IGLInterface {
             void translate(const Eigen::Vector3d &p);
             void rotate(const Eigen::Matrix3d &m, const Eigen::Vector3d& centroid = Eigen::Vector3d::Zero());
             void scale(const BoundingBox& newBoundingBox);
+            void scale(const Vec3 &scaleFactor);
             #ifdef CGAL_DEFINED
             static void intersection(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
             static SimpleIGLMesh intersection(const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
@@ -125,6 +126,7 @@ namespace IGLInterface {
             void decimate(int numberDesiredFaces);
             bool getDecimatedMesh(IGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
             void scale(const BoundingBox& newBoundingBox);
+            void scale(const Vec3 &scaleFactor);
             Eigen::MatrixXd getVerticesColorMatrix() const;
 
             bool saveOnPly(const std::string &filename) const;
@@ -285,17 +287,25 @@ namespace IGLInterface {
     }
 
     inline void SimpleIGLMesh::getBoundingBox(Eigen::RowVector3d& BBmin, Eigen::RowVector3d& BBmax) const {
-        BBmin = V.colwise().minCoeff();
-        BBmax = V.colwise().maxCoeff();
+        if (V.rows() > 0){
+            BBmin = V.colwise().minCoeff();
+            BBmax = V.colwise().maxCoeff();
+        }
+        else {
+            BBmin = Eigen::RowVector3d();
+            BBmax = Eigen::RowVector3d();
+        }
     }
 
     inline BoundingBox SimpleIGLMesh::getBoundingBox() const {
-        Eigen::RowVector3d BBmin, BBmax;
-        BBmin = V.colwise().minCoeff();
-        BBmax = V.colwise().maxCoeff();
         BoundingBox  bb;
-        bb.setMin(BBmin(0), BBmin(1), BBmin(2));
-        bb.setMax(BBmax(0), BBmax(1), BBmax(2));
+        if (V.rows() > 0){
+            Eigen::RowVector3d BBmin, BBmax;
+            BBmin = V.colwise().minCoeff();
+            BBmax = V.colwise().maxCoeff();
+            bb.setMin(BBmin(0), BBmin(1), BBmin(2));
+            bb.setMax(BBmax(0), BBmax(1), BBmax(2));
+        }
         return bb;
     }
 

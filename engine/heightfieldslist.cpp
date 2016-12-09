@@ -120,6 +120,11 @@ const IGLInterface::IGLMesh& HeightfieldsList::getHeightfield(unsigned int i) co
     return heightfields[i];
 }
 
+IGLInterface::IGLMesh& HeightfieldsList::getHeightfield(unsigned int i) {
+    assert (i < heightfields.size());
+    return heightfields[i];
+}
+
 /*IGLInterface::IGLMesh HeightfieldsList::getHeightfield(unsigned int i) const {
     assert (i < heightfields.size());
     return heightfields[i];

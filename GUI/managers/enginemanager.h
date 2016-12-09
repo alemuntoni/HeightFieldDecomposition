@@ -118,8 +118,6 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_stepDrawGridSpinBox_valueChanged(double arg1);
 
-        void on_baseComplexPushButton_clicked();
-
         void on_subtractPushButton_clicked();
 
         void on_stickPushButton_clicked();
@@ -154,19 +152,13 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_cleanAllPushButton_clicked();
 
-        void on_createIrregularGridButton_clicked();
-
-        void on_createPieces_clicked();
-
-        void on_recBoxesSlider_valueChanged(int value);
-
-        void on_intersectionsPushButton_clicked();
-
         void on_reorderBoxes_clicked();
 
         void on_loadOriginalPushButton_clicked();
 
         void on_loadSmoothedPushButton_clicked();
+
+        void on_packPushButton_clicked();
 
     private:
         Ui::EngineManager *ui;
@@ -179,7 +171,7 @@ class EngineManager : public QFrame, public SerializableObject {
         IGLInterface::DrawableIGLMesh* baseComplex;
         Energy e;
         HeightfieldsList *he;
-        HeightfieldsList* entirePieces;
+        //HeightfieldsList* entirePieces;
         HeightfieldsList* recBoxes;
         DrawableIrregularGrid* irregularGrid;
         HeightfieldsList* newPieces;

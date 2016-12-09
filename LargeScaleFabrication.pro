@@ -51,20 +51,20 @@ ALL {
 
     HEADERS += \
         common.h \
-        lib/grid/grid.h \
         GUI/managers/enginemanager.h \
-        lib/grid/drawablegrid.h \
         engine/tricubic.h \
         engine/energy.h \
         engine/box.h \
         engine/boxlist.h \
         engine/engine.h \
         engine/heightfieldslist.h \
+        engine/reconstruction.h \
+        lib/grid/grid.h \
+        lib/grid/drawablegrid.h \
         lib/grid/drawableirregulargrid.h \
         lib/grid/irregulargrid.h \
-        engine/reconstruction.h
-
-
+        lib/graph/directedgraph.h \
+        lib/packing/binpack2d.h
 
     SOURCES += \
         main.cpp \
@@ -95,9 +95,10 @@ SERVER_MODE {
 
 message(Included modules: $$MODULES)
 
-HEADERS += \
-    lib/graph/directedgraph.h
+SOURCES += \
+    engine/packing.cpp
 
-SOURCES +=
+HEADERS += \
+    engine/packing.h
 
 

@@ -28,6 +28,7 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
 
         void removeHeightfield(unsigned int i);
         const IGLInterface::IGLMesh& getHeightfield(unsigned int i) const;
+        IGLInterface::IGLMesh& getHeightfield(unsigned int i);
         //IGLInterface::IGLMesh getHeightfield(unsigned int i) const;
         void setHeightfield(const IGLInterface::IGLMesh& he, unsigned int i);
 

@@ -121,6 +121,19 @@ namespace IGLInterface {
         }
     }
 
+    void SimpleIGLMesh::scale(const Vec3& scaleFactor) {
+        if (scaleFactor.x() > 0 && scaleFactor.y() > 0 && scaleFactor.z() > 0){
+            BoundingBox bb = getBoundingBox();
+            Pointd center = bb.center();
+            Pointd newMax(bb.min().x() + bb.getLengthX()*scaleFactor.x(), bb.min().y() + bb.getLengthY()*scaleFactor.y(), bb.min().z() + bb.getLengthZ()*scaleFactor.z());
+            bb.setMax(newMax);
+            Pointd trans = center - bb.center();
+            bb.min() += trans;
+            bb.max() += trans;
+            scale(bb);
+        }
+    }
+
     #ifdef CGAL_DEFINED
     void SimpleIGLMesh::intersection(SimpleIGLMesh& result, const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
         igl::copyleft::cgal::CSGTree M;
@@ -321,6 +334,11 @@ namespace IGLInterface {
         BBmax(0) = newBoundingBox.max()[0];
         BBmax(1) = newBoundingBox.max()[1];
         BBmax(2) = newBoundingBox.max()[2];
+    }
+
+    void IGLMesh::scale(const Vec3& scaleFactor) {
+        SimpleIGLMesh::scale(scaleFactor);
+        updateBoundingBox();
     }
 
     Eigen::MatrixXd IGLMesh::getVerticesColorMatrix() const {
