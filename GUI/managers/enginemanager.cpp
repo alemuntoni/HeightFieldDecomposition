@@ -204,6 +204,7 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
     }
     if (Serializer::deserialize(bb, binaryFile)){
         originalMesh.deserialize(binaryFile);
+        mainWindow->pushObj(&originalMesh, "Original Mesh");
     }
 
     mainWindow->updateGlCanvas();
@@ -1271,5 +1272,23 @@ void EngineManager::on_reconstructionPushButton_clicked() {
         Reconstruction::reconstruction(*d, mapping,originalMesh);
         d->update();
         mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_putBoxesAfterPushButton_clicked() {
+    int nTriangles = ui->coveredTrianglesSpinBox->value();
+    if (nTriangles > 0 && solutions != nullptr){
+        BoxList smallBoxes;
+        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
+            if (solutions->getBox(i).getTrianglesCovered() <= nTriangles){
+                Box3D small = solutions->getBox(i);
+                smallBoxes.addBox(small);
+                solutions->removeBox(i);
+                i--;
+            }
+        }
+        for (unsigned int i = 0; i < smallBoxes.getNumberBoxes(); i++){
+            solutions->addBox(smallBoxes.getBox(i));
+        }
     }
 }
