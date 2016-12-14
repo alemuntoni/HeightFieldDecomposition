@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         size_t lastindex = filename_smooth.find_last_of(".");
         std::string rawname = filename_smooth.substr(0, lastindex);
         std::ofstream myfile;
-        myfile.open (rawname + std::to_string(kernelDistance) + ".bin", std::ios::out | std::ios::binary);
+        myfile.open (rawname + std::to_string((int)kernelDistance) + ".bin", std::ios::out | std::ios::binary);
         d.serialize(myfile);
         bool b = true;
         Serializer::serialize(b, myfile);
