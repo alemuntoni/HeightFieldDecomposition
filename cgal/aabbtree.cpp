@@ -1,39 +1,39 @@
 #include "aabbtree.h"
 
 CGALInterface::AABBTree::AABBTree() {
-    e2 = std::mt19937(rd());
 }
 
-CGALInterface::AABBTree::AABBTree(const CGALInterface::AABBTree& other) : forDistanceQueries(other.forDistanceQueries), triangles(other.triangles), bb(other.bb) {
+CGALInterface::AABBTree::AABBTree(const CGALInterface::AABBTree& other) : forDistanceQueries(other.forDistanceQueries), treeType(other.treeType), triangles(other.triangles), bb(other.bb) {
     #ifdef DCEL_DEFINED
     mapDcelVerticesToCgalPoints = other.mapDcelVerticesToCgalPoints;
+    mapCgalPointsToDcelVertices = other.mapCgalPointsToDcelVertices;
     mapCgalTrianglesToDcelFaces = other.mapCgalTrianglesToDcelFaces;
     #endif
-    #ifdef TRIMESH_DEFINED
-    mapTrimeshVerticesToCgalPoints = other.mapTrimeshVerticesToCgalPoints;
-    mapCgalTrianglesToTrimeshTriangles = other.mapCgalTrianglesToTrimeshTriangles;
+    #if defined(TRIMESH_DEFINED) || defined(IGL_DEFINED)
+    mapIdVerticesToCgalPoints = other.mapIdVerticesToCgalPoints;
+    mapCgalTrianglesToIdTriangles = other.mapCgalTrianglesToIdTriangles;
     #endif
     tree.insert(triangles.begin(), triangles.end());
 
     if (forDistanceQueries)
         tree.accelerate_distance_queries();
-    e2 = std::mt19937(rd());
 }
 
 #ifdef TRIMESH_DEFINED
 CGALInterface::AABBTree::AABBTree(const Trimesh<double>& t, bool forDistanceQueries) {
+    treeType = TRIMESH;
     for (int i = 0; i < t.numVertices(); i++){
         Pointd p = t.vertex(i);
         CGALPoint pp(p.x(), p.y(), p.z());
-        mapTrimeshVerticesToCgalPoints[i]= pp;
+        mapIdVerticesToCgalPoints[i] = pp;
     }
     for (int i = 0; i < t.numTriangles(); ++i){
         int i1 = t.tri_vertex_id(i, 0), i2 = t.tri_vertex_id(i, 1), i3 = t.tri_vertex_id(i, 2);
-        assert(mapTrimeshVerticesToCgalPoints.find(i1) != mapTrimeshVerticesToCgalPoints.end());
-        assert(mapTrimeshVerticesToCgalPoints.find(i2) != mapTrimeshVerticesToCgalPoints.end());
-        assert(mapTrimeshVerticesToCgalPoints.find(i3) != mapTrimeshVerticesToCgalPoints.end());
-        CGALTriangle tr(mapTrimeshVerticesToCgalPoints[i1], mapTrimeshVerticesToCgalPoints[i2], mapTrimeshVerticesToCgalPoints[i3]);
-        mapCgalTrianglesToTrimeshTriangles[tr] = i;
+        assert(mapIdVerticesToCgalPoints.find(i1) != mapIdVerticesToCgalPoints.end());
+        assert(mapIdVerticesToCgalPoints.find(i2) != mapIdVerticesToCgalPoints.end());
+        assert(mapIdVerticesToCgalPoints.find(i3) != mapIdVerticesToCgalPoints.end());
+        CGALTriangle tr(mapIdVerticesToCgalPoints.at(i1), mapIdVerticesToCgalPoints.at(i2), mapIdVerticesToCgalPoints.at(i3));
+        mapCgalTrianglesToIdTriangles[tr] = i;
         triangles.push_back(tr);
     }
     tree.insert(triangles.begin(), triangles.end());
@@ -42,25 +42,25 @@ CGALInterface::AABBTree::AABBTree(const Trimesh<double>& t, bool forDistanceQuer
         tree.accelerate_distance_queries();
 
     bb  = t.getBoundingBox();
-    e2 = std::mt19937(rd());
 }
 #endif
 
 #ifdef IGL_DEFINED
 CGALInterface::AABBTree::AABBTree(const IGLInterface::IGLMesh& m, bool forDistanceQueries){
+    treeType = IGLMESH;
     for (unsigned int i = 0; i < m.getNumberVertices(); i++){
         Pointd p = m.getVertex(i);
         CGALPoint pp(p.x(), p.y(), p.z());
-        mapTrimeshVerticesToCgalPoints[i]= pp;
+        mapIdVerticesToCgalPoints[i] = pp;
     }
     for (unsigned int i = 0; i < m.getNumberFaces(); ++i){
         Pointi f = m.getFace(i);
         int i1 = f(0), i2 = f(1), i3 = f(2);
-        assert(mapTrimeshVerticesToCgalPoints.find(i1) != mapTrimeshVerticesToCgalPoints.end());
-        assert(mapTrimeshVerticesToCgalPoints.find(i2) != mapTrimeshVerticesToCgalPoints.end());
-        assert(mapTrimeshVerticesToCgalPoints.find(i3) != mapTrimeshVerticesToCgalPoints.end());
-        CGALTriangle tr(mapTrimeshVerticesToCgalPoints[i1], mapTrimeshVerticesToCgalPoints[i2], mapTrimeshVerticesToCgalPoints[i3]);
-        mapCgalTrianglesToTrimeshTriangles[tr] = i;
+        assert(mapIdVerticesToCgalPoints.find(i1) != mapIdVerticesToCgalPoints.end());
+        assert(mapIdVerticesToCgalPoints.find(i2) != mapIdVerticesToCgalPoints.end());
+        assert(mapIdVerticesToCgalPoints.find(i3) != mapIdVerticesToCgalPoints.end());
+        CGALTriangle tr(mapIdVerticesToCgalPoints.at(i1), mapIdVerticesToCgalPoints.at(i2), mapIdVerticesToCgalPoints.at(i3));
+        mapCgalTrianglesToIdTriangles[tr] = i;
         triangles.push_back(tr);
     }
     tree.insert(triangles.begin(), triangles.end());
@@ -74,10 +74,12 @@ CGALInterface::AABBTree::AABBTree(const IGLInterface::IGLMesh& m, bool forDistan
 
 #ifdef DCEL_DEFINED
 CGALInterface::AABBTree::AABBTree(const Dcel& d, bool forDistanceQueries) : forDistanceQueries(forDistanceQueries){
+    treeType = DCEL;
     for (Dcel::ConstVertexIterator vit = d.vertexBegin(); vit != d.vertexEnd(); ++vit){
         const Dcel::Vertex* v = *vit;
         CGALPoint pp(v->getCoordinate().x(), v->getCoordinate().y(), v->getCoordinate().z());
-        mapDcelVerticesToCgalPoints[v]= pp;
+        mapDcelVerticesToCgalPoints[v] = pp;
+        mapCgalPointsToDcelVertices[pp] = v;
     }
     for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
         const Dcel::Face* f = *fit;
@@ -85,7 +87,7 @@ CGALInterface::AABBTree::AABBTree(const Dcel& d, bool forDistanceQueries) : forD
         const Dcel::Vertex* v1 = he->getFromVertex();
         const Dcel::Vertex* v2 = he->getToVertex();
         const Dcel::Vertex* v3 = he->getNext()->getToVertex();
-        CGALTriangle t(mapDcelVerticesToCgalPoints[v1], mapDcelVerticesToCgalPoints[v2], mapDcelVerticesToCgalPoints[v3]);
+        CGALTriangle t(mapDcelVerticesToCgalPoints.at(v1), mapDcelVerticesToCgalPoints.at(v2), mapDcelVerticesToCgalPoints.at(v3));
         mapCgalTrianglesToDcelFaces[t] = f;
         triangles.push_back(t);
     }
@@ -95,16 +97,21 @@ CGALInterface::AABBTree::AABBTree(const Dcel& d, bool forDistanceQueries) : forD
         tree.accelerate_distance_queries();
 
     bb = d.getBoundingBox();
-    e2 = std::mt19937(rd());
 }
 #endif
 
 CGALInterface::AABBTree&CGALInterface::AABBTree::operator=(const CGALInterface::AABBTree& other) {
     forDistanceQueries = other.forDistanceQueries;
+    treeType = other.treeType;
     triangles = other.triangles;
     #ifdef DCEL_DEFINED
     mapDcelVerticesToCgalPoints = other.mapDcelVerticesToCgalPoints;
+    mapCgalPointsToDcelVertices = other.mapCgalPointsToDcelVertices;
     mapCgalTrianglesToDcelFaces = other.mapCgalTrianglesToDcelFaces;
+    #endif
+    #if defined(TRIMESH_DEFINED) || defined(IGL_DEFINED)
+    mapIdVerticesToCgalPoints = other.mapIdVerticesToCgalPoints;
+    mapCgalTrianglesToIdTriangles = other.mapCgalTrianglesToIdTriangles;
     #endif
     tree.clear();
     tree.insert(triangles.begin(), triangles.end());
@@ -139,7 +146,9 @@ Pointd CGALInterface::AABBTree::getNearestPoint(const Pointd& p) const {
     return Pointd(closest.x(), closest.y(), closest.z());
 }
 
-bool CGALInterface::AABBTree::isInside(const Pointd& p, int numberOfChecks) {
+bool CGALInterface::AABBTree::isInside(const Pointd& p, int numberOfChecks) const {
+    static std::random_device rd;
+    static std::mt19937 e2(rd());
     assert(numberOfChecks % 2 == 1);
     int inside = 0, outside = 0;
     std::uniform_real_distribution<> dist(0, 6);
@@ -194,6 +203,7 @@ bool CGALInterface::AABBTree::isInside(const Pointd& p, int numberOfChecks) {
 
 #ifdef DCEL_DEFINED
 void CGALInterface::AABBTree::getIntersectedDcelFaces(std::list<const Dcel::Face*>& outputList, const BoundingBox& b) const {
+    assert(treeType == DCEL);
     CGALBoundingBox bb(b.getMinX(), b.getMinY(), b.getMinZ(), b.getMaxX(), b.getMaxY(), b.getMaxZ());
     std::list< Tree::Primitive_id > trianglesIds;
     tree.all_intersected_primitives(bb, std::back_inserter(trianglesIds));
@@ -207,6 +217,7 @@ void CGALInterface::AABBTree::getIntersectedDcelFaces(std::list<const Dcel::Face
 }
 
 void CGALInterface::AABBTree::getCompletelyContainedDcelFaces(std::list<const Dcel::Face*>& outputList, const BoundingBox& b) const {
+    assert(treeType == DCEL);
     getIntersectedDcelFaces(outputList, b);
 
     std::list<const Dcel::Face*>::iterator i = outputList.begin();
@@ -222,6 +233,7 @@ void CGALInterface::AABBTree::getCompletelyContainedDcelFaces(std::list<const Dc
 }
 
 const Dcel::Face* CGALInterface::AABBTree::getNearestDcelFace(const Pointd& p) const {
+    assert(treeType == DCEL);
     CGALPoint query(p.x(), p.y(), p.z());
     AABB_triangle_traits::Point_and_primitive_id ppid = tree.closest_point_and_primitive(query);
     const Tree::Primitive_id tp = ppid.second;
@@ -230,5 +242,19 @@ const Dcel::Face* CGALInterface::AABBTree::getNearestDcelFace(const Pointd& p) c
     assert(mit != mapCgalTrianglesToDcelFaces.end());
     return mit->second;
 
+}
+
+const Dcel::Vertex*CGALInterface::AABBTree::getNearestDcelVertex(const Pointd& p) const {
+    const Dcel::Face* closestFace = getNearestDcelFace(p);
+    const Dcel::Vertex* closest = nullptr;
+    double dist = std::numeric_limits<double>::max();
+    for (const Dcel::Vertex* v : closestFace->incidentVertexIterator()){
+        if (dist > p.dist(v->getCoordinate())){
+            closest = v;
+            dist = p.dist(v->getCoordinate());
+        }
+    }
+    assert(closest != nullptr);
+    return closest;
 }
 #endif

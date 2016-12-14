@@ -13,7 +13,7 @@
 #include "common/timer.h"
 #include "igl/gui/drawableiglmesh.h"
 #include "engine/heightfieldslist.h"
-#include "engine/reconstruction.h"
+#include "engine/splitting.h"
 
 namespace Ui {
     class EngineManager;
@@ -159,6 +159,8 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_loadSmoothedPushButton_clicked();
 
         void on_packPushButton_clicked();
+
+        void on_reconstructionPushButton_clicked();
 
     private:
         Ui::EngineManager *ui;

@@ -445,34 +445,27 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
     }
 }
 
-void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh, HeightfieldsList& entirePieces) {
+void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh) {
     double average = 0;
     for (const Dcel::HalfEdge* he : inputMesh.halfEdgeIterator())
         average += he->getLength();
     average /= inputMesh.getNumberHalfEdges();
     Timer timer("Boolean Operations");
     he.resize(solutions.getNumberBoxes());
-    entirePieces.resize(solutions.getNumberBoxes());
-    IGLInterface::SimpleIGLMesh inputIGL = inputMesh;
     for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
         IGLInterface::SimpleIGLMesh box;
         IGLInterface::SimpleIGLMesh intersection;
-        IGLInterface::SimpleIGLMesh entirep;
         box = solutions.getBox(i).getIGLMesh();
         IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
-        IGLInterface::SimpleIGLMesh::intersection(entirep, inputIGL, box);
         IGLInterface::SimpleIGLMesh::difference(bc, bc, box);
         IGLInterface::DrawableIGLMesh dimm(intersection);
-        IGLInterface::DrawableIGLMesh dent(entirep);
         he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i);
-        entirePieces.addHeightfield(dent, solutions.getBox(i).getRotatedTarget(), i);
         std::cerr << i << "\n";
     }
     timer.stopAndPrint();
     for (int i = he.getNumHeightfields()-1; i >= 0 ; i--) {
         if (he.getNumberVerticesHeightfield(i) == 0){
             he.removeHeightfield(i);
-            entirePieces.removeHeightfield(i);
             solutions.removeBox(i);
         }
     }

@@ -8,6 +8,7 @@
 #include "cgal/aabbtree.h"
 #include "engine/packing.h"
 #include "igl/utils.h"
+#include "engine/reconstruction.h"
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -143,7 +144,7 @@ void EngineManager::deserializeBC(const std::string& filename) {
     ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
     ui->setFromSolutionSpinBox->setValue(0);
     ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-    serializeBC("heightfields/new/" + filename.substr(filename.find_last_of("/") + 1));
+    Reconstruction::getMapping(*d, *he);
 }
 
 void EngineManager::serialize(std::ofstream& binaryFile) const {
@@ -201,6 +202,9 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
         else
             std::cerr << "ERROR: no boxes in binary file. ???\n";
     }
+    if (Serializer::deserialize(bb, binaryFile)){
+        originalMesh.deserialize(binaryFile);
+    }
 
     mainWindow->updateGlCanvas();
     return true;
@@ -209,9 +213,9 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
 void EngineManager::on_generateGridPushButton_clicked() {
     if (d != nullptr){
         g = new DrawableGrid();
-
+        BoundingBox bb= d->getBoundingBox();
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
-        originalMesh.scale(d->getBoundingBox());
+        originalMesh.scale(bb, d->getBoundingBox());
         std::set<const Dcel::Face*> flippedFaces, savedFaces;
         Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()], savedFaces);
@@ -1168,7 +1172,7 @@ void EngineManager::on_cleanAllPushButton_clicked() {
 
 void EngineManager::on_reorderBoxes_clicked() {
     if (d != nullptr && solutions != nullptr){
-        Array2D<int> ordering = Reconstruction::getOrdering(*solutions, *d);
+        Array2D<int> ordering = Splitting::getOrdering(*solutions, *d);
         solutions->setIds();
         solutions->sort(ordering);
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
@@ -1245,12 +1249,27 @@ void EngineManager::on_packPushButton_clicked() {
             std::vector< std::vector<IGLInterface::IGLMesh> > packs = Packing::getPacks(tmp, myHe);
             IGLInterface::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
             for (unsigned int i = 0; i < packs.size(); i++){
+                QString pstring = foldername + "/pack" + QString::number(i) + ".obj";
+                IGLInterface::IGLMesh packMesh = packs[i][0];
                 QString bstring = foldername + "/b" + QString::number(i);
                 for (unsigned int j = 0; j < packs[i].size(); j++){
                     QString meshName = bstring + "p" + QString::number(j) + ".obj";
                     packs[i][j].saveOnObj(meshName.toStdString());
+                    if (j > 0){
+                        packMesh = IGLInterface::IGLMesh::merge(packMesh, packs[i][j]);
+                    }
                 }
+                packMesh.saveOnObj(pstring.toStdString());
             }
         }
+    }
+}
+
+void EngineManager::on_reconstructionPushButton_clicked() {
+    if (d != nullptr && he != nullptr){
+        std::vector<Vec3> mapping = Reconstruction::getMapping(*d, *he);
+        Reconstruction::reconstruction(*d, mapping,originalMesh);
+        d->update();
+        mainWindow->updateGlCanvas();
     }
 }

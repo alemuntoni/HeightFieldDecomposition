@@ -82,7 +82,7 @@ std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const Heightfi
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++)
         piecesToPack.insert(i);
 
-    int oldSize = -1;
+    unsigned int oldSize = 0;
     while (piecesToPack.size() > 0 && oldSize != piecesToPack.size()){
         oldSize = piecesToPack.size();
         std::vector<std::pair<int, Pointd> > actualPack;

@@ -58,6 +58,8 @@ ALL {
         engine/boxlist.h \
         engine/engine.h \
         engine/heightfieldslist.h \
+        engine/packing.h \
+        engine/splitting.h \
         engine/reconstruction.h \
         lib/grid/grid.h \
         lib/grid/drawablegrid.h \
@@ -69,17 +71,19 @@ ALL {
     SOURCES += \
         main.cpp \
         common.cpp \
-        lib/grid/grid.cpp \
         GUI/managers/enginemanager.cpp \
-        lib/grid/drawablegrid.cpp \
         engine/tricubic.cpp \
         engine/energy.cpp \
         engine/box.cpp \
         engine/boxlist.cpp \
         engine/engine.cpp \
         engine/heightfieldslist.cpp \
-        lib/grid/drawableirregulargrid.cpp \
-        engine/reconstruction.cpp
+        engine/packing.cpp \
+        engine/splitting.cpp \
+        engine/reconstruction.cpp \
+        lib/grid/grid.cpp \
+        lib/grid/drawablegrid.cpp \
+        lib/grid/drawableirregulargrid.cpp
 
 
     FORMS += \
@@ -95,10 +99,6 @@ SERVER_MODE {
 
 message(Included modules: $$MODULES)
 
-SOURCES += \
-    engine/packing.cpp
 
-HEADERS += \
-    engine/packing.h
 
 

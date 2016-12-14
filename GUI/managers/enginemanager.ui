@@ -62,9 +62,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-271</y>
+        <y>0</y>
         <width>406</width>
-        <height>1070</height>
+        <height>1098</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -103,7 +103,7 @@
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -125,7 +125,17 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_4">
-              <item row="8" column="0">
+              <item row="3" column="0">
+               <widget class="QSlider" name="solutionsSlider">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="0">
                <widget class="QPushButton" name="stickPushButton">
                 <property name="text">
                  <string>Stick</string>
@@ -194,7 +204,7 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="0">
+              <item row="8" column="0">
                <widget class="QSlider" name="heightfieldsSlider">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -208,16 +218,6 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QSlider" name="solutionsSlider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
               <item row="4" column="1">
                <widget class="QPushButton" name="deleteBoxesPushButton">
                 <property name="text">
@@ -225,13 +225,20 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="1">
+              <item row="8" column="1">
                <widget class="QCheckBox" name="allHeightfieldsCheckBox">
                 <property name="text">
                  <string>All</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0">
+               <widget class="QPushButton" name="reconstructionPushButton">
+                <property name="text">
+                 <string>Reconstruction</string>
                 </property>
                </widget>
               </item>
@@ -539,7 +546,7 @@
                  <double>0.005000000000000</double>
                 </property>
                 <property name="value">
-                 <double>0.005000000000000</double>
+                 <double>0.000000000000000</double>
                 </property>
                </widget>
               </item>

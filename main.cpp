@@ -46,27 +46,32 @@ int main(int argc, char *argv[]) {
     return app.exec();
 
     #else
-    if (argc > 3){
-        std::string filename(argv[1]);
+    if (argc > 4){
+        std::string filename_smooth(argv[1]);
+        std::string filename(argv[2]);
+        IGLInterface::IGLMesh original;
+        original.readFromFile(filename);
         Dcel d;
         BoxList solutions;
-        d.loadFromObjFile(filename);
+        d.loadFromObjFile(filename_smooth);
         int scale = std::stoi(argv[2]);
         Engine::scaleAndRotateDcel(d, 0, scale);
         double kernelDistance = std::stod(argv[3]);
         Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, 0.05);
-        size_t lastindex = filename.find_last_of(".");
-        std::string rawname = filename.substr(0, lastindex);
+        size_t lastindex = filename_smooth.find_last_of(".");
+        std::string rawname = filename_smooth.substr(0, lastindex);
         std::ofstream myfile;
         myfile.open (rawname + std::to_string(kernelDistance) + ".bin", std::ios::out | std::ios::binary);
         d.serialize(myfile);
         bool b = true;
         Serializer::serialize(b, myfile);
         solutions.serialize(myfile);
+        Serializer::serialize(b, myfile);
+        original.serialize(myfile);
         myfile.close();
     }
     else
-        std::cerr << "Error! Number argument lower than 3\n";
+        std::cerr << "Error! Number argument lower than 4\n";
     #endif
     return 0;
 }

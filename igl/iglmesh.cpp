@@ -121,6 +121,20 @@ namespace IGLInterface {
         }
     }
 
+    void SimpleIGLMesh::scale(const BoundingBox& oldBoundingBox, const BoundingBox& newBoundingBox) {
+        Pointd oldCenter = oldBoundingBox.center();
+        Pointd newCenter = newBoundingBox.center();
+        Pointd deltaOld = oldBoundingBox.getMax() - oldBoundingBox.getMin();
+        Pointd deltaNew = newBoundingBox.getMax() - newBoundingBox.getMin();
+        for (int i = 0; i < V.rows(); i++){
+            Pointd coord = getVertex(i);
+            coord -= oldCenter;
+            coord *= deltaNew / deltaOld;
+            coord += newCenter;
+            setVertex(i, coord);
+        }
+    }
+
     void SimpleIGLMesh::scale(const Vec3& scaleFactor) {
         if (scaleFactor.x() > 0 && scaleFactor.y() > 0 && scaleFactor.z() > 0){
             BoundingBox bb = getBoundingBox();
@@ -183,6 +197,32 @@ namespace IGLInterface {
         return result;
     }
     #endif
+
+    void SimpleIGLMesh::merge(SimpleIGLMesh &result, const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
+        result.V.resize(m1.V.rows()+m2.V.rows(), 3);
+        result.V << m1.V,
+                    m2.V;
+        result.F = m1.F;
+        int start = m1.getNumberVertices();
+        for (unsigned int i = 0; i < m2.getNumberFaces(); i++){
+            Pointi fi =m2.getFace(i);
+            result.addFace(fi.x()+start, fi.y()+start, fi.z()+start);
+        }
+    }
+
+    SimpleIGLMesh SimpleIGLMesh::merge(const SimpleIGLMesh& m1, const SimpleIGLMesh& m2) {
+        SimpleIGLMesh result;
+        result.V.resize(m1.V.rows()+m2.V.rows(), 3);
+        result.V << m1.V,
+                    m2.V;
+        result.F = m1.F;
+        int start = m1.getNumberVertices();
+        for (unsigned int i = 0; i < m2.getNumberFaces(); i++){
+            Pointi fi =m2.getFace(i);
+            result.addFace(fi.x()+start, fi.y()+start, fi.z()+start);
+        }
+        return result;
+    }
 
 
     IGLMesh::IGLMesh() {
@@ -328,6 +368,16 @@ namespace IGLInterface {
 
     void IGLMesh::scale(const BoundingBox& newBoundingBox) {
         SimpleIGLMesh::scale(newBoundingBox);
+        BBmin(0) = newBoundingBox.min()[0];
+        BBmin(1) = newBoundingBox.min()[1];
+        BBmin(2) = newBoundingBox.min()[2];
+        BBmax(0) = newBoundingBox.max()[0];
+        BBmax(1) = newBoundingBox.max()[1];
+        BBmax(2) = newBoundingBox.max()[2];
+    }
+
+    void IGLMesh::scale(const BoundingBox& oldBoundingBox, const BoundingBox& newBoundingBox) {
+        SimpleIGLMesh::scale(oldBoundingBox, newBoundingBox);
         BBmin(0) = newBoundingBox.min()[0];
         BBmin(1) = newBoundingBox.min()[1];
         BBmin(2) = newBoundingBox.min()[2];
@@ -507,6 +557,40 @@ namespace IGLInterface {
         return result;
     }
     #endif
+
+    void IGLMesh::merge(IGLMesh& result, const IGLMesh& m1, const IGLMesh& m2) {
+        SimpleIGLMesh::merge(result, m1, m2);
+        result.CF.resize(m1.CF.rows()+m2.CF.rows(), 3);
+        result.CF << m1.CF,
+                     m2.CF;
+        result.CV.resize(m1.CV.rows()+m2.CV.rows(), 3);
+        result.CV << m1.CV,
+                     m2.CV;
+        result.NV.resize(m1.NV.rows()+m2.NV.rows(), 3);
+        result.NV << m1.NV,
+                     m2.NV;
+        result.NF.resize(m1.NF.rows()+m2.NF.rows(), 3);
+        result.NF << m1.NF,
+                     m2.NF;
+    }
+
+    IGLMesh IGLMesh::merge(const IGLMesh& m1, const IGLMesh& m2) {
+        IGLMesh result;
+        SimpleIGLMesh::merge(result, m1, m2);
+        result.CF.resize(m1.CF.rows()+m2.CF.rows(), 3);
+        result.CF << m1.CF,
+                     m2.CF;
+        result.CV.resize(m1.CV.rows()+m2.CV.rows(), 3);
+        result.CV << m1.CV,
+                     m2.CV;
+        result.NV.resize(m1.NV.rows()+m2.NV.rows(), 3);
+        result.NV << m1.NV,
+                     m2.NV;
+        result.NF.resize(m1.NF.rows()+m2.NF.rows(), 3);
+        result.NF << m1.NF,
+                     m2.NF;
+        return result;
+    }
 
     #ifdef DCEL_DEFINED
     IGLMesh& IGLMesh::operator=(const Dcel& dcel) {

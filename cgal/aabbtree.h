@@ -44,14 +44,16 @@ namespace CGALInterface {
             int getNumberIntersectedPrimitives(const BoundingBox& b) const;
             double getSquaredDistance(const Pointd &p) const;
             Pointd getNearestPoint(const Pointd &p) const;
-            bool isInside(const Pointd &p, int numberOfChecks = 7);
+            bool isInside(const Pointd &p, int numberOfChecks = 7) const;
             #ifdef DCEL_DEFINED
             void getIntersectedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b) const;
             void getCompletelyContainedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b) const;
             const Dcel::Face* getNearestDcelFace(const Pointd &p) const;
+            const Dcel::Vertex* getNearestDcelVertex(const Pointd &p) const;
             #endif
 
         protected:
+            typedef enum {DCEL, TRIMESH, IGLMESH} TreeType;
             typedef CGAL::Simple_cartesian<double> K;
             typedef K::FT FT;
             typedef K::Ray_3 CGALRay;
@@ -75,19 +77,18 @@ namespace CGALInterface {
 
             Tree tree;
             bool forDistanceQueries;
+            TreeType treeType;
             #ifdef DCEL_DEFINED
             std::map<const Dcel::Vertex*, CGALPoint> mapDcelVerticesToCgalPoints;
+            std::map<CGALPoint, const Dcel::Vertex*> mapCgalPointsToDcelVertices;
             std::map<CGALTriangle, const Dcel::Face*, cmpCGALTriangle> mapCgalTrianglesToDcelFaces;
             #endif
-            #ifdef TRIMESH_DEFINED
-            std::map<int, CGALPoint> mapTrimeshVerticesToCgalPoints;
-            std::map<CGALTriangle, int, cmpCGALTriangle> mapCgalTrianglesToTrimeshTriangles;
+            #if defined(TRIMESH_DEFINED) || defined(IGL_DEFINED)
+            std::map<int, CGALPoint> mapIdVerticesToCgalPoints;
+            std::map<CGALTriangle, int, cmpCGALTriangle> mapCgalTrianglesToIdTriangles;
             #endif
             std::list<CGALTriangle> triangles;
             BoundingBox bb;
-
-            std::random_device rd;
-            std::mt19937 e2;
     };
 
 }
