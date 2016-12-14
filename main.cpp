@@ -54,9 +54,9 @@ int main(int argc, char *argv[]) {
         Dcel d;
         BoxList solutions;
         d.loadFromObjFile(filename_smooth);
-        int scale = std::stoi(argv[2]);
+        int scale = std::stoi(argv[3]);
         Engine::scaleAndRotateDcel(d, 0, scale);
-        double kernelDistance = std::stod(argv[3]);
+        double kernelDistance = std::stod(argv[4]);
         Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, 0.05);
         size_t lastindex = filename_smooth.find_last_of(".");
         std::string rawname = filename_smooth.substr(0, lastindex);
