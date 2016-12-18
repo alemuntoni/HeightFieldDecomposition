@@ -212,6 +212,7 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
 
 void EngineManager::on_generateGridPushButton_clicked() {
     if (d != nullptr){
+        deleteDrawableObject(g);
         g = new DrawableGrid();
         BoundingBox bb= d->getBoundingBox();
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
