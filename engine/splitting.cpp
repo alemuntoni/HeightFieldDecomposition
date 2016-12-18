@@ -3,6 +3,7 @@
 #include "common.h"
 #include "common/timer.h"
 #include "lib/graph/directedgraph.h"
+#include "igl/utils.h"
 #include <map>
 
 bool Splitting::boxesIntersect(const Box3D& b1, const Box3D& b2) {
@@ -21,7 +22,6 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
     for (unsigned int t = 0; t < 6; t++){
         if (t < 3){
             if (target2 == XYZ[t]){ //+x
-                //if (!(b1.min()[t] < b2.min()[t] && b1.max()[t] > b2.max()[t])){
                 if (b1.max()[t] < b2.max()[t]){
                     bool b = false;
                     for (unsigned int i = 0; i < 3; i++){
@@ -42,7 +42,15 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                                 assert(bb.min()[i] < bb.max()[i]);
                             }
                         }
-                        if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                        bool isInside = false;
+                        std::vector<Pointd> extremes;
+                        bb.getExtremes(extremes);
+                        for (unsigned int i = 0; i < extremes.size() && !isInside; i++){
+                            if (tree.isInside(extremes[i]))
+                                isInside = true;
+                        }
+                        if(isInside || tree.getNumberIntersectedPrimitives(bb) > 0){
+                        //if (tree.getNumberIntersectedPrimitives(bb) > 0){
                             if (!checkMeshes){
                                 return true;
                             }
@@ -58,15 +66,11 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                         }
                     }
                 }
-                //if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ())){
-
-                //}
             }
         }
         else {
             if (target2 == XYZ[t]){ //-x
                 unsigned int ot = t-3;
-                //if (b1.min()[ot] < base && b1.max()[ot] > base && !(b1.min()[ot] < b2.min()[ot])){
                 if(b1.min()[ot] > b2.min()[ot]){
                     bool b = false;
                     for (unsigned int i = 0; i < 3; i++){
@@ -87,7 +91,18 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                                 assert(bb.min()[i] < bb.max()[i]);
                             }
                         }
-                        if (tree.getNumberIntersectedPrimitives(bb) > 0){
+                        ///
+                        IGLInterface::makeBox(bb).saveOnObj("bb.obj");
+                        ///
+                        bool isInside = false;
+                        std::vector<Pointd> extremes;
+                        bb.getExtremes(extremes);
+                        for (unsigned int i = 0; i < extremes.size() && !isInside; i++){
+                            if (tree.isInside(extremes[i]))
+                                isInside = true;
+                        }
+                        if (isInside  || tree.getNumberIntersectedPrimitives(bb) > 0){
+                        //if (tree.getNumberIntersectedPrimitives(bb) > 0){
                             if (!checkMeshes){
                                 return true;
                             }
@@ -107,136 +122,6 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
         }
     }
     return false;
-    /*if (target2 == XYZ[0]){ //+x
-        base = b2.getMinX();
-        if (b1.getMinX() < base && b1.getMaxX() > base){
-            if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ())){
-                //check if bb is empty
-                bb.setMinX(b1.getMaxX()-EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0){
-                    if (!checkMeshes){
-                        return true;
-                    }
-                    else {
-                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0){
-                            ////
-                            intersection.saveOnObj("int.obj");
-                            ////
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    } else if (target2 == XYZ[1]){ //+y
-        base = b2.getMinY();
-        if (b1.getMinY() < base && b1.getMaxY() > base){
-            if (!(b1.getMinX() < b2.getMinX() && b1.getMinZ() < b2.getMinZ() && b1.getMaxX() > b2.getMaxX() && b1.getMaxZ() > b2.getMaxZ())){
-                bb.setMinY(b1.getMaxY()-EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0){
-                    if (!checkMeshes){
-                        return true;
-                    }
-                    else {
-                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0){
-                            ////
-                            intersection.saveOnObj("int.obj");
-                            ////
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    } else if (target2 == XYZ[2]){ //+z
-        base = b2.getMinZ();
-        if (b1.getMinZ() < base && b1.getMaxZ() > base){
-            if (!(b1.getMinX() < b2.getMinX() && b1.getMinY() < b2.getMinY() && b1.getMaxX() > b2.getMaxX() && b1.getMaxY() > b2.getMaxY())){
-                bb.setMinZ(b1.getMaxZ()-EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0){
-                    if (!checkMeshes){
-                        return true;
-                    }
-                    else {
-                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0){
-                            ////
-                            intersection.saveOnObj("int.obj");
-                            ////
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    } else if (target2 == XYZ[3]){ //-x
-        base = b2.getMaxX();
-        if (b1.getMinX() < base && b1.getMaxX() > base){
-            if (!(b1.getMinY() < b2.getMinY() && b1.getMinZ() < b2.getMinZ() && b1.getMaxY() > b2.getMaxY() && b1.getMaxZ() > b2.getMaxZ())){
-                bb.setMaxX(b1.getMinX()+EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0){
-                    if (!checkMeshes){
-                        return true;
-                    }
-                    else {
-                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0){
-                            ////
-                            intersection.saveOnObj("int.obj");
-                            ////
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    } else if (target2 == XYZ[4]){ //-y
-        base = b2.getMaxY();
-        if (b1.getMinY() < base && b1.getMaxY() > base){
-            if (!(b1.getMinX() < b2.getMinX() && b1.getMinZ() < b2.getMinZ() && b1.getMaxX() > b2.getMaxX() && b1.getMaxZ() > b2.getMaxZ())){
-                bb.setMaxY(b1.getMinY()+EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0){
-                    if (!checkMeshes){
-                        return true;
-                    }
-                    else {
-                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0){
-                            ////
-                            intersection.saveOnObj("int.obj");
-                            ////
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    } else if (target2 == XYZ[5]){ //-z
-        base = b2.getMaxZ();
-        if (b1.getMinZ() < base && b1.getMaxZ() > base){
-            if (!(b1.getMinX() < b2.getMinX() && b1.getMinY() < b2.getMinY() && b1.getMaxX() > b2.getMaxX() && b1.getMaxY() > b2.getMaxY())){
-                bb.setMaxZ(b1.getMinZ()+EPSILON);
-                if (tree.getNumberIntersectedPrimitives(bb) > 0){
-                    if (!checkMeshes){
-                        return true;
-                    }
-                    else {
-                        IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
-                        if (intersection.getNumberVertices() != 0){
-                            ////
-                            intersection.saveOnObj("int.obj");
-                            ////
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    } else
-        assert(0);
-    return false;*/
 }
 
 double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
@@ -262,8 +147,8 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
             }
             else if (t >= 3){
                 unsigned int i = t-3;
-                b1.getIGLMesh().saveOnObj("b1.obj");
-                b2.getIGLMesh().saveOnObj("b2.obj");
+                //b1.getIGLMesh().saveOnObj("b1.obj");
+                //b2.getIGLMesh().saveOnObj("b2.obj");
                 assert(b1.min()[i] > b2.min()[i]);
                 b3.min()[i] = b2.min()[i];
                 b3.max()[i] = b1.min()[i];
@@ -340,15 +225,17 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     std::vector<std::vector<unsigned int> > loops;
     DirectedGraph g(bl.getNumberBoxes());
     //
-    //d.saveOnObjFile("tmp.obj");
+    d.saveOnObjFile("tmp.obj");
     //
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
         for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
             Box3D b2 = bl.getBox(j);
             if (boxesIntersect(b1,b2)){
-                //b1.getIGLMesh().saveOnObj("b1.obj");
-                //b2.getIGLMesh().saveOnObj("b2.obj");
+                //
+                b1.getIGLMesh().saveOnObj("b1.obj");
+                b2.getIGLMesh().saveOnObj("b2.obj");
+                //
                 if (isDangerousIntersection(b1, b2, tree)){
                     g.addEdge(i,j);
                     std::cerr << i << " -> " << j << "\n";

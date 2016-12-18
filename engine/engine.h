@@ -33,7 +33,7 @@ namespace Engine {
     void setTrianglesTargets(Dcel scaled[]);
 
     static std::set<const Dcel::Face*> dummy;
-    void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool heightfields = false, const Vec3& target = Vec3(), std::set<const Dcel::Face*> &savedFaces = dummy);
+    void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool tolerance = false, const Vec3& target = Vec3(), std::set<const Dcel::Face*> &savedFaces = dummy);
 
     void addBox(BoxList& boxList, const Vec3 target, const Dcel::Face* f, const Eigen::Matrix3d& rot);
 

@@ -20,6 +20,19 @@ std::vector<Vec3> Reconstruction::getMapping(const Dcel& smoothedSurface, const 
     return mapping;
 }
 
+void Reconstruction::saveMappingOnFile(const std::vector<Vec3>& mapping, const std::string& filename) {
+    std::ofstream myfile;
+    myfile.open (filename);
+    myfile << mapping.size() << "\n";
+    for (Vec3 target : mapping){
+        for (int i  = 0; i < 3; i++) {
+            if (target == XYZ[i] || target == XYZ[i+3]) // it happens just one time for every target
+                myfile << i << "\n";
+        }
+    }
+    myfile.close();
+}
+
 void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<Vec3>& mapping, const IGLInterface::IGLMesh& originalSurface) {
     for (Dcel::Vertex* v : smoothedSurface.vertexIterator()){
         Vec3 target = mapping[v->getId()];

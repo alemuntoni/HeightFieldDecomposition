@@ -30,8 +30,8 @@ class Grid : public SerializableObject{
         Vec3 getTarget() const;
         void setTarget(const Vec3& value);
 
-        void calculateBorderWeights(const Dcel &d, bool heightfields = false, std::set<const Dcel::Face*>& savedFaces = Grid::dummy);
-        void calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool heightfields = false, std::set<const Dcel::Face*>& savedFaces = Grid::dummy);
+        void calculateBorderWeights(const Dcel &d, bool tolerance = false, std::set<const Dcel::Face*>& savedFaces = Grid::dummy);
+        void calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool tolerance = false, std::set<const Dcel::Face*>& savedFaces = Grid::dummy);
         void calculateFullBoxValues(double (*integralTricubicInterpolation)(const gridreal *&, double, double, double, double, double, double));
 
         double getValue(const Pointd &p) const;

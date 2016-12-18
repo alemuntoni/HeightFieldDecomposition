@@ -62,7 +62,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-229</y>
+        <y>0</y>
         <width>406</width>
         <height>1127</height>
        </rect>
@@ -372,7 +372,7 @@
               <item row="3" column="1">
                <widget class="QCheckBox" name="heightfieldsCheckBox">
                 <property name="text">
-                 <string>Heightfields</string>
+                 <string>Tolerance</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>

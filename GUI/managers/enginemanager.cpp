@@ -144,7 +144,6 @@ void EngineManager::deserializeBC(const std::string& filename) {
     ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
     ui->setFromSolutionSpinBox->setValue(0);
     ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-    Reconstruction::getMapping(*d, *he);
 }
 
 void EngineManager::serialize(std::ofstream& binaryFile) const {
@@ -1068,6 +1067,7 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
         mainWindow->pushObj(solutions, "Solutions");
         double kernelDistance = ui->distanceSpinBox->value();
         Timer t("Total Time Grids and Minimization Boxes");
+        /// here d is already scaled!!
         Engine::createAndMinimizeAllBoxes(*solutions, *d, kernelDistance, ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100);
         t.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
@@ -1269,7 +1269,8 @@ void EngineManager::on_packPushButton_clicked() {
 void EngineManager::on_reconstructionPushButton_clicked() {
     if (d != nullptr && he != nullptr){
         std::vector<Vec3> mapping = Reconstruction::getMapping(*d, *he);
-        Reconstruction::reconstruction(*d, mapping,originalMesh);
+        Reconstruction::saveMappingOnFile(mapping, "golf.txt");
+        //Reconstruction::reconstruction(*d, mapping,originalMesh);
         d->update();
         mainWindow->updateGlCanvas();
     }

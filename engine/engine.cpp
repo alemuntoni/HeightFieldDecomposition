@@ -115,7 +115,7 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
     }
 }
 
-void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool heightfields, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces) {
+void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool tolerance, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces) {
     IGLInterface::SimpleIGLMesh m(d);
     Array3D<Pointd> grid;
     Array3D<gridreal> distanceField;
@@ -125,7 +125,7 @@ void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool he
     Pointd nGmax(grid(res.x()-1, res.y()-1, res.z()-1));
     g = Grid(res, grid, distanceField, nGmin, nGmax);
     g.setTarget(target);
-    g.calculateWeightsAndFreezeKernel(d, kernelDistance, heightfields, savedFaces);
+    g.calculateWeightsAndFreezeKernel(d, kernelDistance, tolerance, savedFaces);
     Energy e(g);
     e.calculateFullBoxValues(g);
 }
@@ -258,7 +258,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool printTimes) {
  * @param areaTolerance
  * @param angleTolerance
  */
-void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool heightfields, bool onlyNearestTarget, double areaTolerance, double angleTolerance) {
+void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance) {
     solutions.clearBoxes();
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
@@ -274,175 +274,100 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
         Engine::setTrianglesTargets(scaled);
     #endif
 
-    if (!heightfields){
-        Grid g[ORIENTATIONS];
-        BoxList bl[ORIENTATIONS];
-        std::set<int> coveredFaces;
-        unsigned int numberFaces = 200;
-        CGALInterface::AABBTree aabb[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++)
-            aabb[i] = CGALInterface::AABBTree(scaled[i]);
-        # pragma omp parallel for if(ORIENTATIONS>1)
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            Engine::generateGrid(g[i], scaled[i], kernelDistance);
-            g[i].resetSignedDistances();
-            std::cerr << "Generated grid or " << i << "\n";
+    Grid g[ORIENTATIONS][TARGETS];
+    BoxList bl[ORIENTATIONS][TARGETS];
+    std::set<int> coveredFaces;
+    unsigned int numberFaces = 200;
+    CGALInterface::AABBTree aabb[ORIENTATIONS];
+    for (unsigned int i = 0; i < ORIENTATIONS; i++)
+        aabb[i] = CGALInterface::AABBTree(scaled[i]);
+    //# pragma omp parallel for
+    for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+        # pragma omp parallel for
+        for (unsigned int j = 0; j < TARGETS; ++j) {
+            std::set<const Dcel::Face*> flippedFaces, savedFaces;
+            Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
+            Engine::generateGrid(g[i][j], scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
+            g[i][j].resetSignedDistances();
+            std::cerr << "Generated grid or " << i << " t " << j << "\n";
         }
+    }
+    bool end = false;
 
-        Timer t("Expanding all Boxes");
-        while (coveredFaces.size() < scaled[0].getNumberFaces()){
-            BoxList tmp[ORIENTATIONS];
-            Eigen::VectorXi faces[ORIENTATIONS];
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                IGLInterface::IGLMesh m(scaled[i]);
-                IGLInterface::IGLMesh dec;
-                bool b = m.getDecimatedMesh(dec, numberFaces, faces[i]);
-                std::cerr << "Decimated mesh " << i << ": " << (b ? "true" : "false") <<"\n";
-            }
-
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
+    while (coveredFaces.size() < scaled[0].getNumberFaces() && !end){
+        BoxList tmp[ORIENTATIONS][TARGETS];
+        Eigen::VectorXi faces[ORIENTATIONS];
+        for (unsigned int i = 0; i < ORIENTATIONS; i++){
+            IGLInterface::IGLMesh m(scaled[i]);
+            IGLInterface::IGLMesh dec;
+            bool b = m.getDecimatedMesh(dec, numberFaces, faces[i]);
+            std::cerr << "Decimated mesh " << i << ": " << b <<"\n";
+        }
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned int j = 0; j < TARGETS; ++j){
                 std::cerr << "Calculating Boxes\n";
                 #if ORIENTATIONS > 1
                 if (onlyNearestTarget){
-                    Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i], i);
+                    Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], i, true, XYZ[j]);
                 }
                 else
                 #endif
-                    Engine::calculateDecimatedBoxes(tmp[i], scaled[i], faces[i], coveredFaces, m[i]);
-                std::cerr << "Starting boxes growth\n";
-                Engine::expandBoxes(tmp[i], g[i], true);
-                std::cerr << "Orientation: " << i << " completed.\n";
+                    Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, onlyNearestTarget, XYZ[j]);
+                    //Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, false);
+                if (tmp[i][j].getNumberBoxes() > 0){
+                    std::cerr << "Starting boxes growth\n";
+                    Engine::expandBoxes(tmp[i][j], g[i][j]);
+                    std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                }
+                else {
+                    std::cerr << "Orientation: " << i << " Target: " << j << " no boxes to expand.\n";
+                }
             }
-
-            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-
-                    for (unsigned int k = 0; k < tmp[i].getNumberBoxes(); ++k){
-                        std::list<const Dcel::Face*> list;
-                        aabb[i].getCompletelyContainedDcelFaces(list, tmp[i].getBox(k));
-
-                        for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
-                            coveredFaces.insert((*it)->getId());
-                        }
-                    }
-            }
-            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                    bl[i].insert(tmp[i]);
-            }
-
-            std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
-            std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
-            numberFaces*=2;
-            if (numberFaces > scaled[0].getNumberFaces())
-                numberFaces = scaled[0].getNumberFaces();
-        }
-        t.stopAndPrint();
-
-        std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            solutions.insert(bl[i]);
-            Engine::createVectorTriples(vectorTriples[i], bl[i], scaled[i]);
-            allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i].begin(), vectorTriples[i].end());
         }
 
-        Engine::deleteBoxes(solutions, allVectorTriples, d.getNumberFaces());
-        solutions.generatePieces(d.getAverageHalfEdgesLength()*7);
-    }
-    else {
-        Grid g[ORIENTATIONS][TARGETS];
-        BoxList bl[ORIENTATIONS][TARGETS];
-        std::set<int> coveredFaces;
-        unsigned int numberFaces = 200;
-        CGALInterface::AABBTree aabb[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++)
-            aabb[i] = CGALInterface::AABBTree(scaled[i]);
-        # pragma omp parallel for
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            # pragma omp parallel for
-            for (unsigned int j = 0; j < TARGETS; ++j) {
-                std::set<const Dcel::Face*> flippedFaces, savedFaces;
-                Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
-                Engine::generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j], savedFaces);
-                g[i][j].resetSignedDistances();
-                std::cerr << "Generated grid or " << i << " t " << j << "\n";
-            }
-        }
-        bool end = false;
-
-        while (coveredFaces.size() < scaled[0].getNumberFaces() && !end){
-            BoxList tmp[ORIENTATIONS][TARGETS];
-            Eigen::VectorXi faces[ORIENTATIONS];
-            for (unsigned int i = 0; i < ORIENTATIONS; i++){
-                IGLInterface::IGLMesh m(scaled[i]);
-                IGLInterface::IGLMesh dec;
-                bool b = m.getDecimatedMesh(dec, numberFaces, faces[i]);
-                std::cerr << "Decimated mesh " << i << ": " << b <<"\n";
-            }
-            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                for (unsigned int j = 0; j < TARGETS; ++j){
-                    std::cerr << "Calculating Boxes\n";
-                    #if ORIENTATIONS > 1
-                    if (onlyNearestTarget){
-                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], i, true, XYZ[j]);
-                    }
-                    else
-                    #endif
-                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, onlyNearestTarget, XYZ[j]);
-                        //Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, false);
-                    if (tmp[i][j].getNumberBoxes() > 0){
-                        std::cerr << "Starting boxes growth\n";
-                        Engine::expandBoxes(tmp[i][j], g[i][j]);
-                        std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
-                    }
-                    else {
-                        std::cerr << "Orientation: " << i << " Target: " << j << " no boxes to expand.\n";
-                    }
-                }
-            }
-
-            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                for (unsigned int j = 0; j < TARGETS; ++j){
-                    for (unsigned int k = 0; k < tmp[i][j].getNumberBoxes(); ++k){
-                        std::list<const Dcel::Face*> list;
-                        aabb[i].getCompletelyContainedDcelFaces(list, tmp[i][j].getBox(k));
-                        for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
-                            coveredFaces.insert((*it)->getId());
-                        }
-                    }
-                }
-            }
-            for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-                for (unsigned int j = 0; j < TARGETS; ++j){
-                    bl[i][j].insert(tmp[i][j]);
-                }
-            }
-
-            std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
-            std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
-            if (numberFaces == scaled[0].getNumberFaces()) {
-                end = true;
-                if (coveredFaces.size() != scaled[0].getNumberFaces()){
-                    std::cerr << "WARNING: Not every face has been covered by a box.\n";
-                    std::cerr << "Number uncovered faces: " << scaled[0].getNumberFaces() - coveredFaces.size() << "\n";
-                }
-
-            }
-            numberFaces*=2;
-            if (numberFaces > scaled[0].getNumberFaces())
-                numberFaces = scaled[0].getNumberFaces();
-        }
-
-        std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS][TARGETS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
             for (unsigned int j = 0; j < TARGETS; ++j){
-                solutions.insert(bl[i][j]);
-                Engine::createVectorTriples(vectorTriples[i][j], bl[i][j], scaled[i]);
-                allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i][j].begin(), vectorTriples[i][j].end());
+                for (unsigned int k = 0; k < tmp[i][j].getNumberBoxes(); ++k){
+                    std::list<const Dcel::Face*> list;
+                    aabb[i].getCompletelyContainedDcelFaces(list, tmp[i][j].getBox(k));
+                    for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
+                        coveredFaces.insert((*it)->getId());
+                    }
+                }
+            }
+        }
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned int j = 0; j < TARGETS; ++j){
+                bl[i][j].insert(tmp[i][j]);
             }
         }
 
-        Engine::deleteBoxes(solutions, allVectorTriples, d.getNumberFaces());
-        solutions.generatePieces(d.getAverageHalfEdgesLength()*7);
+        std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
+        std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
+        if (numberFaces == scaled[0].getNumberFaces()) {
+            end = true;
+            if (coveredFaces.size() != scaled[0].getNumberFaces()){
+                std::cerr << "WARNING: Not every face has been covered by a box.\n";
+                std::cerr << "Number uncovered faces: " << scaled[0].getNumberFaces() - coveredFaces.size() << "\n";
+            }
+
+        }
+        numberFaces*=2;
+        if (numberFaces > scaled[0].getNumberFaces())
+            numberFaces = scaled[0].getNumberFaces();
     }
+
+    std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS][TARGETS];
+    for (unsigned int i = 0; i < ORIENTATIONS; i++){
+        for (unsigned int j = 0; j < TARGETS; ++j){
+            solutions.insert(bl[i][j]);
+            Engine::createVectorTriples(vectorTriples[i][j], bl[i][j], scaled[i]);
+            allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i][j].begin(), vectorTriples[i][j].end());
+        }
+    }
+
+    Engine::deleteBoxes(solutions, allVectorTriples, d.getNumberFaces());
+    solutions.generatePieces(d.getAverageHalfEdgesLength()*7);
 }
 
 void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh) {
