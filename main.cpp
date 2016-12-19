@@ -59,7 +59,14 @@ int main(int argc, char *argv[]) {
         Engine::scaleAndRotateDcel(d, 0, scale);
         original.scale(bb, d.getBoundingBox());
         double kernelDistance = std::stod(argv[4]);
-        Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, 0.01);
+        double tolerance = 0.01;
+        bool file = false;
+        if (argc > 5){
+            tolerance = std::stod(argv[5]);
+            if (argc > 6)
+                file = std::stoi(argv[6]);
+        }
+        Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, tolerance, file);
         size_t lastindex = filename_smooth.find_last_of(".");
         std::string rawname = filename_smooth.substr(0, lastindex);
         std::ofstream myfile;

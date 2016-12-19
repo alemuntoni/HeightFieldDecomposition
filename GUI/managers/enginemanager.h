@@ -14,6 +14,8 @@
 #include "igl/gui/drawableiglmesh.h"
 #include "engine/heightfieldslist.h"
 #include "engine/splitting.h"
+#include "viewer/wait_dialog.h"
+
 
 namespace Ui {
     class EngineManager;
@@ -94,13 +96,9 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_energyIterationsButton_clicked();
 
-        void on_createBoxesPushButton_clicked();
-
         void on_showAllSolutionsCheckBox_stateChanged(int arg1);
 
         void on_solutionsSlider_valueChanged(int value);
-
-        void on_minimizeAllPushButton_clicked();
 
         void on_setFromSolutionButton_clicked();
 
@@ -113,8 +111,6 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_smoothDcelRadioButton_toggled(bool checked);
 
         void on_trianglesCoveredPushButton_clicked();
-
-        void on_deleteBoxesPushButton_clicked();
 
         void on_stepDrawGridSpinBox_valueChanged(double arg1);
 
@@ -163,6 +159,11 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_reconstructionPushButton_clicked();
 
         void on_putBoxesAfterPushButton_clicked();
+
+        void on_snappingPushButton_clicked();
+
+    signals:
+        void finished();
 
     private:
         Ui::EngineManager *ui;

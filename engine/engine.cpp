@@ -258,7 +258,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool printTimes) {
  * @param areaTolerance
  * @param angleTolerance
  */
-void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance) {
+void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file) {
     solutions.clearBoxes();
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
@@ -287,8 +287,21 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
         for (unsigned int j = 0; j < TARGETS; ++j) {
             std::set<const Dcel::Face*> flippedFaces, savedFaces;
             Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
-            Engine::generateGrid(g[i][j], scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
-            g[i][j].resetSignedDistances();
+            if (file) {
+                Grid g;
+                Engine::generateGrid(g, scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
+                g.resetSignedDistances();
+                std::stringstream ss ;
+                ss << "grid" << i << "_" << j << ".bin";
+                std::ofstream myfile;
+                myfile.open (ss.str(), std::ios::out | std::ios::binary);
+                g.serialize(myfile);
+                myfile.close();
+            }
+            else {
+                Engine::generateGrid(g[i][j], scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
+                g[i][j].resetSignedDistances();
+            }
             std::cerr << "Generated grid or " << i << " t " << j << "\n";
         }
     }
@@ -315,9 +328,23 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
                     Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, onlyNearestTarget, XYZ[j]);
                     //Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, false);
                 if (tmp[i][j].getNumberBoxes() > 0){
-                    std::cerr << "Starting boxes growth\n";
-                    Engine::expandBoxes(tmp[i][j], g[i][j]);
-                    std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                    if (file) {
+                        Grid g;
+                        std::stringstream ss ;
+                        ss << "grid" << i << "_" << j << ".bin";
+                        std::ifstream myfile;
+                        myfile.open (ss.str(), std::ios::in | std::ios::binary);
+                        g.deserialize(myfile);
+                        myfile.close();
+                        std::cerr << "Starting boxes growth\n";
+                        Engine::expandBoxes(tmp[i][j], g);
+                        std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                    }
+                    else {
+                        std::cerr << "Starting boxes growth\n";
+                        Engine::expandBoxes(tmp[i][j], g[i][j]);
+                        std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                    }
                 }
                 else {
                     std::cerr << "Orientation: " << i << " Target: " << j << " no boxes to expand.\n";

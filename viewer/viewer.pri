@@ -28,13 +28,15 @@ HEADERS += \
     $$PWD/managers/windowmanager.h \
     $$PWD/objects/objects.h \
     $$PWD/interfaces/drawable_object.h \
-    $$PWD/interfaces/pickable_object.h
+    $$PWD/interfaces/pickable_object.h \
+    $$PWD/wait_dialog.h
 
 SOURCES += \
     $$PWD/glcanvas.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/objects/drawabledebugobjects.cpp \
-    $$PWD/managers/windowmanager.cpp
+    $$PWD/managers/windowmanager.cpp \
+    $$PWD/wait_dialog.cpp
 
 FORMS += \
     $$PWD/mainwindow.ui \

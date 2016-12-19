@@ -9,6 +9,8 @@
 #include "engine/packing.h"
 #include "igl/utils.h"
 #include "engine/reconstruction.h"
+#include "engineworker.h"
+#include <QThread>
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -103,6 +105,8 @@ void EngineManager::serializeBC(const std::string& filename) {
     solutions->serialize(myfile);
     baseComplex->serialize(myfile);
     he->serialize(myfile);
+    if (originalMesh.getNumberVertices() > 0)
+        originalMesh.serialize(myfile);
     //entirePieces->serialize(myfile);
     myfile.close();
 }
@@ -112,19 +116,20 @@ void EngineManager::deserializeBC(const std::string& filename) {
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
-    //deleteDrawableObject(entirePieces);
     d = new DrawableDcel();
     solutions = new BoxList();
     baseComplex = new IGLInterface::DrawableIGLMesh();
     he = new HeightfieldsList();
-    //entirePieces = new HeightfieldsList();
     std::ifstream myfile;
     myfile.open (filename, std::ios::in | std::ios::binary);
     d->deserialize(myfile);
     solutions->deserialize(myfile);
     baseComplex->deserialize(myfile);
     he->deserialize(myfile);
-    //entirePieces->deserialize(myfile);
+    if (originalMesh.deserialize(myfile)){
+        if (originalMesh.getNumberVertices() > 0)
+            mainWindow->pushObj(&originalMesh, "Original Mesh");
+    }
     myfile.close();
     d->update();
     d->setPointsShading();
@@ -133,7 +138,6 @@ void EngineManager::deserializeBC(const std::string& filename) {
     mainWindow->pushObj(solutions, "Boxes");
     mainWindow->pushObj(baseComplex, "Base Complex");
     mainWindow->pushObj(he, "Heightfields");
-    //mainWindow->pushObj(entirePieces, "Entire Pieces");
     mainWindow->updateGlCanvas();
     ui->showAllSolutionsCheckBox->setEnabled(true);
     //he->explode(40);
@@ -718,26 +722,6 @@ void EngineManager::on_energyIterationsButton_clicked() {
     }
 }
 
-void EngineManager::on_createBoxesPushButton_clicked() {
-    if (d!=nullptr){
-        deleteDrawableObject(solutions);
-        solutions = new BoxList();
-        //Engine::calculateInitialBoxes(*solutions, *d, Eigen::Matrix3d::Identity(), true, XYZ[ui->targetComboBox->currentIndex()]);
-        Dcel copy = *d;
-        Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
-
-        Engine::calculateInitialBoxes(*solutions, copy, m);
-        ui->showAllSolutionsCheckBox->setEnabled(true);
-        solutions->setVisibleBox(0);
-        ui->solutionsSlider->setEnabled(true);
-        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-        ui->setFromSolutionSpinBox->setValue(0);
-        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow->pushObj(solutions, "Solutions");
-        mainWindow->updateGlCanvas();
-    }
-}
-
 void EngineManager::on_showAllSolutionsCheckBox_stateChanged(int arg1) {
     if (arg1 == Qt::Checked){
         ui->solutionsSlider->setEnabled(false);
@@ -761,12 +745,6 @@ void EngineManager::on_solutionsSlider_valueChanged(int value) {
         ui->setFromSolutionSpinBox->setValue(value);
         ui->solutionNumberLabel->setText(QString::number(value));
         mainWindow->updateGlCanvas();
-    }
-}
-
-void EngineManager::on_minimizeAllPushButton_clicked() {
-    if (solutions != nullptr){
-        Engine::expandBoxes(*solutions, *g);
     }
 }
 
@@ -943,17 +921,6 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
     }
 }
 
-void EngineManager::on_deleteBoxesPushButton_clicked() {
-    if (solutions!= nullptr && d != nullptr){
-        Engine::deleteBoxesMemorySafe(*solutions, *d);
-        solutions->setVisibleBox(0);
-        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-        ui->setFromSolutionSpinBox->setValue(0);
-        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow->updateGlCanvas();
-    }
-}
-
 void EngineManager::on_stepDrawGridSpinBox_valueChanged(double arg1) {
     if (g!=nullptr){
         if (arg1 > 0){
@@ -977,6 +944,22 @@ void EngineManager::on_subtractPushButton_clicked() {
         //mainWindow->pushObj(entirePieces, "Entire Pieces");
         mainWindow->updateGlCanvas();
         IGLInterface::SimpleIGLMesh bc((IGLInterface::SimpleIGLMesh)*baseComplex);
+
+        /*WaitDialog* dialog = new WaitDialog("Prova", mainWindow);
+        connect(this, SIGNAL(finished()), dialog, SLOT(pop()));
+
+        dialog->show();
+        EngineWorker* ew = new EngineWorker();
+        QThread* thread = new QThread;
+        ew->moveToThread(thread);
+        connect(ew, SIGNAL (error(QString)), this, SLOT (errorString(QString)));
+        connect(thread, SIGNAL (started()), ew, SLOT (booleanOperations(*he, bc, *solutions, *d)));
+        connect(ew, SIGNAL (finished()), thread, SLOT (quit()));
+        connect(ew, SIGNAL (finished()), ew, SLOT (deleteLater()));
+        connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
+        connect(thread, SIGNAL (finished()), this, SLOT(emit finished()));
+        thread->start();*/
+
         Engine::booleanOperations(*he, bc, *solutions, *d /*,*entirePieces*/);
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
@@ -1293,4 +1276,24 @@ void EngineManager::on_putBoxesAfterPushButton_clicked() {
             solutions->addBox(smallBoxes.getBox(i));
         }
     }
+}
+
+void EngineManager::on_snappingPushButton_clicked() {
+    double epsilon = ui->snappingSpinBox->value();
+    if (solutions != nullptr && d != nullptr){
+        for (unsigned int i = 0; i < solutions->getNumberBoxes()-1; i++){
+            Box3D b1 = solutions->getBox(i);
+            for (unsigned int j = i+1; j < solutions->getNumberBoxes(); j++){
+                Box3D b2 = solutions->getBox(j);
+                for (unsigned int coord = 0; coord < 6; coord++) {
+                    if (std::abs(b1[coord]-b2[coord]) < epsilon) {
+                        b2[coord] = b1[coord];
+                    }
+                }
+                b2.generatePiece(d->getAverageHalfEdgesLength()*7);
+                solutions->setBox(j, b2);
+            }
+        }
+    }
+    mainWindow->updateGlCanvas();
 }

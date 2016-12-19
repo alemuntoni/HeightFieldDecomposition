@@ -318,7 +318,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                 //b3.getIGLMesh().saveOnObj("b3.obj");
                 ///
                 g.removeEdge(arcToRemove.first, arcToRemove.second);
-                g.removeEdge(arcToRemove.second, arcToRemove.first);
+                g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
                 std::vector<unsigned int> incomingb2 = g.getIncomingNodes(b2.getId());
                 std::vector<unsigned int> outgoingb2 = g.getOutgoingNodes(b2.getId());
                 g.deleteAllIncomingNodes(b2.getId());
@@ -368,7 +368,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             }
             else {
                 g.removeEdge(arcToRemove.first, arcToRemove.second);
-                g.removeEdge(arcToRemove.second, arcToRemove.first);
+                g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
             }
         }
     }while (loops.size() > 0);
