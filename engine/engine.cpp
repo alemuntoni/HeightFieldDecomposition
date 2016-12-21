@@ -281,13 +281,11 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
     CGALInterface::AABBTree aabb[ORIENTATIONS];
     for (unsigned int i = 0; i < ORIENTATIONS; i++)
         aabb[i] = CGALInterface::AABBTree(scaled[i]);
-    //# pragma omp parallel for
     for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-        # pragma omp parallel for
-        for (unsigned int j = 0; j < TARGETS; ++j) {
-            std::set<const Dcel::Face*> flippedFaces, savedFaces;
-            Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
-            if (file) {
+        if (file) {
+            for (unsigned int j = 0; j < TARGETS; ++j) {
+                std::set<const Dcel::Face*> flippedFaces, savedFaces;
+                Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
                 Grid g;
                 Engine::generateGrid(g, scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
                 g.resetSignedDistances();
@@ -297,12 +295,18 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
                 myfile.open (ss.str(), std::ios::out | std::ios::binary);
                 g.serialize(myfile);
                 myfile.close();
+                std::cerr << "Generated grid or " << i << " t " << j << "\n";
             }
-            else {
+        }
+        else {
+            # pragma omp parallel for
+            for (unsigned int j = 0; j < TARGETS; ++j) {
+                std::set<const Dcel::Face*> flippedFaces, savedFaces;
+                Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
                 Engine::generateGrid(g[i][j], scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
                 g[i][j].resetSignedDistances();
+                std::cerr << "Generated grid or " << i << " t " << j << "\n";
             }
-            std::cerr << "Generated grid or " << i << " t " << j << "\n";
         }
     }
     bool end = false;

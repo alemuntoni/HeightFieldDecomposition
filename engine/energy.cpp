@@ -110,7 +110,7 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
 
     do{
         new_x = x +alfa * direction;
-        while (! g->getBoundingBox().isIntern(new_x(0), new_x(1), new_x(2)) && ! g->getBoundingBox().isIntern(new_x(3), new_x(4), new_x(5)) && alfa != 0){
+        while ((! g->getBoundingBox().isIntern(new_x(0), new_x(1), new_x(2)) || ! g->getBoundingBox().isIntern(new_x(3), new_x(4), new_x(5))) && alfa != 0){
             alfa /= 2;
             new_x = x +alfa * direction;
         }
