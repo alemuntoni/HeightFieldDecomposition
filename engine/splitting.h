@@ -16,7 +16,7 @@ namespace Splitting {
 
     double getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3);
 
-    void splitBox(const Box3D &b1, Box3D& b2, Box3D& b3);
+    void splitBox(const Box3D &b1, Box3D& b2, Box3D& b3, double subd = -1);
 
     double minimumSplit(const Box3D &b1, const Box3D &b2);
 

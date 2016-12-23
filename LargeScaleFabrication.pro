@@ -97,6 +97,8 @@ ALL {
 
 SERVER_MODE {
     DEFINES += SERVER_MODE
+    QMAKE_CXXFLAGS_RELEASE -= -g -O2
+    QMAKE_CXXFLAGS += -O3 -DNDEBUG
 }
 
 message(Included modules: $$MODULES)

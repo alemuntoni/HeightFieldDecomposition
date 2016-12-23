@@ -61,12 +61,16 @@ int main(int argc, char *argv[]) {
         double kernelDistance = std::stod(argv[4]);
         double tolerance = 0.01;
         bool file = false;
+        bool decimate = true;
         if (argc > 5){
             tolerance = std::stod(argv[5]);
-            if (argc > 6)
+            if (argc > 6){
                 file = std::stoi(argv[6]);
+                if (argc > 7)
+                    decimate = std::stoi(argv[7]);
+            }
         }
-        Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, tolerance, file);
+        Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, tolerance, file, decimate);
         size_t lastindex = filename_smooth.find_last_of(".");
         std::string rawname = filename_smooth.substr(0, lastindex);
         std::ofstream myfile;

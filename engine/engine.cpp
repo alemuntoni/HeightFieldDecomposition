@@ -258,7 +258,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool printTimes) {
  * @param areaTolerance
  * @param angleTolerance
  */
-void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file) {
+void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimante) {
     solutions.clearBoxes();
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
@@ -278,6 +278,8 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
     BoxList bl[ORIENTATIONS][TARGETS];
     std::set<int> coveredFaces;
     unsigned int numberFaces = 200;
+    if (!decimante)
+        numberFaces = d.getNumberFaces();
     CGALInterface::AABBTree aabb[ORIENTATIONS];
     for (unsigned int i = 0; i < ORIENTATIONS; i++)
         aabb[i] = CGALInterface::AABBTree(scaled[i]);
@@ -420,7 +422,7 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
     }
     timer.stopAndPrint();
     for (int i = he.getNumHeightfields()-1; i >= 0 ; i--) {
-        if (he.getNumberVerticesHeightfield(i) == 0){
+        if (he.getNumberVerticesHeightfield(i) == 0) {
             he.removeHeightfield(i);
             solutions.removeBox(i);
         }

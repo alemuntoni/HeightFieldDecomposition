@@ -168,7 +168,7 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
     return b4.getVolume();
 }
 
-void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3) {
+void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
     getSplits(b1, b2, b3);
     //
     Box3D b3tmp = b3;
@@ -180,9 +180,9 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3) {
                 b3tmp[i]+=EPSILON;
         }
     }
-    b3tmp.generatePiece();
+    b3tmp.generatePiece(subd);
     //
-    b3.generatePiece();
+    b3.generatePiece(subd);
     IGLInterface::SimpleIGLMesh oldBox = b2.getIGLMesh();
     oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b1.getIGLMesh());
     IGLInterface::SimpleIGLMesh tmp = oldBox;
@@ -225,7 +225,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     std::vector<std::vector<unsigned int> > loops;
     DirectedGraph g(bl.getNumberBoxes());
     //
-    d.saveOnObjFile("tmp.obj");
+    //d.saveOnObjFile("tmp.obj");
     //
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
@@ -233,8 +233,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             Box3D b2 = bl.getBox(j);
             if (boxesIntersect(b1,b2)){
                 //
-                b1.getIGLMesh().saveOnObj("b1.obj");
-                b2.getIGLMesh().saveOnObj("b2.obj");
+                //b1.getIGLMesh().saveOnObj("b1.obj");
+                //b2.getIGLMesh().saveOnObj("b2.obj");
                 //
                 if (isDangerousIntersection(b1, b2, tree)){
                     g.addEdge(i,j);
@@ -305,7 +305,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             }
             // now I can remove "arcToRemove"
             Box3D b1 = bl.getBox(arcToRemove.first), b2 = bl.getBox(arcToRemove.second), b3;
-            splitBox(b1, b2, b3);
+            splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*7);
             if (!(b3.min() == Pointd() && b3.max() == Pointd())){
                 b3.setId(bl.getNumberBoxes());
                 b3.setTrianglesCovered(tree.getNumberIntersectedPrimitives(b3));
