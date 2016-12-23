@@ -162,6 +162,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_snappingPushButton_clicked();
 
+        void on_colorPiecesPushButton_clicked();
+
     signals:
         void finished();
 

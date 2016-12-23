@@ -13,9 +13,12 @@ unix:!macx{
     QMAKE_CXXFLAGS += -std=c++11  -fopenmp
     QMAKE_LFLAGS +=  -fopenmp
     LIBS += -lboost_system -DBOOST_LOG_DYN_LINK -lboost_log -lboost_thread -lpthread
-    INCLUDEPATH -= /usr/include/eigen3
     INCLUDEPATH += $$(LIBIGL)/include/
+
+    #newest versions of eigen are not supported by libigl
+    INCLUDEPATH -= /usr/include/eigen3
     INCLUDEPATH += $$(LIBIGL)/external/nanogui/ext/eigen/
+
     IGL_STATIC_LIBRARY {
         DEFINES += IGL_STATIC_LIBRARY
         LIBS += -L/usr/include/libiglbin -liglcgal -ligl

@@ -1297,3 +1297,25 @@ void EngineManager::on_snappingPushButton_clicked() {
     }
     mainWindow->updateGlCanvas();
 }
+
+void EngineManager::on_colorPiecesPushButton_clicked() {
+    if (he!=nullptr){
+        std::array<QColor, 10> colors;
+        colors[0] = QColor(152,0,0);
+        colors[1] = QColor(255,0,0);
+        colors[2] = QColor(255,153,0);
+        colors[3] = QColor(255,255,0);
+        colors[4] = QColor(0,255,0);
+        colors[5] = QColor(0,255,255);
+        colors[6] = QColor(74,134,232);
+        colors[7] = QColor(0,0,255);
+        colors[8] = QColor(153,0,255);
+        colors[9] = QColor(255,0,255);
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            IGLInterface::IGLMesh mesh = he->getHeightfield(i);
+            mesh.setColor(colors[i%10].redF(),colors[i%10].greenF(),colors[i%10].blueF());
+            he->setHeightfield(mesh, i);
+        }
+
+    }
+}

@@ -81,7 +81,7 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
                 savedFaces.insert(f);
         }
     }
-    if (areaThreshold > 0) { //if areathreshold = 0, no flipped charts are ignored
+    if (areaThreshold > 0) { //if areathreshold = 0, flipped charts are ignored
         double totalArea = d.getSurfaceArea();
         areaThreshold*=totalArea;
 
