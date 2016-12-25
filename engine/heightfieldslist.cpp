@@ -66,7 +66,7 @@ void HeightfieldsList::setWireframe(bool b) {
 
 void HeightfieldsList::setPointShading() {
     for (unsigned int i = 0; i < heightfields.size(); ++i){
-        heightfields[i].setPointShading();
+        heightfields[i].setPointsShading();
     }
 }
 

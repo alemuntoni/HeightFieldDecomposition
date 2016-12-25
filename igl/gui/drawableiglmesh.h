@@ -1,46 +1,46 @@
 #ifndef DRAWABLEIGLMESH_H
 #define DRAWABLEIGLMESH_H
 
-#include "../../viewer/interfaces/drawable_object.h"
+#include "../../viewer/interfaces/drawable_mesh.h"
 #include "../iglmesh.h"
 namespace IGLInterface {
-class DrawableIGLMesh : public IGLMesh, public DrawableObject {
+class DrawableIGLMesh : public IGLMesh, public DrawableMesh {
     public:
         DrawableIGLMesh();
         DrawableIGLMesh(const SimpleIGLMesh &m);
         DrawableIGLMesh(const IGLMesh &m);
         virtual ~DrawableIGLMesh();
 
-        void init();
+        //void init();
 
         // DrawableObject interface
-        void draw() const;
+        //void draw() const;
         Pointd sceneCenter() const;
         double sceneRadius() const;
-        bool isVisible() const;
-        void setVisible(bool);
+//        bool isVisible() const;
+//        void setVisible(bool);
 
-        // rendering options
-        //
-        void setWireframe(bool b);
-        void setFlatShading();
-        void setSmoothShading();
-        void setPointShading();
+//        // rendering options
+//        //
+//        void setWireframe(bool b);
+//        void setFlatShading();
+//        void setSmoothShading();
+//        void setPointShading();
 
     protected:
 
-        void renderPass() const;
+//        void renderPass() const;
 
-        enum {
-            DRAW_MESH           = 0b00000001,
-            DRAW_POINTS         = 0b00000010,
-            DRAW_FLAT           = 0b00000100,
-            DRAW_SMOOTH         = 0b00001000,
-            DRAW_WIREFRAME      = 0b00010000,
-            DRAW_FACECOLOR      = 0b00100000,
-        };
+//        enum {
+//            DRAW_MESH           = 0b00000001,
+//            DRAW_POINTS         = 0b00000010,
+//            DRAW_FLAT           = 0b00000100,
+//            DRAW_SMOOTH         = 0b00001000,
+//            DRAW_WIREFRAME      = 0b00010000,
+//            DRAW_FACECOLOR      = 0b00100000,
+//        };
 
-        int   drawMode; /** \~Italian @brief intero interpretato come stringa di bit rappresentante la modalità di visualizzazione della dcel*/
+//        int   drawMode; /** \~Italian @brief intero interpretato come stringa di bit rappresentante la modalità di visualizzazione della dcel*/
 
 };
 }

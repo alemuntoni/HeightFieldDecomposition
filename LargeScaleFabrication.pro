@@ -16,7 +16,7 @@ FINAL_RELEASE {
 
 CONFIG += ALL
 #CONFIG += SERVER_MODE
-CONFIG += CONVERTER_MODE
+#CONFIG += CONVERTER_MODE
 
 ALL {
     #Add or remove all the modules you need

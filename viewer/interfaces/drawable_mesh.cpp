@@ -134,12 +134,12 @@ DrawableMesh::DrawableMesh(const std::vector<double>& coords, const std::vector<
     pTriangleColors(&triangleColors)
   #ifdef COMMON_WITH_EIGEN
   ,
-    V(nullptr),
-    F(nullptr),
-    NV(nullptr),
-    CV(nullptr),
-    NF(nullptr),
-    CF(nullptr)
+    pV(nullptr),
+    pF(nullptr),
+    pNV(nullptr),
+    pCV(nullptr),
+    pNF(nullptr),
+    pCF(nullptr)
   #endif
 {
     meshType = STD;
@@ -154,12 +154,12 @@ DrawableMesh::DrawableMesh(const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen:
     pVertexColors(nullptr),
     pTriangleNormals(nullptr),
     pTriangleColors(nullptr),
-    V(&V),
-    F(&F),
-    NV(&NV),
-    CV(&CV),
-    NF(&NF),
-    CF(&CF)
+    pV(&V),
+    pF(&F),
+    pNV(&NV),
+    pCV(&CV),
+    pNF(&NF),
+    pCF(&CF)
 {
     meshType = EIGEN;
     init();
@@ -171,7 +171,7 @@ void DrawableMesh::renderPass() const {
         renderPass(pCoords->size()/3, pTriangles->size()/3, pCoords->data(), pTriangles->data(), pVertexNormals->data(), pVertexColors->data(), pTriangleNormals->data(), pTriangleColors->data());
     #ifdef COMMON_WITH_EIGEN
     else if (meshType == EIGEN)
-        renderPass(V->rows(), F->rows(), V->data(), F->data(), NV->data(), CV->data(), NF->data(), CF->data());
+        renderPass(pV->rows(), pF->rows(), pV->data(), pF->data(), pNV->data(), pCV->data(), pNF->data(), pCF->data());
     #endif
 }
 
@@ -256,6 +256,43 @@ void DrawableMesh::renderPass(unsigned int nv, unsigned int nt, const double* co
         glDisableClientState(GL_VERTEX_ARRAY);
     }
 }
+
+void DrawableMesh::updatePointers(const std::vector<double>& coords, const std::vector<int>& triangles, const std::vector<double>& vertexNormals, const std::vector<float>& vertexColors, const std::vector<double>& triangleNormals, const std::vector<float>& triangleColors) {
+    assert(meshType == STD);
+    pCoords = &coords;
+    pTriangles = &triangles;
+    pVertexNormals = &vertexNormals;
+    pVertexColors = &vertexColors;
+    pTriangleNormals = &triangleNormals;
+    pTriangleColors = &triangleColors;
+    #ifdef COMMON_WITH_EIGEN
+    pV = nullptr;
+    pF = nullptr;
+    pNV = nullptr;
+    pCV = nullptr;
+    pNF = nullptr;
+    pCF = nullptr;
+    #endif
+}
+
+#ifdef COMMON_WITH_EIGEN
+void DrawableMesh::updatePointers(const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& V, const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& F, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NV, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CV, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NF, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CF) {
+    assert(meshType == EIGEN);
+    pV = &V;
+    pF = &F;
+    pNV = &NV;
+    pCV = &CV;
+    pNF = &NF;
+    pCF = &CF;
+    pCoords = nullptr;
+    pTriangles = nullptr;
+    pVertexNormals = nullptr;
+    pVertexColors = nullptr;
+    pTriangleNormals = nullptr;
+    pTriangleColors = nullptr;
+
+}
+#endif
 
 void _check_gl_error(const char *file, int line)
 {

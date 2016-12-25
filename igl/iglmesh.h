@@ -108,7 +108,7 @@ namespace IGLInterface {
             IGLMesh();
             IGLMesh(const SimpleIGLMesh &m);
             IGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F);
-            IGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eigen::MatrixXd &CV, const Eigen::MatrixXd &CF);
+            IGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eigen::MatrixXf& CV, const Eigen::MatrixXf& CF);
             #ifdef DCEL_DEFINED
             IGLMesh(const Dcel& dcel);
             #endif
@@ -135,7 +135,7 @@ namespace IGLInterface {
             void scale(const BoundingBox& newBoundingBox);
             void scale(const BoundingBox& oldBoundingBox, const BoundingBox& newBoundingBox);
             void scale(const Vec3 &scaleFactor);
-            Eigen::MatrixXd getVerticesColorMatrix() const;
+            Eigen::MatrixXf getVerticesColorMatrix() const;
 
             bool saveOnPly(const std::string &filename) const;
             void deleteVerticesLowerThanY(double y);
@@ -164,8 +164,8 @@ namespace IGLInterface {
             Eigen::RowVector3d BBmin, BBmax;
             Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NV;
             Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
-            Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> CV;
-            Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> CF;    
+            Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor> CV;
+            Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor> CF;
     };
 
     #ifdef TRIMESH_DEFINED

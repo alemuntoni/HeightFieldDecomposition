@@ -60,12 +60,12 @@ class DrawableMesh : public DrawableObject{
         const std::vector<float> * pTriangleColors; /** \~Italian @brief vettore di colori associati ai triangoli (da considerare come triple rgb float) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */
 
         #ifdef COMMON_WITH_EIGEN
-        const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> * V;
-        const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> * F;
-        const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> * NV;
-        const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor> * CV;
-        const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> * NF;
-        const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor> * CF;
+        const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> * pV;
+        const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> * pF;
+        const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> * pNV;
+        const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor> * pCV;
+        const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> * pNF;
+        const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor> * pCF;
         #endif
 
     protected:
@@ -76,6 +76,10 @@ class DrawableMesh : public DrawableObject{
 
         void renderPass() const;
         void renderPass(unsigned int nv, unsigned int nt, const double* pCoords, const int* pTriangles, const double* pVertexNormals, const float* pVertexColors, const double* pTriangleNormals, const float* pTriangleColors) const;
+        void updatePointers(const std::vector<double> &coords, const std::vector<int> &triangles, const std::vector<double> &vertexNormals, const std::vector<float> &vertexColors, const std::vector<double> &triangleNormals, const std::vector<float> &triangleColors);
+        #ifdef COMMON_WITH_EIGEN
+        void updatePointers(const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& V, const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& F, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NV, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CV, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NF, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CF);
+        #endif
 
         enum {
             DRAW_MESH        = 0b00000001,

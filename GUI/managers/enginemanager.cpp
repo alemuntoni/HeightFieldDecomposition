@@ -800,7 +800,7 @@ void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
     }
     if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
         if (checked){
-            baseComplex->setPointShading();
+            baseComplex->setPointsShading();
             mainWindow->updateGlCanvas();
         }
     }
@@ -1315,7 +1315,7 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
         colors[8] = QColor(153,0,255);
         colors[9] = QColor(255,0,255);
         for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            IGLInterface::DrawableIGLMesh mesh = he->getHeightfield(i);
+            IGLInterface::IGLMesh mesh = he->getHeightfield(i);
             mesh.setFaceColor(colors[i%10].redF(),colors[i%10].greenF(),colors[i%10].blueF());
             he->setHeightfield(mesh, i);
         }

@@ -141,7 +141,7 @@ void BooleansManager::on_setFromResultButton_clicked() {
 
 void BooleansManager::on_pointsIGLMeshRadioButton_toggled(bool checked) {
     if (checked){
-        meshes[0]->setPointShading();
+        meshes[0]->setPointsShading();
         mainWindow->updateGlCanvas();
     }
 }
@@ -224,7 +224,7 @@ void BooleansManager::on_setFromResultButton_2_clicked() {
 
 void BooleansManager::on_pointsIGLMeshRadioButton_2_toggled(bool checked) {
     if (checked){
-        meshes[1]->setPointShading();
+        meshes[1]->setPointsShading();
         mainWindow->updateGlCanvas();
     }
 }
@@ -316,7 +316,7 @@ void BooleansManager::on_saveIGLMeshButton_3_clicked() {
 
 void BooleansManager::on_pointsIGLMeshRadioButton_3_toggled(bool checked) {
     if (checked){
-        result->setPointShading();
+        result->setPointsShading();
         mainWindow->updateGlCanvas();
     }
 }

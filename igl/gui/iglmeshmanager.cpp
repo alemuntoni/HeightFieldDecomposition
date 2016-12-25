@@ -84,7 +84,7 @@ void IGLMeshManager::on_saveIGLMeshButton_clicked() {
 
 void IGLMeshManager::on_pointsIGLMeshRadioButton_toggled(bool checked) {
     if (checked){
-        mesh->setPointShading();
+        mesh->setPointsShading();
         mainWindow->updateGlCanvas();
     }
 }
