@@ -273,6 +273,7 @@ namespace IGLInterface {
 
     IGLMesh::IGLMesh(const SimpleIGLMesh& m) : SimpleIGLMesh(m) {
         CF = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
+        CV = Eigen::MatrixXd::Constant(V.rows(), 3, 0.5);
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
         igl::per_face_normals(V,F,NF);
@@ -285,6 +286,7 @@ namespace IGLInterface {
 
     IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : SimpleIGLMesh(V,F) {
         CF = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
+        CV = Eigen::MatrixXd::Constant(V.rows(), 3, 0.5);
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
         igl::per_face_normals(this->V,this->F,NF);
@@ -293,7 +295,7 @@ namespace IGLInterface {
         BBmax = V.colwise().maxCoeff();
     }
 
-    IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen::MatrixXd& C) : SimpleIGLMesh(V,F), CF(C) {
+    IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen::MatrixXd& CV, const Eigen::MatrixXd& CF) : SimpleIGLMesh(V,F), CV(CV), CF(CF) {
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
         igl::per_face_normals(this->V,this->F,NF);
@@ -314,7 +316,6 @@ namespace IGLInterface {
         }
         CV.conservativeResize(V.rows(), 3);
 
-        CF = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
         igl::per_face_normals(V,F,NF);
@@ -331,6 +332,7 @@ namespace IGLInterface {
         V.resize(dcel.getNumberVertices(), 3);
         F.resize(dcel.getNumberFaces(), 3);
         CF = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
+        CV = Eigen::MatrixXd::Constant(V.rows(), 3, 0.5);
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
         std::map<int, int> vids;
@@ -375,7 +377,7 @@ namespace IGLInterface {
         return b;
     }
 
-    void IGLMesh::setColor(double red, double green, double blue, int f) {
+    void IGLMesh::setFaceColor(double red, double green, double blue, int f) {
         if (f < 0){
             CF.resize(F.rows(), 3);
             for (unsigned int i = 0; i < CF.rows(); i++)
@@ -396,14 +398,22 @@ namespace IGLInterface {
 
     void IGLMesh::decimate(int numberDesiredFaces) {
         SimpleIGLMesh::decimate(numberDesiredFaces);
+        /**
+          @todo ripristinate colors of faces
+          */
         CF = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
+        CV = Eigen::MatrixXd::Constant(V.rows(), 3, 0.5);
         updateVertexAndFaceNormals();
         updateBoundingBox();
     }
 
     bool IGLMesh::getDecimatedMesh(IGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi& mapping) {
         bool b = SimpleIGLMesh::getDecimatedMesh(decimated, numberDesiredFaces, mapping);
+        /**
+          @todo ripristinate colors of faces
+          */
         decimated.CF = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
+        decimated.CV = Eigen::MatrixXd::Constant(V.rows(), 3, 0.5);
         decimated.updateVertexAndFaceNormals();
         decimated.updateBoundingBox();
         return b;
@@ -439,6 +449,9 @@ namespace IGLInterface {
     }
 
     bool IGLMesh::saveOnPly(const std::string &filename) const {
+        /**
+         * @todo Debug this
+         */
         unsigned int numV=V.rows();
         unsigned int numF=F.rows();
 
@@ -539,6 +552,7 @@ namespace IGLInterface {
         SimpleIGLMesh::intersection(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
         result.CF = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+        result.CV = Eigen::MatrixXd::Constant(result.V.rows(), 3, 0.5);
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -550,6 +564,7 @@ namespace IGLInterface {
         SimpleIGLMesh::intersection(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
         result.CF = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+        result.CV = Eigen::MatrixXd::Constant(result.V.rows(), 3, 0.5);
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -561,6 +576,7 @@ namespace IGLInterface {
         SimpleIGLMesh::difference(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
         result.CF = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+        result.CV = Eigen::MatrixXd::Constant(result.V.rows(), 3, 0.5);
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -572,6 +588,7 @@ namespace IGLInterface {
         SimpleIGLMesh::difference(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
         result.CF = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+        result.CV = Eigen::MatrixXd::Constant(result.V.rows(), 3, 0.5);
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -583,6 +600,7 @@ namespace IGLInterface {
         SimpleIGLMesh::unionn(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
         result.CF = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+        result.CV = Eigen::MatrixXd::Constant(result.V.rows(), 3, 0.5);
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -594,6 +612,7 @@ namespace IGLInterface {
         SimpleIGLMesh::unionn(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
         result.CF = Eigen::MatrixXd::Constant(result.F.rows(), 3, 0.5);
+        result.CV = Eigen::MatrixXd::Constant(result.V.rows(), 3, 0.5);
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -641,6 +660,7 @@ namespace IGLInterface {
         V.resize(dcel.getNumberVertices(), 3);
         F.resize(dcel.getNumberFaces(), 3);
         CF = Eigen::MatrixXd::Constant(F.rows(), 3, 0.5);
+        CV = Eigen::MatrixXd::Constant(V.rows(), 3, 0.5);
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
         std::map<int, int> vids;
@@ -673,9 +693,20 @@ namespace IGLInterface {
     void IGLMesh::serialize(std::ofstream& binaryFile) const {
         Serializer::serialize(V, binaryFile);
         Serializer::serialize(F, binaryFile);
-        Serializer::serialize(CF, binaryFile);
         Serializer::serialize(NV, binaryFile);
         Serializer::serialize(NF, binaryFile);
+        Eigen::MatrixXf CV = this->CV.cast<float>();
+        Serializer::serialize(CV, binaryFile);
+        Eigen::MatrixXf CF = this->CF.cast<float>();
+        Serializer::serialize(CF, binaryFile);
+
+
+        //old
+        /*Serializer::serialize(V, binaryFile);
+        Serializer::serialize(F, binaryFile);
+        Serializer::serialize(CF, binaryFile);
+        Serializer::serialize(NV, binaryFile);
+        Serializer::serialize(NF, binaryFile);*/
     }
 
     bool IGLMesh::deserialize(std::ifstream& binaryFile) {

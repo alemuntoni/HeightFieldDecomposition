@@ -979,7 +979,7 @@ void EngineManager::on_subtractPushButton_clicked() {
             Vec3 n = baseComplex->getNormal(i);
             n.normalize();
             QColor c = colorOfNearestNormal(n);
-            baseComplex->setColor(c.redF(), c.greenF(), c.blueF(), i);
+            baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
         }
         mainWindow->pushObj(baseComplex, "Base Complex");
         mainWindow->updateGlCanvas();
@@ -998,7 +998,7 @@ void EngineManager::on_stickPushButton_clicked() {
             Vec3 n = baseComplex->getNormal(i);
             n.normalize();
             QColor c = colorOfNearestNormal(n);
-            baseComplex->setColor(c.redF(), c.greenF(), c.blueF(), i);
+            baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
         }
         mainWindow->pushObj(baseComplex, "Base Complex");
     }
@@ -1316,7 +1316,7 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
         colors[9] = QColor(255,0,255);
         for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
             IGLInterface::DrawableIGLMesh mesh = he->getHeightfield(i);
-            mesh.setColor(colors[i%10].redF(),colors[i%10].greenF(),colors[i%10].blueF());
+            mesh.setFaceColor(colors[i%10].redF(),colors[i%10].greenF(),colors[i%10].blueF());
             he->setHeightfield(mesh, i);
         }
     }

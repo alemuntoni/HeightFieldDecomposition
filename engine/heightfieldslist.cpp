@@ -87,20 +87,20 @@ void HeightfieldsList::addHeightfield(const IGLInterface::DrawableIGLMesh& m, co
         heightfields.push_back(m);
         targets.push_back(target);
         QColor c = colorOfNormal(target);
-        heightfields[heightfields.size()-1].setColor(c.redF(), c.greenF(), c.blueF());
+        heightfields[heightfields.size()-1].setFaceColor(c.redF(), c.greenF(), c.blueF());
         for (unsigned int i = 0; i < m.getNumberFaces(); i++){
             if (m.getNormal(i).dot(target) < -EPSILON)
-                heightfields[heightfields.size()-1].setColor(0,0,0,i);
+                heightfields[heightfields.size()-1].setFaceColor(0,0,0,i);
         }
     }
     else {
         heightfields[i] = m;
         targets[i] = target;
         QColor c = colorOfNormal(target);
-        heightfields[i].setColor(c.redF(), c.greenF(), c.blueF());
+        heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
         for (unsigned int j = 0; j < m.getNumberFaces(); j++){
             if (m.getNormal(j).dot(target) < -EPSILON)
-                heightfields[i].setColor(0,0,0,j);
+                heightfields[i].setFaceColor(0,0,0,j);
         }
     }
 }
@@ -135,10 +135,10 @@ void HeightfieldsList::setHeightfield(const IGLInterface::IGLMesh& m, unsigned i
     heightfields[i] = m;
     if (updateColor){
         QColor c = colorOfNormal(targets[i]);
-        heightfields[i].setColor(c.redF(), c.greenF(), c.blueF());
+        heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
         for (unsigned int j = 0; j < m.getNumberFaces(); j++){
             if (m.getNormal(j).dot(targets[i]) < -EPSILON)
-                heightfields[i].setColor(0,0,0,j);
+                heightfields[i].setFaceColor(0,0,0,j);
         }
     }
 }
@@ -148,10 +148,10 @@ void HeightfieldsList::insertHeightfield(const IGLInterface::IGLMesh& m, const V
     heightfields.insert(heightfields.begin() + i, m);
     targets.insert(targets.begin() + i, target);
     QColor c = colorOfNormal(target);
-    heightfields[i].setColor(c.redF(), c.greenF(), c.blueF());
+    heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
     for (unsigned int j = 0; j < m.getNumberFaces(); j++){
         if (m.getNormal(j).dot(target) < -EPSILON)
-            heightfields[i].setColor(0,0,0,j);
+            heightfields[i].setFaceColor(0,0,0,j);
     }
 }
 

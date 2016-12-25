@@ -108,7 +108,7 @@ namespace IGLInterface {
             IGLMesh();
             IGLMesh(const SimpleIGLMesh &m);
             IGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F);
-            IGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eigen::MatrixXd &CF);
+            IGLMesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const Eigen::MatrixXd &CV, const Eigen::MatrixXd &CF);
             #ifdef DCEL_DEFINED
             IGLMesh(const Dcel& dcel);
             #endif
@@ -125,7 +125,7 @@ namespace IGLInterface {
             void removeDuplicatedVertices();
             void clear();
             bool readFromFile(const std::string &filename);
-            void setColor(double red, double green, double blue, int f = -1);
+            void setFaceColor(double red, double green, double blue, int f = -1);
             Vec3 getNormal(unsigned int f) const;
             QColor getColor(unsigned int f) const;
             void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
@@ -161,11 +161,11 @@ namespace IGLInterface {
 
         protected:
 
-            Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> CF;
-            Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> CV;
+            Eigen::RowVector3d BBmin, BBmax;
             Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NV;
             Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
-            Eigen::RowVector3d BBmin, BBmax;
+            Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> CV;
+            Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> CF;    
     };
 
     #ifdef TRIMESH_DEFINED

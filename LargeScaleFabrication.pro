@@ -16,6 +16,7 @@ FINAL_RELEASE {
 
 CONFIG += ALL
 #CONFIG += SERVER_MODE
+CONFIG += CONVERTER_MODE
 
 ALL {
     #Add or remove all the modules you need
@@ -99,6 +100,10 @@ SERVER_MODE {
     DEFINES += SERVER_MODE
     QMAKE_CXXFLAGS_RELEASE -= -g -O2
     QMAKE_CXXFLAGS += -O3 -DNDEBUG
+}
+
+CONVERTER_MODE {
+    DEFINES += CONVERTER_MODE
 }
 
 message(Included modules: $$MODULES)

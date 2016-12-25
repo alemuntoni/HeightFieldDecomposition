@@ -17,39 +17,7 @@
 
 int main(int argc, char *argv[]) {
 
-    #ifndef SERVER_MODE
-
-    QApplication app(argc, argv);
-
-    MainWindow gui;  // finestra principale, contiene la canvas di QGLViewer
-
-    // Creo un window manager e lo aggiungo alla mainwindow
-    WindowManager wm(&gui);
-    WINDOW_MANAGER_ID = gui.addManager(&wm, "Window");
-
-    // Creo un dcel manager e lo aggiungo alla mainwindow
-    DcelManager d(&gui);
-    DCEL_MANAGER_ID = gui.addManager(&d, "Dcel");
-
-    EngineManager e(&gui);
-    ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
-
-    //IGLMeshManager mm(&gui);
-    //gui.addManager(&mm, "IGL Mesh Manager");
-
-    BooleansManager bm(&gui);
-    gui.addManager(&bm, "Booleans Manager");
-
-    TrimeshManager tm(&gui);
-    gui.addManager(&tm, "Trimesh Manager");
-
-    gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
-    gui.updateGlCanvas();
-    gui.show();
-
-    return app.exec();
-
-    #else
+    #ifdef SERVER_MODE
     if (argc > 4){
         std::string filename_smooth(argv[1]);
         std::string filename(argv[2]);
@@ -89,6 +57,100 @@ int main(int argc, char *argv[]) {
     }
     else
         std::cerr << "Error! Number argument lower than 4\n";
+    #else
+    #ifdef CONVERTER_MODE
+    if (argc > 2){
+        std::string filename(argv[1]);
+        int file = std::stoi(argv[2]);
+        if (file == 0){
+            //deserialize
+            std::ifstream inputfile;
+            inputfile.open (filename, std::ios::in | std::ios::binary);
+            DrawableDcel d;
+            BoxList solutions;
+            IGLInterface::DrawableIGLMesh originalMesh;
+            if (! d.deserialize(inputfile)) return false;
+            bool bb = false;
+            if (! Serializer::deserialize(bb, inputfile)) return false;
+            if (bb){
+                if (! solutions.deserialize(inputfile)) return false;
+            }
+            if (Serializer::deserialize(bb, inputfile)){
+                originalMesh.deserialize(inputfile);
+            }
+            inputfile.close();
+            //serialize
+
+            std::ofstream binaryFile;
+            binaryFile.open (filename, std::ios::out | std::ios::binary);
+            d.serialize(binaryFile);
+            bool b = true;
+            Serializer::serialize(b, binaryFile);
+            solutions.serialize(binaryFile);
+            Serializer::serialize(bb, binaryFile);
+            if (bb)
+                originalMesh.serialize(binaryFile);
+            binaryFile.close();
+        }
+        else {
+            //deserializeBC
+            std::ifstream inputfile;
+            inputfile.open (filename, std::ios::in | std::ios::binary);
+            DrawableDcel d;
+            BoxList solutions;
+            IGLInterface::DrawableIGLMesh baseComplex;
+            HeightfieldsList he;
+            IGLInterface::DrawableIGLMesh originalMesh;
+            d.deserialize(inputfile);
+            solutions.deserialize(inputfile);
+            baseComplex.deserialize(inputfile);
+            he.deserialize(inputfile);
+            originalMesh.deserialize(inputfile);
+            inputfile.close();
+
+            //serializeBC
+            std::ofstream binaryFile;
+            binaryFile.open (filename, std::ios::out | std::ios::binary);
+            d.serialize(binaryFile);
+            solutions.serialize(binaryFile);
+            baseComplex.serialize(binaryFile);
+            he.serialize(binaryFile);
+            originalMesh.serialize(binaryFile);
+            binaryFile.close();
+
+        }
+    }
+    #else
+    QApplication app(argc, argv);
+
+    MainWindow gui;  // finestra principale, contiene la canvas di QGLViewer
+
+    // Creo un window manager e lo aggiungo alla mainwindow
+    WindowManager wm(&gui);
+    WINDOW_MANAGER_ID = gui.addManager(&wm, "Window");
+
+    // Creo un dcel manager e lo aggiungo alla mainwindow
+    DcelManager d(&gui);
+    DCEL_MANAGER_ID = gui.addManager(&d, "Dcel");
+
+    EngineManager e(&gui);
+    ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
+
+    //IGLMeshManager mm(&gui);
+    //gui.addManager(&mm, "IGL Mesh Manager");
+
+    BooleansManager bm(&gui);
+    gui.addManager(&bm, "Booleans Manager");
+
+    TrimeshManager tm(&gui);
+    gui.addManager(&tm, "Trimesh Manager");
+
+    gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
+    gui.updateGlCanvas();
+    gui.show();
+
+    return app.exec();
+    #endif
     #endif
     return 0;
 }
