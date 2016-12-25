@@ -147,7 +147,7 @@ void DcelManager::on_loadDcelButton_clicked() {
     QString filename = QFileDialog::getOpenFileName(nullptr,
                        "Open DCEL",
                        ".",
-                       "OBJ(*.obj);;DCEL(*.dcel);;PLY(*.ply)");
+                       "DCEL(*.dcel);;OBJ(*.obj);;PLY(*.ply)");
 
     if (!filename.isEmpty())
     {
@@ -175,9 +175,8 @@ void DcelManager::on_loadDcelButton_clicked() {
             assert(0);
         }
         std::cout << "load: " << filename.toStdString() << std::endl;
-        drawableDcel->updateVertexNormals();
-        drawableDcel->setWireframe(true);
-        drawableDcel->setPointsShading();
+        //drawableDcel->setFacesWireframe(true);
+        //drawableDcel->setSmoothShading();
         drawableDcel->update();
         mainWindow->pushObj(drawableDcel, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
         mainWindow->updateGlCanvas();

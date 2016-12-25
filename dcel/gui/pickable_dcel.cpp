@@ -32,7 +32,7 @@ void PickableDcel::drawWithNames() const{
     glVertexPointer(3, GL_DOUBLE, 0, coords.data());
 
     glEnableClientState(GL_NORMAL_ARRAY);
-    glNormalPointer(GL_DOUBLE, 0, v_norm.data());
+    glNormalPointer(GL_DOUBLE, 0, vertexNormals.data());
 
     //Per ogni faccia si effettua il push dell'id associato e quindi la si disegna
     for (ConstFaceIterator fit = faceBegin(); fit != faceEnd(); ++fit) {
@@ -101,9 +101,9 @@ std::vector<int> PickableDcel::obtainFaceTriangles(const Face* f) const{
     //Ricerca dei triangoli appartenenti alla faccia
     for(unsigned int i=0; i<triangles_face.size(); i++)
         if(triangles_face.at(i)==f->getId()){
-            face_triangles.push_back(tris.at(i*3));
-            face_triangles.push_back(tris.at(i*3+1));
-            face_triangles.push_back(tris.at(i*3+2));
+            face_triangles.push_back(triangles.at(i*3));
+            face_triangles.push_back(triangles.at(i*3+1));
+            face_triangles.push_back(triangles.at(i*3+2));
         }
 
     return face_triangles;
