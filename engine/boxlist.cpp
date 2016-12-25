@@ -44,7 +44,7 @@ void BoxList::insert(const Box3D& b, int i) {
         boxes[boxes.size()-1].setId(boxes.size()-1);
     }
     else {
-        assert ((unsigned int)i < boxes.size());
+        assert ((unsigned int)i < boxes.size()+1);
         boxes.insert(boxes.begin()+i, b);
         for (; (unsigned int)i < boxes.size(); i++){
             boxes[i].setId(i);

@@ -17,9 +17,7 @@ namespace IGLInterface {
     SimpleIGLMesh::SimpleIGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : V(V), F(F) {
     }
 
-    void SimpleIGLMesh::deleteDuplicatedVertices(Eigen::Matrix<int, Eigen::Dynamic, 1> &I) {
-        //Eigen::MatrixXd V = this->V, NV; //if missing templates in iglstatic
-        //Eigen::MatrixXi F = this->F, NF;
+    void SimpleIGLMesh::removeDuplicatedVertices(Eigen::Matrix<int, Eigen::Dynamic, 1> &I) {
         Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NV;
         Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
 
@@ -28,7 +26,6 @@ namespace IGLInterface {
 
         this->V = NV;
         this->F = NF;
-        //TODO: pull request on libigl with new template function remove_duplicates
     }
 
     #ifdef DCEL_DEFINED
@@ -224,6 +221,52 @@ namespace IGLInterface {
         return result;
     }
 
+    void SimpleIGLMesh::removeUnreferencedVertices(Eigen::Matrix<int, Eigen::Dynamic, 1> &I) {
+        //Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NV;
+        //Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
+        //igl::remove_unreferenced(V,F, NV, NF, I);
+
+        /**
+          @todo Pull request
+        */
+        ///
+        /// If IGL Static (pull request problem)
+        Eigen::MatrixXd VV = V, NV;
+        Eigen::MatrixXi FF = F, NF;
+        igl::remove_unreferenced(VV,FF, NV, NF, I);
+        ///
+
+        V = NV;
+        F = NF;
+    }
+
+    void SimpleIGLMesh::getConnectedComponents(std::vector<SimpleIGLMesh>& connectedComponents) {
+        connectedComponents.clear();
+        Eigen::VectorXi C;
+        //igl::facet_components(F, C);
+
+        /**
+          @todo Pull request
+        */
+        ///If IGL Static (pull request problem)
+        Eigen::MatrixXi FF = F;
+        igl::facet_components(FF, C);
+        ///
+        for (unsigned int i = 0; i < C.size(); i++){
+            if (C(i) >= (int)connectedComponents.size()){
+                assert(C(i) == (int)connectedComponents.size());
+                SimpleIGLMesh m;
+                m.V = this->V;
+                connectedComponents.push_back(m);
+            }
+            connectedComponents[C(i)].addFace(F.row(i));
+        }
+        for (unsigned int i = 0; i < connectedComponents.size(); i++){
+            Eigen::Matrix<int, Eigen::Dynamic, 1> I;
+            connectedComponents[i].removeUnreferencedVertices(I);
+        }
+    }
+
 
     IGLMesh::IGLMesh() {
     }
@@ -259,10 +302,10 @@ namespace IGLInterface {
         BBmax = V.colwise().maxCoeff();
     }
 
-    void IGLMesh::deleteDuplicatedVertices() {
+    void IGLMesh::removeDuplicatedVertices() {
         Eigen::Matrix<int, Eigen::Dynamic, 1> I;
 
-        SimpleIGLMesh::deleteDuplicatedVertices(I);
+        SimpleIGLMesh::removeDuplicatedVertices(I);
         std::vector<int> K(V.rows());
         for (unsigned int i = 0; i < I.size(); i++)
             K[I[i]] = i;

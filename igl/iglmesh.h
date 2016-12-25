@@ -12,6 +12,8 @@
 #include <igl/signed_distance.h>
 #include <igl/decimate.h>
 #include <igl/remove_duplicates.h>
+#include <igl/remove_unreferenced.h>
+#include <igl/facet_components.h>
 
 #ifdef CGAL_DEFINED
 #include <igl/copyleft/cgal/CSGTree.h>
@@ -53,7 +55,7 @@ namespace IGLInterface {
             void addFace(const Eigen::VectorXi &f);
             void addFace(int t1, int t2, int t3);
             void resizeFaces(unsigned int nf);
-            void deleteDuplicatedVertices(Eigen::Matrix<int, Eigen::Dynamic, 1> &I = dummy);
+            void removeDuplicatedVertices(Eigen::Matrix<int, Eigen::Dynamic, 1> &I = dummy);
             bool readFromFile(const std::string &filename);
             bool saveOnObj(const std::string &filename) const;
             bool saveOnPly(const std::string &filename) const;
@@ -87,6 +89,8 @@ namespace IGLInterface {
             #endif
             static void merge(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
             static SimpleIGLMesh merge(const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
+            void removeUnreferencedVertices(Eigen::Matrix<int, Eigen::Dynamic, 1> &I = dummy);
+            void getConnectedComponents(std::vector<SimpleIGLMesh>& connectedComponents);
 
             // SerializableObject interface
             void serialize(std::ofstream& binaryFile) const;
@@ -118,7 +122,7 @@ namespace IGLInterface {
             void updateVertexNormals();
             void updateFaceNormals();
             void updateVertexAndFaceNormals();
-            void deleteDuplicatedVertices();
+            void removeDuplicatedVertices();
             void clear();
             bool readFromFile(const std::string &filename);
             void setColor(double red, double green, double blue, int f = -1);

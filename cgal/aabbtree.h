@@ -12,7 +12,7 @@
 #include "../trimesh/trimesh.h"
 #endif
 
-#ifdef TRIMESH_DEFINED
+#ifdef IGL_DEFINED
 #include "../igl/iglmesh.h"
 #endif
 

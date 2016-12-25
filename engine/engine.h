@@ -43,12 +43,6 @@ namespace Engine {
 
     void expandBoxes(BoxList &boxList, const Grid &g, bool printTimes = false);
 
-    void createAndMinimizeAllBoxes(BoxList &solutions, const Dcel &d, double kernelDistance, bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimante = true);
-
-    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
-
-    void gluePortionsToBaseComplex(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
-
     void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<bool> > >& vectorTriples, const BoxList& boxList, const Dcel &d);
 
     int deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);
@@ -56,6 +50,16 @@ namespace Engine {
     int deleteBoxes(BoxList& boxList, const Dcel &d);
 
     int deleteBoxesMemorySafe(BoxList& boxList, const Dcel &d);
+
+    void createAndMinimizeAllBoxes(BoxList &solutions, const Dcel &d, double kernelDistance, bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimante = true);
+
+    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
+
+    void splitConnectedComponents(HeightfieldsList &he, BoxList &solutions);
+
+    void glueInternHeightfieldsToBaseComplex(HeightfieldsList &he, BoxList &solutions, IGLInterface::SimpleIGLMesh &bc, const Dcel& inputMesh);
+
+    void gluePortionsToBaseComplex(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
 
     void largeScaleFabrication(const Dcel &input, double kernelDistance = 6, bool heightfields = false);
 }

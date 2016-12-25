@@ -30,8 +30,8 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         const IGLInterface::IGLMesh& getHeightfield(unsigned int i) const;
         IGLInterface::IGLMesh& getHeightfield(unsigned int i);
         //IGLInterface::IGLMesh getHeightfield(unsigned int i) const;
-        void setHeightfield(const IGLInterface::IGLMesh& he, unsigned int i);
-
+        void setHeightfield(const IGLInterface::IGLMesh& m, unsigned int i, bool updateColor=false);
+        void insertHeightfield(const IGLInterface::IGLMesh& m, const Vec3 &target, unsigned int i);
         void explode(double dist);
 
         // SerializableObject interface

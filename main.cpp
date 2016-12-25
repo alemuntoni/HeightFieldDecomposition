@@ -13,6 +13,7 @@
 #include <QApplication>
 //#include "common/comparators.h"
 #include "engine/engine.h"
+#include "trimesh/gui/trimeshmanager.h"
 
 int main(int argc, char *argv[]) {
 
@@ -38,6 +39,9 @@ int main(int argc, char *argv[]) {
 
     BooleansManager bm(&gui);
     gui.addManager(&bm, "Booleans Manager");
+
+    TrimeshManager tm(&gui);
+    gui.addManager(&tm, "Trimesh Manager");
 
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
     gui.updateGlCanvas();

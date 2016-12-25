@@ -130,9 +130,29 @@ IGLInterface::IGLMesh& HeightfieldsList::getHeightfield(unsigned int i) {
     return heightfields[i];
 }*/
 
-void HeightfieldsList::setHeightfield(const IGLInterface::IGLMesh& he, unsigned int i) {
+void HeightfieldsList::setHeightfield(const IGLInterface::IGLMesh& m, unsigned int i, bool updateColor) {
     assert (i < heightfields.size());
-    heightfields[i] = he;
+    heightfields[i] = m;
+    if (updateColor){
+        QColor c = colorOfNormal(targets[i]);
+        heightfields[i].setColor(c.redF(), c.greenF(), c.blueF());
+        for (unsigned int j = 0; j < m.getNumberFaces(); j++){
+            if (m.getNormal(j).dot(targets[i]) < -EPSILON)
+                heightfields[i].setColor(0,0,0,j);
+        }
+    }
+}
+
+void HeightfieldsList::insertHeightfield(const IGLInterface::IGLMesh& m, const Vec3& target, unsigned int i) {
+    assert (i < heightfields.size()+1);
+    heightfields.insert(heightfields.begin() + i, m);
+    targets.insert(targets.begin() + i, target);
+    QColor c = colorOfNormal(target);
+    heightfields[i].setColor(c.redF(), c.greenF(), c.blueF());
+    for (unsigned int j = 0; j < m.getNumberFaces(); j++){
+        if (m.getNormal(j).dot(target) < -EPSILON)
+            heightfields[i].setColor(0,0,0,j);
+    }
 }
 
 void HeightfieldsList::explode(double dist) {

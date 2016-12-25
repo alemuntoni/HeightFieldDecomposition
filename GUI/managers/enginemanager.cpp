@@ -961,6 +961,8 @@ void EngineManager::on_subtractPushButton_clicked() {
         thread->start();*/
 
         Engine::booleanOperations(*he, bc, *solutions, *d /*,*entirePieces*/);
+        Engine::splitConnectedComponents(*he, *solutions);
+        Engine::glueInternHeightfieldsToBaseComplex(*he, *solutions, bc, *d);
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
@@ -1164,6 +1166,7 @@ void EngineManager::on_reorderBoxes_clicked() {
             std::cerr << solutions->getBox(i).getId() << " ";
         }
         std::cerr << "\n";
+        mainWindow->updateGlCanvas();
     }
 }
 
@@ -1312,10 +1315,10 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
         colors[8] = QColor(153,0,255);
         colors[9] = QColor(255,0,255);
         for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            IGLInterface::IGLMesh mesh = he->getHeightfield(i);
+            IGLInterface::DrawableIGLMesh mesh = he->getHeightfield(i);
             mesh.setColor(colors[i%10].redF(),colors[i%10].greenF(),colors[i%10].blueF());
             he->setHeightfield(mesh, i);
         }
-
     }
+    mainWindow->updateGlCanvas();
 }
