@@ -11,7 +11,7 @@
 #include <GL/gl.h>
 #endif
 
-DrawableDcel::DrawableDcel() : Dcel(), DrawableMesh(coords, triangles, vertexNormals, vertexColors, triangleNormals, triangleColors) {
+DrawableDcel::DrawableDcel() : Dcel(){
     init();
 }
 
@@ -20,7 +20,7 @@ DrawableDcel::DrawableDcel() : Dcel(), DrawableMesh(coords, triangles, vertexNor
  * @brief Crea una DrawableDcel a partire dalla Dcel passata come parametro (di cui ne verrà fatta una copia)
  * @param[in] d: Dcel che verrà copiata e resa visualizzabile
  */
-DrawableDcel::DrawableDcel(const Dcel &d) : Dcel(d), DrawableMesh(coords, triangles, vertexNormals, vertexColors, triangleNormals, triangleColors) {
+DrawableDcel::DrawableDcel(const Dcel &d) : Dcel(d) {
     update();
     init();
 }
@@ -33,13 +33,6 @@ DrawableDcel::~DrawableDcel() {
  * @brief Setta impostazioni di visualizzazione di default.
  */
 void DrawableDcel::init() {
-    /*drawMode          = DRAW_MESH | DRAW_SMOOTH |  DRAW_FACECOLOR;
-    wireframeWidth    = 3;
-    wireframeColor[0] = 0.1;
-    wireframeColor[1] = 0.1;
-    wireframeColor[2] = 0.1;
-    wireframeColor[3] = 1;*/
-    //wireframe_colors.resize(triangleColors.size(), 0.1);
     DrawableMesh::init();
     update();
 }
@@ -57,6 +50,10 @@ void DrawableDcel::clear() {
     triangleNormals.clear();
     triangles.clear();
     triangleColors.clear();
+}
+
+void DrawableDcel::draw() const {
+    DrawableMesh::draw(coords.size()/3, triangles.size()/3, coords.data(), triangles.data(), vertexNormals.data(), vertexColors.data(), triangleNormals.data(), triangleColors.data());
 }
 
 /**
@@ -197,8 +194,8 @@ void DrawableDcel::update() {
  * \~Italian
  * @brief Rendering della mesh
  */
-void DrawableDcel::renderPass() const {
-    DrawableMesh::renderPass();
+void DrawableDcel::renderPass(unsigned int nv, unsigned int nt, const double* coords, const int* triangles, const double* vertexNormals, const float* vertexColors, const double* triangleNormals, const float* triangleColors) const {
+    DrawableMesh::renderPass(nv, nt, coords, triangles, vertexNormals, vertexColors, triangleNormals, triangleColors);
 
     if(drawMode & DRAW_FACES_WIREFRAME){
 

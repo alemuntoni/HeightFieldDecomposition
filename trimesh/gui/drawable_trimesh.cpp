@@ -5,21 +5,15 @@
 
 #include "drawable_trimesh.h"
 
-DrawableTrimesh::DrawableTrimesh() : Trimesh<double>(),
-    DrawableMesh(coords, tris, vertexNormals, vertexColors, triangleNormals, triangleColors)
-{
+DrawableTrimesh::DrawableTrimesh() : Trimesh<double>() {
     init();
 }
 
-DrawableTrimesh::DrawableTrimesh(const Trimesh<double> &t) : Trimesh<double>(t),
-    DrawableMesh(coords, tris, vertexNormals, vertexColors, triangleNormals, triangleColors)
-{
+DrawableTrimesh::DrawableTrimesh(const Trimesh<double> &t) : Trimesh<double>(t) {
     init();
 }
 
-DrawableTrimesh::DrawableTrimesh(const char *filename) : Trimesh<double>(filename),
-    DrawableMesh(coords, tris, vertexNormals, vertexColors, triangleNormals, triangleColors)
-{
+DrawableTrimesh::DrawableTrimesh(const char *filename) : Trimesh<double>(filename) {
     init();
 }
 
@@ -33,6 +27,10 @@ void DrawableTrimesh::clear() {
     Trimesh<double>::clear();
     vertexColors.clear();
     triangleColors.clear();
+}
+
+void DrawableTrimesh::draw() const {
+    DrawableMesh::draw(coords.size()/3, tris.size()/3, coords.data(), tris.data(), vertexNormals.data(), vertexColors.data(), triangleNormals.data(), triangleColors.data());
 }
 
 Pointd DrawableTrimesh::sceneCenter() const {

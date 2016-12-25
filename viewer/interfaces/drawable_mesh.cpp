@@ -14,65 +14,6 @@ void DrawableMesh::init() {
     wireframeColor[2] = 0.1;
 }
 
-void DrawableMesh::draw() const {
-    if (drawMode & DRAW_MESH) {
-        if (drawMode & DRAW_WIREFRAME) {
-            if (drawMode & DRAW_POINTS) {
-                glDisable(GL_LIGHTING);
-                glShadeModel(GL_FLAT);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glDepthRange(0.0, 1.0);
-                renderPass();
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-            else if (drawMode & DRAW_FLAT) {
-                glEnable(GL_LIGHTING);
-                glShadeModel(GL_FLAT);
-                glDepthRange(0.01, 1.0);
-                renderPass();
-
-                glDisable(GL_LIGHTING);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glDepthRange(0.0, 1.0);
-                glDepthFunc(GL_LEQUAL);
-                renderPass();
-                glDepthFunc(GL_LESS);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-            else if (drawMode & DRAW_SMOOTH) {
-                glEnable(GL_LIGHTING);
-                glShadeModel(GL_SMOOTH);
-                glDepthRange(0.01, 1.0);
-                renderPass();
-
-                glDisable(GL_LIGHTING);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glDepthRange(0.0, 1.0);
-                glDepthFunc(GL_LEQUAL);
-                renderPass();
-                glDepthFunc(GL_LESS);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-        }
-        else {
-            if (drawMode & DRAW_POINTS) {
-                glDisable(GL_LIGHTING);
-                renderPass();
-            }
-            else if (drawMode & DRAW_FLAT) {
-                glEnable(GL_LIGHTING);
-                glShadeModel(GL_FLAT);
-                renderPass();
-            }
-            else if (drawMode & DRAW_SMOOTH) {
-                glEnable(GL_LIGHTING);
-                glShadeModel(GL_SMOOTH);
-                renderPass();
-            }
-        }
-    }
-}
-
 bool DrawableMesh::isVisible() const {
     return (drawMode & DRAW_MESH);
 }
@@ -125,54 +66,67 @@ void DrawableMesh::setVisible(bool b) {
     else   drawMode &= ~DRAW_MESH;
 }
 
-DrawableMesh::DrawableMesh(const std::vector<double>& coords, const std::vector<int>& triangles, const std::vector<double>& vertexNormals, const std::vector<float>& vertexColors, const std::vector<double>& triangleNormals, const std::vector<float>& triangleColors) :
-    pCoords(&coords),
-    pTriangles(&triangles),
-    pVertexNormals(&vertexNormals),
-    pVertexColors(&vertexColors),
-    pTriangleNormals(&triangleNormals),
-    pTriangleColors(&triangleColors)
-  #ifdef COMMON_WITH_EIGEN
-  ,
-    pV(nullptr),
-    pF(nullptr),
-    pNV(nullptr),
-    pCV(nullptr),
-    pNF(nullptr),
-    pCF(nullptr)
-  #endif
-{
-    meshType = STD;
+DrawableMesh::DrawableMesh() {
     init();
 }
 
-#ifdef COMMON_WITH_EIGEN
-DrawableMesh::DrawableMesh(const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& V, const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& F, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NV, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CV, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NF, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CF) :
-    pCoords(nullptr),
-    pTriangles(nullptr),
-    pVertexNormals(nullptr),
-    pVertexColors(nullptr),
-    pTriangleNormals(nullptr),
-    pTriangleColors(nullptr),
-    pV(&V),
-    pF(&F),
-    pNV(&NV),
-    pCV(&CV),
-    pNF(&NF),
-    pCF(&CF)
-{
-    meshType = EIGEN;
-    init();
-}
-#endif
+void DrawableMesh::draw(unsigned int nv, unsigned int nt, const double* pCoords, const int* pTriangles, const double* pVertexNormals, const float* pVertexColors, const double* pTriangleNormals, const float* pTriangleColors) const {
+    if (drawMode & DRAW_MESH) {
+        if (drawMode & DRAW_WIREFRAME) {
+            if (drawMode & DRAW_POINTS) {
+                glDisable(GL_LIGHTING);
+                glShadeModel(GL_FLAT);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glDepthRange(0.0, 1.0);
+                renderPass(nv, nt, pCoords, pTriangles, pVertexNormals, pVertexColors, pTriangleNormals, pTriangleColors);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+            else if (drawMode & DRAW_FLAT) {
+                glEnable(GL_LIGHTING);
+                glShadeModel(GL_FLAT);
+                glDepthRange(0.01, 1.0);
+                renderPass(nv, nt, pCoords, pTriangles, pVertexNormals, pVertexColors, pTriangleNormals, pTriangleColors);
 
-void DrawableMesh::renderPass() const {
-    if (meshType == STD)
-        renderPass(pCoords->size()/3, pTriangles->size()/3, pCoords->data(), pTriangles->data(), pVertexNormals->data(), pVertexColors->data(), pTriangleNormals->data(), pTriangleColors->data());
-    #ifdef COMMON_WITH_EIGEN
-    else if (meshType == EIGEN)
-        renderPass(pV->rows(), pF->rows(), pV->data(), pF->data(), pNV->data(), pCV->data(), pNF->data(), pCF->data());
-    #endif
+                glDisable(GL_LIGHTING);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glDepthRange(0.0, 1.0);
+                glDepthFunc(GL_LEQUAL);
+                renderPass(nv, nt, pCoords, pTriangles, pVertexNormals, pVertexColors, pTriangleNormals, pTriangleColors);
+                glDepthFunc(GL_LESS);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+            else if (drawMode & DRAW_SMOOTH) {
+                glEnable(GL_LIGHTING);
+                glShadeModel(GL_SMOOTH);
+                glDepthRange(0.01, 1.0);
+                renderPass(nv, nt, pCoords, pTriangles, pVertexNormals, pVertexColors, pTriangleNormals, pTriangleColors);
+
+                glDisable(GL_LIGHTING);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glDepthRange(0.0, 1.0);
+                glDepthFunc(GL_LEQUAL);
+                renderPass(nv, nt, pCoords, pTriangles, pVertexNormals, pVertexColors, pTriangleNormals, pTriangleColors);
+                glDepthFunc(GL_LESS);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+        }
+        else {
+            if (drawMode & DRAW_POINTS) {
+                glDisable(GL_LIGHTING);
+                renderPass(nv, nt, pCoords, pTriangles, pVertexNormals, pVertexColors, pTriangleNormals, pTriangleColors);
+            }
+            else if (drawMode & DRAW_FLAT) {
+                glEnable(GL_LIGHTING);
+                glShadeModel(GL_FLAT);
+                renderPass(nv, nt, pCoords, pTriangles, pVertexNormals, pVertexColors, pTriangleNormals, pTriangleColors);
+            }
+            else if (drawMode & DRAW_SMOOTH) {
+                glEnable(GL_LIGHTING);
+                glShadeModel(GL_SMOOTH);
+                renderPass(nv, nt, pCoords, pTriangles, pVertexNormals, pVertexColors, pTriangleNormals, pTriangleColors);
+            }
+        }
+    }
 }
 
 void DrawableMesh::renderPass(unsigned int nv, unsigned int nt, const double* coords, const int* triangles, const double* vertexNormals, const float* vertexColors, const double* triangleNormals, const float* triangleColors) const {
@@ -256,43 +210,6 @@ void DrawableMesh::renderPass(unsigned int nv, unsigned int nt, const double* co
         glDisableClientState(GL_VERTEX_ARRAY);
     }
 }
-
-void DrawableMesh::updatePointers(const std::vector<double>& coords, const std::vector<int>& triangles, const std::vector<double>& vertexNormals, const std::vector<float>& vertexColors, const std::vector<double>& triangleNormals, const std::vector<float>& triangleColors) {
-    assert(meshType == STD);
-    pCoords = &coords;
-    pTriangles = &triangles;
-    pVertexNormals = &vertexNormals;
-    pVertexColors = &vertexColors;
-    pTriangleNormals = &triangleNormals;
-    pTriangleColors = &triangleColors;
-    #ifdef COMMON_WITH_EIGEN
-    pV = nullptr;
-    pF = nullptr;
-    pNV = nullptr;
-    pCV = nullptr;
-    pNF = nullptr;
-    pCF = nullptr;
-    #endif
-}
-
-#ifdef COMMON_WITH_EIGEN
-void DrawableMesh::updatePointers(const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& V, const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& F, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NV, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CV, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NF, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CF) {
-    assert(meshType == EIGEN);
-    pV = &V;
-    pF = &F;
-    pNV = &NV;
-    pCV = &CV;
-    pNF = &NF;
-    pCF = &CF;
-    pCoords = nullptr;
-    pTriangles = nullptr;
-    pVertexNormals = nullptr;
-    pVertexColors = nullptr;
-    pTriangleNormals = nullptr;
-    pTriangleColors = nullptr;
-
-}
-#endif
 
 void _check_gl_error(const char *file, int line)
 {

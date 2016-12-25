@@ -29,7 +29,7 @@ class DrawableMesh : public DrawableObject{
 
         // Implementation of the
         // DrawableObject interface
-        void draw() const;
+        virtual void draw() const = 0;
         virtual Pointd sceneCenter() const = 0;
         virtual double sceneRadius() const = 0;
         bool isVisible() const;
@@ -46,40 +46,10 @@ class DrawableMesh : public DrawableObject{
         void setEnableTriangleColor();
         void setVisible(bool b);
 
-    private:
-
-        typedef enum {
-            STD, EIGEN
-        } MeshType;
-
-        const std::vector<double> * pCoords; /** \~Italian @brief vettore di coordinate usate per la visualizzazione: per aggiornare utilizzare metodo update() */
-        const std::vector<int> * pTriangles; /** \~Italian @brief vettore di triangoli (da considerare a triple di indici) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */
-        const std::vector<double> * pVertexNormals; /** \~Italian @brief vettore di normali ai vertici usate per la visualizzazione: per aggiornare utilizzare il metodo update() */
-        const std::vector<float> * pVertexColors; /** \~Italian @brief vettore di colori associati ai vertici (da considerare come triple rgb float) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */
-        const std::vector<double> * pTriangleNormals; /** \~Italian @brief vettore di normali ai triangoli usate per la visualizzazione: per aggiornare utilizzare il metodo update() */
-        const std::vector<float> * pTriangleColors; /** \~Italian @brief vettore di colori associati ai triangoli (da considerare come triple rgb float) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */
-
-        #ifdef COMMON_WITH_EIGEN
-        const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> * pV;
-        const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> * pF;
-        const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> * pNV;
-        const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor> * pCV;
-        const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> * pNF;
-        const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor> * pCF;
-        #endif
-
     protected:
-        DrawableMesh(const std::vector<double> &coords, const std::vector<int> &triangles, const std::vector<double> &vertexNormals, const std::vector<float> &vertexColors, const std::vector<double> &triangleNormals, const std::vector<float> &triangleColors);
-        #ifdef COMMON_WITH_EIGEN
-        DrawableMesh(const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& V, const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& F, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NV, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CV, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NF, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CF);
-        #endif
-
-        void renderPass() const;
-        void renderPass(unsigned int nv, unsigned int nt, const double* pCoords, const int* pTriangles, const double* pVertexNormals, const float* pVertexColors, const double* pTriangleNormals, const float* pTriangleColors) const;
-        void updatePointers(const std::vector<double> &coords, const std::vector<int> &triangles, const std::vector<double> &vertexNormals, const std::vector<float> &vertexColors, const std::vector<double> &triangleNormals, const std::vector<float> &triangleColors);
-        #ifdef COMMON_WITH_EIGEN
-        void updatePointers(const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& V, const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& F, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NV, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CV, const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& NF, const Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>& CF);
-        #endif
+        DrawableMesh();
+        void draw(unsigned int nv, unsigned int nt, const double* pCoords, const int* pTriangles, const double* pVertexNormals, const float* pVertexColors, const double* pTriangleNormals, const float* pTriangleColors) const;
+        void renderPass(unsigned int nv, unsigned int nt, const double* coords, const int* triangles, const double* vertexNormals, const float* vertexColors, const double* triangleNormals, const float* triangleColors) const;
 
         enum {
             DRAW_MESH        = 0b00000001,
@@ -92,7 +62,6 @@ class DrawableMesh : public DrawableObject{
         };
 
         int   drawMode;
-        MeshType meshType;
         int   wireframeWidth;
         float wireframeColor[3];
 };

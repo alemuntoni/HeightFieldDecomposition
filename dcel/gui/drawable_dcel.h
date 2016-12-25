@@ -38,6 +38,7 @@ class DrawableDcel : public Dcel, public DrawableMesh {
         // Implementation of the
         // DrawableObject interface
         //
+        void draw() const;
         Pointd sceneCenter() const;
         double sceneRadius() const;
 
@@ -47,7 +48,7 @@ class DrawableDcel : public Dcel, public DrawableMesh {
 
     protected:
 
-        void renderPass() const;
+        void renderPass(unsigned int nv, unsigned int nt, const double* coords, const int* triangles, const double* vertexNormals, const float* vertexColors, const double* triangleNormals, const float* triangleColors) const;
 
         enum {
             DRAW_FACES_WIREFRAME = 0b10000000

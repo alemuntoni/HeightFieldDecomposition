@@ -26,6 +26,7 @@ class DrawableTrimesh : public Trimesh<double> ,
         // Implementation of the
         // DrawableObject interface
         //
+        void draw() const;
         Pointd sceneCenter() const;
         double sceneRadius() const;
 
