@@ -7,7 +7,7 @@
 #endif
 
 void DrawableMesh::init() {
-    drawMode          = DRAW_MESH | DRAW_SMOOTH | DRAW_VERTEXCOLOR;
+    drawMode          = DRAW_MESH | DRAW_SMOOTH | DRAW_FACECOLOR;
     wireframeWidth    = 1;
     wireframeColor[0] = 0.1;
     wireframeColor[1] = 0.1;
@@ -169,8 +169,10 @@ DrawableMesh::DrawableMesh(const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen:
 void DrawableMesh::renderPass() const {
     if (meshType == STD)
         renderPass(pCoords->size()/3, pTriangles->size()/3, pCoords->data(), pTriangles->data(), pVertexNormals->data(), pVertexColors->data(), pTriangleNormals->data(), pTriangleColors->data());
+    #ifdef COMMON_WITH_EIGEN
     else if (meshType == EIGEN)
         renderPass(V->rows(), F->rows(), V->data(), F->data(), NV->data(), CV->data(), NF->data(), CF->data());
+    #endif
 }
 
 void DrawableMesh::renderPass(unsigned int nv, unsigned int nt, const double* coords, const int* triangles, const double* vertexNormals, const float* vertexColors, const double* triangleNormals, const float* triangleColors) const {
@@ -200,15 +202,28 @@ void DrawableMesh::renderPass(unsigned int nv, unsigned int nt, const double* co
                 int vid1_ptr = 3 * vid1;
                 int vid2_ptr = 3 * vid2;
 
-                glBegin(GL_TRIANGLES);
-                glColor3fv(&(triangleColors[tid_ptr]));
-                glNormal3dv(&(vertexNormals[vid0_ptr]));
-                glVertex3dv(&(coords[vid0_ptr]));
-                glNormal3dv(&(vertexNormals[vid1_ptr]));
-                glVertex3dv(&(coords[vid1_ptr]));
-                glNormal3dv(&(vertexNormals[vid2_ptr]));
-                glVertex3dv(&(coords[vid2_ptr]));
-                glEnd();
+                if (drawMode & DRAW_SMOOTH){
+                    glBegin(GL_TRIANGLES);
+                    glColor3fv(&(triangleColors[tid_ptr]));
+                    glNormal3dv(&(vertexNormals[vid0_ptr]));
+                    glVertex3dv(&(coords[vid0_ptr]));
+                    glNormal3dv(&(vertexNormals[vid1_ptr]));
+                    glVertex3dv(&(coords[vid1_ptr]));
+                    glNormal3dv(&(vertexNormals[vid2_ptr]));
+                    glVertex3dv(&(coords[vid2_ptr]));
+                    glEnd();
+                }
+                else {
+                    glBegin(GL_TRIANGLES);
+                    glColor3fv(&(triangleColors[tid_ptr]));
+                    glNormal3dv(&(triangleNormals[tid_ptr]));
+                    glVertex3dv(&(coords[vid0_ptr]));
+                    glNormal3dv(&(triangleNormals[tid_ptr]));
+                    glVertex3dv(&(coords[vid1_ptr]));
+                    glNormal3dv(&(triangleNormals[tid_ptr]));
+                    glVertex3dv(&(coords[vid2_ptr]));
+                    glEnd();
+                }
             }
         }
         else if (drawMode & DRAW_VERTEXCOLOR){
@@ -240,4 +255,26 @@ void DrawableMesh::renderPass(unsigned int nv, unsigned int nt, const double* co
 
         glDisableClientState(GL_VERTEX_ARRAY);
     }
+}
+
+void _check_gl_error(const char *file, int line)
+{
+  GLenum err (glGetError());
+
+  while(err!=GL_NO_ERROR)
+  {
+    std::string error;
+
+    switch(err)
+    {
+      case GL_INVALID_OPERATION:      error="INVALID_OPERATION";      break;
+      case GL_INVALID_ENUM:           error="INVALID_ENUM";           break;
+      case GL_INVALID_VALUE:          error="INVALID_VALUE";          break;
+      case GL_OUT_OF_MEMORY:          error="OUT_OF_MEMORY";          break;
+      case GL_INVALID_FRAMEBUFFER_OPERATION:  error="INVALID_FRAMEBUFFER_OPERATION";  break;
+    }
+
+    std::cerr << "GL_" << error.c_str() << " - " << file << ":" << line << std::endl;
+    err = glGetError();
+  }
 }

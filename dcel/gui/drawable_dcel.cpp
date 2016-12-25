@@ -11,7 +11,7 @@
 #include <GL/gl.h>
 #endif
 
-DrawableDcel::DrawableDcel() : Dcel() {
+DrawableDcel::DrawableDcel() : Dcel(), DrawableMesh(coords, triangles, vertexNormals, vertexColors, triangleNormals, triangleColors) {
     init();
 }
 
@@ -20,7 +20,7 @@ DrawableDcel::DrawableDcel() : Dcel() {
  * @brief Crea una DrawableDcel a partire dalla Dcel passata come parametro (di cui ne verrà fatta una copia)
  * @param[in] d: Dcel che verrà copiata e resa visualizzabile
  */
-DrawableDcel::DrawableDcel(const Dcel &d) : Dcel(d) {
+DrawableDcel::DrawableDcel(const Dcel &d) : Dcel(d), DrawableMesh(coords, triangles, vertexNormals, vertexColors, triangleNormals, triangleColors) {
     update();
     init();
 }
@@ -33,13 +33,14 @@ DrawableDcel::~DrawableDcel() {
  * @brief Setta impostazioni di visualizzazione di default.
  */
 void DrawableDcel::init() {
-    drawMode          = DRAW_MESH | DRAW_SMOOTH |  DRAW_FACECOLOR;
+    /*drawMode          = DRAW_MESH | DRAW_SMOOTH |  DRAW_FACECOLOR;
     wireframeWidth    = 3;
     wireframeColor[0] = 0.1;
     wireframeColor[1] = 0.1;
     wireframeColor[2] = 0.1;
-    wireframeColor[3] = 1;
-    wireframe_colors.resize(triangleColors.size(), 0.1);
+    wireframeColor[3] = 1;*/
+    //wireframe_colors.resize(triangleColors.size(), 0.1);
+    DrawableMesh::init();
     update();
 }
 
@@ -52,6 +53,8 @@ void DrawableDcel::clear() {
     init();
     coords.clear();
     vertexNormals.clear();
+    vertexColors.clear();
+    triangleNormals.clear();
     triangles.clear();
     triangleColors.clear();
 }
@@ -79,25 +82,6 @@ double DrawableDcel::sceneRadius() const {
 
 /**
  * \~Italian
- * @brief Metodo che verifica se l'oggetto è visibile
- * @return true se la DrawableDcel è visibile, false altrimenti
- */
-bool DrawableDcel::isVisible() const {
-    return (drawMode & DRAW_MESH);
-}
-
-/**
- * \~Italian
- * @brief Metodo che permette di settare la visibilità dell'oggetto
- * @param[in] b: booleano indicante la vsibilità della DrawableDcel
- */
-void DrawableDcel::setVisible(bool b) {
-    if (b) drawMode |=  DRAW_MESH;
-    else   drawMode &= ~DRAW_MESH;
-}
-
-/**
- * \~Italian
  * @brief DrawableDcel::update()
  * Aggiorna i vettori visualuizzati dalla draw() con le informazioni contenute nella Dcel.
  * Fa in modo che la mesh visualizzata sia effettivamente quella contenuta all'interno della struttura dati
@@ -105,7 +89,6 @@ void DrawableDcel::setVisible(bool b) {
  * modifica.
  */
 void DrawableDcel::update() {
-
     coords.clear();
     vertexNormals.clear();
     triangles.clear();
@@ -118,7 +101,7 @@ void DrawableDcel::update() {
     triangles.reserve(getNumberFaces()*3);
     triangleColors.reserve(getNumberFaces()*3);
     triangleNormals.reserve(getNumberFaces()*3);
-    vertexColors.resize(getNumberVertices()*3,0);
+    vertexColors.resize(getNumberVertices()*3,0.5);
     std::map<int, int> v_ids;
     int vi = 0;
 
@@ -195,22 +178,19 @@ void DrawableDcel::update() {
     #else
     for (ConstFaceIterator fit = faceBegin(); fit != faceEnd(); ++fit) {
         Dcel::Face::ConstIncidentVertexIterator vit = (*fit)->incidentVertexBegin();
-        tris.push_back(v_ids[(*vit)->getId()]);
+        triangles.push_back(v_ids[(*vit)->getId()]);
         ++vit;
-        tris.push_back(v_ids[(*vit)->getId()]);
+        triangles.push_back(v_ids[(*vit)->getId()]);
         ++vit;
-        tris.push_back(v_ids[(*vit)->getId()]);
-        colors.push_back((*fit)->getColor().redF());
-        colors.push_back((*fit)->getColor().greenF());
-        colors.push_back((*fit)->getColor().blueF());
-        t_norm.push_back((*fit)->getNormal().x());
-        t_norm.push_back((*fit)->getNormal().y());
-        t_norm.push_back((*fit)->getNormal().z());
+        triangles.push_back(v_ids[(*vit)->getId()]);
+        triangleColors.push_back((*fit)->getColor().redF());
+        triangleColors.push_back((*fit)->getColor().greenF());
+        triangleColors.push_back((*fit)->getColor().blueF());
+        triangleNormals.push_back((*fit)->getNormal().x());
+        triangleNormals.push_back((*fit)->getNormal().y());
+        triangleNormals.push_back((*fit)->getNormal().z());
     }
     #endif
-    wireframe_colors.resize(triangleColors.size());
-    for (unsigned int i = 0; i < triangleColors.size(); ++i)
-        wireframe_colors[i] = 0.1;
 }
 
 /**
@@ -218,97 +198,7 @@ void DrawableDcel::update() {
  * @brief Rendering della mesh
  */
 void DrawableDcel::renderPass() const {
-    if (drawMode & DRAW_POINTS) {
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glVertexPointer(3, GL_DOUBLE, 0, coords.data());
-
-        glEnableClientState(GL_COLOR_ARRAY);
-        glColorPointer (3, GL_FLOAT, 0, vertexColors.data());
-
-        glDrawArrays(GL_POINTS, 0, getNumberVertices());
-
-        glDisableClientState(GL_COLOR_ARRAY);
-        glDisableClientState(GL_VERTEX_ARRAY);
-    }
-    else if (drawMode & DRAW_SMOOTH || drawMode & DRAW_FLAT) {
-        // Old fashioned, verbose and slow rendering.
-        //
-        if (drawMode & DRAW_FACECOLOR) {
-
-            int n_tris = triangles.size()/3;
-            for(int tid=0; tid<n_tris; ++tid) {
-                int tid_ptr  = 3 * tid;
-                int vid0     = triangles[tid_ptr + 0];
-                int vid1     = triangles[tid_ptr + 1];
-                int vid2     = triangles[tid_ptr + 2];
-                int vid0_ptr = 3 * vid0;
-                int vid1_ptr = 3 * vid1;
-                int vid2_ptr = 3 * vid2;
-
-                glBegin(GL_TRIANGLES);
-                glColor3fv(&(triangleColors[tid_ptr]));
-                glNormal3dv(&(triangleNormals[tid_ptr]));
-                glVertex3dv(&(coords[vid0_ptr]));
-                glNormal3dv(&(triangleNormals[tid_ptr]));
-                glVertex3dv(&(coords[vid1_ptr]));
-                glNormal3dv(&(triangleNormals[tid_ptr]));
-                glVertex3dv(&(coords[vid2_ptr]));
-                glEnd();
-            }
-        }
-        else {
-
-            glEnableClientState(GL_VERTEX_ARRAY);
-            glVertexPointer(3, GL_DOUBLE, 0, coords.data());
-
-            glEnableClientState(GL_NORMAL_ARRAY);
-            glNormalPointer(GL_DOUBLE, 0, vertexNormals.data());
-
-            glEnableClientState(GL_COLOR_ARRAY);
-            glColorPointer(3, GL_FLOAT, 0, vertexColors.data());
-
-            glDrawElements(GL_TRIANGLES, triangles.size(), GL_UNSIGNED_INT, triangles.data());
-
-            glDisableClientState(GL_COLOR_ARRAY);
-            glDisableClientState(GL_NORMAL_ARRAY);
-            glDisableClientState(GL_VERTEX_ARRAY);
-        }
-    }
-
-    if (drawMode & DRAW_WIREFRAME) {
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glVertexPointer(3, GL_DOUBLE, 0, coords.data());
-
-        glLineWidth(1);
-
-        glColor4fv(wireframeColor);
-
-        glDrawElements(GL_TRIANGLES, triangles.size(), GL_UNSIGNED_INT, triangles.data());
-
-        glDisableClientState(GL_VERTEX_ARRAY);
-        /*int n_tris = tris.size()/3;
-        for(int tid=0; tid<n_tris; ++tid) {
-            int tid_ptr  = 3 * tid;
-            int vid0     = tris[tid_ptr + 0];
-            int vid1     = tris[tid_ptr + 1];
-            int vid2     = tris[tid_ptr + 2];
-            int vid0_ptr = 3 * vid0;
-            int vid1_ptr = 3 * vid1;
-
-            int vid2_ptr = 3 * vid2;
-
-
-            glBegin(GL_TRIANGLES);
-            glColor3fv(&(wireframe_colors[tid_ptr]));
-            glNormal3dv(&(t_norm[tid_ptr]));
-            glVertex3dv(&(coords[vid0_ptr]));
-            glNormal3dv(&(t_norm[tid_ptr]));
-            glVertex3dv(&(coords[vid1_ptr]));
-            glNormal3dv(&(t_norm[tid_ptr]));
-            glVertex3dv(&(coords[vid2_ptr]));
-            glEnd();
-        }*/
-    }
+    DrawableMesh::renderPass();
 
     if(drawMode & DRAW_FACES_WIREFRAME){
 
@@ -324,140 +214,7 @@ void DrawableDcel::renderPass() const {
     }
 }
 
-/**
- * \~Italian
- * @brief Metodo che si occupa di disegnare la dcel presente nei vettori della drawableDcel (aggiornati alla ultima update)
- * all'interno della canvas. è chiamato automaticamente dalla canvas ad ogni frame.
- */
-void DrawableDcel::draw() const {
-    if (drawMode & DRAW_MESH) {
-        if (drawMode & DRAW_WIREFRAME) {
-            if (drawMode & DRAW_POINTS) {
-                glDisable(GL_LIGHTING);
-                glShadeModel(GL_FLAT);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glDepthRange(0.0, 1.0);
-                renderPass();
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-            else if (drawMode & DRAW_FLAT) {
-                glEnable(GL_LIGHTING);
-                glShadeModel(GL_FLAT);
-                glDepthRange(0.01, 1.0);
-                renderPass();
-
-                //if (drawMode & DRAW_WIREFRAME) {
-                    glDisable(GL_LIGHTING);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glDepthRange(0.0, 1.0);
-                    glDepthFunc(GL_LEQUAL);
-                    renderPass();
-                    glDepthFunc(GL_LESS);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                //}
-            }
-            else if (drawMode & DRAW_SMOOTH) {
-                glEnable(GL_LIGHTING);
-                glShadeModel(GL_SMOOTH);
-                glDepthRange(0.01, 1.0);
-                renderPass();
-
-                //if (drawMode & DRAW_WIREFRAME) {
-                    glDisable(GL_LIGHTING);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glDepthRange(0.0, 1.0);
-                    glDepthFunc(GL_LEQUAL);
-                    renderPass();
-                    glDepthFunc(GL_LESS);
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                //}
-            }
-        }else {
-            if (drawMode & DRAW_POINTS) {
-                glDisable(GL_LIGHTING);
-                renderPass();
-            }
-            else if (drawMode & DRAW_FLAT) {
-                glEnable(GL_LIGHTING);
-                glShadeModel(GL_FLAT);
-                renderPass();
-            }
-            else if (drawMode & DRAW_SMOOTH) {
-                glEnable(GL_LIGHTING);
-                glShadeModel(GL_SMOOTH);
-                renderPass();
-            }
-        }
-    }
-
-}
-
-void DrawableDcel::setWireframe(bool b) {
-    if (b) drawMode |=  DRAW_WIREFRAME;
-    else   drawMode &= ~DRAW_WIREFRAME;
-}
-
 void DrawableDcel::setFacesWireframe(bool b) {
     if (b) drawMode |=  DRAW_FACES_WIREFRAME;
     else   drawMode &= ~DRAW_FACES_WIREFRAME;
-}
-
-void DrawableDcel::setFlatShading() {
-    drawMode |=  DRAW_FLAT;
-    drawMode &= ~DRAW_SMOOTH;
-    drawMode &= ~DRAW_POINTS;
-}
-
-void DrawableDcel::setSmoothShading() {
-    drawMode |=  DRAW_SMOOTH;
-    drawMode &= ~DRAW_FLAT;
-    drawMode &= ~DRAW_POINTS;
-}
-
-void DrawableDcel::setPointsShading() {
-    drawMode |=  DRAW_POINTS;
-    drawMode &= ~DRAW_FLAT;
-    drawMode &= ~DRAW_SMOOTH;
-}
-
-void DrawableDcel::setEnableVertexColor() {
-    drawMode |=  DRAW_VERTEXCOLOR;
-    drawMode &= ~DRAW_FACECOLOR;
-}
-
-void DrawableDcel::setEnableTriangleColor() {
-    drawMode |=  DRAW_FACECOLOR;
-    drawMode &= ~DRAW_VERTEXCOLOR;
-}
-
-void DrawableDcel::setWireframeColor(float r, float g, float b) {
-    wireframeColor[0] = r;
-    wireframeColor[1] = g;
-    wireframeColor[2] = b;
-}
-
-void DrawableDcel::setWireframeWidth(float width) {
-    wireframeWidth = width;
-}
-
-void _check_gl_error(const char *file, int line)
-{
-  GLenum err (glGetError());
-
-  while(err!=GL_NO_ERROR)
-  {
-    std::string error;
-
-    switch(err)
-    {
-      case GL_INVALID_OPERATION:      error="INVALID_OPERATION";      break;
-      case GL_INVALID_ENUM:           error="INVALID_ENUM";           break;
-      case GL_INVALID_VALUE:          error="INVALID_VALUE";          break;
-      case GL_OUT_OF_MEMORY:          error="OUT_OF_MEMORY";          break;
-      case GL_INVALID_FRAMEBUFFER_OPERATION:  error="INVALID_FRAMEBUFFER_OPERATION";  break;
-    }
-
-    std::cerr << "GL_" << error.c_str() << " - " << file << ":" << line << std::endl;
-    err = glGetError();
-  }
 }
