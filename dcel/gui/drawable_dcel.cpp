@@ -21,7 +21,6 @@ DrawableDcel::DrawableDcel() : Dcel(){
  * @param[in] d: Dcel che verrà copiata e resa visualizzabile
  */
 DrawableDcel::DrawableDcel(const Dcel &d) : Dcel(d) {
-    update();
     init();
 }
 
@@ -54,6 +53,9 @@ void DrawableDcel::clear() {
 
 void DrawableDcel::draw() const {
     DrawableMesh::draw(coords.size()/3, triangles.size()/3, coords.data(), triangles.data(), vertexNormals.data(), vertexColors.data(), triangleNormals.data(), triangleColors.data());
+    if (drawMode & DRAW_FACES_WIREFRAME){
+        renderPass();
+    }
 }
 
 /**
@@ -92,17 +94,16 @@ void DrawableDcel::update() {
     triangleColors.clear();
     vertexColors.clear();
     triangleNormals.clear();
-    faces_wireframe.clear();
+    facesWireframe.clear();
     coords.reserve(getNumberVertices()*3);
     vertexNormals.reserve(getNumberVertices()*3);
     triangles.reserve(getNumberFaces()*3);
     triangleColors.reserve(getNumberFaces()*3);
     triangleNormals.reserve(getNumberFaces()*3);
     vertexColors.resize(getNumberVertices()*3,0.5);
-    faces_wireframe.resize(getNumberHalfEdges()/2);
+    facesWireframe.reserve(getNumberHalfEdges()/2);
     std::map<int, int> v_ids;
     int vi = 0;
-    int whe = 0;
 
     for (ConstVertexIterator vit = vertexBegin(); vit != vertexEnd(); ++vit) {
         Pointd p = (*vit)->getCoordinate();
@@ -126,7 +127,7 @@ void DrawableDcel::update() {
             p2 = v_ids[(*heit)->getToVertex()->getId()];
             if (p1 < p2){
                 std::pair<unsigned int, unsigned int> edge(p1,p2);
-                faces_wireframe[whe++] = edge;
+                facesWireframe.push_back(edge);
             }
         }
         if ((*fit)->isTriangle()){
@@ -196,17 +197,15 @@ void DrawableDcel::update() {
  * \~Italian
  * @brief Rendering della mesh
  */
-void DrawableDcel::renderPass(unsigned int nv, unsigned int nt, const double* coords, const int* triangles, const double* vertexNormals, const float* vertexColors, const double* triangleNormals, const float* triangleColors) const {
-    DrawableMesh::renderPass(nv, nt, coords, triangles, vertexNormals, vertexColors, triangleNormals, triangleColors);
-
+void DrawableDcel::renderPass() const {
     if(drawMode & DRAW_FACES_WIREFRAME){
 
-        for(unsigned int i=0; i<faces_wireframe.size(); i++){
+        for(unsigned int i=0; i<facesWireframe.size(); i++){
             glLineWidth(1);
             glColor3f(0.0, 0.0, 0.0);
             glBegin(GL_LINES);
-            glVertex3dv(&(coords[3*(faces_wireframe[i].first)]));
-            glVertex3dv(&(coords[3*(faces_wireframe[i].second)]));
+            glVertex3dv(&(coords[3*(facesWireframe[i].first)]));
+            glVertex3dv(&(coords[3*(facesWireframe[i].second)]));
             glEnd();
         }
 

@@ -48,7 +48,7 @@ class DrawableDcel : public Dcel, public DrawableMesh {
 
     protected:
 
-        void renderPass(unsigned int nv, unsigned int nt, const double* coords, const int* triangles, const double* vertexNormals, const float* vertexColors, const double* triangleNormals, const float* triangleColors) const;
+        void renderPass() const;
 
         enum {
             DRAW_FACES_WIREFRAME = 0b10000000
@@ -62,7 +62,7 @@ class DrawableDcel : public Dcel, public DrawableMesh {
         std::vector<float> triangleColors; /** \~Italian @brief vettore di colori associati ai triangoli (da considerare come triple rgb float) usati per la visualizzazione: per aggiornare utilizzare il metodo update() */
 
         std::vector<unsigned int> triangles_face; /** \~Italian @brief vettore di mappatura triangoli->facce (ogni entrata ha posizione corrispondente a un terzo della posizione della tripla in tris e presenta l'identificativo di una faccia */
-        std::vector<std::pair<unsigned int, unsigned int> > faces_wireframe; /** \~Italian @brief vettore di coppie usate per renderizzare degli edge: per aggiornare utilizzare metodo update() */
+        std::vector<std::pair<unsigned int, unsigned int> > facesWireframe; /** \~Italian @brief vettore di coppie usate per renderizzare degli edge: per aggiornare utilizzare metodo update() */
 
 };
 
