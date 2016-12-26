@@ -666,6 +666,48 @@ void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& 
     }
 }
 
+void Engine::reduceHeightfields(HeightfieldsList& he, IGLInterface::SimpleIGLMesh& bc, const Dcel& inputMesh) {
+    CGALInterface::AABBTree aabb(inputMesh, true);
+    double lEdge = inputMesh.getAverageHalfEdgesLength()*7;
+    for (unsigned int i = he.getNumHeightfields()-1; i >= 1; i--){
+        BoundingBox realBoundingBox;
+        bool first = true;
+        for (unsigned int j = 0; j < he.getNumberVerticesHeightfield(i); j++){
+            Pointd p = he.getVertexOfHeightfield(i,j);
+            if (aabb.getSquaredDistance(p) < EPSILON){
+                if (first){
+                    first = false;
+                    realBoundingBox.min() = p;
+                    realBoundingBox.max() = p;
+                }
+                else {
+                    realBoundingBox.min() = realBoundingBox.min().min(p);
+                    realBoundingBox.max() = realBoundingBox.max().max(p);
+                }
+            }
+        }
+        for (unsigned int t = 0; t < 6; t++){
+            if (he.getTarget(i) == XYZ[t]){
+                if (t < 3)
+                    realBoundingBox[t] = std::max(realBoundingBox[t] - 1, he.getHeightfield(i).getBoundingBox()[t]);
+                else
+                    realBoundingBox[t] = std::min(realBoundingBox[t] + 1, he.getHeightfield(i).getBoundingBox()[t]);
+            }
+        }
+
+
+        if (! Common::epsilonEqual(realBoundingBox.min(), he.getHeightfield(i).getBoundingBox().min()) ||
+            ! Common::epsilonEqual(realBoundingBox.max(), he.getHeightfield(i).getBoundingBox().max()) ){
+            IGLInterface::SimpleIGLMesh box = IGLInterface::makeBox(realBoundingBox, lEdge);
+            IGLInterface::SimpleIGLMesh oldHeightfield = he.getHeightfield(i);
+            IGLInterface::SimpleIGLMesh gluePortion = IGLInterface::SimpleIGLMesh::difference(oldHeightfield, box);
+            IGLInterface::SimpleIGLMesh newHeightfield = IGLInterface::SimpleIGLMesh::intersection(oldHeightfield, box);
+            IGLInterface::SimpleIGLMesh::unionn(bc, bc, gluePortion);
+            he.setHeightfield(newHeightfield,i,true);
+        }
+    }
+}
+
 void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, IGLInterface::SimpleIGLMesh& bc, BoxList& solutions, const Dcel& inputMesh) {
     CGALInterface::AABBTree aabb(inputMesh, true);
     for (unsigned int i = solutions.getNumberBoxes()-1; i >= 1; i--){

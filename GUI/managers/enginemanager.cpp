@@ -988,9 +988,9 @@ void EngineManager::on_subtractPushButton_clicked() {
 }
 
 void EngineManager::on_stickPushButton_clicked() {
-    if (d!=nullptr && baseComplex != nullptr && he != nullptr && solutions != nullptr){
+    if (d!=nullptr && baseComplex != nullptr && he != nullptr){
         IGLInterface::SimpleIGLMesh bc = *baseComplex;
-        Engine::gluePortionsToBaseComplex(*he, bc, *solutions, *d);
+        Engine::reduceHeightfields(*he, bc, *d);
         deleteDrawableObject(baseComplex);
         baseComplex = new IGLInterface::DrawableIGLMesh(bc);
         baseComplex->updateFaceNormals();
@@ -1002,7 +1002,6 @@ void EngineManager::on_stickPushButton_clicked() {
         }
         mainWindow->pushObj(baseComplex, "Base Complex");
     }
-
     mainWindow->updateGlCanvas();
 }
 

@@ -12,6 +12,7 @@
 #include "energy.h"
 #include "cgal/aabbtree.h"
 #include "igl/iglinterface.h"
+#include "igl/utils.h"
 #include "heightfieldslist.h"
 #include "lib/grid/irregulargrid.h"
 
@@ -58,6 +59,8 @@ namespace Engine {
     void splitConnectedComponents(HeightfieldsList &he, BoxList &solutions);
 
     void glueInternHeightfieldsToBaseComplex(HeightfieldsList &he, BoxList &solutions, IGLInterface::SimpleIGLMesh &bc, const Dcel& inputMesh);
+
+    void reduceHeightfields(HeightfieldsList& he, IGLInterface::SimpleIGLMesh &bc, const Dcel& inputMesh);
 
     void gluePortionsToBaseComplex(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
 

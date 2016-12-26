@@ -62,7 +62,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-265</y>
+        <y>0</y>
         <width>406</width>
         <height>1100</height>
        </rect>
@@ -518,10 +518,10 @@
                  <number>5</number>
                 </property>
                 <property name="value">
-                 <number>1</number>
+                 <number>0</number>
                 </property>
                 <property name="sliderPosition">
-                 <number>1</number>
+                 <number>0</number>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>

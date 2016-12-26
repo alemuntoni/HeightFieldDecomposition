@@ -99,8 +99,10 @@ void DrawableDcel::update() {
     triangleColors.reserve(getNumberFaces()*3);
     triangleNormals.reserve(getNumberFaces()*3);
     vertexColors.resize(getNumberVertices()*3,0.5);
+    faces_wireframe.resize(getNumberHalfEdges()/2);
     std::map<int, int> v_ids;
     int vi = 0;
+    int whe = 0;
 
     for (ConstVertexIterator vit = vertexBegin(); vit != vertexEnd(); ++vit) {
         Pointd p = (*vit)->getCoordinate();
@@ -122,10 +124,10 @@ void DrawableDcel::update() {
             unsigned int p1, p2;
             p1 = v_ids[(*heit)->getFromVertex()->getId()];
             p2 = v_ids[(*heit)->getToVertex()->getId()];
-            std::pair<unsigned int, unsigned int> edge(p1,p2);
-            std::vector<std::pair<unsigned int, unsigned int> >::iterator it = std::find(faces_wireframe.begin(), faces_wireframe.end(), edge);
-            if(it==faces_wireframe.end())
-                faces_wireframe.push_back(edge);
+            if (p1 < p2){
+                std::pair<unsigned int, unsigned int> edge(p1,p2);
+                faces_wireframe[whe++] = edge;
+            }
         }
         if ((*fit)->isTriangle()){
             Dcel::Face::ConstIncidentVertexIterator vit = (*fit)->incidentVertexBegin();
