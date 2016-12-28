@@ -12,7 +12,6 @@
 #include "energy.h"
 #include "cgal/aabbtree.h"
 #include "igl/iglinterface.h"
-#include "igl/utils.h"
 #include "heightfieldslist.h"
 #include "lib/grid/irregulargrid.h"
 

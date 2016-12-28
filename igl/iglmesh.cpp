@@ -77,11 +77,19 @@ namespace IGLInterface {
         return S;
     }
 
-    Eigen::MatrixXd SimpleIGLMesh::getVerticesMatrix() const {
+    Eigen::MatrixXd SimpleIGLMesh::getVerticesMatrix() {
         return V;
     }
 
-    Eigen::MatrixXi SimpleIGLMesh::getFacesMatrix() const {
+    Eigen::MatrixXi SimpleIGLMesh::getFacesMatrix() {
+        return F;
+    }
+
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& SimpleIGLMesh::getVerticesMatrix() const {
+        return V;
+    }
+
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& SimpleIGLMesh::getFacesMatrix() const {
         return F;
     }
 
@@ -272,8 +280,7 @@ namespace IGLInterface {
     }
 
     IGLMesh::IGLMesh(const SimpleIGLMesh& m) : SimpleIGLMesh(m) {
-        CF = Eigen::MatrixXf::Constant(F.rows(), 3, 0.5);
-        CV = Eigen::MatrixXf::Constant(V.rows(), 3, 0.5);
+        updateColorSizes();
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
         igl::per_face_normals(V,F,NF);
@@ -285,8 +292,7 @@ namespace IGLInterface {
     }
 
     IGLMesh::IGLMesh(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F) : SimpleIGLMesh(V,F) {
-        CF = Eigen::MatrixXf::Constant(F.rows(), 3, 0.5);
-        CV = Eigen::MatrixXf::Constant(V.rows(), 3, 0.5);
+        updateColorSizes();
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
         igl::per_face_normals(this->V,this->F,NF);
@@ -318,6 +324,7 @@ namespace IGLInterface {
 
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
+        updateFaceColorsSize();
         igl::per_face_normals(V,F,NF);
         igl::per_vertex_normals(V,F,NV);
         if (V.rows() > 0){
@@ -331,8 +338,8 @@ namespace IGLInterface {
         clear();
         V.resize(dcel.getNumberVertices(), 3);
         F.resize(dcel.getNumberFaces(), 3);
-        CF = Eigen::MatrixXf::Constant(F.rows(), 3, 0.5);
-        CV = Eigen::MatrixXf::Constant(V.rows(), 3, 0.5);
+        CF.resize(F.rows(), 3);
+        updateVertexColorsSize();
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
         std::map<int, int> vids;
@@ -365,8 +372,7 @@ namespace IGLInterface {
     bool IGLMesh::readFromFile(const std::string& filename) {
         bool b = SimpleIGLMesh::readFromFile(filename);
         if (b){
-            CF = Eigen::MatrixXf::Constant(F.rows(), 3, 0.5);
-            CV = Eigen::MatrixXf::Constant(V.rows(), 3, 0.5);
+            updateColorSizes();
             NV.resize(V.rows(), 3);
             NF.resize(F.rows(), 3);
             igl::per_face_normals(V,F,NF);
@@ -401,8 +407,7 @@ namespace IGLInterface {
         /**
           @todo ripristinate colors of faces
           */
-        CF = Eigen::MatrixXf::Constant(F.rows(), 3, 0.5);
-        CV = Eigen::MatrixXf::Constant(V.rows(), 3, 0.5);
+        updateColorSizes();
         updateVertexAndFaceNormals();
         updateBoundingBox();
     }
@@ -412,8 +417,7 @@ namespace IGLInterface {
         /**
           @todo ripristinate colors of faces
           */
-        decimated.CF = Eigen::MatrixXf::Constant(F.rows(), 3, 0.5);
-        decimated.CV = Eigen::MatrixXf::Constant(V.rows(), 3, 0.5);
+        updateColorSizes();
         decimated.updateVertexAndFaceNormals();
         decimated.updateBoundingBox();
         return b;
@@ -537,7 +541,7 @@ namespace IGLInterface {
         V = NV;
         F = NF;
 
-        CF = Eigen::MatrixXf::Constant(F.rows(), 3, 0.5);
+        updateFaceColorsSize();
         this->NV.resize(V.rows(), 3);
         this->NF.resize(F.rows(), 3);
         igl::per_face_normals(V,F,this->NF);
@@ -551,8 +555,7 @@ namespace IGLInterface {
         SimpleIGLMesh sres;
         SimpleIGLMesh::intersection(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
-        result.CF = Eigen::MatrixXf::Constant(result.F.rows(), 3, 0.5);
-        result.CV = Eigen::MatrixXf::Constant(result.V.rows(), 3, 0.5);
+        result.updateColorSizes();
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -563,8 +566,7 @@ namespace IGLInterface {
         SimpleIGLMesh sres;
         SimpleIGLMesh::intersection(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
-        result.CF = Eigen::MatrixXf::Constant(result.F.rows(), 3, 0.5);
-        result.CV = Eigen::MatrixXf::Constant(result.V.rows(), 3, 0.5);
+        result.updateColorSizes();
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -575,8 +577,7 @@ namespace IGLInterface {
         SimpleIGLMesh sres;
         SimpleIGLMesh::difference(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
-        result.CF = Eigen::MatrixXf::Constant(result.F.rows(), 3, 0.5);
-        result.CV = Eigen::MatrixXf::Constant(result.V.rows(), 3, 0.5);
+        result.updateColorSizes();
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -587,8 +588,7 @@ namespace IGLInterface {
         SimpleIGLMesh sres;
         SimpleIGLMesh::difference(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
-        result.CF = Eigen::MatrixXf::Constant(result.F.rows(), 3, 0.5);
-        result.CV = Eigen::MatrixXf::Constant(result.V.rows(), 3, 0.5);
+        result.updateColorSizes();
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -599,8 +599,7 @@ namespace IGLInterface {
         SimpleIGLMesh sres;
         SimpleIGLMesh::unionn(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
-        result.CF = Eigen::MatrixXf::Constant(result.F.rows(), 3, 0.5);
-        result.CV = Eigen::MatrixXf::Constant(result.V.rows(), 3, 0.5);
+        result.updateColorSizes();
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -611,8 +610,7 @@ namespace IGLInterface {
         SimpleIGLMesh sres;
         SimpleIGLMesh::unionn(sres, SimpleIGLMesh(m1.V, m1.F), SimpleIGLMesh(m2.V, m2.F));
         result = IGLMesh(sres);
-        result.CF = Eigen::MatrixXf::Constant(result.F.rows(), 3, 0.5);
-        result.CV = Eigen::MatrixXf::Constant(result.V.rows(), 3, 0.5);
+        result.updateColorSizes();
         result.NV.resize(result.V.rows(), 3);
         result.NF.resize(result.F.rows(), 3);
         result.updateVertexAndFaceNormals();
@@ -659,7 +657,7 @@ namespace IGLInterface {
         clear();
         V.resize(dcel.getNumberVertices(), 3);
         F.resize(dcel.getNumberFaces(), 3);
-        CF = Eigen::MatrixXf::Constant(F.rows(), 3, 0.5);
+        CF.resize(F.rows(), 3);
         CV = Eigen::MatrixXf::Constant(V.rows(), 3, 0.5);
         NV.resize(V.rows(), 3);
         NF.resize(F.rows(), 3);
@@ -712,5 +710,18 @@ namespace IGLInterface {
             return true;
         }
         return false;
+    }
+
+    void IGLMesh::updateFaceColorsSize() {
+        CF.conservativeResizeLike(Eigen::MatrixXf::Constant(F.rows(), 3, 0.5));
+    }
+
+    void IGLMesh::updateVertexColorsSize() {
+        CV.conservativeResizeLike(Eigen::MatrixXf::Constant(V.rows(), 3, 0.5));
+    }
+
+    void IGLMesh::updateColorSizes() {
+        updateFaceColorsSize();
+        updateVertexColorsSize();
     }
 }

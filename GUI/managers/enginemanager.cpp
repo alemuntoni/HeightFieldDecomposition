@@ -7,7 +7,7 @@
 #include <omp.h>
 #include "cgal/aabbtree.h"
 #include "engine/packing.h"
-#include "igl/utils.h"
+#include "igl/iglinterface.h"
 #include "engine/reconstruction.h"
 #include "engineworker.h"
 #include <QThread>

@@ -14,9 +14,15 @@ namespace IGLInterface {
     template <typename T>
     void generateGridAndDistanceField(Array3D<Pointd>& grid, Array3D<T> &distanceField, const SimpleIGLMesh &m, double gridUnit = 2, bool integer= true);
 
-    //static std::vector< std::vector<Point2D> > dummy_holes2D;
-    //std::vector<std::array<Point2D, 3> > triangulate(const std::vector<Point2D>& polygon, const std::vector<std::vector<Point2D> >& holes = dummy_holes2D, double maximumArea, double minimumAngle = 0.2);
+    IGLInterface::SimpleIGLMesh makeBox(const BoundingBox &bb, double minimumEdge = -1);
+
+    IGLInterface::SimpleIGLMesh makeBox(const Pointd &min, const Pointd &max, double minimumEdge = -1);
+
+    bool isABox(const SimpleIGLMesh& simpleIGLMesh);
 }
 
+inline IGLInterface::SimpleIGLMesh IGLInterface::makeBox(const Pointd &min, const Pointd &max, double minimumEdge){
+    return makeBox(BoundingBox(min, max), minimumEdge);
+}
 
 #endif // FUNCTIONS_H

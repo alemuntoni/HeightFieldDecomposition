@@ -476,9 +476,14 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
     Grid g[ORIENTATIONS][TARGETS];
     BoxList bl[ORIENTATIONS][TARGETS];
     std::set<int> coveredFaces;
-    unsigned int numberFaces = 200;
-    if (!decimante)
-        numberFaces = d.getNumberFaces();
+    int factor = 1024;
+
+    unsigned int numberFaces = d.getNumberFaces();
+    if (decimante){
+        while (numberFaces/factor  < 200 && factor != 1)
+            factor/=2;
+        numberFaces/=factor;
+    }
     CGALInterface::AABBTree aabb[ORIENTATIONS];
     for (unsigned int i = 0; i < ORIENTATIONS; i++)
         aabb[i] = CGALInterface::AABBTree(scaled[i]);
@@ -587,6 +592,16 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
         numberFaces*=2;
         if (numberFaces > scaled[0].getNumberFaces())
             numberFaces = scaled[0].getNumberFaces();
+    }
+
+    if (file){
+        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
+            for (unsigned int j = 0; j < TARGETS; ++j){
+                std::stringstream ss ;
+                ss << "grid" << i << "_" << j << ".bin";
+                std::remove(ss.str().c_str());
+            }
+        }
     }
 
     std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS][TARGETS];

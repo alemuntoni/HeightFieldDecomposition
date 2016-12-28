@@ -20,6 +20,8 @@ namespace Splitting {
 
     double minimumSplit(const Box3D &b1, const Box3D &b2);
 
+    std::set<unsigned int> getTrianglesCovered(const Box3D& b, const CGALInterface::AABBTree &aabb);
+
     Array2D<int> getOrdering(BoxList& bl, const Dcel &d);
 }
 

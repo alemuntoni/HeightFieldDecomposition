@@ -71,8 +71,10 @@ namespace IGLInterface {
             void decimate(unsigned int numberDesiredFaces);
             bool getDecimatedMesh(SimpleIGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
             Eigen::VectorXd getSignedDistance(const Eigen::MatrixXd &points) const;
-            Eigen::MatrixXd getVerticesMatrix() const;
-            Eigen::MatrixXi getFacesMatrix() const;
+            Eigen::MatrixXd getVerticesMatrix();
+            Eigen::MatrixXi getFacesMatrix();
+            const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& getVerticesMatrix() const;
+            const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& getFacesMatrix() const;
             void translate(const Pointd &p);
             void translate(const Eigen::Vector3d &p);
             void rotate(const Eigen::Matrix3d &m, const Eigen::Vector3d& centroid = Eigen::Vector3d::Zero());
@@ -160,6 +162,10 @@ namespace IGLInterface {
             bool deserialize(std::ifstream& binaryFile);
 
         protected:
+
+            void updateFaceColorsSize();
+            void updateVertexColorsSize();
+            void updateColorSizes();
 
             Eigen::RowVector3d BBmin, BBmax;
             Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NV;

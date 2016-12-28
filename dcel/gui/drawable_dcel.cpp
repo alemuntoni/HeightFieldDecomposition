@@ -105,9 +105,9 @@ void DrawableDcel::update() {
     std::map<int, int> v_ids;
     int vi = 0;
 
-    for (ConstVertexIterator vit = vertexBegin(); vit != vertexEnd(); ++vit) {
-        Pointd p = (*vit)->getCoordinate();
-        Vec3 n = (*vit)->getNormal();
+    for (const Dcel::Vertex* v : vertexIterator()) {
+        Pointd p = v->getCoordinate();
+        Vec3 n = v->getNormal();
         coords.push_back(p.x());
         coords.push_back(p.y());
         coords.push_back(p.z());
@@ -115,41 +115,37 @@ void DrawableDcel::update() {
         vertexNormals.push_back(n.y());
         vertexNormals.push_back(n.z());
 
-        v_ids[(*vit)->getId()] = vi;
+        v_ids[v->getId()] = vi;
         vi++;
     }
     #ifdef CGAL_DEFINED
     triangles_face.clear();
-    for (FaceIterator fit = faceBegin(); fit != faceEnd(); ++fit) {
-        for(Dcel::Face::IncidentHalfEdgeIterator heit = (*fit)->incidentHalfEdgeBegin(); heit != (*fit)->incidentHalfEdgeEnd(); heit++){
+    for (const Dcel::Face* f : faceIterator()) {
+        for (const Dcel::HalfEdge* he : f->incidentHalfEdgeIterator()){
             unsigned int p1, p2;
-            p1 = v_ids[(*heit)->getFromVertex()->getId()];
-            p2 = v_ids[(*heit)->getToVertex()->getId()];
+            p1 = v_ids[he->getFromVertex()->getId()];
+            p2 = v_ids[he->getToVertex()->getId()];
             if (p1 < p2){
                 std::pair<unsigned int, unsigned int> edge(p1,p2);
                 facesWireframe.push_back(edge);
             }
         }
-        if ((*fit)->isTriangle()){
-            Dcel::Face::ConstIncidentVertexIterator vit = (*fit)->incidentVertexBegin();
-            triangles.push_back(v_ids[(*vit)->getId()]);
-            ++vit;
-            triangles.push_back(v_ids[(*vit)->getId()]);
-            ++vit;
-            triangles.push_back(v_ids[(*vit)->getId()]);
-            triangleColors.push_back((*fit)->getColor().redF());
-            triangleColors.push_back((*fit)->getColor().greenF());
-            triangleColors.push_back((*fit)->getColor().blueF());
-            triangleNormals.push_back((*fit)->getNormal().x());
-            triangleNormals.push_back((*fit)->getNormal().y());
-            triangleNormals.push_back((*fit)->getNormal().z());
-            triangles_face.push_back((*fit)->getId());
+        if (f->isTriangle()){
+            for (const Dcel::Vertex* v : f->incidentVertexIterator())
+                triangles.push_back(v_ids[v->getId()]);
+            triangleColors.push_back(f->getColor().redF());
+            triangleColors.push_back(f->getColor().greenF());
+            triangleColors.push_back(f->getColor().blueF());
+            triangleNormals.push_back(f->getNormal().x());
+            triangleNormals.push_back(f->getNormal().y());
+            triangleNormals.push_back(f->getNormal().z());
+            triangles_face.push_back(f->getId());
         }
         else {
             //Si ottiene la triangolazione della faccia e si inseriscono i triangoli
             //prodotti nell'array tris.
             std::vector<std::array<const Dcel::Vertex*, 3> > face_triangles;
-            (*fit)->getTriangulation(face_triangles);
+            f->getTriangulation(face_triangles);
             std::array<const Dcel::Vertex*, 3> t;
             for(unsigned int i = 0; i<face_triangles.size(); ++i){
                 t = face_triangles[i];
@@ -164,13 +160,13 @@ void DrawableDcel::update() {
             //Per ogni triangolo prodotto dalla triangolazione della faccia si aggiunge
             //un colore (composto da una tripla di valori)
             for(unsigned int ti = 0; ti < face_triangles.size(); ti++){
-                triangles_face.push_back((*fit)->getId());
-                triangleColors.push_back((*fit)->getColor().redF());
-                triangleColors.push_back((*fit)->getColor().greenF());
-                triangleColors.push_back((*fit)->getColor().blueF());
-                triangleNormals.push_back((*fit)->getNormal().x());
-                triangleNormals.push_back((*fit)->getNormal().y());
-                triangleNormals.push_back((*fit)->getNormal().z());
+                triangles_face.push_back(f->getId());
+                triangleColors.push_back(f->getColor().redF());
+                triangleColors.push_back(f->getColor().greenF());
+                triangleColors.push_back(f->getColor().blueF());
+                triangleNormals.push_back(f->getNormal().x());
+                triangleNormals.push_back(f->getNormal().y());
+                triangleNormals.push_back(f->getNormal().z());
             }
             /***********************************************************************/
         }

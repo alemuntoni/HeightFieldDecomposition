@@ -3,7 +3,7 @@
 #include "common.h"
 #include "common/timer.h"
 #include "lib/graph/directedgraph.h"
-#include "igl/utils.h"
+#include "igl/iglinterface.h"
 #include <map>
 
 bool Splitting::boxesIntersect(const Box3D& b1, const Box3D& b2) {
@@ -212,43 +212,49 @@ double Splitting::minimumSplit(const Box3D &b1, const Box3D &b2){
     return std::min(remainingSplit, volumeb3);
 }
 
+std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGALInterface::AABBTree& aabb) {
+    std::set<unsigned int> trianglesCovered;
+    std::list<const Dcel::Face*> list;
+    aabb.getCompletelyContainedDcelFaces(list, b);
+    for (const Dcel::Face* f : list){
+        trianglesCovered.insert(f->getId());
+    }
+    return trianglesCovered;
+}
+
 Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     CGALInterface::AABBTree tree(d);
     bl.calculateTrianglesCovered(tree);
     bl.sortByTrianglesCovered();
     bl.setIds();
-    std::cerr << "Triangles Covered: \n";
+    std::vector< std::set<unsigned int> > trianglesCovered(bl.getNumberBoxes());
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
-        std::cerr << bl.getBox(i).getTrianglesCovered() << "; ";
+        trianglesCovered[i] = getTrianglesCovered(bl.getBox(i), tree);
     }
-    std::cerr << "\n";
+    std::set<unsigned int> boxesToEliminate;
     std::vector<std::vector<unsigned int> > loops;
     DirectedGraph g(bl.getNumberBoxes());
-    //
-    //d.saveOnObjFile("tmp.obj");
-    //
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
         for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
             Box3D b2 = bl.getBox(j);
             if (boxesIntersect(b1,b2)){
-                //
-                //b1.getIGLMesh().saveOnObj("b1.obj");
-                //b2.getIGLMesh().saveOnObj("b2.obj");
-                //
                 if (isDangerousIntersection(b1, b2, tree)){
                     g.addEdge(i,j);
-                    std::cerr << i << " -> " << j << "\n";
+                    //std::cerr << i << " -> " << j << "\n";
                 }
                 if (isDangerousIntersection(b2, b1, tree)){
                     g.addEdge(j,i);
-                    std::cerr << j << " -> " << i << "\n";
+                    //std::cerr << j << " -> " << i << "\n";
                 }
+
             }
         }
     }
     ///Detect and delete cycles on graph (modifying bl)
 
+    int numberOfSplits = 0;
+    int deletedBoxes = 0;
     do {
         g.getLoops(loops);
         std::cerr << "Number loops: " << loops.size() << "\n";
@@ -258,7 +264,6 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             for (std::vector<unsigned int> loop : loops){
                 unsigned int node = 0;
                 for (node = 0; node < loop.size()-1; node++){
-                    std::cerr << loop[node] << " -> ";
                     std::pair<unsigned int, unsigned int> arc(loop[node], loop[node+1]);
                     std::map<std::pair<unsigned int, unsigned int>, int>::iterator it = arcs.find(arc);
                     if (it == arcs.end())
@@ -266,13 +271,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                     else
                         arcs[arc]++;
                 }
-                std::cerr << loop[node] << " \n";
             }
             std::multimap<int,std::pair<unsigned int, unsigned int> > rev = Common::flipMap(arcs);
-
-            for (std::multimap<int,std::pair<unsigned int, unsigned int> >::reverse_iterator it = rev.rbegin(); it != rev.rend(); ++it){
-                std::cerr << "K : " << (*it).first << "; V: (" << (*it).second.first << " -> " << (*it).second.second << ")\n";
-            }
 
             std::multimap<int,std::pair<unsigned int, unsigned int> >::reverse_iterator it = rev.rbegin();
 
@@ -280,14 +280,11 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             std::pair<unsigned int, unsigned int> arcToRemove;
             if (size == 1){ // if I remove this arc, I will remove the maximum number of loops
                 arcToRemove = (*it).second;
-                std::cerr << "Eliminate Arc: " << arcToRemove.first << " -> " << arcToRemove.second << "\n";
             }
             else { // I need to choose wich arc I want to eliminate -> maximum split
-                std::cerr << "Eliminate Arcs: \n";
                 std::vector<std::pair<unsigned int, unsigned int> > candidateArcs;
                 for (auto i=rev.equal_range((*it).first).first; i!=rev.equal_range((*it).first).second; ++i){
                     std::pair<unsigned int, unsigned int> arc = (*i).second;
-                    std::cerr << "\t" << arc.first << " -> " << arc.second << "\n";
                     candidateArcs.push_back(arc);
                 }
                 double volmax = minimumSplit(bl.getBox(candidateArcs[0].first), bl.getBox(candidateArcs[0].second));
@@ -306,72 +303,131 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             // now I can remove "arcToRemove"
             Box3D b1 = bl.getBox(arcToRemove.first), b2 = bl.getBox(arcToRemove.second), b3;
             splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*7);
-            if (!(b3.min() == Pointd() && b3.max() == Pointd())){
+            if (!(b3.min() == Pointd() && b3.max() == Pointd())){ //se b3 esiste
+                g.removeEdge(arcToRemove.first, arcToRemove.second);
+                g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
                 b3.setId(bl.getNumberBoxes());
                 b3.setTrianglesCovered(tree.getNumberIntersectedPrimitives(b3));
+
+                /////gestione b2:
                 b2.setTrianglesCovered(b2.getTrianglesCovered()-b3.getTrianglesCovered());
                 bl.setBox(b2.getId(), b2);
-                bl.addBox(b3);
                 ///
                 //b1.getIGLMesh().saveOnObj("b1.obj");
                 //b2.getIGLMesh().saveOnObj("b2.obj");
                 //b3.getIGLMesh().saveOnObj("b3.obj");
                 ///
-                g.removeEdge(arcToRemove.first, arcToRemove.second);
-                g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
                 std::vector<unsigned int> incomingb2 = g.getIncomingNodes(b2.getId());
                 std::vector<unsigned int> outgoingb2 = g.getOutgoingNodes(b2.getId());
                 g.deleteAllIncomingNodes(b2.getId());
                 g.deleteAllOutgoingNodes(b2.getId());
-                unsigned int tmp = g.addNode();
-                assert(tmp == (unsigned int)b3.getId());
-                for (unsigned int incoming : incomingb2){
-                    Box3D other = bl.getBox(incoming);
-                    ///
-                    //other.getIGLMesh().saveOnObj("checkother.obj");
-                    //b2.getIGLMesh().saveOnObj("checkb2.obj");
-                    //b3.getIGLMesh().saveOnObj("checkb3.obj");
-                    ///
-                    if (boxesIntersect(other,b2)){
-                        if (isDangerousIntersection(other, b2, tree, true)){
-                            g.addEdge(incoming,b2.getId());
-                            std::cerr << incoming << " -> " << b2.getId() << "\n";
+
+                std::set<unsigned int> trianglesCoveredB2 = getTrianglesCovered(b2, tree);
+                //qualcuno copre già tutti i triangoli coperti da b2? se si, b2 viene aggiunta alle box da eliminare, e nessun arco punterà più ad essa
+                bool exit = false;
+                /*for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
+                    if (boxesToEliminate.find(i) == boxesToEliminate.end() && i != b2.getId()){
+                        std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
+                        if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredB2.begin(), trianglesCoveredB2.end())){
+                            exit = true;
+                            boxesToEliminate.insert(b2.getId());
+                            deletedBoxes++;
                         }
                     }
-                    if (boxesIntersect(other,b3)){
-                        if (isDangerousIntersection(other, b3, tree, true)){
-                            g.addEdge(incoming,b3.getId());
-                            std::cerr << incoming << " -> " << b3.getId() << "\n";
+                }*/
+                if (!exit){
+
+                    //ricontrollo tutti i conflitti di b2 (archi entranti e uscenti)
+                    for (unsigned int incoming : incomingb2){
+                        Box3D other = bl.getBox(incoming);
+                        ///
+                        //other.getIGLMesh().saveOnObj("checkother.obj");
+                        //b2.getIGLMesh().saveOnObj("checkb2.obj");
+                        ///
+                        if (boxesIntersect(other,b2)){
+                            if (isDangerousIntersection(other, b2, tree, true)){
+                                g.addEdge(incoming,b2.getId());
+                            }
+                        }
+                    }
+                    for (unsigned int outgoing : outgoingb2){
+                        Box3D other = bl.getBox(outgoing);
+                        ///
+                        //other.getIGLMesh().saveOnObj("checkother.obj");
+                        //b2.getIGLMesh().saveOnObj("checkb2.obj");
+                        ///
+                        if (boxesIntersect(b2, other)){
+                            if (isDangerousIntersection(b2, other, tree, true)){
+                                g.addEdge(b2.getId(), outgoing);
+                            }
+                        }
+                    }
+                    trianglesCovered[b2.getId()] = trianglesCoveredB2;
+                }
+
+                //////gestione b3:
+
+                std::set<unsigned int> trianglesCoveredB3 = getTrianglesCovered(b3, tree);
+                //qualcuno copre già tutti i triangoli coperti da b2? se si, b2 viene aggiunta alle box da eliminare, e nessun arco punterà più ad essa
+                exit = false;
+                for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
+                    if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
+                        std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
+                        if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredB3.begin(), trianglesCoveredB3.end())){
+                            exit = true;
+                            deletedBoxes++;
                         }
                     }
                 }
-                for (unsigned int outgoing : outgoingb2){
-                    Box3D other = bl.getBox(outgoing);
-                    ///
-                    //other.getIGLMesh().saveOnObj("checkother.obj");
-                    //b2.getIGLMesh().saveOnObj("checkb2.obj");
-                    //b3.getIGLMesh().saveOnObj("checkb3.obj");
-                    ///
-                    if (boxesIntersect(b2, other)){
-                        if (isDangerousIntersection(b2, other, tree, true)){
-                            g.addEdge(b2.getId(), outgoing);
-                            std::cerr << b2.getId() << " -> " << outgoing << "\n";
+
+                if (!exit){
+                    bl.addBox(b3);
+                    //costruisco tutti i conflitti di b3 (archi entranti e uscenti)
+                    g.addNode();
+                    for (unsigned int incoming : incomingb2){
+                        Box3D other = bl.getBox(incoming);
+                        ///
+                        //other.getIGLMesh().saveOnObj("checkother.obj");
+                        //b3.getIGLMesh().saveOnObj("checkb3.obj");
+                        ///
+                        if (boxesIntersect(other,b3)){
+                            if (isDangerousIntersection(other, b3, tree, true)){
+                                g.addEdge(incoming,b3.getId());
+                            }
                         }
                     }
-                    if (boxesIntersect(b3, other)){
-                        if (isDangerousIntersection(b3, other, tree, true)){
-                            g.addEdge(b3.getId(), outgoing);
-                            std::cerr << b3.getId() << " -> " << outgoing << "\n";
+                    for (unsigned int outgoing : outgoingb2){
+                        Box3D other = bl.getBox(outgoing);
+                        ///
+                        //other.getIGLMesh().saveOnObj("checkother.obj");
+                        //b3.getIGLMesh().saveOnObj("checkb3.obj");
+                        ///
+                        if (boxesIntersect(b3, other)){
+                            if (isDangerousIntersection(b3, other, tree, true)){
+                                g.addEdge(b3.getId(), outgoing);
+                            }
                         }
                     }
+                    trianglesCovered.push_back(getTrianglesCovered(b3, tree));
                 }
+
+
+                numberOfSplits++;
+
+
             }
-            else {
+            else { // altrimenti b3 non esiste, e b2 è rimasta uguale a prima
                 g.removeEdge(arcToRemove.first, arcToRemove.second);
                 g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
             }
         }
     }while (loops.size() > 0);
+    std::cerr << "Number of Splits: " << numberOfSplits << "\n";
+    std::cerr << "Number of Deleted Boxes: " << deletedBoxes << "\n";
+
+    for (std::set<unsigned int>::reverse_iterator rit = boxesToEliminate.rbegin(); rit != boxesToEliminate.rend(); ++rit){
+        bl.removeBox(*rit);
+    }
 
     //resorting and map old with new graph
     //this is necessary because small indices prevails if
@@ -389,6 +445,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
         }
     }
 
+    //get the ordering from the graph
     //works only if graph has no cycles
     newGraph.getLoops(loops);
     assert(loops.size() == 0);
@@ -419,5 +476,4 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     }
 
     return ordering;
-
 }
