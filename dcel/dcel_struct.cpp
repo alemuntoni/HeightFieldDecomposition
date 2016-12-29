@@ -2297,13 +2297,13 @@ void Dcel::copyFrom(const IGLInterface::SimpleIGLMesh& iglMesh) {
                 eid->setPrev(prev);
                 prev->setNext(eid);
             }
-            vertices[nid[i] - 1]->setIncidentHalfEdge(eid);
-            eid->setFromVertex(vertices[nid[i] - 1]);
-            vertices[nid[i] - 1]->incrementCardinality();
-            eid->setToVertex(vertices[nid[i+1] - 1]);
+            vertices[nid[i]]->setIncidentHalfEdge(eid);
+            eid->setFromVertex(vertices[nid[i]]);
+            vertices[nid[i]]->incrementCardinality();
+            eid->setToVertex(vertices[nid[i+1]]);
             eid->setFace(fid);
-            p.first = nid[i+1] - 1;
-            p.second = nid[i] - 1;
+            p.first = nid[i+1];
+            p.second = nid[i];
             eiter = edge.find(p);
             if (eiter != edge.end()){
                 HalfEdge* twin = edge[p];
@@ -2312,8 +2312,8 @@ void Dcel::copyFrom(const IGLInterface::SimpleIGLMesh& iglMesh) {
                 edge.erase(eiter);
             }
             else {
-                p.first = nid[i] - 1;
-                p.second = nid[i+1] - 1;
+                p.first = nid[i];
+                p.second = nid[i+1];
                 edge[p] = eid;
             }
             prev = eid;

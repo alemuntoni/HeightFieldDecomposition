@@ -4,6 +4,7 @@
 #include "../common/serialize.h"
 #include "../common/arrays.h"
 #include "../common/point2d.h"
+#include "../common/utils.h"
 
 #include "iglmesh.h"
 
@@ -18,7 +19,9 @@ namespace IGLInterface {
 
     IGLInterface::SimpleIGLMesh makeBox(const Pointd &min, const Pointd &max, double minimumEdge = -1);
 
-    bool isABox(const SimpleIGLMesh& simpleIGLMesh);
+    void segmentationByFaceNormal(std::vector<std::vector<int> >& segmentation, const IGLInterface::SimpleIGLMesh& mesh, double epsilon = EPSILON);
+
+    bool isAnHexahedron(const SimpleIGLMesh& simpleIGLMesh);
 }
 
 inline IGLInterface::SimpleIGLMesh IGLInterface::makeBox(const Pointd &min, const Pointd &max, double minimumEdge){

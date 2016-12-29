@@ -3,8 +3,8 @@
  * @copyright Alessandro Muntoni 2016.
  */
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef MYCOMMON_H
+#define MYCOMMON_H
 
 #include "common/utils.h"
 #include "dcel/dcel.h"
@@ -97,4 +97,4 @@ QColor colorOfNormal(const Vec3 &normal);
 Vec3 nearestNormal(const Vec3& normal);
 QColor colorOfNearestNormal(const Vec3& normal);
 
-#endif // COMMON_H
+#endif // MYCOMMON_H

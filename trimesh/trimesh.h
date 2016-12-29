@@ -3,8 +3,8 @@
  @copyright Marco Livesu 2014.
 */
 
-#ifndef TRIMESH_H
-#define TRIMESH_H
+#ifndef OLDTRIMESH_H
+#define OLDTRIMESH_H
 
 #include <assert.h>
 #include <float.h>
@@ -354,4 +354,4 @@ template<typename real> class Trimesh
 
 };
 
-#endif // TRIMESH_H
+#endif // OLDTRIMESH_H

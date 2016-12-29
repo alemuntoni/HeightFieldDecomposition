@@ -369,8 +369,10 @@ namespace IGLInterface {
     }
 
     inline void IGLMesh::updateBoundingBox() {
-        BBmin = V.colwise().minCoeff();
-        BBmax = V.colwise().maxCoeff();
+        if (V.rows() > 0){
+            BBmin = V.colwise().minCoeff();
+            BBmax = V.colwise().maxCoeff();
+        }
     }
 
     inline void IGLMesh::updateVertexNormals() {

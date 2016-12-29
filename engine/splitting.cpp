@@ -308,6 +308,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                 g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
                 b3.setId(bl.getNumberBoxes());
                 b3.setTrianglesCovered(tree.getNumberIntersectedPrimitives(b3));
+                std::set<unsigned int> trianglesCoveredB3 = getTrianglesCovered(b3, tree);
 
                 /////gestione b2:
                 b2.setTrianglesCovered(b2.getTrianglesCovered()-b3.getTrianglesCovered());
@@ -322,11 +323,21 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                 g.deleteAllIncomingNodes(b2.getId());
                 g.deleteAllOutgoingNodes(b2.getId());
 
-                std::set<unsigned int> trianglesCoveredB2 = getTrianglesCovered(b2, tree);
+                //update dei triangoli coperti da b2: tutti quelli che sono coperti da b1 e b3 non sono più coperti da b2
+
+                std::set<unsigned int> trianglesCoveredB1 = trianglesCovered[b1.getId()];
+                std::set<unsigned int> trianglesCoveredB2 = trianglesCovered[b2.getId()];
+                std::set<unsigned int> tmp;
+                std::set_difference(trianglesCoveredB2.begin(), trianglesCoveredB2.end(), trianglesCoveredB1.begin(), trianglesCoveredB1.end(), std::inserter(tmp, tmp.begin()));
+                trianglesCoveredB2.clear();
+                std::set_difference(tmp.begin(), tmp.end(), trianglesCoveredB3.begin(), trianglesCoveredB3.end(), std::inserter(trianglesCoveredB2,trianglesCoveredB2.begin()));
+                trianglesCovered[b2.getId()] = trianglesCoveredB2;
+
                 //qualcuno copre già tutti i triangoli coperti da b2? se si, b2 viene aggiunta alle box da eliminare, e nessun arco punterà più ad essa
                 bool exit = false;
-                /*for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
-                    if (boxesToEliminate.find(i) == boxesToEliminate.end() && i != b2.getId()){
+
+                for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
+                    if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
                         std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
                         if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredB2.begin(), trianglesCoveredB2.end())){
                             exit = true;
@@ -334,7 +345,9 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                             deletedBoxes++;
                         }
                     }
-                }*/
+
+                }
+
                 if (!exit){
 
                     //ricontrollo tutti i conflitti di b2 (archi entranti e uscenti)
@@ -363,11 +376,12 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                         }
                     }
                     trianglesCovered[b2.getId()] = trianglesCoveredB2;
+                    b2.setTrianglesCovered(trianglesCoveredB2.size());
                 }
 
                 //////gestione b3:
 
-                std::set<unsigned int> trianglesCoveredB3 = getTrianglesCovered(b3, tree);
+
                 //qualcuno copre già tutti i triangoli coperti da b2? se si, b2 viene aggiunta alle box da eliminare, e nessun arco punterà più ad essa
                 exit = false;
                 for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
@@ -409,6 +423,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                         }
                     }
                     trianglesCovered.push_back(getTrianglesCovered(b3, tree));
+                    b3.setTrianglesCovered(trianglesCovered[trianglesCovered.size()-1].size());
                 }
 
 

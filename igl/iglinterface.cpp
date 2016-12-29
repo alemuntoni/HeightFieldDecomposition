@@ -1,7 +1,9 @@
 #include "iglinterface.h"
+#include <stack>
 #include <igl/copyleft/marching_cubes.h>
 #include <igl/signed_distance.h>
 #include <igl/read_triangle_mesh.h>
+#include <igl/triangle_triangle_adjacency.h>
 
 /**
  * @brief generateGridAndDistanceField
@@ -302,13 +304,67 @@ IGLInterface::SimpleIGLMesh IGLInterface::makeBox(const BoundingBox &bb, double 
     return box;
 }
 
-bool IGLInterface::isABox(const IGLInterface::SimpleIGLMesh& simpleIGLMesh) {
-    IGLInterface::IGLMesh mesh(simpleIGLMesh);
+void IGLInterface::segmentationByFaceNormal(std::vector<std::vector<int> >& segmentation, const IGLInterface::SimpleIGLMesh& mesh, double epsilon) {
+    Eigen::MatrixXi TT;
+    //igl::triangle_triangle_adjacency(simpleIGLMesh.getFacesMatrix(), TT);
+    /**
+    * @todo pull requests
+    */
+    Eigen::MatrixXi F = mesh.getFacesMatrix();
+    igl::triangle_triangle_adjacency(F, TT);
 
+    //Eigen::MatrixXd NF;
+    //igl::per_face_normals(simpleIGLMesh.getVerticesMatrix(),simpleIGLMesh.getFacesMatrix(), NF);
+    /**
+    * @todo pull requests
+    */
+    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> NF;
+    igl::per_face_normals(mesh.getVerticesMatrix(),mesh.getFacesMatrix(), NF);
+
+    segmentation.clear();
+    std::vector<bool> visited(F.rows(), false);
+
+    int first = 0;
+
+    while (first < (int)visited.size()){
+        std::vector<int> chart;
+        std::stack<int> stack;
+
+        visited[first] = true;
+        stack.push(first);
+
+        Vec3 chartNormal(NF(first, 0),NF(first, 1),NF(first, 2));
+        while(stack.size() > 0){
+            int actual = stack.top();
+            stack.pop();
+            chart.push_back(actual);
+
+            for (int i = 0; i < 3; i++){
+                int adj = TT(actual, i);
+                if (!visited[adj]){
+                    Vec3 adjNormal(NF(adj, 0), NF(adj, 1), NF(adj, 2));
+                    if (Common::epsilonEqual(chartNormal, adjNormal, epsilon)){
+                        stack.push(adj);
+                        visited[adj] = true;
+                    }
+                }
+            }
+
+        }
+        segmentation.push_back(chart);
+
+        //update first;
+        while (first < (int)visited.size() && visited[first])
+            first++;
+    }
+}
+
+bool IGLInterface::isAnHexahedron(const IGLInterface::SimpleIGLMesh& simpleIGLMesh) {
+    std::vector <std::vector<int> > segmentation;
+    segmentationByFaceNormal(segmentation, simpleIGLMesh);
+    return segmentation.size() == 6;
 }
 
 template void IGLInterface::generateGridAndDistanceField<double>(Array3D<Pointd>& grid, Array3D<double> &distanceField, const SimpleIGLMesh &m, double gridUnit, bool integer);
 template void IGLInterface::generateGridAndDistanceField<float>(Array3D<Pointd>& grid, Array3D<float> &distanceField, const SimpleIGLMesh &m, double gridUnit, bool integer);
 template void IGLInterface::generateGridAndDistanceField<int>(Array3D<Pointd>& grid, Array3D<int> &distanceField, const SimpleIGLMesh &m, double gridUnit, bool integer);
-
-

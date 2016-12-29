@@ -1153,6 +1153,15 @@ void EngineManager::on_cleanAllPushButton_clicked() {
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
+    mainWindow->deleteObj(&originalMesh);
+    originalMesh.clear();
+    g = nullptr;
+    d = nullptr;
+    b = nullptr;
+    iterations = nullptr;
+    solutions = nullptr;
+    baseComplex = nullptr;
+    he = nullptr;
     //deleteDrawableObject(entirePieces);
 }
 
@@ -1254,9 +1263,9 @@ void EngineManager::on_packPushButton_clicked() {
 
 void EngineManager::on_reconstructionPushButton_clicked() {
     if (d != nullptr && he != nullptr){
-        std::vector<Vec3> mapping = Reconstruction::getMapping(*d, *he);
+        std::vector<int> mapping = Reconstruction::getMapping(*d, *he);
         Reconstruction::saveMappingOnFile(mapping, "golf.txt");
-        //Reconstruction::reconstruction(*d, mapping,originalMesh);
+        Reconstruction::reconstruction(*d, mapping,originalMesh);
         d->update();
         mainWindow->updateGlCanvas();
     }

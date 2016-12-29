@@ -4,7 +4,7 @@ CONFIG(debug, debug|release){
 CONFIG(release, debug|release){
     DEFINES -= DEBUG
     #just uncomment next lines if you want to ignore asserts and got a more optimized binary
-    #CONFIG += FINAL_RELEASE
+    CONFIG += FINAL_RELEASE
 }
 
 FINAL_RELEASE {
@@ -49,6 +49,8 @@ ALL {
     #Requires: Common module, libIGL (an environment variable named LIBIGL containing the root directory of the library must be setted)
     #Optional: Viewer module, Cgal module
     include (igl/igl.pri)
+
+    include(lib/cinolib.pri)
 
     HEADERS += \
         common.h \
