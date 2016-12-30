@@ -58,16 +58,14 @@ int main(int argc, char *argv[]) {
         original.serialize(myfile);
         myfile.close();
 
-        if (argc > 8){
-            std::ofstream mysecondfile;
-            mysecondfile.open (rawname + std::to_string((int)kernelDistance) + "_allsolutions.bin", std::ios::out | std::ios::binary);
-            d.serialize(mysecondfile);
-            Serializer::serialize(b, mysecondfile);
-            allSolutions.serialize(mysecondfile);
-            Serializer::serialize(b, mysecondfile);
-            original.serialize(mysecondfile);
-            mysecondfile.close();
-        }
+        std::ofstream mysecondfile;
+        mysecondfile.open (rawname + std::to_string((int)kernelDistance) + "_allsolutions.bin", std::ios::out | std::ios::binary);
+        d.serialize(mysecondfile);
+        Serializer::serialize(b, mysecondfile);
+        allSolutions.serialize(mysecondfile);
+        Serializer::serialize(b, mysecondfile);
+        original.serialize(mysecondfile);
+        mysecondfile.close();
     }
     else
         std::cerr << "Error! Number argument lower than 4\n";
