@@ -19,6 +19,7 @@ std::vector<int> Reconstruction::getMapping(const Dcel& smoothedSurface, const H
     std::vector<int> mapping;
     mapping.reserve(tmpmapping.size());
     for (Vec3 target : tmpmapping){
+        assert(target != Vec3());
         for (int i  = 0; i < 3; i++) {
             if (target == XYZ[i] || target == XYZ[i+3]) // it happens just one time for every target
                 mapping.push_back(i);

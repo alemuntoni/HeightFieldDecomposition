@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
         original.readFromFile(filename);
         Dcel d;
         BoxList solutions;
+        BoxList allSolutions;
         d.loadFromObjFile(filename_smooth);
         BoundingBox bb= d.getBoundingBox();
         int scale = std::stoi(argv[3]);
@@ -42,18 +43,31 @@ int main(int argc, char *argv[]) {
                     decimate = std::stoi(argv[7]);
             }
         }
-        Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, tolerance, file, decimate);
+        Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, tolerance, file, decimate, allSolutions);
         size_t lastindex = filename_smooth.find_last_of(".");
         std::string rawname = filename_smooth.substr(0, lastindex);
+
+        bool b = true;
+
         std::ofstream myfile;
         myfile.open (rawname + std::to_string((int)kernelDistance) + ".bin", std::ios::out | std::ios::binary);
         d.serialize(myfile);
-        bool b = true;
         Serializer::serialize(b, myfile);
         solutions.serialize(myfile);
         Serializer::serialize(b, myfile);
         original.serialize(myfile);
         myfile.close();
+
+        if (argc > 8){
+            std::ofstream mysecondfile;
+            mysecondfile.open (rawname + std::to_string((int)kernelDistance) + "_allsolutions.bin", std::ios::out | std::ios::binary);
+            d.serialize(mysecondfile);
+            Serializer::serialize(b, mysecondfile);
+            allSolutions.serialize(mysecondfile);
+            Serializer::serialize(b, mysecondfile);
+            original.serialize(mysecondfile);
+            mysecondfile.close();
+        }
     }
     else
         std::cerr << "Error! Number argument lower than 4\n";

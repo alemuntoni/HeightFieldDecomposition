@@ -457,7 +457,7 @@ int Engine::deleteBoxesMemorySafe(BoxList& boxList, const Dcel& d) {
  * @param areaTolerance
  * @param angleTolerance
  */
-void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimante) {
+void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimante, BoxList& allSolutions) {
     solutions.clearBoxes();
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
@@ -612,6 +612,9 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
             allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i][j].begin(), vectorTriples[i][j].end());
         }
     }
+
+    allSolutions = solutions;
+    allSolutions.generatePieces(d.getAverageHalfEdgesLength()*7);
 
     Engine::deleteBoxes(solutions, allVectorTriples, d.getNumberFaces());
     solutions.generatePieces(d.getAverageHalfEdgesLength()*7);
