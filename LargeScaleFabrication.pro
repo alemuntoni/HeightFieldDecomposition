@@ -109,6 +109,9 @@ CONVERTER_MODE {
 }
 
 message(Included modules: $$MODULES)
+FINAL_RELEASE {
+    message(Final Release!)
+}
 
 
 
