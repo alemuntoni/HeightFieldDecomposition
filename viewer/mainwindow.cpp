@@ -268,4 +268,6 @@ void MainWindow::setBackgroundColor(const QColor & color) {
 void MainWindow::keyPressEvent(QKeyEvent * event){
     if(event->matches(QKeySequence::Undo))
         emit(undoEvent());
+    if (event->matches((QKeySequence::Redo)))
+        emit(redoEvent());
 }

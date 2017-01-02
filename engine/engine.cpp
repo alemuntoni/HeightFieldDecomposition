@@ -480,7 +480,7 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
 
     unsigned int numberFaces = d.getNumberFaces();
     if (decimante){
-        while (numberFaces/factor  < 200 && factor != 1)
+        while (numberFaces/factor  < STARTING_NUMBER_FACES && factor != 1)
             factor/=2;
         numberFaces/=factor;
     }

@@ -23,7 +23,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="operationsTab">
       <attribute name="title">
@@ -349,6 +349,58 @@
          </property>
         </widget>
        </item>
+       <item row="1" column="0">
+        <widget class="QFrame" name="frame1">
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QPushButton" name="loadIGLMeshButton">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Load Mesh 1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="clearIGLMeshButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Clear Mesh 1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="saveIGLMeshButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Save Mesh 1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="setFromResultButton">
+            <property name="text">
+             <string>Set From Result</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="makeBox1PushButton">
+            <property name="text">
+             <string>Make Box</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="1" column="1">
         <widget class="QFrame" name="frame2">
          <layout class="QGridLayout" name="gridLayout_4">
@@ -407,52 +459,61 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QFrame" name="frame1">
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="0">
-           <widget class="QPushButton" name="loadIGLMeshButton">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
+       <item row="2" column="0" colspan="2">
+        <widget class="QFrame" name="frame_6">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_17">
+          <item row="1" column="2">
+           <widget class="QDoubleSpinBox" name="z1SpinBox">
+            <property name="value">
+             <double>1.000000000000000</double>
             </property>
-            <property name="text">
-             <string>Load Mesh 1</string>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="y1SpinBox">
+            <property name="value">
+             <double>1.000000000000000</double>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QPushButton" name="clearIGLMeshButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Clear Mesh 1</string>
+           <widget class="QDoubleSpinBox" name="x1SpinBox">
+            <property name="value">
+             <double>1.000000000000000</double>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QPushButton" name="saveIGLMeshButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_16">
             <property name="text">
-             <string>Save Mesh 1</string>
+             <string>x</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QPushButton" name="setFromResultButton">
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_17">
             <property name="text">
-             <string>Set From Result</string>
+             <string>y</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_18">
+            <property name="text">
+             <string>z</string>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -472,6 +533,78 @@
        <string>Mesh 2</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_12">
+       <item row="1" column="0">
+        <widget class="QFrame" name="frame1_2">
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="1" column="0">
+           <widget class="QPushButton" name="clearIGLMeshButton_2">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Clear Mesh 2</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="saveIGLMeshButton_2">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Save Mesh 2</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="setFromResultButton_2">
+            <property name="text">
+             <string>Set From Result</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="loadIGLMeshButton_2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Load Mesh 2</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QPushButton" name="makeBox2PushButton">
+            <property name="text">
+             <string>Make Box</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Mesh 2:</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="1">
         <widget class="QFrame" name="frame2_2">
          <layout class="QGridLayout" name="gridLayout_6">
@@ -530,70 +663,59 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QFrame" name="frame1_2">
-         <layout class="QGridLayout" name="gridLayout_5">
-          <item row="0" column="0">
-           <widget class="QPushButton" name="loadIGLMeshButton_2">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
+       <item row="2" column="0" colspan="2">
+        <widget class="QFrame" name="frame_5">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_16">
+          <item row="1" column="2">
+           <widget class="QDoubleSpinBox" name="z2SpinBox">
+            <property name="value">
+             <double>1.000000000000000</double>
             </property>
-            <property name="text">
-             <string>Load Mesh 2</string>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="y2SpinBox">
+            <property name="value">
+             <double>1.000000000000000</double>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QPushButton" name="clearIGLMeshButton_2">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Clear Mesh 2</string>
+           <widget class="QDoubleSpinBox" name="x2SpinBox">
+            <property name="value">
+             <double>1.000000000000000</double>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QPushButton" name="saveIGLMeshButton_2">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_13">
             <property name="text">
-             <string>Save Mesh 2</string>
+             <string>x</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QPushButton" name="setFromResultButton_2">
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_14">
             <property name="text">
-             <string>Set From Result</string>
+             <string>y</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>z</string>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Mesh 2:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>

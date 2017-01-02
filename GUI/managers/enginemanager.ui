@@ -62,9 +62,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-34</y>
         <width>406</width>
-        <height>1100</height>
+        <height>1126</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -554,10 +554,17 @@
                 </property>
                </widget>
               </item>
-              <item row="12" column="1">
+              <item row="13" column="1">
                <widget class="QPushButton" name="createAndMinimizeAllPushButton">
                 <property name="text">
                  <string>Create and Minimize All</string>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="1">
+               <widget class="QCheckBox" name="useFileCheckBox">
+                <property name="text">
+                 <string>Use File</string>
                 </property>
                </widget>
               </item>

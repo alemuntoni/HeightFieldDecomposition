@@ -70,7 +70,18 @@ class MainWindow : public QMainWindow {
          * Segnale da "catchare", ha come parametro l'oggetto cliccato nella GLCanvas
          */
         void objectPicked(unsigned int);
+
+        /**
+         * @brief undoEvent
+         * Segnale da "catchare", viene lanciato quando viene premuto CTRL+Z
+         */
         void undoEvent();
+
+        /**
+         * @brief undoEvent
+         * Segnale da "catchare", viene lanciato quando viene premuto MAIUSC+CTRL+Z
+         */
+        void redoEvent();
 
     private slots:
         void checkBoxClicked(int i);

@@ -163,6 +163,11 @@ void EngineManager::serialize(std::ofstream& binaryFile) const {
     }
     else
         Serializer::serialize(bb, binaryFile);
+    if (originalMesh.getNumberVertices() > 0){
+        bb = true;
+        Serializer::serialize(bb, binaryFile);
+        originalMesh.serialize(binaryFile);
+    }
 }
 
 bool EngineManager::deserialize(std::ifstream& binaryFile) {
@@ -1047,13 +1052,13 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
     }
     if (d!=nullptr){
         deleteDrawableObject(solutions);
-        //deleteDrawableObject(g);
+        deleteDrawableObject(g);
         solutions = new BoxList();
         mainWindow->pushObj(solutions, "Solutions");
         double kernelDistance = ui->distanceSpinBox->value();
         Timer t("Total Time Grids and Minimization Boxes");
         /// here d is already scaled!!
-        Engine::createAndMinimizeAllBoxes(*solutions, *d, kernelDistance, ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100);
+        Engine::createAndMinimizeAllBoxes(*solutions, *d, kernelDistance, ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
         t.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);

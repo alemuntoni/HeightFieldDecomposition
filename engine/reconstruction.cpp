@@ -18,13 +18,21 @@ std::vector<int> Reconstruction::getMapping(const Dcel& smoothedSurface, const H
     }
     std::vector<int> mapping;
     mapping.reserve(tmpmapping.size());
+    int unreferenced = 0;
     for (Vec3 target : tmpmapping){
-        assert(target != Vec3());
-        for (int i  = 0; i < 3; i++) {
-            if (target == XYZ[i] || target == XYZ[i+3]) // it happens just one time for every target
-                mapping.push_back(i);
+        if (target == Vec3()) {
+            mapping.push_back(-1);
+            unreferenced++;
+        }
+        else {
+            for (int i  = 0; i < 3; i++) {
+                if (target == XYZ[i] || target == XYZ[i+3]) // it happens just one time for every target
+                    mapping.push_back(i);
+            }
         }
     }
+
+    std::cerr << "Unreferenced vertices: " << unreferenced << "\n";
 
     return mapping;
 }

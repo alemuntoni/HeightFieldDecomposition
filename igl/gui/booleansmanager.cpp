@@ -3,6 +3,7 @@
 
 #include <QFileDialog>
 #include "common/utils.h"
+#include "igl/iglinterface.h"
 
 BooleansManager::BooleansManager(QWidget *parent) :
     QFrame(parent),
@@ -451,4 +452,18 @@ void BooleansManager::on_undoRotateButton_clicked() {
     }
     ui->undoRotateButton->setEnabled(false);
     mainWindow->updateGlCanvas();
+}
+
+void BooleansManager::on_makeBox1PushButton_clicked() {
+    double min =  std::min(ui->x1SpinBox->value(),ui->y1SpinBox->value());
+    min = std::min(min, ui->z1SpinBox->value());
+    min /=10;
+    setMesh1(IGLInterface::IGLMesh(IGLInterface::makeBox(BoundingBox(Pointd(0,0,0), Pointd(ui->x1SpinBox->value(),ui->y1SpinBox->value(),ui->z1SpinBox->value())), min)));
+}
+
+void BooleansManager::on_makeBox2PushButton_clicked() {
+    double min =  std::min(ui->x2SpinBox->value(),ui->y2SpinBox->value());
+    min = std::min(min, ui->z2SpinBox->value());
+    min /=10;
+    setMesh2(IGLInterface::IGLMesh(IGLInterface::makeBox(BoundingBox(Pointd(0,0,0), Pointd(ui->x2SpinBox->value(),ui->y2SpinBox->value(),ui->z2SpinBox->value())), min)));
 }

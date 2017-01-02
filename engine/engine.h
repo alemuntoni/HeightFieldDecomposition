@@ -18,6 +18,7 @@
 
 #define ORIENTATIONS 1
 #define TARGETS 6
+#define STARTING_NUMBER_FACES 400
 
 namespace Engine {
     Vec3 getClosestTarget(const Vec3 &n);

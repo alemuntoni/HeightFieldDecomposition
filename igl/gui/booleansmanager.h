@@ -89,6 +89,10 @@ class BooleansManager : public QFrame
 
         void on_undoRotateButton_clicked();
 
+        void on_makeBox1PushButton_clicked();
+
+        void on_makeBox2PushButton_clicked();
+
     private:
         Ui::BooleansManager *ui;
         MainWindow* mainWindow;

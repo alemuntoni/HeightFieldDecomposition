@@ -336,16 +336,21 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                 //qualcuno copre già tutti i triangoli coperti da b2? se si, b2 viene aggiunta alle box da eliminare, e nessun arco punterà più ad essa
                 bool exit = false;
 
-                for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
-                    if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
-                        std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
-                        if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredB2.begin(), trianglesCoveredB2.end())){
-                            exit = true;
-                            boxesToEliminate.insert(b2.getId());
-                            deletedBoxes++;
+                if (trianglesCoveredB2.size() == 0){
+                    exit = true;
+                    deletedBoxes++;
+                }
+                else {
+                    for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
+                        if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
+                            std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
+                            if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredB2.begin(), trianglesCoveredB2.end())){
+                                exit = true;
+                                boxesToEliminate.insert(b2.getId());
+                                deletedBoxes++;
+                            }
                         }
                     }
-
                 }
 
                 if (!exit){
@@ -382,14 +387,20 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                 //////gestione b3:
 
 
-                //qualcuno copre già tutti i triangoli coperti da b2? se si, b2 viene aggiunta alle box da eliminare, e nessun arco punterà più ad essa
+                //qualcuno copre già tutti i triangoli coperti da b3? se si, b3 non viene aggiunta alla box list
                 exit = false;
-                for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
-                    if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
-                        std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
-                        if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredB3.begin(), trianglesCoveredB3.end())){
-                            exit = true;
-                            deletedBoxes++;
+                if (trianglesCoveredB3.size() == 0){
+                    exit = true;
+                    deletedBoxes++;
+                }
+                else {
+                    for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
+                        if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
+                            std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
+                            if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredB3.begin(), trianglesCoveredB3.end())){
+                                exit = true;
+                                deletedBoxes++;
+                            }
                         }
                     }
                 }
