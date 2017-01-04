@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
         BoxList allSolutions;
         d.loadFromObjFile(filename_smooth);
         BoundingBox bb= d.getBoundingBox();
-        int scale = std::stoi(argv[3]);
+        double scale = std::stod(argv[3]);
         Engine::scaleAndRotateDcel(d, 0, scale);
         original.scale(bb, d.getBoundingBox());
         double kernelDistance = std::stod(argv[4]);
@@ -65,10 +65,21 @@ int main(int argc, char *argv[]) {
         allSolutions.serialize(mysecondfile);
         Serializer::serialize(b, mysecondfile);
         original.serialize(mysecondfile);
+        Serializer::serialize(scale, mysecondfile);
+        Serializer::serialize(kernelDistance, mysecondfile);
         mysecondfile.close();
     }
     else
         std::cerr << "Error! Number argument lower than 4\n";
+    /*if (argc > 3){
+        std::ofstream myfile;
+        myfile.open (argv[1], std::ios::out | std::ios::binary | std::ios::app);
+        double factor = std::stod(argv[2]);
+        double kernel = std::stod(argv[3]);
+        Serializer::serialize(factor, myfile);
+        Serializer::serialize(kernel, myfile);
+        myfile.close();
+    }*/
     #else
     #ifdef CONVERTER_MODE
     if (argc > 2){
@@ -133,6 +144,7 @@ int main(int argc, char *argv[]) {
         }
     }
     #else
+
     QApplication app(argc, argv);
 
     MainWindow gui;  // finestra principale, contiene la canvas di QGLViewer

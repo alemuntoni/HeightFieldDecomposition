@@ -232,6 +232,13 @@ void CGALInterface::AABBTree::getCompletelyContainedDcelFaces(std::list<const Dc
     }
 }
 
+std::list<const Dcel::Face*> CGALInterface::AABBTree::getCompletelyContainedDcelFaces(const BoundingBox& b) const {
+    assert(treeType == DCEL);
+    std::list<const Dcel::Face*> output;
+    getCompletelyContainedDcelFaces(output, b);
+    return output;
+}
+
 const Dcel::Face* CGALInterface::AABBTree::getNearestDcelFace(const Pointd& p) const {
     assert(treeType == DCEL);
     CGALPoint query(p.x(), p.y(), p.z());

@@ -62,9 +62,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-34</y>
+        <y>-250</y>
         <width>406</width>
-        <height>1126</height>
+        <height>1154</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -125,7 +125,21 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_4">
-              <item row="3" column="0">
+              <item row="4" column="1">
+               <widget class="QDoubleSpinBox" name="snappingSpinBox">
+                <property name="value">
+                 <double>2.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="1">
+               <widget class="QPushButton" name="colorPiecesPushButton">
+                <property name="text">
+                 <string>Color Pieces</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
                <widget class="QSlider" name="solutionsSlider">
                 <property name="enabled">
                  <bool>false</bool>
@@ -135,28 +149,28 @@
                 </property>
                </widget>
               </item>
-              <item row="9" column="0">
+              <item row="11" column="0">
                <widget class="QPushButton" name="stickPushButton">
                 <property name="text">
                  <string>Stick</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
+              <item row="7" column="0">
                <widget class="QPushButton" name="reorderBoxes">
                 <property name="text">
                  <string>Reorder Boxes</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="1">
+              <item row="7" column="1">
                <widget class="QPushButton" name="subtractPushButton">
                 <property name="text">
                  <string>Boolean Operations</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
+              <item row="2" column="0">
                <widget class="QLabel" name="label_9">
                 <property name="text">
                  <string>Solution Manager</string>
@@ -170,28 +184,35 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
+              <item row="2" column="1">
                <widget class="QLabel" name="solutionNumberLabel">
                 <property name="text">
                  <string>0</string>
                 </property>
                </widget>
               </item>
-              <item row="8" column="0">
+              <item row="10" column="0">
                <widget class="QSlider" name="heightfieldsSlider">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
+              <item row="8" column="1">
+               <widget class="QSpinBox" name="coveredTrianglesSpinBox">
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
                <widget class="QPushButton" name="snappingPushButton">
                 <property name="text">
                  <string>Snap Boxes</string>
                 </property>
                </widget>
               </item>
-              <item row="8" column="1">
+              <item row="10" column="1">
                <widget class="QCheckBox" name="allHeightfieldsCheckBox">
                 <property name="text">
                  <string>All</string>
@@ -201,28 +222,21 @@
                 </property>
                </widget>
               </item>
-              <item row="6" column="1">
-               <widget class="QSpinBox" name="coveredTrianglesSpinBox">
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="0">
+              <item row="9" column="0">
                <widget class="QPushButton" name="reconstructionPushButton">
                 <property name="text">
                  <string>Reconstruction</string>
                 </property>
                </widget>
               </item>
-              <item row="6" column="0">
+              <item row="8" column="0">
                <widget class="QPushButton" name="putBoxesAfterPushButton">
                 <property name="text">
                  <string>Put Boxes After</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
+              <item row="5" column="1">
                <widget class="QCheckBox" name="showAllSolutionsCheckBox">
                 <property name="enabled">
                  <bool>false</bool>
@@ -232,17 +246,10 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QDoubleSpinBox" name="snappingSpinBox">
-                <property name="value">
-                 <double>2.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="1">
-               <widget class="QPushButton" name="colorPiecesPushButton">
+              <item row="3" column="0">
+               <widget class="QPushButton" name="deleteBoxesPushButton">
                 <property name="text">
-                 <string>Color Pieces</string>
+                 <string>Delete Boxes</string>
                 </property>
                </widget>
               </item>

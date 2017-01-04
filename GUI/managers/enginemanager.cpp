@@ -108,6 +108,10 @@ void EngineManager::serializeBC(const std::string& filename) {
     if (originalMesh.getNumberVertices() > 0)
         originalMesh.serialize(myfile);
     //entirePieces->serialize(myfile);
+    double factor = ui->factorSpinBox->value();
+    double kernel = ui->distanceSpinBox->value();
+    Serializer::serialize(factor, myfile);
+    Serializer::serialize(kernel, myfile);
     myfile.close();
 }
 
@@ -129,6 +133,11 @@ void EngineManager::deserializeBC(const std::string& filename) {
     if (originalMesh.deserialize(myfile)){
         if (originalMesh.getNumberVertices() > 0)
             mainWindow->pushObj(&originalMesh, "Original Mesh");
+    }
+    double factor, kernel;
+    if (Serializer::deserialize(factor, myfile) && Serializer::deserialize(kernel, myfile)){
+        ui->factorSpinBox->setValue(factor);
+        ui->distanceSpinBox->setValue(kernel);
     }
     myfile.close();
     d->update();
@@ -168,6 +177,10 @@ void EngineManager::serialize(std::ofstream& binaryFile) const {
         Serializer::serialize(bb, binaryFile);
         originalMesh.serialize(binaryFile);
     }
+    double factor = ui->factorSpinBox->value();
+    double kernel = ui->distanceSpinBox->value();
+    Serializer::serialize(factor, binaryFile);
+    Serializer::serialize(kernel, binaryFile);
 }
 
 bool EngineManager::deserialize(std::ifstream& binaryFile) {
@@ -213,6 +226,11 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
     if (Serializer::deserialize(bb, binaryFile)){
         originalMesh.deserialize(binaryFile);
         mainWindow->pushObj(&originalMesh, "Original Mesh");
+    }
+    double kernel, factor;
+    if (Serializer::deserialize(factor, binaryFile) && Serializer::deserialize(kernel, binaryFile)){
+        ui->factorSpinBox->setValue(factor);
+        ui->distanceSpinBox->setValue(kernel);
     }
 
     mainWindow->updateGlCanvas();
@@ -965,7 +983,8 @@ void EngineManager::on_subtractPushButton_clicked() {
         connect(thread, SIGNAL (finished()), this, SLOT(emit finished()));
         thread->start();*/
 
-        Engine::booleanOperations(*he, bc, *solutions, *d /*,*entirePieces*/);
+        ///cleaning solutions
+        Engine::booleanOperations(*he, bc, *solutions);
         Engine::splitConnectedComponents(*he, *solutions);
         Engine::glueInternHeightfieldsToBaseComplex(*he, *solutions, bc, *d);
         ui->showAllSolutionsCheckBox->setEnabled(true);
@@ -1268,9 +1287,8 @@ void EngineManager::on_packPushButton_clicked() {
 
 void EngineManager::on_reconstructionPushButton_clicked() {
     if (d != nullptr && he != nullptr){
-        std::vector<int> mapping = Reconstruction::getMapping(*d, *he);
-        Reconstruction::saveMappingOnFile(mapping, "golf.txt");
-        Reconstruction::reconstruction(*d, mapping,originalMesh);
+        std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(*d, *he);
+        Reconstruction::reconstruction(*d, mapping, originalMesh, *solutions);
         d->update();
         mainWindow->updateGlCanvas();
     }
@@ -1295,6 +1313,7 @@ void EngineManager::on_putBoxesAfterPushButton_clicked() {
 }
 
 void EngineManager::on_snappingPushButton_clicked() {
+    double av = d->getAverageHalfEdgesLength();
     double epsilon = ui->snappingSpinBox->value();
     if (solutions != nullptr && d != nullptr){
         for (unsigned int i = 0; i < solutions->getNumberBoxes()-1; i++){
@@ -1306,7 +1325,7 @@ void EngineManager::on_snappingPushButton_clicked() {
                         b2[coord] = b1[coord];
                     }
                 }
-                b2.generatePiece(d->getAverageHalfEdgesLength()*7);
+                b2.generatePiece(av*7);
                 solutions->setBox(j, b2);
             }
         }
@@ -1334,4 +1353,12 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
         }
     }
     mainWindow->updateGlCanvas();
+}
+
+void EngineManager::on_deleteBoxesPushButton_clicked() {
+    if (solutions != nullptr && d != nullptr){
+        int n = Engine::deleteBoxes(*solutions, *d);
+        std::cerr << "N deleted boxes: " << n << "\n";
+        mainWindow->updateGlCanvas();
+    }
 }

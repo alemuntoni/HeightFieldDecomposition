@@ -112,6 +112,13 @@ FINAL_RELEASE {
     message(Final Release!)
 }
 
+exists($$(GUROBI_HOME)){
+    message (Gurobi)
+    INCLUDEPATH += $$(GUROBI_HOME)/include
+    LIBS += -L$$(GUROBI_HOME)/lib -lgurobi_g++5.2 -lgurobi70
+    DEFINES += GUROBI_DEFINED
+}
+
 
 
 

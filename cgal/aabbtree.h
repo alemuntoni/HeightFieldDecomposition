@@ -48,6 +48,7 @@ namespace CGALInterface {
             #ifdef DCEL_DEFINED
             void getIntersectedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b) const;
             void getCompletelyContainedDcelFaces(std::list<const Dcel::Face*> &outputList, const BoundingBox &b) const;
+            std::list<const Dcel::Face*> getCompletelyContainedDcelFaces(const BoundingBox &b) const;
             const Dcel::Face* getNearestDcelFace(const Pointd &p) const;
             const Dcel::Vertex* getNearestDcelVertex(const Pointd &p) const;
             #endif

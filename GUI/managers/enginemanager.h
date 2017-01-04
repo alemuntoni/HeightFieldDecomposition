@@ -164,6 +164,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_colorPiecesPushButton_clicked();
 
+        void on_deleteBoxesPushButton_clicked();
+
     signals:
         void finished();
 

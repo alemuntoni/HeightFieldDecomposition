@@ -1,5 +1,9 @@
 #include "engine.h"
 
+#ifdef GUROBI_DEFINED
+#include <gurobi_c++.h>
+#endif
+
 Vec3 Engine::getClosestTarget(const Vec3& n) {
     double angle = n.dot(XYZ[0]);
     int k = 0;
@@ -284,7 +288,7 @@ void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector
 }
 
 
-int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces){
+int Engine::deleteBoxesOld(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces){
 
     //ordering vector of triples
     struct triplesOrdering {
@@ -367,7 +371,7 @@ int Engine::deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, st
     return n-eliminate.size();
 }
 
-int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
+int Engine::deleteBoxesOld(BoxList& boxList, const Dcel& d) {
     Dcel scaled0(d);
     Eigen::Matrix3d m[ORIENTATIONS];
     m[0] = Eigen::Matrix3d::Identity();
@@ -430,22 +434,72 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
         vectorTriples.push_back(triple);
     }
 
-    return deleteBoxes(boxList, vectorTriples, d.getNumberFaces());
+    return deleteBoxesOld(boxList, vectorTriples, d.getNumberFaces());
 }
 
+#ifdef GUROBI_DEFINED
+int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
+    unsigned int nBoxes = boxList.getNumberBoxes();
+    unsigned int nTris = d.getNumberFaces();
+    Array2D<int> B(nBoxes, nTris, 0);
+    CGALInterface::AABBTree aabb(d);
+    for (unsigned int i = 0; i < nBoxes; i++){
+        std::list<const Dcel::Face*> containedFaces = aabb.getCompletelyContainedDcelFaces(boxList.getBox(i));
+        for (const Dcel::Face* f : containedFaces){
+            B(i,f->getId()) = 1;
+        }
+    }
+    try {
+        GRBEnv env;
+        GRBModel model(env);
 
-int Engine::deleteBoxesMemorySafe(BoxList& boxList, const Dcel& d) {
-    std::vector<BoxList> boxLists;
-    boxList.getSubBoxLists(boxLists, d.getNumberFaces());
-    for (unsigned int i = 0; i < boxLists.size(); i++){
-        deleteBoxes(boxLists[i], d);
+        //x
+        GRBVar* x = nullptr;
+        x = model.addVars(nBoxes, GRB_BINARY);
+
+        //constraints
+        for (unsigned int j = 0; j < nTris; j++){
+            GRBLinExpr line = 0;
+            for (unsigned int i = 0; i < nBoxes; i++){
+                line += B(i,j) * x[i];
+            }
+            model.addConstr(line >= 1);
+        }
+        //obj
+        GRBLinExpr obj = 0;
+        for (unsigned int i = 0; i < nBoxes; i++)
+            obj += x[i];
+        model.setObjective(obj, GRB_MINIMIZE);
+        model.optimize();
+
+        int nSol = model.get(GRB_IntAttr_SolCount);
+        std::cerr << "Optimal solutions: " << nSol << "\n";
+
+
+
+        unsigned int deleted = 0;
+        for (int i = nBoxes-1; i >= 0; i--){
+            if (x[i].get(GRB_DoubleAttr_X) == 0){
+                boxList.removeBox(i);
+                deleted++;
+            }
+        }
+        return nBoxes - deleted;
+
+
     }
-    boxList.clearBoxes();
-    for (unsigned int i = 0; i < boxLists.size(); i++){
-        boxList.insert(boxLists[i]);
+    catch (GRBException e) {
+        std::cerr << "Gurobi Exception\n" << e.getErrorCode() << " : " << e.getMessage() << std::endl;
+        return false;
     }
-    return deleteBoxes(boxList, d);
+    catch (...) {
+        std::cerr << "Unknown Gurobi Optimization error!" << std::endl;
+        return false;
+    }
+    return -1;
+
 }
+#endif
 
 /**
  * @brief Engine::createAndMinimizeAllBoxes
@@ -603,28 +657,42 @@ void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double
             }
         }
     }
-
+    #ifndef GUROBI_DEFINED
     std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS][TARGETS];
+    #endif
     for (unsigned int i = 0; i < ORIENTATIONS; i++){
         for (unsigned int j = 0; j < TARGETS; ++j){
             solutions.insert(bl[i][j]);
+            #ifndef GUROBI_DEFINED
             Engine::createVectorTriples(vectorTriples[i][j], bl[i][j], scaled[i]);
             allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i][j].begin(), vectorTriples[i][j].end());
+            #endif
         }
     }
 
     allSolutions = solutions;
     allSolutions.generatePieces(d.getAverageHalfEdgesLength()*7);
 
-    Engine::deleteBoxes(solutions, allVectorTriples, d.getNumberFaces());
+    #ifndef GUROBI_DEFINED
+    Engine::deleteBoxesOld(solutions, allVectorTriples, d.getNumberFaces());
+    #else
+    Engine::deleteBoxes(solutions, d);
+    #endif
     solutions.generatePieces(d.getAverageHalfEdgesLength()*7);
 }
 
-void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh) {
-    double average = 0;
-    for (const Dcel::HalfEdge* he : inputMesh.halfEdgeIterator())
-        average += he->getLength();
-    average /= inputMesh.getNumberHalfEdges();
+void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
+    for (unsigned int i = 0; i < solutions.getNumberBoxes()-1; i++){
+        if (solutions.getBox(i).min() == solutions.getBox(i+1).min() &&
+            solutions.getBox(i).max() == solutions.getBox(i+1).max()){
+            solutions.removeBox(i);
+            i--;
+        }
+    }
+}
+
+void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions) {
+    deleteDuplicatedBoxes(solutions);
     Timer timer("Boolean Operations");
     he.resize(solutions.getNumberBoxes());
     for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
@@ -834,7 +902,7 @@ void Engine::largeScaleFabrication(const Dcel& input, double kernelDistance, boo
             allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i].begin(), vectorTriples[i].end());
         }
 
-        deleteBoxes(allBoxes, allVectorTriples, input.getNumberFaces());
+        deleteBoxesOld(allBoxes, allVectorTriples, input.getNumberFaces());
 
         std::ofstream myfile;
         myfile.open ("allSolutions.bin", std::ios::out | std::ios::binary);
@@ -876,7 +944,7 @@ void Engine::largeScaleFabrication(const Dcel& input, double kernelDistance, boo
             }
         }
 
-        deleteBoxes(allBoxes, allVectorTriples, input.getNumberFaces());
+        deleteBoxesOld(allBoxes, allVectorTriples, input.getNumberFaces());
 
         std::ofstream myfile;
         myfile.open ("allSolutions.bin", std::ios::out | std::ios::binary);

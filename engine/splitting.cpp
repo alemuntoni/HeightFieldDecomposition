@@ -124,8 +124,15 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
     return false;
 }
 
+/**
+ * @brief Splitting::getSplits
+ * @param b1
+ * @param b2
+ * @param b3
+ * @return the volume of the piece of b1 cutted off by b2
+ */
 double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
-    Box3D b4;
+    Box3D b4; // the piece of b2 cutted off by b1
     b3.setColor(b2.getColor());
     b3.setTarget(b2.getTarget());
     Vec3 target = b2.getTarget();
@@ -141,7 +148,7 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
                     if (u != t){
                         b3.min()[u] = b4.min()[u] = std::max(b1.min()[u], b2.min()[u]);
                         b3.max()[u] = b4.max()[u] = std::min(b1.max()[u], b2.max()[u]);
-                        assert(b3.min()[u] < b3.max()[u]);
+                        assert(b3.min()[u] <= b3.max()[u]);
                     }
                 }
             }
@@ -149,7 +156,7 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
                 unsigned int i = t-3;
                 //b1.getIGLMesh().saveOnObj("b1.obj");
                 //b2.getIGLMesh().saveOnObj("b2.obj");
-                assert(b1.min()[i] > b2.min()[i]);
+                assert(b1.min()[i] >= b2.min()[i]);
                 b3.min()[i] = b2.min()[i];
                 b3.max()[i] = b1.min()[i];
                 b4.min()[i] = b1.min()[i];
@@ -202,14 +209,16 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
         b3.min() = b3.max() = Pointd();
 }
 
+
 double Splitting::minimumSplit(const Box3D &b1, const Box3D &b2){
     Box3D b3;
+    //b4 is the piece cutted by b1 on b2, therefore oldb2 = newB2 + b3 + b4
     double volumeb4 = getSplits(b1, b2, b3);
     double volumeb2 = b2.getVolume();
     double volumeb3 = b3.getVolume();
-    double remainingSplit = volumeb2 - volumeb3 - volumeb4;
-    assert (remainingSplit >= 0);
-    return std::min(remainingSplit, volumeb3);
+    double newVolumeb2 = volumeb2 - volumeb3 - volumeb4;
+    assert (newVolumeb2 >= 0);
+    return std::min(newVolumeb2, volumeb3);
 }
 
 std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGALInterface::AABBTree& aabb) {
@@ -302,9 +311,33 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             }
             // now I can remove "arcToRemove"
             Box3D b1 = bl.getBox(arcToRemove.first), b2 = bl.getBox(arcToRemove.second), b3;
+
+            ///
+            ///
+            /// now I can choose which box split, b1 or b2
+
+            Box3D btmp1, btmp2;
+            getSplits(b2,b1,btmp2);
+            if (tree.getNumberIntersectedPrimitives(btmp2) == 0){
+                std::swap(b1, b2);
+            }
+            else {
+                getSplits(b1,b2,btmp1);
+                if (tree.getNumberIntersectedPrimitives(btmp1) != 0){
+                    double minb1b2 = minimumSplit(b1, b2);
+                    double minb2b1 = minimumSplit(b2, b1);
+                    if (minb2b1 < minb1b2)
+                        std::swap(b1, b2);
+                }
+            }
+
+            ///
+            ///
+            ///
+
             splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*7);
             if (!(b3.min() == Pointd() && b3.max() == Pointd())){ //se b3 esiste
-                g.removeEdge(arcToRemove.first, arcToRemove.second);
+                g.removeEdgeIfExists(arcToRemove.first, arcToRemove.second);
                 g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
                 b3.setId(bl.getNumberBoxes());
                 b3.setTrianglesCovered(tree.getNumberIntersectedPrimitives(b3));
@@ -443,7 +476,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
 
             }
             else { // altrimenti b3 non esiste, e b2 è rimasta uguale a prima
-                g.removeEdge(arcToRemove.first, arcToRemove.second);
+                g.removeEdgeIfExists(arcToRemove.first, arcToRemove.second);
                 g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
             }
         }

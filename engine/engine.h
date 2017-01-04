@@ -15,7 +15,6 @@
 #include "heightfieldslist.h"
 #include "lib/grid/irregulargrid.h"
 
-
 #define ORIENTATIONS 1
 #define TARGETS 6
 #define STARTING_NUMBER_FACES 400
@@ -46,16 +45,20 @@ namespace Engine {
 
     void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<bool> > >& vectorTriples, const BoxList& boxList, const Dcel &d);
 
-    int deleteBoxes(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);
+    int deleteBoxesOld(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);
 
+    int deleteBoxesOld(BoxList& boxList, const Dcel &d);
+
+    #ifdef GUROBI_DEFINED
     int deleteBoxes(BoxList& boxList, const Dcel &d);
-
-    int deleteBoxesMemorySafe(BoxList& boxList, const Dcel &d);
+    #endif
 
     static BoxList dummy2;
     void createAndMinimizeAllBoxes(BoxList &solutions, const Dcel &d, double kernelDistance, bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimante = true, BoxList& allSolutions = dummy2);
 
-    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
+    void deleteDuplicatedBoxes(BoxList &solutions);
+
+    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions);
 
     void splitConnectedComponents(HeightfieldsList &he, BoxList &solutions);
 
