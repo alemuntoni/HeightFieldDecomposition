@@ -62,9 +62,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-250</y>
+        <y>0</y>
         <width>406</width>
-        <height>1154</height>
+        <height>1094</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -225,7 +225,7 @@
               <item row="9" column="0">
                <widget class="QPushButton" name="reconstructionPushButton">
                 <property name="text">
-                 <string>Reconstruction</string>
+                 <string>Restore HF</string>
                 </property>
                </widget>
               </item>
@@ -309,6 +309,87 @@
               <property name="sizeConstraint">
                <enum>QLayout::SetDefaultConstraint</enum>
               </property>
+              <item row="14" column="1">
+               <widget class="QCheckBox" name="useFileCheckBox">
+                <property name="text">
+                 <string>Use File</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QCheckBox" name="onlyNearestTargetCheckBox">
+                <property name="text">
+                 <string>Only Nearest Target</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="1">
+               <widget class="QComboBox" name="targetComboBox">
+                <item>
+                 <property name="text">
+                  <string>+X</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>+Y</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>+Z</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>-X</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>-Y</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>-Z</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="14" column="0">
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>Area Tolerance</string>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="1">
+               <widget class="QPushButton" name="createAndMinimizeAllPushButton">
+                <property name="text">
+                 <string>Optimize and Delete</string>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="0">
+               <widget class="QDoubleSpinBox" name="areaToleranceSpinBox">
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="maximum">
+                 <double>1.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.005000000000000</double>
+                </property>
+                <property name="value">
+                 <double>0.000000000000000</double>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="0" colspan="2">
                <widget class="Line" name="line">
                 <property name="orientation">
@@ -458,65 +539,21 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="1">
+              <item row="8" column="1">
                <widget class="QLabel" name="label_3">
                 <property name="text">
                  <string>Target:</string>
                 </property>
                </widget>
               </item>
-              <item row="8" column="1">
-               <widget class="QComboBox" name="targetComboBox">
-                <item>
-                 <property name="text">
-                  <string>+X</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>+Y</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>+Z</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>-X</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>-Y</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>-Z</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="9" column="1">
-               <widget class="QCheckBox" name="onlyNearestTargetCheckBox">
-                <property name="text">
-                 <string>Only Nearest Target</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="0">
+              <item row="8" column="0">
                <widget class="QLabel" name="label_17">
                 <property name="text">
                  <string>Angle Tolerance</string>
                 </property>
                </widget>
               </item>
-              <item row="10" column="1">
+              <item row="12" column="0">
                <widget class="QSlider" name="toleranceSlider">
                 <property name="maximum">
                  <number>100</number>
@@ -535,43 +572,6 @@
                 </property>
                 <property name="tickPosition">
                  <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="0">
-               <widget class="QLabel" name="label_18">
-                <property name="text">
-                 <string>Area Tolerance</string>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="1">
-               <widget class="QDoubleSpinBox" name="areaToleranceSpinBox">
-                <property name="decimals">
-                 <number>3</number>
-                </property>
-                <property name="maximum">
-                 <double>1.000000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.005000000000000</double>
-                </property>
-                <property name="value">
-                 <double>0.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="13" column="1">
-               <widget class="QPushButton" name="createAndMinimizeAllPushButton">
-                <property name="text">
-                 <string>Create and Minimize All</string>
-                </property>
-               </widget>
-              </item>
-              <item row="12" column="1">
-               <widget class="QCheckBox" name="useFileCheckBox">
-                <property name="text">
-                 <string>Use File</string>
                 </property>
                </widget>
               </item>

@@ -1,6 +1,7 @@
 #include "iglmesh.h"
 #include <boost/tokenizer.hpp>
 #include "../common/timer.h"
+#include <igl/triangle_triangle_adjacency.h>
 
 #ifdef DCEL_DEFINED
 #include "../dcel/dcel.h"
@@ -151,6 +152,17 @@ namespace IGLInterface {
             bb.max() += trans;
             scale(bb);
         }
+    }
+
+    Eigen::MatrixXi SimpleIGLMesh::getFacesAdjacences() const {
+        Eigen::MatrixXi TT;
+        //igl::triangle_triangle_adjacency(F, TT);
+        /**
+         * @todo Pull request libigl
+         */
+        Eigen::MatrixXi FF = F;
+        igl::triangle_triangle_adjacency(FF, TT);
+        return TT;
     }
 
     #ifdef CGAL_DEFINED

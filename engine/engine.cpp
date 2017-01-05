@@ -959,3 +959,141 @@ void Engine::largeScaleFabrication(const Dcel& input, double kernelDistance, boo
     }
 
 }
+
+IGLInterface::SimpleIGLMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d) {
+    CGALInterface::AABBTree tree(d, true);
+    std::set< std::pair<Pointd, Pointd> > edges;
+    for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
+        const IGLInterface::IGLMesh& mesh = he.getHeightfield(i);
+        Eigen::MatrixXi TT = mesh.getFacesAdjacences();
+        for (unsigned int f = 0; f < mesh.getNumberFaces(); f++){
+            Vec3 n1 = mesh.getNormal(f);
+            if (n1.dot(he.getTarget(i))<=EPSILON){
+                for (unsigned int k = 0; k < 3; k++){
+                    int adj = TT(f,k);
+                    Vec3 n2 = mesh.getNormal(adj);
+                    if (n2.dot(he.getTarget(i))>=-EPSILON){
+                        Pointi f1 = mesh.getFace(f);
+                        Pointi f2 = mesh.getFace(adj);
+                        std::set<Pointd> allPoints;
+                        for (unsigned int i = 0; i < 3; i++){
+                            allPoints.insert(mesh.getVertex(f1[i]));
+                            allPoints.insert((mesh.getVertex(f1[i]) + mesh.getVertex(f1[(i+1)%3]))/2);
+                        }
+                        for (unsigned int i = 0; i < 3; i++){
+                            allPoints.insert(mesh.getVertex(f2[i]));
+                            allPoints.insert((mesh.getVertex(f2[i]) + mesh.getVertex(f2[(i+1)%3]))/2);
+                        }
+                        bool allNear = true;
+                        bool allDist = true;
+                        for (Pointd  p : allPoints){
+                            if (tree.getSquaredDistance(p) > EPSILON)
+                                allNear = false;
+                            else
+                                allDist = false;
+                        }
+                        if (!allNear && !allDist){
+                            int v1, v2;
+                            bool finded = false;
+                            unsigned int t1, tmp;
+                            for (t1 = 0; t1 < 3 && !finded; t1++){
+                                for (unsigned int t2 = 0; t2 < 3  && !finded; t2++){
+                                    if (f1[t1] == f2[t2]){
+                                        v1 = f1[t1];
+                                        tmp = t1;
+                                        finded = true;
+                                    }
+                                }
+                            }
+                            assert(finded && tmp < 2);
+                            finded = false;
+                            for (t1 = tmp+1; t1 < 3 && !finded; t1++){
+                                for (unsigned int t2 = 0; t2 < 3  && !finded; t2++){
+                                    if (f1[t1] == f2[t2]){
+                                        v2 = f1[t1];
+                                        finded = true;
+                                    }
+                                }
+                            }
+                            assert(finded && v1 != v2);
+                            Pointd p1 = mesh.getVertex(v1);
+                            Pointd p2 = mesh.getVertex(v2);
+                            std::pair<Pointd, Pointd> edge;
+                            if (p1 < p2){
+                                edge.first = p1;
+                                edge.second = p2;
+                            }
+                            else {
+                                edge.first = p2;
+                                edge.second = p1;
+                            }
+                            edges.insert(edge);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    IGLInterface::SimpleIGLMesh marked;
+    std::map<Pointd, int> mapVertices;
+    int n = 0;
+    for (std::pair<Pointd, Pointd> edge : edges){
+        int v1;
+        if (mapVertices.find(edge.first) == mapVertices.end()){
+            v1 = n;
+            mapVertices[edge.first] = n;
+            marked.addVertex(edge.first);
+            n++;
+        }
+        else {
+            v1 = mapVertices[edge.first];
+        }
+        int v2;
+        if (mapVertices.find(edge.second) == mapVertices.end()){
+            v2 = n;
+            mapVertices[edge.second] = n;
+            marked.addVertex(edge.second);
+            n++;
+        }
+        else {
+            v2 = mapVertices[edge.second];
+        }
+        int v3;
+        Pointd midPoint = (edge.first + edge.second) / 2.0;
+        if (mapVertices.find(midPoint) == mapVertices.end()){
+            v3 = n;
+            mapVertices[midPoint] = n;
+            marked.addVertex(midPoint);
+            n++;
+        }
+        else {
+            v3 = mapVertices[midPoint];
+        }
+        marked.addFace(v1, v2, v3);
+    }
+    return marked;
+}
+
+void Engine::saveObjs(const QString& foldername, const IGLInterface::IGLMesh &originalMesh, const Dcel& inputMesh, const IGLInterface::IGLMesh &baseComplex, const HeightfieldsList &he) {
+    QString originalMeshString = foldername + "/OriginalMesh.obj";
+    QString inputMeshString = foldername + "/InputMesh.obj";
+    QString baseComplexString = foldername + "/BaseComplex.obj";
+    QString heightfieldString = foldername + "/Heightfield";
+    QString markerString = foldername + "/Marker.obj";
+    if (originalMesh.getNumberVertices() > 0)
+        originalMesh.saveOnObj(originalMeshString.toStdString());
+    inputMesh.saveOnObjFile(inputMeshString.toStdString());
+    baseComplex.saveOnObj(baseComplexString.toStdString());
+    IGLInterface::SimpleIGLMesh marker = getMarkerMesh(he, inputMesh);
+    marker.saveOnObj(markerString.toStdString());
+    for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
+        IGLInterface::IGLMesh h = he.getHeightfield(i);
+        Dcel d(h);
+        std::stringstream ss;
+        ss << heightfieldString.toStdString() << i << ".obj";
+        d.saveOnObjFile(ss.str());
+    }
+}
+
+

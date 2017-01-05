@@ -61,6 +61,10 @@ Dcel::Dcel(Dcel&& dcel) {
 Dcel::Dcel(const IGLInterface::SimpleIGLMesh& iglMesh) {
     copyFrom(iglMesh);
 }
+
+Dcel::Dcel(const IGLInterface::IGLMesh& iglMesh) {
+    copyFrom(iglMesh);
+}
 #endif
 
 /**
@@ -205,13 +209,22 @@ void Dcel::saveOnObjFile(std::string fileNameObj) const {
         fileName = fileNameObj;
         fileNameObj = fileName + ".obj";
     }
+    size_t lastSlash = fileName.find_last_of("/");
+    std::string filenameNoPath;
+    if (lastSlash != fileName.size()){
+        filenameNoPath = fileName.substr(lastSlash+1, fileName.size());
+    }
+    else{
+        filenameNoPath = fileName;
+    }
     filenameMtu = fileName + ".mtu";
+    std::string fileNameMtuNoPath = filenameNoPath + ".mtu";
     std::ofstream filestreamObj, filestreamMtu;
     filestreamObj.open(fileNameObj.c_str());
     filestreamMtu.open(filenameMtu.c_str());
 
     if (filestreamObj && filestreamMtu) {
-        filestreamObj << "mtllib " << filenameMtu << "\n";
+        filestreamObj << "mtllib " << fileNameMtuNoPath << "\n";
         int i = 1;
         for (ConstVertexIterator vit = vertexBegin(); vit != vertexEnd(); vit++) {
             filestreamObj << "v " << (*vit)->getCoordinate().x() << " "<< (*vit)->getCoordinate().y() << " " <<  (*vit)->getCoordinate().z() << "\n";

@@ -56,6 +56,8 @@ int main(int argc, char *argv[]) {
         solutions.serialize(myfile);
         Serializer::serialize(b, myfile);
         original.serialize(myfile);
+        Serializer::serialize(scale, myfile);
+        Serializer::serialize(kernelDistance, myfile);
         myfile.close();
 
         std::ofstream mysecondfile;

@@ -93,6 +93,7 @@ class Dcel : public SerializableObject {
         Dcel(Dcel&& dcel);
         #ifdef IGL_DEFINED
         Dcel(const IGLInterface::SimpleIGLMesh &iglMesh);
+        Dcel(const IGLInterface::IGLMesh &iglMesh);
         #endif
         ~Dcel();
 

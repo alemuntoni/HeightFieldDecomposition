@@ -22,12 +22,7 @@ EngineManager::EngineManager(QWidget *parent) :
     iterations(nullptr),
     solutions(nullptr),
     baseComplex(nullptr),
-    he(nullptr),
-    //entirePieces(nullptr),
-    recBoxes(nullptr),
-    irregularGrid(nullptr),
-    newPieces(nullptr),
-    newBaseComplex(nullptr){
+    he(nullptr){
     ui->setupUi(this);
     ui->iterationsSlider->setMaximum(0);
 
@@ -53,10 +48,6 @@ EngineManager::~EngineManager() {
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
-    //deleteDrawableObject(entirePieces);
-    deleteDrawableObject(recBoxes);
-    deleteDrawableObject(newPieces);
-    deleteDrawableObject(newBaseComplex);
 }
 
 void EngineManager::updateLabel(double value, QLabel* label) {
@@ -370,25 +361,24 @@ void EngineManager::on_deserializePushButton_clicked() {
 }
 
 void EngineManager::on_saveObjsButton_clicked() {
-    if (d != nullptr && baseComplex != nullptr && he != nullptr /*&& entirePieces != nullptr*/) {
+    if (d != nullptr && baseComplex != nullptr && he != nullptr) {
         QString foldername = QFileDialog::getExistingDirectory(nullptr, "SaveObjs");
         if (!foldername.isEmpty()){
+            /*QString originalMeshString = foldername + "/OriginalMesh.obj";
             QString inputMeshString = foldername + "/InputMesh.obj";
             QString baseComplexString = foldername + "/BaseComplex.obj";
             QString heightfieldString = foldername + "/Heightfield";
-            //QString entirePieceString = foldername + "/EntirePiece";
+            if (originalMesh.getNumberVertices() > 0)
+                originalMesh.saveOnObj(originalMeshString.toStdString());
             d->saveOnObjFile(inputMeshString.toStdString());
             baseComplex->saveOnObj(baseComplexString.toStdString());
             for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
                 IGLInterface::IGLMesh h = he->getHeightfield(i);
-                //IGLInterface::IGLMesh ep = entirePieces->getHeightfield(i);
                 std::stringstream ss;
-                //std::stringstream ss1;
                 ss << heightfieldString.toStdString() << i << ".obj";
-                //ss1 << entirePieceString.toStdString() << i << ".obj";
                 h.saveOnObj(ss.str());
-                //ep.saveOnObj(ss1.str());
-            }
+            }*/
+            Engine::saveObjs(foldername, originalMesh, *d, *baseComplex, *he);
         }
     }
 }
@@ -1032,7 +1022,7 @@ void EngineManager::on_stickPushButton_clicked() {
 void EngineManager::on_serializeBCPushButton_clicked() {
     if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr /*&& entirePieces != nullptr*/){
         QString filename = QFileDialog::getSaveFileName(nullptr,
-                           "Serialize",
+                           "Serialize BC",
                            ".",
                            "BIN(*.bin)");
         if (!filename.isEmpty()) {
@@ -1044,7 +1034,7 @@ void EngineManager::on_serializeBCPushButton_clicked() {
 
 void EngineManager::on_deserializeBCPushButton_clicked() {
     QString filename = QFileDialog::getOpenFileName(nullptr,
-                       "Deserialize",
+                       "Deserialize BC",
                        ".",
                        "BIN(*.bin)");
 
@@ -1054,20 +1044,13 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
 }
 
 void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
-    if (d == nullptr) {
-        DcelManager* dm = (DcelManager*)mainWindow->getManager(DCEL_MANAGER_ID);
-        DrawableDcel* dd = dm->getDcel();
-        if (dd != nullptr){
-            d = new DrawableDcel(*dd);
-            mainWindow->pushObj(d, "Scaled Mesh");
-
-            Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
-            std::set<const Dcel::Face*> flippedFaces, savedFaces;
-            Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
-            updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
-            d->update();
-            mainWindow->updateGlCanvas();
-        }
+    if (g == nullptr && d!= nullptr) {
+        Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
+        std::set<const Dcel::Face*> flippedFaces, savedFaces;
+        Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
+        updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
+        d->update();
+        mainWindow->updateGlCanvas();
     }
     if (d!=nullptr){
         deleteDrawableObject(solutions);
@@ -1241,6 +1224,48 @@ void EngineManager::on_loadSmoothedPushButton_clicked() {
             msgBox.exec();
         }
     }
+    /*if (originalMesh.getNumberVertices() > 0){
+        cinolib::Trimesh m;
+        Reconstruction::iglMeshToTrimesh(m, originalMesh);
+        cinolib::smooth_taubin(m, cinolib::COTANGENT, std::set<int>(), 100, 0.89, -0.9);
+        IGLInterface::SimpleIGLMesh tmp;
+        Reconstruction::trimeshToIglMesh(tmp, m);
+        deleteDrawableObject(d);
+        d = new DrawableDcel(tmp);
+        d->updateVertexNormals();
+        d->setWireframe(true);
+        d->setPointsShading();
+        d->update();
+        mainWindow->pushObj(d, "Smoothed");
+        mainWindow->updateGlCanvas();
+    }
+    else {
+        QString filename = QFileDialog::getOpenFileName(nullptr,
+                                                        "Open IGL Mesh",
+                                                        ".",
+                                                        "OBJ(*.obj);;PLY(*.ply)");
+        if (!filename.isEmpty()) {
+            std::string s = filename.toStdString();
+            deleteDrawableObject(d);
+            d = new DrawableDcel();
+            if (d->loadFromFile(s)){
+                std::cout << "load: " << filename.toStdString() << std::endl;
+                d->updateVertexNormals();
+                d->setWireframe(true);
+                d->setPointsShading();
+                d->update();
+                mainWindow->pushObj(d, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
+                mainWindow->updateGlCanvas();
+            }
+            else {
+                delete d;
+                d = nullptr;
+                QMessageBox msgBox;
+                msgBox.setText("Format file not supported.");
+                msgBox.exec();
+            }
+        }
+    }*/
 }
 
 void EngineManager::on_packPushButton_clicked() {

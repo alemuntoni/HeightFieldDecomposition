@@ -48,6 +48,7 @@ namespace IGLInterface {
             void setVertex(unsigned int i, const Pointd &p);
             void setVertex(unsigned int i, double x, double y, double z);
             void addVertex(const Eigen::VectorXd &p);
+            void addVertex(const Pointd &p);
             void addVertex(double x, double y, double z);
             void resizeVertices(unsigned int nv);
             void setFace(unsigned int i, const Eigen::VectorXi &f);
@@ -81,6 +82,7 @@ namespace IGLInterface {
             void scale(const BoundingBox& newBoundingBox);
             void scale(const BoundingBox& oldBoundingBox, const BoundingBox& newBoundingBox);
             void scale(const Vec3 &scaleFactor);
+            Eigen::MatrixXi getFacesAdjacences() const;
             #ifdef CGAL_DEFINED
             static void intersection(SimpleIGLMesh &result, const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
             static SimpleIGLMesh intersection(const SimpleIGLMesh &m1, const SimpleIGLMesh &m2);
@@ -222,6 +224,11 @@ namespace IGLInterface {
         assert (p.size() == 3);
         V.conservativeResize(V.rows()+1, Eigen::NoChange);
         V.row(V.rows()-1) = p;
+    }
+
+    inline void SimpleIGLMesh::addVertex(const Pointd& p) {
+        V.conservativeResize(V.rows()+1, Eigen::NoChange);
+        V(V.rows()-1, 0) = p.x(); V(V.rows()-1, 1) = p.y(); V(V.rows()-1, 2) = p.z();
     }
 
     inline void SimpleIGLMesh::addVertex(double x, double y, double z) {

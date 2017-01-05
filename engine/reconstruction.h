@@ -8,6 +8,7 @@
 #include <fstream>
 #include <cinolib/meshes/trimesh/trimesh.h>
 #include <cinolib/scalar_field.h>
+#include <cinolib/smoothing.h>
 
 
 namespace Reconstruction {

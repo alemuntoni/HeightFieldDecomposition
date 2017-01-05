@@ -69,6 +69,10 @@ namespace Engine {
     void gluePortionsToBaseComplex(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
 
     void largeScaleFabrication(const Dcel &input, double kernelDistance = 6, bool heightfields = false);
+
+    IGLInterface::SimpleIGLMesh getMarkerMesh(const HeightfieldsList& he, const Dcel& d);
+
+    void saveObjs(const QString& foldername, const IGLInterface::IGLMesh& originalMesh, const Dcel& inputMesh, const IGLInterface::IGLMesh& baseComplex, const HeightfieldsList& he);
 }
 
 #endif // ENGINE_H

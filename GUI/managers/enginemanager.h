@@ -180,11 +180,6 @@ class EngineManager : public QFrame, public SerializableObject {
         IGLInterface::DrawableIGLMesh* baseComplex;
         Energy e;
         HeightfieldsList *he;
-        //HeightfieldsList* entirePieces;
-        HeightfieldsList* recBoxes;
-        DrawableIrregularGrid* irregularGrid;
-        HeightfieldsList* newPieces;
-        IGLInterface::DrawableIGLMesh* newBaseComplex;
         IGLInterface::DrawableIGLMesh originalMesh;
 };
 
