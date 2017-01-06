@@ -119,6 +119,16 @@ exists($$(GUROBI_HOME)){
     DEFINES += GUROBI_DEFINED
 }
 
+HEADERS += \
+    lib/dcel_segmentation/chart.h \
+    lib/dcel_segmentation/segmentation_iterators.h \
+    lib/dcel_segmentation/segmentation_struct.h \
+    lib/dcel_segmentation/segmentation.h
+
+SOURCES += \
+    lib/dcel_segmentation/chart.cpp \
+    lib/dcel_segmentation/segmentation_struct.cpp
+
 
 
 

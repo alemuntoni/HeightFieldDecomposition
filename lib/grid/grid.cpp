@@ -89,9 +89,10 @@ void Grid::calculateBorderWeights(const Dcel& d, bool tolerance, std::set<const 
  * @brief Grid::freezeKernel
  *
  * Assegna massimo peso ai punti nel kernel
- * @param value
+ * @param value should be a number between 0 and 1
  */
 void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool tolerance, std::set<const Dcel::Face*>& savedFaces) {
+    assert(value >= 0 && value <= 1);
     // grid border and rest
     weights.setConstant(BORDER_PAY);
     for (unsigned int i = 2; i < resX-2; i++){
@@ -104,6 +105,11 @@ void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool tol
 
     //mesh border
     calculateBorderWeights(d, tolerance, savedFaces);
+
+    double minValue = signedDistances.getMin();
+    value = 1 - value;
+    value *= minValue;
+    value = std::abs(value);
 
     //kernel
     for (unsigned int i = 0; i < getResX(); ++i){

@@ -11,6 +11,7 @@
 #include "engine/reconstruction.h"
 #include "engineworker.h"
 #include <QThread>
+#include "lib/dcel_segmentation/segmentation.h"
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -240,6 +241,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()], savedFaces);
         updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
         d->update();
+        g->updateMinSignedDistance();
         g->setKernelDistance(ui->distanceSpinBox->value());
         e = Energy(*g);
         mainWindow->pushObj(g, "Grid");
@@ -1299,7 +1301,12 @@ void EngineManager::on_packPushButton_clicked() {
                 QString bstring = foldername + "/b" + QString::number(i);
                 for (unsigned int j = 0; j < packs[i].size(); j++){
                     QString meshName = bstring + "p" + QString::number(j) + ".obj";
-                    packs[i][j].saveOnObj(meshName.toStdString());
+                    //packs[i][j].saveOnObj(meshName.toStdString());
+                    Dcel d(packs[i][j]);
+                    Segmentation s(d);
+                    Dcel dd = s.getDcelFromSegmentation();
+                    dd.triangulate();
+                    dd.saveOnObjFile(meshName.toStdString());
                     if (j > 0){
                         packMesh = IGLInterface::IGLMesh::merge(packMesh, packs[i][j]);
                     }
@@ -1382,8 +1389,96 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
 
 void EngineManager::on_deleteBoxesPushButton_clicked() {
     if (solutions != nullptr && d != nullptr){
+        #ifdef GUROBI_DEFINED
         int n = Engine::deleteBoxes(*solutions, *d);
+        #else
+        int n = Engine::deleteBoxesOld(*solutions, *d);
+        #endif
         std::cerr << "N deleted boxes: " << n << "\n";
         mainWindow->updateGlCanvas();
     }
+}
+
+void EngineManager::on_volumePushButton_clicked() {
+    if (baseComplex!=nullptr && d != nullptr){
+        Eigen::RowVector3d Vmin, Vmax;
+        Vmin = Eigen::RowVector3d(d->getBoundingBox().minX(), d->getBoundingBox().minY(), d->getBoundingBox().minZ());
+        Vmax = Eigen::RowVector3d(d->getBoundingBox().maxX(), d->getBoundingBox().maxY(), d->getBoundingBox().maxZ());
+
+        // create grid GV
+        Eigen::RowVector3d border(2,2,2);
+        Eigen::RowVector3d nGmin;
+        Eigen::RowVector3d nGmax;
+        Eigen::RowVector3i Gmini = (Vmin).cast<int>() - border.cast<int>();
+        Eigen::RowVector3i Gmaxi = (Vmax).cast<int>() + border.cast<int>();
+        nGmin = Gmini.cast<double>();
+        nGmax = Gmaxi.cast<double>();
+        Eigen::RowVector3i res = (nGmax.cast<int>() - nGmin.cast<int>())/2; res(0)+=1; res(1)+=1; res(2)+=1;
+
+        double gridUnit = 2;
+        res(0) /= ui->factorSpinBox->value();
+        res(1) /= ui->factorSpinBox->value();
+        res(2) /= ui->factorSpinBox->value();
+        gridUnit*=ui->factorSpinBox->value();
+
+
+        CGALInterface::AABBTree td(*d);
+        CGALInterface::AABBTree the(*baseComplex);
+        int counterd = 0, counterhe = 0;
+        int xi = nGmin(0), yi = nGmin(1), zi = nGmin(2);
+        for (int i = 0; i < res(0); ++i){
+            yi = nGmin(1);
+            for (int j = 0; j < res(1); ++j){
+                zi = nGmin(2);
+                for (int k = 0; k < res(2); ++k){
+                    Pointd p(xi,yi,zi);
+                    if (td.isInside(p)){
+                        counterd++;
+                        if (the.isInside(p))
+                            counterhe++;
+                    }
+                    zi+=gridUnit;
+                }
+                yi+=gridUnit;
+            }
+            xi +=gridUnit;
+        }
+
+        std::cerr << "Counter d: " << counterd << "; Counter he: " << counterhe << "\n";
+        double percent = ((double)counterhe / counterd) * 100;
+        percent = 100 - percent;
+        updateLabel(percent, ui->volumePercentLabel);
+        ui->volumePercentLabel->setText(ui->volumePercentLabel->text() + "%");
+    }
+    /*
+    if (he!=nullptr && d != nullptr){
+
+        IGLInterface::SimpleIGLMesh heMesh;
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            heMesh = IGLInterface::SimpleIGLMesh::merge(heMesh, he->getHeightfield(i));
+        }
+        Array3D<Pointd> gridd;
+        Array3D<float> dfd, dfhe;
+        double gridUnit = ui->factorSpinBox->value() * 2;
+        IGLInterface::generateGridAndDistanceField(gridd, dfd, IGLInterface::SimpleIGLMesh(*d), gridUnit);
+        IGLInterface::generateGridAndDistanceField(gridd, dfhe, heMesh, gridUnit);
+
+        int counterd = 0, counterhe = 0;
+        for (int i = 0; i < dfd.getSizeX(); ++i){
+            for (int j = 0; j < dfd.getSizeY(); ++j){
+                for (int k = 0; k < dfd.getSizeZ(); ++k){
+                    if (dfd(i,j,k) < 0){
+                        counterd++;
+                        if (dfhe(i,j,k))
+                            counterhe++;
+                    }
+                }
+            }
+        }
+        std::cerr << "Counter d: " << counterd << "; Counter he: " << counterhe << "\n";
+        double percent = ((double)counterhe / counterd) * 100;
+        updateLabel(percent, ui->volumePercentLabel);
+        ui->volumePercentLabel->setText(ui->volumePercentLabel->text() + "%");
+    }
+    */
 }

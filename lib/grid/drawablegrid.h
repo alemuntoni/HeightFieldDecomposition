@@ -37,6 +37,8 @@ class DrawableGrid: public Grid, public DrawableObject
 
         void setStepDrawGrid(double value);
 
+        void updateMinSignedDistance();
+
     private:
 
         void drawLine(const Pointd& a, const Pointd& b) const;
@@ -56,6 +58,7 @@ class DrawableGrid: public Grid, public DrawableObject
         int sliceValue;
         std::vector<BoundingBox> cubes;
         double stepDrawGrid;
+        double minSignedDistance;
 };
 
 #endif // DRAWABLEGRID_H

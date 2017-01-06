@@ -46,7 +46,7 @@ CGALInterface::AABBTree::AABBTree(const Trimesh<double>& t, bool forDistanceQuer
 #endif
 
 #ifdef IGL_DEFINED
-CGALInterface::AABBTree::AABBTree(const IGLInterface::IGLMesh& m, bool forDistanceQueries){
+CGALInterface::AABBTree::AABBTree(const IGLInterface::SimpleIGLMesh& m, bool forDistanceQueries){
     treeType = IGLMESH;
     for (unsigned int i = 0; i < m.getNumberVertices(); i++){
         Pointd p = m.getVertex(i);

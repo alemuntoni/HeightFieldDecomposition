@@ -139,7 +139,7 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
     for (unsigned int t = 0; t < 6; t++){
         if (target == XYZ[t]){
             if (t < 3){
-                assert(b1.max()[t] < b2.max()[t]);
+                assert(b1.max()[t] <= b2.max()[t]);
                 b3.min()[t] = b1.max()[t];
                 b3.max()[t] = b2.max()[t];
                 b4.min()[t] = b2.min()[t];
@@ -148,7 +148,7 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
                     if (u != t){
                         b3.min()[u] = b4.min()[u] = std::max(b1.min()[u], b2.min()[u]);
                         b3.max()[u] = b4.max()[u] = std::min(b1.max()[u], b2.max()[u]);
-                        assert(b3.min()[u] <= b3.max()[u]);
+                        assert(b3.min()[u] < b3.max()[u]);
                     }
                 }
             }

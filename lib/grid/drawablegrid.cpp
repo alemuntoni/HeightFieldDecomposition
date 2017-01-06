@@ -5,11 +5,12 @@ DrawableGrid::DrawableGrid() : visible(true), drawMode(DRAW_KERNEL), slice(NO_SL
 }
 
 DrawableGrid::DrawableGrid(const Grid& g) : Grid(g), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2){
-
+    minSignedDistance = signedDistances.getMin();
 }
 
 DrawableGrid::DrawableGrid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
     Grid(resolution, gridCoordinates, signedDistances, gMin, gMax), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2) {
+    minSignedDistance = signedDistances.getMin();
 }
 
 DrawableGrid::~DrawableGrid(){
@@ -20,7 +21,10 @@ double DrawableGrid::getKernelDistance() const {
 }
 
 void DrawableGrid::setKernelDistance(double value) {
-    kernelDistance = value;
+    assert(value >= 0 && value <= 1);
+    value = 1 - value;
+    value *= minSignedDistance;
+    kernelDistance = std::abs(value);
 }
 
 void DrawableGrid::setDrawKernel() {
@@ -269,4 +273,8 @@ void DrawableGrid::drawCube(const BoundingBox &b) const {
 
 void DrawableGrid::setStepDrawGrid(double value) {
     stepDrawGrid = value;
+}
+
+void DrawableGrid::updateMinSignedDistance() {
+    minSignedDistance = signedDistances.getMin();
 }

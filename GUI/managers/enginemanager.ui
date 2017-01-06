@@ -62,9 +62,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-271</y>
         <width>406</width>
-        <height>1094</height>
+        <height>1122</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -125,62 +125,34 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_4">
-              <item row="4" column="1">
-               <widget class="QDoubleSpinBox" name="snappingSpinBox">
-                <property name="value">
-                 <double>2.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="9" column="1">
-               <widget class="QPushButton" name="colorPiecesPushButton">
+              <item row="10" column="1">
+               <widget class="QCheckBox" name="allHeightfieldsCheckBox">
                 <property name="text">
-                 <string>Color Pieces</string>
+                 <string>All</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QSlider" name="solutionsSlider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="0">
-               <widget class="QPushButton" name="stickPushButton">
+              <item row="4" column="0">
+               <widget class="QPushButton" name="snappingPushButton">
                 <property name="text">
-                 <string>Stick</string>
+                 <string>Snap Boxes</string>
                 </property>
                </widget>
               </item>
-              <item row="7" column="0">
-               <widget class="QPushButton" name="reorderBoxes">
+              <item row="8" column="0">
+               <widget class="QPushButton" name="putBoxesAfterPushButton">
                 <property name="text">
-                 <string>Reorder Boxes</string>
+                 <string>Put Boxes After</string>
                 </property>
                </widget>
               </item>
-              <item row="7" column="1">
-               <widget class="QPushButton" name="subtractPushButton">
-                <property name="text">
-                 <string>Boolean Operations</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_9">
-                <property name="text">
-                 <string>Solution Manager</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0" colspan="2">
-               <widget class="Line" name="line_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+              <item row="8" column="1">
+               <widget class="QSpinBox" name="coveredTrianglesSpinBox">
+                <property name="maximum">
+                 <number>100</number>
                 </property>
                </widget>
               </item>
@@ -198,27 +170,62 @@
                 </property>
                </widget>
               </item>
-              <item row="8" column="1">
-               <widget class="QSpinBox" name="coveredTrianglesSpinBox">
-                <property name="maximum">
-                 <number>100</number>
+              <item row="12" column="0">
+               <widget class="QPushButton" name="stickPushButton">
+                <property name="text">
+                 <string>Stick</string>
                 </property>
                </widget>
               </item>
-              <item row="4" column="0">
-               <widget class="QPushButton" name="snappingPushButton">
-                <property name="text">
-                 <string>Snap Boxes</string>
+              <item row="5" column="0">
+               <widget class="QSlider" name="solutionsSlider">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
-              <item row="10" column="1">
-               <widget class="QCheckBox" name="allHeightfieldsCheckBox">
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_9">
                 <property name="text">
-                 <string>All</string>
+                 <string>Solution Manager</string>
                 </property>
-                <property name="checked">
-                 <bool>true</bool>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QPushButton" name="deleteBoxesPushButton">
+                <property name="text">
+                 <string>Delete Boxes</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0" colspan="2">
+               <widget class="Line" name="line_3">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QPushButton" name="subtractPushButton">
+                <property name="text">
+                 <string>Boolean Operations</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0">
+               <widget class="QPushButton" name="reorderBoxes">
+                <property name="text">
+                 <string>Reorder Boxes</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QDoubleSpinBox" name="snappingSpinBox">
+                <property name="value">
+                 <double>2.000000000000000</double>
                 </property>
                </widget>
               </item>
@@ -226,13 +233,6 @@
                <widget class="QPushButton" name="reconstructionPushButton">
                 <property name="text">
                  <string>Restore HF</string>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="0">
-               <widget class="QPushButton" name="putBoxesAfterPushButton">
-                <property name="text">
-                 <string>Put Boxes After</string>
                 </property>
                </widget>
               </item>
@@ -246,10 +246,24 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QPushButton" name="deleteBoxesPushButton">
+              <item row="9" column="1">
+               <widget class="QPushButton" name="colorPiecesPushButton">
                 <property name="text">
-                 <string>Delete Boxes</string>
+                 <string>Color Pieces</string>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="0">
+               <widget class="QPushButton" name="volumePushButton">
+                <property name="text">
+                 <string>Volume Percent</string>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="1">
+               <widget class="QLabel" name="volumePercentLabel">
+                <property name="text">
+                 <string>0%</string>
                 </property>
                </widget>
               </item>
@@ -484,16 +498,16 @@
               <item row="5" column="1">
                <widget class="QDoubleSpinBox" name="distanceSpinBox">
                 <property name="minimum">
-                 <double>0.500000000000000</double>
+                 <double>0.000000000000000</double>
                 </property>
                 <property name="maximum">
-                 <double>400.000000000000000</double>
+                 <double>1.000000000000000</double>
                 </property>
                 <property name="singleStep">
-                 <double>0.500000000000000</double>
+                 <double>0.100000000000000</double>
                 </property>
                 <property name="value">
-                 <double>10.000000000000000</double>
+                 <double>1.000000000000000</double>
                 </property>
                </widget>
               </item>

@@ -19,6 +19,11 @@ template <class T> class Array2D : public SerializableObject{
         size_t getSizeX() const;
         size_t getSizeY() const;
 
+        T& getMin();
+        const T& getMin() const;
+        T& getMax();
+        const T& getMax() const;
+
         void setConstant(const T& c);
 
         void resize (size_t x, size_t y);
@@ -52,6 +57,11 @@ template <class T> class Array3D : public SerializableObject{
         size_t getSizeY() const;
         size_t getSizeZ() const;
 
+        T& getMin();
+        const T& getMin() const;
+        T& getMax();
+        const T& getMax() const;
+
         void setConstant(const T& c);
 
         void resize (size_t x, size_t y, size_t z);
@@ -82,6 +92,11 @@ template <class T> class Array4D : public SerializableObject{
         size_t getSizeY() const;
         size_t getSizeZ() const;
         size_t getSizeW() const;
+
+        T& getMin();
+        const T& getMin() const;
+        T& getMax();
+        const T& getMax() const;
 
         void setConstant(const T& c);
 
@@ -142,6 +157,26 @@ inline size_t Array2D<T>::getSizeX() const {
 template <class T>
 inline size_t Array2D<T>::getSizeY() const{
     return sizeY;
+}
+
+template <class T>
+inline T&Array2D<T>::getMin() {
+    return *(std::min_element(v.begin(), v.end()));
+}
+
+template <class T>
+const T&Array2D<T>::getMin() const {
+    return *(std::min_element(v.begin(), v.end()));
+}
+
+template <class T>
+inline T&Array2D<T>::getMax() {
+    return *(std::max_element(v.begin(), v.end()));
+}
+
+template <class T>
+const T&Array2D<T>::getMax() const {
+    return *(std::max_element(v.begin(), v.end()));
 }
 
 template <class T>
@@ -258,6 +293,26 @@ inline size_t Array3D<T>::getSizeZ() const {
 }
 
 template <class T>
+inline T&Array3D<T>::getMin() {
+    return *(std::min_element(v.begin(), v.end()));
+}
+
+template <class T>
+const T&Array3D<T>::getMin() const {
+    return *(std::min_element(v.begin(), v.end()));
+}
+
+template <class T>
+inline T&Array3D<T>::getMax() {
+    return *(std::max_element(v.begin(), v.end()));
+}
+
+template <class T>
+const T&Array3D<T>::getMax() const {
+    return *(std::max_element(v.begin(), v.end()));
+}
+
+template <class T>
 inline void Array3D<T>::setConstant(const T& c) {
     std::fill(v.begin(), v.end(), c);
 }
@@ -368,6 +423,26 @@ inline size_t Array4D<T>::getSizeZ() const {
 template <class T>
 inline size_t Array4D<T>::getSizeW() const {
     return sizeW;
+}
+
+template <class T>
+inline T&Array4D<T>::getMin() {
+    return *(std::min_element(v.begin(), v.end()));
+}
+
+template <class T>
+const T&Array4D<T>::getMin() const {
+    return *(std::min_element(v.begin(), v.end()));
+}
+
+template <class T>
+inline T&Array4D<T>::getMax() {
+    return *(std::max_element(v.begin(), v.end()));
+}
+
+template <class T>
+const T&Array4D<T>::getMax() const {
+    return *(std::max_element(v.begin(), v.end()));
 }
 
 template <class T>

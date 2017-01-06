@@ -36,7 +36,7 @@ namespace CGALInterface {
             AABBTree(const Trimesh<double> &t, bool forDistanceQueries = false);
             #endif
             #ifdef IGL_DEFINED
-            AABBTree(const IGLInterface::IGLMesh &m, bool forDistanceQueries = false);
+            AABBTree(const IGLInterface::SimpleIGLMesh& m, bool forDistanceQueries = false);
             #endif
             AABBTree& operator=(const AABBTree& other);
 

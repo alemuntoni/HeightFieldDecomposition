@@ -512,6 +512,7 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
  * @param angleTolerance
  */
 void Engine::createAndMinimizeAllBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimante, BoxList& allSolutions) {
+    assert(kernelDistance >= 0 && kernelDistance <= 1);
     solutions.clearBoxes();
     Dcel scaled[ORIENTATIONS];
     Eigen::Matrix3d m[ORIENTATIONS];
