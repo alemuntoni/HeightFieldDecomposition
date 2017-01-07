@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
                     decimate = std::stoi(argv[7]);
             }
         }
-        Engine::optimizeAndDeleteBoxes(solutions, d, kernelDistance, true, true, 0.000, tolerance, file, decimate, allSolutions);
+        Engine::optimizeAndDeleteBoxes(solutions, d, kernelDistance, false, Pointd(), true, true, 0.000, tolerance, file, decimate, allSolutions);
         size_t lastindex = filename_smooth.find_last_of(".");
         std::string rawname = filename_smooth.substr(0, lastindex);
 
