@@ -17,7 +17,7 @@
 
 #define ORIENTATIONS 1
 #define TARGETS 6
-#define STARTING_NUMBER_FACES 400
+#define STARTING_NUMBER_FACES 300
 
 namespace Engine {
     Vec3 getClosestTarget(const Vec3 &n);
@@ -41,7 +41,7 @@ namespace Engine {
 
     void calculateInitialBoxes(BoxList &boxList, const Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const Vec3& target = Vec3());
 
-    void expandBoxes(BoxList &boxList, const Grid &g, bool printTimes = false);
+    void expandBoxes(BoxList &boxList, const Grid &g, bool limit, const Pointd& limits, bool printTimes = false);
 
     void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<bool> > >& vectorTriples, const BoxList& boxList, const Dcel &d);
 
@@ -49,12 +49,12 @@ namespace Engine {
 
     int deleteBoxesOld(BoxList& boxList, const Dcel &d);
 
-    #ifdef GUROBI_DEFINED
     int deleteBoxes(BoxList& boxList, const Dcel &d);
-    #endif
 
     static BoxList dummy2;
-    void createAndMinimizeAllBoxes(BoxList &solutions, const Dcel &d, double kernelDistance, bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimante = true, BoxList& allSolutions = dummy2);
+    void optimize(BoxList &solutions, const Dcel &d, double kernelDistance, bool limit, Pointd limits = Pointd(), bool tolerance = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true);
+
+    void optimizeAndDeleteBoxes(BoxList &solutions, const Dcel &d, double kernelDistance, bool limit, Pointd limits = Pointd(), bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true, BoxList& allSolutions = dummy2);
 
     void deleteDuplicatedBoxes(BoxList &solutions);
 
@@ -68,7 +68,7 @@ namespace Engine {
 
     void gluePortionsToBaseComplex(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
 
-    void largeScaleFabrication(const Dcel &input, double kernelDistance = 6, bool heightfields = false);
+    //void largeScaleFabrication(const Dcel &input, double kernelDistance = 6, bool heightfields = false);
 
     IGLInterface::SimpleIGLMesh getMarkerMesh(const HeightfieldsList& he, const Dcel& d);
 

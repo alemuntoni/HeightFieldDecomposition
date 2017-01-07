@@ -43,14 +43,14 @@ int main(int argc, char *argv[]) {
                     decimate = std::stoi(argv[7]);
             }
         }
-        Engine::createAndMinimizeAllBoxes(solutions, d, kernelDistance, true, true, 0.000, tolerance, file, decimate, allSolutions);
+        Engine::optimizeAndDeleteBoxes(solutions, d, kernelDistance, true, true, 0.000, tolerance, file, decimate, allSolutions);
         size_t lastindex = filename_smooth.find_last_of(".");
         std::string rawname = filename_smooth.substr(0, lastindex);
 
         bool b = true;
 
         std::ofstream myfile;
-        myfile.open (rawname + std::to_string((int)kernelDistance) + ".bin", std::ios::out | std::ios::binary);
+        myfile.open (rawname + "0" + std::to_string((int)(kernelDistance*100)) + ".bin", std::ios::out | std::ios::binary);
         d.serialize(myfile);
         Serializer::serialize(b, myfile);
         solutions.serialize(myfile);
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         myfile.close();
 
         std::ofstream mysecondfile;
-        mysecondfile.open (rawname + std::to_string((int)kernelDistance) + "_allsolutions.bin", std::ios::out | std::ios::binary);
+        mysecondfile.open (rawname + "0" + std::to_string((int)kernelDistance*100) + "_allsolutions.bin", std::ios::out | std::ios::binary);
         d.serialize(mysecondfile);
         Serializer::serialize(b, mysecondfile);
         allSolutions.serialize(mysecondfile);

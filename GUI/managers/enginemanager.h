@@ -33,6 +33,7 @@ class EngineManager : public QFrame, public SerializableObject {
         void updateLabel(double value, QLabel* label);
         void updateBoxValues();
         void updateColors(double angleThreshold, double areaThreshold);
+        Pointd getLimits();
 
         void serializeBC(const std::string& filename);
         void deserializeBC(const std::string& filename);
@@ -167,6 +168,10 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_deleteBoxesPushButton_clicked();
 
         void on_volumePushButton_clicked();
+
+        void on_pushButton_clicked();
+
+        void on_limitsConstraintCheckBox_stateChanged(int arg1);
 
     signals:
         void finished();

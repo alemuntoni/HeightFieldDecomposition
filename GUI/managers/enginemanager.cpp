@@ -90,6 +90,33 @@ void EngineManager::updateColors(double angleThreshold, double areaThreshold) {
     mainWindow->updateGlCanvas();
 }
 
+Pointd EngineManager::getLimits() {
+    assert(d!=nullptr);
+    BoundingBox bb = d->getBoundingBox();
+    double lx = bb.getLengthX();
+    double ly = bb.getLengthY();
+    double lz = bb.getLengthZ();
+    double min;
+    if (lx <= ly && lx <= lz){
+        min = lx;
+    }
+    else if (ly <= lx && ly <= lz) {
+        min = ly;
+    }
+    else if (lz <= lx && lz <= ly) {
+        min = lz;
+    } else assert(0);
+    double minreal = ui->minEdgeBBSpinBox->value();
+    double limitRealX = ui->xLimitSpinBox->value();
+    double limitRealY = ui->yLimitSpinBox->value();
+    double limitRealZ = ui->zLimitSpinBox->value();
+    Pointd limits;
+    limits.x() = (limitRealX * min) / minreal;
+    limits.y() = (limitRealY * min) / minreal;
+    limits.z() = (limitRealZ * min) / minreal;
+    return limits;
+}
+
 void EngineManager::serializeBC(const std::string& filename) {
     std::ofstream myfile;
     myfile.open (filename, std::ios::out | std::ios::binary);
@@ -1056,13 +1083,17 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
     }
     if (d!=nullptr){
         deleteDrawableObject(solutions);
-        deleteDrawableObject(g);
         solutions = new BoxList();
         mainWindow->pushObj(solutions, "Solutions");
         double kernelDistance = ui->distanceSpinBox->value();
         Timer t("Total Time Grids and Minimization Boxes");
         /// here d is already scaled!!
-        Engine::createAndMinimizeAllBoxes(*solutions, *d, kernelDistance, ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
+        if (ui->limitsConstraintCheckBox->isChecked()){
+            Engine::optimizeAndDeleteBoxes(*solutions, *d, kernelDistance, true, getLimits(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
+        }
+        else {
+            Engine::optimizeAndDeleteBoxes(*solutions, *d, kernelDistance, false, Pointd(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
+        }
         t.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
@@ -1301,12 +1332,12 @@ void EngineManager::on_packPushButton_clicked() {
                 QString bstring = foldername + "/b" + QString::number(i);
                 for (unsigned int j = 0; j < packs[i].size(); j++){
                     QString meshName = bstring + "p" + QString::number(j) + ".obj";
-                    //packs[i][j].saveOnObj(meshName.toStdString());
-                    Dcel d(packs[i][j]);
-                    Segmentation s(d);
-                    Dcel dd = s.getDcelFromSegmentation();
-                    dd.triangulate();
-                    dd.saveOnObjFile(meshName.toStdString());
+                    packs[i][j].saveOnObj(meshName.toStdString());
+                    //Dcel d(packs[i][j]);
+                    //Segmentation s(d);
+                    //Dcel dd = s.getDcelFromSegmentation();
+                    //dd.triangulate();
+                    //dd.saveOnObjFile(meshName.toStdString());
                     if (j > 0){
                         packMesh = IGLInterface::IGLMesh::merge(packMesh, packs[i][j]);
                     }
@@ -1389,11 +1420,7 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
 
 void EngineManager::on_deleteBoxesPushButton_clicked() {
     if (solutions != nullptr && d != nullptr){
-        #ifdef GUROBI_DEFINED
         int n = Engine::deleteBoxes(*solutions, *d);
-        #else
-        int n = Engine::deleteBoxesOld(*solutions, *d);
-        #endif
         std::cerr << "N deleted boxes: " << n << "\n";
         mainWindow->updateGlCanvas();
     }
@@ -1481,4 +1508,52 @@ void EngineManager::on_volumePushButton_clicked() {
         ui->volumePercentLabel->setText(ui->volumePercentLabel->text() + "%");
     }
     */
+}
+
+void EngineManager::on_pushButton_clicked() {
+    if (g == nullptr && d!= nullptr) {
+        Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
+        std::set<const Dcel::Face*> flippedFaces, savedFaces;
+        Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
+        updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
+        d->update();
+        mainWindow->updateGlCanvas();
+    }
+    if (d!=nullptr){
+        deleteDrawableObject(solutions);
+        solutions = new BoxList();
+        mainWindow->pushObj(solutions, "Solutions");
+        double kernelDistance = ui->distanceSpinBox->value();
+        Timer t("Total Time Grids and Minimization Boxes");
+        /// here d is already scaled!!
+        if (ui->limitsConstraintCheckBox->isChecked()){
+            Engine::optimize(*solutions, *d, kernelDistance, true, getLimits(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
+        }
+        else {
+            Engine::optimize(*solutions, *d, kernelDistance, false, Pointd(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
+        }
+        t.stopAndPrint();
+        ui->showAllSolutionsCheckBox->setEnabled(true);
+        solutions->setVisibleBox(0);
+        ui->solutionsSlider->setEnabled(true);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->setFromSolutionSpinBox->setValue(0);
+        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_limitsConstraintCheckBox_stateChanged(int arg1) {
+    if (arg1 ==Qt::Checked){
+        ui->xLimitSpinBox->setEnabled(true);
+        ui->yLimitSpinBox->setEnabled(true);
+        ui->zLimitSpinBox->setEnabled(true);
+        ui->minEdgeBBSpinBox->setEnabled(true);
+    }
+    else {
+        ui->xLimitSpinBox->setEnabled(false);
+        ui->yLimitSpinBox->setEnabled(false);
+        ui->zLimitSpinBox->setEnabled(false);
+        ui->minEdgeBBSpinBox->setEnabled(false);
+    }
 }

@@ -25,13 +25,17 @@ class Energy{
         int gradientDiscend(Box3D &b, BoxList& iterations, bool saveIt = true) const;
 
         int BFGS(Box3D &b) const;
+        int BFGS(Box3D &b, const Pointd &limits) const;
         int BFGS(Box3D &b, BoxList& iterations, bool saveIt = true) const;
+        int BFGS(Box3D &b, const Pointd& limits, BoxList& iterations, bool saveIt = true) const;
 
         //Gradient Barrier
         double derivateGBarrier(double x, double s) const;
         double derivateFi(double x, double s) const;
         void gradientBarrier(Eigen::VectorXd &gBarrier, const Eigen::VectorXd &x, const Pointd& c1, const Pointd& c2, const Pointd& c3, double s = S_BARRIER) const;
         void gradientBarrier(Eigen::VectorXd& gBarrier, const Box3D& b, double s = S_BARRIER) const;
+        void gradientBarrierLimits(Eigen::VectorXd& gBarrier, const Eigen::VectorXd &x, const Pointd& l, double s = S_BARRIER) const;
+        void gradientBarrierLimits(Eigen::VectorXd& gBarrier, const BoundingBox& b, const Pointd& l, double s = S_BARRIER) const;
 
         // Gradient
         static double gradientXMinComponentOld(const double* &a, double u1, double v1, double w1, double v2, double w2);
@@ -57,6 +61,7 @@ class Energy{
         void gradientTricubicInterpolationEnergy(Eigen::VectorXd &gradient, const Pointd& min, const Pointd& max) const;
         void gradientTricubicInterpolationEnergy(Eigen::VectorXd &gradient, const Eigen::VectorXd& x) const;
         void gradientEnergy(Eigen::VectorXd &gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
+        void gradientEnergy(Eigen::VectorXd &gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Pointd &l) const;
         void gradientEnergyFiniteDifference(Eigen::VectorXd &gradient, const Box3D b) const;
         void gradientEnergyFiniteDifference(Eigen::VectorXd &gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
 
@@ -68,6 +73,7 @@ class Energy{
         double fi(double x, double s) const;
 
         double barrierEnergy(const Box3D &b, double s = S_BARRIER) const;
+        double barrierLimitsEnergy(const BoundingBox& b, const Pointd& limits, double s = S_BARRIER) const;
 
         // Integral
         static double integralTricubicInterpolationOld(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
@@ -79,6 +85,9 @@ class Energy{
         double energy(const Box3D& b) const;
         double energy(const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
         double energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3) const;
+        double energy(const Box3D& b, const Pointd &limits) const;
+        double energy(const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Pointd &limits) const;
+        double energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Pointd &limits) const;
 
     private:
         void initializeMinMax(Pointd& min, Pointd& max, const Eigen::VectorXd &x) const;
@@ -100,6 +109,11 @@ inline int Energy::gradientDiscend(Box3D& b) const {
 inline int Energy::BFGS(Box3D& b) const {
     BoxList dummy;
     return BFGS(b, dummy, false);
+}
+
+inline int Energy::BFGS(Box3D& b, const Pointd& limits) const {
+    BoxList dummy;
+    return BFGS(b, limits, dummy, false);
 }
 
 inline void Energy::gradientTricubicInterpolationEnergy(Eigen::VectorXd& gradient, const Pointd& min, const Pointd& max) const {
@@ -157,6 +171,13 @@ inline double Energy::barrierEnergy(const Box3D& b, double s) const {
     return lowConstraint(min, c1, s) + lowConstraint(min, c2, s) + lowConstraint(min, c3, s) + highConstraint(max, c1, s) + highConstraint(max, c2, s) + highConstraint(max, c3, s);
 }
 
+inline double Energy::barrierLimitsEnergy(const BoundingBox& b, const Pointd& limits, double s) const {
+    Pointd bl(b.getLengthX(), b.getLengthY(), b.getLengthZ());
+    return lowConstraint(bl, limits, s);
+}
+
+
+
 inline double Energy::energy(const Box3D& b) const {
     return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b);
 }
@@ -171,6 +192,22 @@ inline double Energy::energy(const Eigen::VectorXd &x, const Pointd& c1, const P
 inline double Energy::energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
     Box3D b(Pointd(minx, miny, minz), Pointd(maxx, maxy, maxz), c1, c2, c3);
     return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b);
+}
+
+inline double Energy::energy(const Box3D& b, const Pointd &limits) const {
+    return energy(b)+ barrierLimitsEnergy(b,limits);
+}
+
+inline double Energy::energy(const Eigen::VectorXd &x, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Pointd &limits) const {
+    assert(x.rows() == 6);
+    Pointd min(x(0), x(1), x(2)), max(x(3), x(4), x(5));
+    Box3D b(min, max, c1, c2, c3);
+    return integralTricubicInterpolationEnergy(x) + barrierEnergy(b) + barrierLimitsEnergy(b,limits);
+}
+
+inline double Energy::energy(double minx, double miny, double minz, double maxx, double maxy, double maxz, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Pointd &limits) const {
+    Box3D b(Pointd(minx, miny, minz), Pointd(maxx, maxy, maxz), c1, c2, c3);
+    return integralTricubicInterpolationEnergy(b.getMin(), b.getMax()) + barrierEnergy(b) + barrierLimitsEnergy(b,limits);
 }
 
 inline void Energy::initializeMinMax(Pointd& min, Pointd&max, const Eigen::VectorXd& x) const{

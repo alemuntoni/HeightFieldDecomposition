@@ -159,6 +159,76 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
     return nIterations;
 }
 
+int Energy::BFGS(Box3D& b, const Pointd& limits, BoxList& iterations, bool saveIt) const {
+    int nIterations = 0;
+    double alfa = 1;
+    double ro;
+    Pointd c1 = b.getConstraint1();
+    Pointd c2 = b.getConstraint2();
+    Pointd c3 = b.getConstraint3();
+    Eigen::VectorXd x(6);
+    x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
+    Eigen::VectorXd new_x(6), gradient(6), newGradient(6), direction(6);
+    Eigen::MatrixXd I = Eigen::MatrixXd::Identity(6,6);
+    Eigen::MatrixXd Binv = I;
+    Eigen::VectorXd s(6), y(6);
+    double objValue = energy(x, c1, c2, c3, limits), newObjValue;
+
+    gradientEnergy(gradient, x, c1, c2, c3, limits);
+
+    direction = -Binv*gradient;
+
+    do{
+        new_x = x +alfa * direction;
+        while ((! g->getBoundingBox().isIntern(new_x(0), new_x(1), new_x(2)) || ! g->getBoundingBox().isIntern(new_x(3), new_x(4), new_x(5))) && alfa != 0){
+            alfa /= 2;
+            new_x = x +alfa * direction;
+        }
+
+        newObjValue = energy(new_x, c1, c2, c3, limits);
+
+        while (newObjValue >= objValue && alfa > 1e-10){
+            alfa/= 2;
+            new_x = x +alfa * direction;
+
+            newObjValue = energy(new_x, c1, c2, c3, limits);
+        }
+
+        if (alfa > 1e-10){
+            gradientEnergy(newGradient, new_x, c1, c2, c3, limits);
+
+            new_x = x +alfa * direction;
+
+            s = new_x - x;
+            y = newGradient - gradient;
+            double tmp = (y.transpose()*s);
+            ro = 1.0 / tmp;
+            Binv = (I - ro*s*y.transpose())*Binv*(I - ro*y*s.transpose()) + ro*s*s.transpose();
+            if (saveIt){
+                b.setMin(Pointd(x(0), x(1), x(2)));
+                b.setMax(Pointd(x(3), x(4), x(5)));
+                iterations.addBox(b);
+            }
+            x = new_x;
+            objValue = newObjValue;
+            nIterations++;
+            gradient = newGradient;
+            direction = -Binv*gradient;
+            double dot = gradient.dot(direction);
+            if (dot >= 0) {
+                Binv = I;
+                direction = -gradient;
+            }
+            alfa *= 2;
+        }
+    }while (alfa > 1e-10 && gradient.norm() > 1e-7 && nIterations < 100);
+    b.setMin(Pointd(x(0), x(1), x(2)));
+    b.setMax(Pointd(x(3), x(4), x(5)));
+    if (saveIt) iterations.addBox(b);
+
+    return nIterations;
+}
+
 void Energy::gradientBarrier(Eigen::VectorXd &gBarrier, const Eigen::VectorXd &x, const Pointd& c1, const Pointd& c2, const Pointd& c3, double s)  const {
 
     gBarrier <<
@@ -179,6 +249,26 @@ void Energy::gradientBarrier(Eigen::VectorXd &gBarrier, const Box3D& b, double s
     derivateFi(b.getMax().x()-b.getConstraint1().x(),s) + derivateFi(b.getMax().x()-b.getConstraint2().x(),s) + derivateFi(b.getMax().x()-b.getConstraint3().x(),s),
     derivateFi(b.getMax().y()-b.getConstraint1().y(),s) + derivateFi(b.getMax().y()-b.getConstraint2().y(),s) + derivateFi(b.getMax().y()-b.getConstraint3().y(),s),
     derivateFi(b.getMax().z()-b.getConstraint1().z(),s) + derivateFi(b.getMax().z()-b.getConstraint2().z(),s) + derivateFi(b.getMax().z()-b.getConstraint3().z(),s);
+}
+
+void Energy::gradientBarrierLimits(Eigen::VectorXd& gBarrier, const Eigen::VectorXd &x, const Pointd& l, double s) const {
+    gBarrier <<
+            derivateFi(l.x()-x(3)+x(0),s),
+            derivateFi(l.y()-x(4)+x(1),s),
+            derivateFi(l.z()-x(5)+x(2),s),
+            -derivateFi(l.x()-x(3)+x(0),s),
+            -derivateFi(l.y()-x(4)+x(1),s),
+            -derivateFi(l.z()-x(5)+x(2),s);
+}
+
+void Energy::gradientBarrierLimits(Eigen::VectorXd& gBarrier, const BoundingBox& b, const Pointd& l, double s) const {
+    gBarrier <<
+            derivateFi(l.x()-b.maxX()+b.minX(),s),
+            derivateFi(l.y()-b.maxY()+b.minY(),s),
+            derivateFi(l.z()-b.maxZ()+b.minZ(),s),
+            -derivateFi(l.x()-b.maxX()+b.minX(),s),
+            -derivateFi(l.y()-b.maxY()+b.minY(),s),
+            -derivateFi(l.z()-b.maxZ()+b.minZ(),s);
 }
 
 double Energy::gradientXMinComponentOld(const double*& a, double u1, double v1, double w1, double v2, double w2) {
@@ -1456,6 +1546,14 @@ void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x,
     gradientBarrier(gBarrier, x, c1, c2, c3);
     gradient += gBarrier;
     //gradient.normalize();
+}
+
+void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Pointd& l) const {
+    assert(x.rows() == 6);
+    gradientEnergy(gradient, x, c1, c2, c3);
+    Eigen::VectorXd gBarrier(6);
+    gradientBarrierLimits(gBarrier, x, l);
+    gradient += gBarrier;
 }
 
 void Energy::gradientEnergyFiniteDifference(Eigen::VectorXd& gradient, const Box3D b) const {
