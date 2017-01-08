@@ -108,7 +108,7 @@ Pointd EngineManager::getLimits() {
     } else assert(0);
     double minreal = ui->minEdgeBBSpinBox->value();
     double limitRealX = ui->xLimitSpinBox->value();
-    double limitRealY = ui->yLimitSpinBox->value();
+    double limitRealY = ui->xLimitSpinBox->value();
     double limitRealZ = ui->zLimitSpinBox->value();
     Pointd limits;
     limits.x() = (limitRealX * min) / minreal;
@@ -124,8 +124,7 @@ void EngineManager::serializeBC(const std::string& filename) {
     solutions->serialize(myfile);
     baseComplex->serialize(myfile);
     he->serialize(myfile);
-    if (originalMesh.getNumberVertices() > 0)
-        originalMesh.serialize(myfile);
+    originalMesh.serialize(myfile);
     //entirePieces->serialize(myfile);
     double factor = ui->factorSpinBox->value();
     double kernel = ui->distanceSpinBox->value();
@@ -1397,22 +1396,66 @@ void EngineManager::on_snappingPushButton_clicked() {
 }
 
 void EngineManager::on_colorPiecesPushButton_clicked() {
-    if (he!=nullptr){
+    if (he!=nullptr && d != nullptr){
         std::array<QColor, 10> colors;
-        colors[0] = QColor(152,0,0);
-        colors[1] = QColor(255,0,0);
-        colors[2] = QColor(255,153,0);
+        colors[0] = QColor(0,255,0);
+        colors[1] = QColor(0,0,255);
+        colors[2] = QColor(255,0,0);
         colors[3] = QColor(255,255,0);
-        colors[4] = QColor(0,255,0);
-        colors[5] = QColor(0,255,255);
+        colors[4] = QColor(0,255,255);
+        colors[5] = QColor(255,0,255);
         colors[6] = QColor(74,134,232);
-        colors[7] = QColor(0,0,255);
-        colors[8] = QColor(153,0,255);
-        colors[9] = QColor(255,0,255);
+        colors[7] = QColor(152,0,0);
+        colors[8] = QColor(255,153,0);
+        colors[9] = QColor(153,0,255);
+
+
+        std::map< const Dcel::Vertex*, int > mapping = Reconstruction::getMappingId(*d, *he);
+        std::vector< std::set<int> > adjacences(he->getNumHeightfields());
+        for (const Dcel::Vertex* v : d->vertexIterator()){
+            if (mapping.find(v) != mapping.end()){
+                int hev = mapping[v];
+                for (const Dcel::Vertex* adj : v->adjacentVertexIterator()){
+                    if (mapping.find(adj) != mapping.end()){
+                        int headj = mapping[adj];
+                        if (hev != headj){
+                            adjacences[hev].insert(headj);
+                            adjacences[headj].insert(hev);
+                        }
+                    }
+                }
+            }
+        }
+
+        std::vector<bool> colored(he->getNumHeightfields(), false);
+        std::vector<QColor> heColors(he->getNumHeightfields(), QColor(0,0,0));
         for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            IGLInterface::IGLMesh mesh = he->getHeightfield(i);
-            mesh.setFaceColor(colors[i%10].redF(),colors[i%10].greenF(),colors[i%10].blueF());
-            he->setHeightfield(mesh, i);
+            if (!colored[i]){
+                std::set<QColor, cmpQColor> adjColors;
+                for (int adj : adjacences[i]){
+                    if (colored[adj])
+                        adjColors.insert(heColors[adj]);
+                }
+
+                QColor color;
+                bool finded = false;
+                for (unsigned int k = 0; k < 10 && !finded; k++){
+                    if (adjColors.find(colors[k]) == adjColors.end()){
+                        finded = true;
+                        color = colors[k];
+                    }
+                }
+                assert(finded);
+                heColors[i] = color;
+                colored[i] = true;
+
+
+                IGLInterface::IGLMesh mesh = he->getHeightfield(i);
+                mesh.setFaceColor(color.redF(),color.greenF(),color.blueF());
+                he->setHeightfield(mesh, i);
+            }
+
+
         }
     }
     mainWindow->updateGlCanvas();
@@ -1546,13 +1589,13 @@ void EngineManager::on_pushButton_clicked() {
 void EngineManager::on_limitsConstraintCheckBox_stateChanged(int arg1) {
     if (arg1 ==Qt::Checked){
         ui->xLimitSpinBox->setEnabled(true);
-        ui->yLimitSpinBox->setEnabled(true);
+        ui->xLimitSpinBox->setEnabled(true);
         ui->zLimitSpinBox->setEnabled(true);
         ui->minEdgeBBSpinBox->setEnabled(true);
     }
     else {
         ui->xLimitSpinBox->setEnabled(false);
-        ui->yLimitSpinBox->setEnabled(false);
+        ui->xLimitSpinBox->setEnabled(false);
         ui->zLimitSpinBox->setEnabled(false);
         ui->minEdgeBBSpinBox->setEnabled(false);
     }

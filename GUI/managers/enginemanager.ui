@@ -64,7 +64,7 @@
         <x>0</x>
         <y>0</y>
         <width>406</width>
-        <height>1312</height>
+        <height>1283</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -333,13 +333,6 @@
                 </property>
                </widget>
               </item>
-              <item row="18" column="1">
-               <widget class="QDoubleSpinBox" name="yLimitSpinBox">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="0" colspan="2">
                <widget class="Line" name="line">
                 <property name="orientation">
@@ -370,14 +363,14 @@
                 </property>
                </widget>
               </item>
-              <item row="21" column="0" colspan="2">
+              <item row="23" column="0" colspan="2">
                <widget class="Line" name="line_7">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
-              <item row="31" column="0" colspan="2">
+              <item row="33" column="0" colspan="2">
                <widget class="Line" name="line_8">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
@@ -391,7 +384,7 @@
                 </property>
                </widget>
               </item>
-              <item row="22" column="0">
+              <item row="24" column="0">
                <widget class="QLabel" name="label_23">
                 <property name="text">
                  <string>Visualization</string>
@@ -405,10 +398,10 @@
                 </property>
                </widget>
               </item>
-              <item row="17" column="0">
+              <item row="18" column="0">
                <widget class="QLabel" name="label_24">
                 <property name="text">
-                 <string>X</string>
+                 <string>X and Y</string>
                 </property>
                </widget>
               </item>
@@ -419,7 +412,7 @@
                 </property>
                </widget>
               </item>
-              <item row="25" column="1">
+              <item row="27" column="1">
                <widget class="QDoubleSpinBox" name="stepDrawGridSpinBox">
                 <property name="minimum">
                  <double>0.010000000000000</double>
@@ -429,13 +422,6 @@
                 </property>
                 <property name="value">
                  <double>2.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-              <item row="18" column="0">
-               <widget class="QLabel" name="label_25">
-                <property name="text">
-                 <string>Y</string>
                 </property>
                </widget>
               </item>
@@ -462,21 +448,21 @@
                 </property>
                </widget>
               </item>
-              <item row="33" column="1">
+              <item row="35" column="1">
                <widget class="QPushButton" name="deleteBoxesPushButton">
                 <property name="text">
                  <string>Delete Boxes</string>
                 </property>
                </widget>
               </item>
-              <item row="17" column="1">
+              <item row="18" column="1">
                <widget class="QDoubleSpinBox" name="xLimitSpinBox">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
                </widget>
               </item>
-              <item row="26" column="1">
+              <item row="28" column="1">
                <widget class="QSlider" name="sliceSlider">
                 <property name="enabled">
                  <bool>false</bool>
@@ -486,14 +472,14 @@
                 </property>
                </widget>
               </item>
-              <item row="33" column="0">
+              <item row="35" column="0">
                <widget class="QPushButton" name="pushButton">
                 <property name="text">
                  <string>Optimize</string>
                 </property>
                </widget>
               </item>
-              <item row="34" column="0">
+              <item row="36" column="0">
                <widget class="QCheckBox" name="useFileCheckBox">
                 <property name="text">
                  <string>Use File</string>
@@ -545,7 +531,7 @@
                 </property>
                </widget>
               </item>
-              <item row="24" column="1">
+              <item row="26" column="1">
                <widget class="QComboBox" name="sliceComboBox">
                 <property name="enabled">
                  <bool>false</bool>
@@ -567,7 +553,7 @@
                 </item>
                </widget>
               </item>
-              <item row="34" column="1">
+              <item row="36" column="1">
                <widget class="QPushButton" name="createAndMinimizeAllPushButton">
                 <property name="text">
                  <string>Optimize and Delete</string>
@@ -581,14 +567,21 @@
                 </property>
                </widget>
               </item>
-              <item row="26" column="0">
+              <item row="28" column="0">
                <widget class="QCheckBox" name="sliceCheckBox">
                 <property name="text">
                  <string>Sliced Visual</string>
                 </property>
                </widget>
               </item>
-              <item row="24" column="0">
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Target:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="26" column="0">
                <widget class="QRadioButton" name="kernelRadioButton">
                 <property name="text">
                  <string>Kernel</string>
@@ -632,14 +625,7 @@
                 </item>
                </widget>
               </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>Target:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="25" column="0">
+              <item row="27" column="0">
                <widget class="QRadioButton" name="weigthsRadioButton">
                 <property name="text">
                  <string>Weigths</string>
@@ -666,14 +652,14 @@
                 </property>
                </widget>
               </item>
-              <item row="20" column="0">
+              <item row="17" column="0">
                <widget class="QLabel" name="label_27">
                 <property name="text">
                  <string>Dim Min BB</string>
                 </property>
                </widget>
               </item>
-              <item row="20" column="1">
+              <item row="17" column="1">
                <widget class="QDoubleSpinBox" name="minEdgeBBSpinBox">
                 <property name="enabled">
                  <bool>false</bool>

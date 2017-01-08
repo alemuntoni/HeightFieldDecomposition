@@ -242,8 +242,18 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool limit, const Poin
         //e.gradientDiscend(b);
         if (!limit)
             e.BFGS(b);
-        else
-            e.BFGS(b,limits);
+        else{
+            Pointd actualLimits(limits.x(), limits.x(), limits.x());
+            bool find = false;
+            for (unsigned int i = 0; i < 3 && !find; i++){
+                if (XYZ[i] == b.getTarget() || XYZ[i+3] == b.getTarget()){
+                    actualLimits[i] = limits.z();
+                    find = true;
+                }
+            }
+            assert(find);
+            e.BFGS(b,actualLimits);
+        }
         if (printTimes){
             t.stop();
             std::cerr << "Box: " << i << "Time: " << t.delay() << "\n";
@@ -476,11 +486,6 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
         model.setObjective(obj, GRB_MINIMIZE);
         model.optimize();
 
-        int nSol = model.get(GRB_IntAttr_SolCount);
-        std::cerr << "Optimal solutions: " << nSol << "\n";
-
-
-
         unsigned int deleted = 0;
         for (int i = nBoxes-1; i >= 0; i--){
             if (x[i].get(GRB_DoubleAttr_X) == 0){
@@ -502,12 +507,12 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
     }
     return -1;
     #else
-    deleteBoxesOld(boxList, d);
+    return deleteBoxesOld(boxList, d);
     #endif
 }
 
 
-void Engine::optimize(BoxList& solutions, const Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate) {
+void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate) {
     assert(kernelDistance >= 0 && kernelDistance <= 1);
     solutions.clearBoxes();
     Dcel scaled[ORIENTATIONS];
@@ -540,28 +545,32 @@ void Engine::optimize(BoxList& solutions, const Dcel& d, double kernelDistance, 
     for (unsigned int i = 0; i < ORIENTATIONS; ++i){
         if (file) {
             for (unsigned int j = 0; j < TARGETS; ++j) {
-                std::set<const Dcel::Face*> flippedFaces, savedFaces;
-                Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
-                Grid g;
-                Engine::generateGrid(g, scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
-                g.resetSignedDistances();
-                std::stringstream ss ;
-                ss << "grid" << i << "_" << j << ".bin";
-                std::ofstream myfile;
-                myfile.open (ss.str(), std::ios::out | std::ios::binary);
-                g.serialize(myfile);
-                myfile.close();
-                std::cerr << "Generated grid or " << i << " t " << j << "\n";
+                //if (j != 1 && j != 4){
+                    std::set<const Dcel::Face*> flippedFaces, savedFaces;
+                    Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
+                    Grid g;
+                    Engine::generateGrid(g, scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
+                    g.resetSignedDistances();
+                    std::stringstream ss ;
+                    ss << "grid" << i << "_" << j << ".bin";
+                    std::ofstream myfile;
+                    myfile.open (ss.str(), std::ios::out | std::ios::binary);
+                    g.serialize(myfile);
+                    myfile.close();
+                    std::cerr << "Generated grid or " << i << " t " << j << "\n";
+                //}
             }
         }
         else {
             # pragma omp parallel for
             for (unsigned int j = 0; j < TARGETS; ++j) {
-                std::set<const Dcel::Face*> flippedFaces, savedFaces;
-                Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
-                Engine::generateGrid(g[i][j], scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
-                g[i][j].resetSignedDistances();
-                std::cerr << "Generated grid or " << i << " t " << j << "\n";
+                //if (j != 1 && j != 4){
+                    std::set<const Dcel::Face*> flippedFaces, savedFaces;
+                    Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
+                    Engine::generateGrid(g[i][j], scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
+                    g[i][j].resetSignedDistances();
+                    std::cerr << "Generated grid or " << i << " t " << j << "\n";
+                //}
             }
         }
     }
@@ -578,54 +587,60 @@ void Engine::optimize(BoxList& solutions, const Dcel& d, double kernelDistance, 
         }
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned int j = 0; j < TARGETS; ++j){
-                std::cerr << "Calculating Boxes\n";
-                #if ORIENTATIONS > 1
-                if (onlyNearestTarget){
-                    Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], i, true, XYZ[j]);
-                }
-                else
-                #endif
-                    Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, onlyNearestTarget, XYZ[j]);
-                    //Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, false);
-                if (tmp[i][j].getNumberBoxes() > 0){
-                    if (file) {
-                        Grid g;
-                        std::stringstream ss ;
-                        ss << "grid" << i << "_" << j << ".bin";
-                        std::ifstream myfile;
-                        myfile.open (ss.str(), std::ios::in | std::ios::binary);
-                        g.deserialize(myfile);
-                        myfile.close();
-                        std::cerr << "Starting boxes growth\n";
-                        Engine::expandBoxes(tmp[i][j], g, limit, limits);
-                        std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                //if (j != 1 && j != 4){
+                    std::cerr << "Calculating Boxes\n";
+                    #if ORIENTATIONS > 1
+                    if (onlyNearestTarget){
+                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], i, true, XYZ[j]);
+                    }
+                    else
+                    #endif
+                        Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, onlyNearestTarget, XYZ[j]);
+                        //Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, false);
+                    if (tmp[i][j].getNumberBoxes() > 0){
+                        if (file) {
+                            Grid g;
+                            std::stringstream ss ;
+                            ss << "grid" << i << "_" << j << ".bin";
+                            std::ifstream myfile;
+                            myfile.open (ss.str(), std::ios::in | std::ios::binary);
+                            g.deserialize(myfile);
+                            myfile.close();
+                            std::cerr << "Starting boxes growth\n";
+                            Engine::expandBoxes(tmp[i][j], g, limit, limits);
+                            std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                        }
+                        else {
+                            std::cerr << "Starting boxes growth\n";
+                            Engine::expandBoxes(tmp[i][j], g[i][j], limit, limits);
+                            std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                        }
                     }
                     else {
-                        std::cerr << "Starting boxes growth\n";
-                        Engine::expandBoxes(tmp[i][j], g[i][j], limit, limits);
-                        std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
+                        std::cerr << "Orientation: " << i << " Target: " << j << " no boxes to expand.\n";
                     }
-                }
-                else {
-                    std::cerr << "Orientation: " << i << " Target: " << j << " no boxes to expand.\n";
-                }
+                //}
             }
         }
 
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned int j = 0; j < TARGETS; ++j){
-                for (unsigned int k = 0; k < tmp[i][j].getNumberBoxes(); ++k){
-                    std::list<const Dcel::Face*> list;
-                    aabb[i].getCompletelyContainedDcelFaces(list, tmp[i][j].getBox(k));
-                    for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
-                        coveredFaces.insert((*it)->getId());
+                //if (j != 1 && j != 4){
+                    for (unsigned int k = 0; k < tmp[i][j].getNumberBoxes(); ++k){
+                        std::list<const Dcel::Face*> list;
+                        aabb[i].getCompletelyContainedDcelFaces(list, tmp[i][j].getBox(k));
+                        for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
+                            coveredFaces.insert((*it)->getId());
+                        }
                     }
-                }
+                //}
             }
         }
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned int j = 0; j < TARGETS; ++j){
-                bl[i][j].insert(tmp[i][j]);
+                //if (j != 1 && j != 4){
+                    bl[i][j].insert(tmp[i][j]);
+                //}
             }
         }
 
@@ -636,8 +651,13 @@ void Engine::optimize(BoxList& solutions, const Dcel& d, double kernelDistance, 
             if (coveredFaces.size() != scaled[0].getNumberFaces()){
                 std::cerr << "WARNING: Not every face has been covered by a box.\n";
                 std::cerr << "Number uncovered faces: " << scaled[0].getNumberFaces() - coveredFaces.size() << "\n";
+                for (Dcel::Face* f : d.faceIterator()){
+                    if (coveredFaces.find(f->getId()) == coveredFaces.end()){
+                        std::cerr << "Uncovered face id: " << f->getId() << "\n";
+                        f->setColor(QColor(0,0,0));
+                    }
+                }
             }
-
         }
         numberFaces*=2;
         if (numberFaces > scaled[0].getNumberFaces())
@@ -647,15 +667,19 @@ void Engine::optimize(BoxList& solutions, const Dcel& d, double kernelDistance, 
     if (file){
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned int j = 0; j < TARGETS; ++j){
-                std::stringstream ss ;
-                ss << "grid" << i << "_" << j << ".bin";
-                std::remove(ss.str().c_str());
+                //if (j != 1 && j != 4){
+                    std::stringstream ss ;
+                    ss << "grid" << i << "_" << j << ".bin";
+                    std::remove(ss.str().c_str());
+                //}
             }
         }
     }
     for (unsigned int i = 0; i < ORIENTATIONS; i++){
         for (unsigned int j = 0; j < TARGETS; ++j){
-            solutions.insert(bl[i][j]);
+            //if (j != 1 && j != 4){
+                solutions.insert(bl[i][j]);
+            //}
         }
     }
     solutions.generatePieces(d.getAverageHalfEdgesLength()*7);
@@ -671,7 +695,7 @@ void Engine::optimize(BoxList& solutions, const Dcel& d, double kernelDistance, 
  * @param areaTolerance
  * @param angleTolerance
  */
-void Engine::optimizeAndDeleteBoxes(BoxList& solutions, const Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate, BoxList& allSolutions) {
+void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate, BoxList& allSolutions) {
     optimize(solutions, d, kernelDistance, limit, limits, tolerance, onlyNearestTarget, areaTolerance, angleTolerance, file, decimate);
     allSolutions=solutions;
     deleteBoxes(solutions, d);

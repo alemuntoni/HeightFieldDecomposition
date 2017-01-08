@@ -12,6 +12,8 @@
 
 
 namespace Reconstruction {
+    std::map<const Dcel::Vertex*, int > getMappingId(const Dcel &smoothedSurface, const HeightfieldsList &he);
+
     std::vector<std::pair<int, int> > getMapping(const Dcel &smoothedSurface, const HeightfieldsList &he);
 
 

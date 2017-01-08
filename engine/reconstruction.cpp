@@ -2,6 +2,27 @@
 #include "cgal/aabbtree.h"
 #include "common.h"
 
+std::map< const Dcel::Vertex*,int > Reconstruction::getMappingId(const Dcel& smoothedSurface, const HeightfieldsList& he) {
+    std::map< const Dcel::Vertex*,int > mapping;
+    CGALInterface::AABBTree tree(smoothedSurface);
+    //int referenced = 0;
+    for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
+        const IGLInterface::IGLMesh m = he.getHeightfield(i);
+        for (unsigned int j = 0; j < m.getNumberVertices(); j++){
+            const Dcel::Vertex* v = tree.getNearestDcelVertex(m.getVertex(j));
+            assert(v != nullptr);
+            if (v->getCoordinate().dist(m.getVertex(j)) == 0){
+                mapping[v] = i;
+                //referenced++;
+            }
+        }
+    }
+
+    //std::cerr << "Unreferenced vertices: " << smoothedSurface.getNumberVertices() - referenced << "\n";
+
+    return mapping;
+}
+
 std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothedSurface, const HeightfieldsList& he) {
     std::vector< std::pair<int,int> > mapping;
     mapping.resize(smoothedSurface.getNumberVertices(), std::pair<int,int>(-1,-1));

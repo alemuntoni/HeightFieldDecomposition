@@ -139,7 +139,14 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
     for (unsigned int t = 0; t < 6; t++){
         if (target == XYZ[t]){
             if (t < 3){
-                assert(b1.max()[t] <= b2.max()[t]);
+                //b1.getIGLMesh().saveOnObj("b1.obj");
+                //b2.getIGLMesh().saveOnObj("b2.obj");
+                //assert(b1.max()[t] <= b2.max()[t]);
+                if (!(b1.max()[t] <= b2.max()[t])) {
+                    b3.min() = Pointd();
+                    b3.max() = Pointd();
+                    return -1;
+                }
                 b3.min()[t] = b1.max()[t];
                 b3.max()[t] = b2.max()[t];
                 b4.min()[t] = b2.min()[t];
@@ -156,7 +163,12 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
                 unsigned int i = t-3;
                 //b1.getIGLMesh().saveOnObj("b1.obj");
                 //b2.getIGLMesh().saveOnObj("b2.obj");
-                assert(b1.min()[i] >= b2.min()[i]);
+                //assert(b1.min()[i] >= b2.min()[i]);
+                if (!(b1.min()[i] >= b2.min()[i])) {
+                    b3.min() = Pointd();
+                    b3.max() = Pointd();
+                    return -1;
+                }
                 b3.min()[i] = b2.min()[i];
                 b3.max()[i] = b1.min()[i];
                 b4.min()[i] = b1.min()[i];
@@ -264,6 +276,9 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
 
     int numberOfSplits = 0;
     int deletedBoxes = 0;
+    //
+    d.saveOnObjFile("mesh.obj");
+    //
     do {
         g.getLoops(loops);
         std::cerr << "Number loops: " << loops.size() << "\n";
