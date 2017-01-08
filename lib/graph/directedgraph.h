@@ -22,6 +22,7 @@ class DirectedGraph {
         void visit(std::set<unsigned int> &visitedNodes, unsigned int startingNode);
         std::vector< std::vector<unsigned int> > getSpanningTree(unsigned int radix);
         void getLoops(std::vector< std::vector<unsigned int> >& loops);
+        bool arcExists(unsigned int b1, unsigned int b2);
 
 
     private:
@@ -138,6 +139,10 @@ void DirectedGraph::getLoops(std::vector<std::vector<unsigned int> >& loops) {
             }
         }
     }
+}
+
+bool DirectedGraph::arcExists(unsigned int b1, unsigned int b2) {
+    return (std::find(nodes[b1].begin(), nodes[b1].end(), b2) != nodes[b1].end());
 }
 
 std::vector<std::vector<unsigned int> > DirectedGraph::spanningTree(std::vector<unsigned int> start, unsigned int thisNode, unsigned int radix) {

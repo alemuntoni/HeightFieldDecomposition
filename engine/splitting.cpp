@@ -255,6 +255,9 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     std::set<unsigned int> boxesToEliminate;
     std::vector<std::vector<unsigned int> > loops;
     DirectedGraph g(bl.getNumberBoxes());
+    //
+    d.saveOnObjFile("mesh.obj");
+    //
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
         for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
@@ -276,9 +279,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
 
     int numberOfSplits = 0;
     int deletedBoxes = 0;
-    //
-    d.saveOnObjFile("mesh.obj");
-    //
+
     do {
         g.getLoops(loops);
         std::cerr << "Number loops: " << loops.size() << "\n";
@@ -326,29 +327,60 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             }
             // now I can remove "arcToRemove"
             Box3D b1 = bl.getBox(arcToRemove.first), b2 = bl.getBox(arcToRemove.second), b3;
+            //
+            b1.getIGLMesh().saveOnObj("b1.obj");
+            b2.getIGLMesh().saveOnObj("b2.obj");
+            //
 
-            ///
-            ///
-            /// now I can choose which box split, b1 or b2
+            if (g.arcExists(b2.getId(), b1.getId())){
+                ///
+                ///
+                /// now I can choose which box split, b1 or b2
 
-            Box3D btmp1, btmp2;
-            getSplits(b2,b1,btmp2);
-            if (tree.getNumberIntersectedPrimitives(btmp2) == 0){
-                std::swap(b1, b2);
-            }
-            else {
-                getSplits(b1,b2,btmp1);
-                if (tree.getNumberIntersectedPrimitives(btmp1) != 0){
-                    double minb1b2 = minimumSplit(b1, b2);
-                    double minb2b1 = minimumSplit(b2, b1);
-                    if (minb2b1 < minb1b2)
-                        std::swap(b1, b2);
+                Box3D btmp1, btmp2;
+                getSplits(b2,b1,btmp2);
+                if (tree.getNumberIntersectedPrimitives(btmp2) == 0){
+                    std::swap(b1, b2);
                 }
-            }
+                else {
+                    bool exit = false;
+                    std::set<unsigned int> trianglesCoveredTmp = getTrianglesCovered(btmp2, tree);
+                    for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
+                        if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b1.getId()){
+                            std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
+                            if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredTmp.begin(), trianglesCoveredTmp.end())){
+                                exit = true;
+                            }
+                        }
+                    }
+                    if (exit)
+                        std::swap(b1, b2);
+                    else {
+                        getSplits(b1,b2,btmp1);
+                        if (tree.getNumberIntersectedPrimitives(btmp1) != 0){
+                            bool exit = false;
+                            std::set<unsigned int> trianglesCoveredTmp = getTrianglesCovered(btmp1, tree);
+                            for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
+                                if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
+                                    std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
+                                    if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredTmp.begin(), trianglesCoveredTmp.end())){
+                                        exit = true;
+                                    }
+                                }
+                            }
+                            if (!exit){
+                                double minb1b2 = minimumSplit(b1, b2);
+                                double minb2b1 = minimumSplit(b2, b1);
+                                if (minb2b1 < minb1b2)
+                                    std::swap(b1, b2);
+                            }
+                        }
+                    }
+                }
 
-            ///
-            ///
-            ///
+                ///
+                ///
+            }
 
             splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*7);
             if (!(b3.min() == Pointd() && b3.max() == Pointd())){ //se b3 esiste
