@@ -1192,8 +1192,10 @@ void EngineManager::on_cleanAllPushButton_clicked() {
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
-    mainWindow->deleteObj(&originalMesh);
-    originalMesh.clear();
+    if (originalMesh.getNumberVertices()>0){
+        mainWindow->deleteObj(&originalMesh);
+        originalMesh.clear();
+    }
     g = nullptr;
     d = nullptr;
     b = nullptr;
