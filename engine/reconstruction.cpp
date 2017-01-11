@@ -74,27 +74,27 @@ bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, co
         {
             case -1: return false; break;
             case 0 :
-                if (n.dot(cinolib::vec3d( 1, 0, 0)) < 0)
+                if (n.dot(cinolib::vec3d( 1, 0, 0)) < FLIP_ANGLE)
                     return false;
                 break;
             case 1 :
-                if (n.dot(cinolib::vec3d( 0, 1, 0)) < 0)
+                if (n.dot(cinolib::vec3d( 0, 1, 0)) < FLIP_ANGLE)
                     return false;
                 break;
             case 2 :
-                if (n.dot(cinolib::vec3d( 0, 0, 1)) < 0)
+                if (n.dot(cinolib::vec3d( 0, 0, 1)) < FLIP_ANGLE)
                     return false;
                 break;
             case 3 :
-                if (n.dot(cinolib::vec3d(-1, 0, 0)) < 0)
+                if (n.dot(cinolib::vec3d(-1, 0, 0)) < FLIP_ANGLE)
                     return false;
                 break;
             case 4 :
-                if (n.dot(cinolib::vec3d( 0,-1, 0)) < 0)
+                if (n.dot(cinolib::vec3d( 0,-1, 0)) < FLIP_ANGLE)
                     return false;
                 break;
             case 5 :
-                if (n.dot(cinolib::vec3d( 0, 0,-1)) < 0)
+                if (n.dot(cinolib::vec3d( 0, 0,-1)) < FLIP_ANGLE)
                     return false;
                 break;
             default: assert(false);

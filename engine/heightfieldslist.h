@@ -22,6 +22,7 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         void setPointShading();
         void setFlatShading();
         void setSmoothShading();
+        void checkHeightfields() const;
 
         void addHeightfield(const IGLInterface::DrawableIGLMesh &m, const Vec3 &target, int i = -1);
         unsigned int getNumHeightfields() const;
@@ -37,6 +38,7 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
         bool deserialize(std::ifstream& binaryFile);
+
 
     private:
         std::vector<IGLInterface::DrawableIGLMesh> heightfields;

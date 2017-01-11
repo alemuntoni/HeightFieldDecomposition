@@ -46,7 +46,7 @@ void Grid::calculateBorderWeights(const Dcel& d, bool tolerance, std::set<const 
                     for (std::list<const Dcel::Face*>::iterator it = l.begin(); it != l.end(); ++it) {
                         const Dcel::Face* f = *it;
                         Pointi p(i,j,k);
-                        if (f->getNormal().dot(target) < 0 && f->getFlag() != 1 && savedFaces.find(f) == savedFaces.end()){
+                        if (f->getNormal().dot(target) < FLIP_ANGLE && f->getFlag() != 1 && savedFaces.find(f) == savedFaces.end()){
                              flipped.push_back(p);
                              b = false;
                         }

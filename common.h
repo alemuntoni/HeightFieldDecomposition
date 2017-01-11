@@ -11,6 +11,7 @@
 #include <set>
 #include <Eigen/Core>
 #include <memory>
+#define FLIP_ANGLE 0
 
 #define ONE_ON_SQRT2 1/(sqrt(2))
 #define ONE_ON_SQRT3 1/(sqrt(3))

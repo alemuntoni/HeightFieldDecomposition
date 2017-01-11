@@ -5,6 +5,7 @@
 #include "common/arrays.h"
 #include "dcel/dcel.h"
 #include "engine/tricubic.h"
+#include "common.h"
 
 #include "cgal/aabbtree.h"
 

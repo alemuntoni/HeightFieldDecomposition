@@ -148,6 +148,7 @@ void EngineManager::deserializeBC(const std::string& filename) {
     solutions->deserialize(myfile);
     baseComplex->deserialize(myfile);
     he->deserialize(myfile);
+    he->checkHeightfields();
     if (originalMesh.deserialize(myfile)){
         if (originalMesh.getNumberVertices() > 0)
             mainWindow->pushObj(&originalMesh, "Original Mesh");
