@@ -72,6 +72,8 @@ namespace Engine {
 
     IGLInterface::SimpleIGLMesh getMarkerMesh(const HeightfieldsList& he, const Dcel& d);
 
+    void updatePieceNormals(const CGALInterface::AABBTree& tree, Dcel &piece);
+
     void saveObjs(const QString& foldername, const IGLInterface::IGLMesh& originalMesh, const Dcel& inputMesh, const IGLInterface::IGLMesh& baseComplex, const HeightfieldsList& he);
 }
 

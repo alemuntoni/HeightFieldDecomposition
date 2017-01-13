@@ -263,11 +263,11 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             if (boxesIntersect(b1,b2)){
                 if (isDangerousIntersection(b1, b2, tree)){
                     g.addEdge(i,j);
-                    std::cerr << i << " -> " << j << "\n";
+                    //std::cerr << i << " -> " << j << "\n";
                 }
                 if (isDangerousIntersection(b2, b1, tree)){
                     g.addEdge(j,i);
-                    std::cerr << j << " -> " << i << "\n";
+                    //std::cerr << j << " -> " << i << "\n";
                 }
 
             }
@@ -278,12 +278,12 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     int numberOfSplits = 0;
     int deletedBoxes = 0;
     //
-    d.saveOnObjFile("mesh.obj");
+    /*d.saveOnObjFile("mesh.obj");
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         std::stringstream ss;
         ss << "b" << i << ".obj";
         bl.getBox(i).getIGLMesh().saveOnObj(ss.str());
-    }
+    }*/
     //
     do {
         g.getLoops(loops);

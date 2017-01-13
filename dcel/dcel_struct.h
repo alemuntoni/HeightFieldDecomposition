@@ -134,6 +134,7 @@ class Dcel : public SerializableObject {
         BoundingBox getBoundingBox()                            const;
         bool isTriangleMesh()                                   const;
         double getSurfaceArea()                                 const;
+        Pointd getBarycenter()                                  const;
         double getAverageHalfEdgesLength()                      const;
         void saveOnObjFile(std::string fileNameObj)             const;
         void saveOnPlyFile(std::string fileNamePly)             const;

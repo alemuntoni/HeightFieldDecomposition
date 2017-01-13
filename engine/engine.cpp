@@ -544,12 +544,16 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
         aabb[i] = CGALInterface::AABBTree(scaled[i]);
     for (unsigned int i = 0; i < ORIENTATIONS; ++i){
         if (file) {
+            double totalTimeGG = 0;
             for (unsigned int j = 0; j < TARGETS; ++j) {
                 //if (j != 1 && j != 4){
                     std::set<const Dcel::Face*> flippedFaces, savedFaces;
                     Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
                     Grid g;
+                    Timer gg("Generating Grid");
                     Engine::generateGrid(g, scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
+                    gg.stopAndPrint();
+                    totalTimeGG += gg.delay();
                     g.resetSignedDistances();
                     std::stringstream ss ;
                     ss << "grid" << i << "_" << j << ".bin";
@@ -560,6 +564,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
                     std::cerr << "Generated grid or " << i << " t " << j << "\n";
                 //}
             }
+            std::cerr << "Total time generating Grids: " << totalTimeGG << "\n";
         }
         else {
             # pragma omp parallel for
@@ -576,6 +581,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
     }
     bool end = false;
 
+    double totalTbg = 0;
     while (coveredFaces.size() < scaled[0].getNumberFaces() && !end){
         BoxList tmp[ORIENTATIONS][TARGETS];
         Eigen::VectorXi faces[ORIENTATIONS];
@@ -598,6 +604,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
                         Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, onlyNearestTarget, XYZ[j]);
                         //Engine::calculateDecimatedBoxes(tmp[i][j],scaled[i], faces[i], coveredFaces, m[i], -1, false);
                     if (tmp[i][j].getNumberBoxes() > 0){
+
                         if (file) {
                             Grid g;
                             std::stringstream ss ;
@@ -607,7 +614,10 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
                             g.deserialize(myfile);
                             myfile.close();
                             std::cerr << "Starting boxes growth\n";
+                            Timer tt("Boxes Growth");
                             Engine::expandBoxes(tmp[i][j], g, limit, limits);
+                            tt.stop();
+                            totalTbg += tt.delay();
                             std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
                         }
                         else {
@@ -663,6 +673,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
         if (numberFaces > scaled[0].getNumberFaces())
             numberFaces = scaled[0].getNumberFaces();
     }
+    std::cerr << "Total time Boxes Growth: " << totalTbg << "\n";
 
     if (file){
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
@@ -698,8 +709,9 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
 void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate, BoxList& allSolutions) {
     optimize(solutions, d, kernelDistance, limit, limits, tolerance, onlyNearestTarget, areaTolerance, angleTolerance, file, decimate);
     allSolutions=solutions;
+    Timer tGurobi("Gurobi");
     deleteBoxes(solutions, d);
-
+    tGurobi.stopAndPrint();
     /*assert(kernelDistance >= 0 && kernelDistance <= 1);
     solutions.clearBoxes();
     Dcel scaled[ORIENTATIONS];
@@ -1160,63 +1172,65 @@ IGLInterface::SimpleIGLMesh Engine::getMarkerMesh(const HeightfieldsList& he, co
             if (n1.dot(he.getTarget(i))<=EPSILON){
                 for (unsigned int k = 0; k < 3; k++){
                     int adj = TT(f,k);
-                    Vec3 n2 = mesh.getNormal(adj);
-                    if (n2.dot(he.getTarget(i))>=-EPSILON){
-                        Pointi f1 = mesh.getFace(f);
-                        Pointi f2 = mesh.getFace(adj);
-                        std::set<Pointd> allPoints;
-                        for (unsigned int i = 0; i < 3; i++){
-                            allPoints.insert(mesh.getVertex(f1[i]));
-                            allPoints.insert((mesh.getVertex(f1[i]) + mesh.getVertex(f1[(i+1)%3]))/2);
-                        }
-                        for (unsigned int i = 0; i < 3; i++){
-                            allPoints.insert(mesh.getVertex(f2[i]));
-                            allPoints.insert((mesh.getVertex(f2[i]) + mesh.getVertex(f2[(i+1)%3]))/2);
-                        }
-                        bool allNear = true;
-                        bool allDist = true;
-                        for (Pointd  p : allPoints){
-                            if (tree.getSquaredDistance(p) > EPSILON)
-                                allNear = false;
-                            else
-                                allDist = false;
-                        }
-                        if (!allNear && !allDist){
-                            int v1, v2;
-                            bool finded = false;
-                            unsigned int t1, tmp;
-                            for (t1 = 0; t1 < 3 && !finded; t1++){
-                                for (unsigned int t2 = 0; t2 < 3  && !finded; t2++){
-                                    if (f1[t1] == f2[t2]){
-                                        v1 = f1[t1];
-                                        tmp = t1;
-                                        finded = true;
+                    if (adj >= 0){
+                        Vec3 n2 = mesh.getNormal(adj);
+                        if (n2.dot(he.getTarget(i))>=-EPSILON){
+                            Pointi f1 = mesh.getFace(f);
+                            Pointi f2 = mesh.getFace(adj);
+                            std::set<Pointd> allPoints;
+                            for (unsigned int i = 0; i < 3; i++){
+                                allPoints.insert(mesh.getVertex(f1[i]));
+                                allPoints.insert((mesh.getVertex(f1[i]) + mesh.getVertex(f1[(i+1)%3]))/2);
+                            }
+                            for (unsigned int i = 0; i < 3; i++){
+                                allPoints.insert(mesh.getVertex(f2[i]));
+                                allPoints.insert((mesh.getVertex(f2[i]) + mesh.getVertex(f2[(i+1)%3]))/2);
+                            }
+                            bool allNear = true;
+                            bool allDist = true;
+                            for (Pointd  p : allPoints){
+                                if (tree.getSquaredDistance(p) > EPSILON)
+                                    allNear = false;
+                                else
+                                    allDist = false;
+                            }
+                            if (!allNear && !allDist){
+                                int v1, v2;
+                                bool finded = false;
+                                unsigned int t1, tmp;
+                                for (t1 = 0; t1 < 3 && !finded; t1++){
+                                    for (unsigned int t2 = 0; t2 < 3  && !finded; t2++){
+                                        if (f1[t1] == f2[t2]){
+                                            v1 = f1[t1];
+                                            tmp = t1;
+                                            finded = true;
+                                        }
                                     }
                                 }
-                            }
-                            assert(finded && tmp < 2);
-                            finded = false;
-                            for (t1 = tmp+1; t1 < 3 && !finded; t1++){
-                                for (unsigned int t2 = 0; t2 < 3  && !finded; t2++){
-                                    if (f1[t1] == f2[t2]){
-                                        v2 = f1[t1];
-                                        finded = true;
+                                assert(finded && tmp < 2);
+                                finded = false;
+                                for (t1 = tmp+1; t1 < 3 && !finded; t1++){
+                                    for (unsigned int t2 = 0; t2 < 3  && !finded; t2++){
+                                        if (f1[t1] == f2[t2]){
+                                            v2 = f1[t1];
+                                            finded = true;
+                                        }
                                     }
                                 }
+                                assert(finded && v1 != v2);
+                                Pointd p1 = mesh.getVertex(v1);
+                                Pointd p2 = mesh.getVertex(v2);
+                                std::pair<Pointd, Pointd> edge;
+                                if (p1 < p2){
+                                    edge.first = p1;
+                                    edge.second = p2;
+                                }
+                                else {
+                                    edge.first = p2;
+                                    edge.second = p1;
+                                }
+                                edges.insert(edge);
                             }
-                            assert(finded && v1 != v2);
-                            Pointd p1 = mesh.getVertex(v1);
-                            Pointd p2 = mesh.getVertex(v2);
-                            std::pair<Pointd, Pointd> edge;
-                            if (p1 < p2){
-                                edge.first = p1;
-                                edge.second = p2;
-                            }
-                            else {
-                                edge.first = p2;
-                                edge.second = p1;
-                            }
-                            edges.insert(edge);
                         }
                     }
                 }
@@ -1270,6 +1284,7 @@ void Engine::saveObjs(const QString& foldername, const IGLInterface::IGLMesh &or
     QString baseComplexString = foldername + "/BaseComplex.obj";
     QString heightfieldString = foldername + "/Heightfield";
     QString markerString = foldername + "/Marker.obj";
+    //CGALInterface::AABBTree tree(inputMesh);
     if (originalMesh.getNumberVertices() > 0)
         originalMesh.saveOnObj(originalMeshString.toStdString());
     inputMesh.saveOnObjFile(inputMeshString.toStdString());
@@ -1279,8 +1294,18 @@ void Engine::saveObjs(const QString& foldername, const IGLInterface::IGLMesh &or
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         IGLInterface::IGLMesh h = he.getHeightfield(i);
         Dcel d(h);
+        //updatePieceNormals(tree, d);
         std::stringstream ss;
         ss << heightfieldString.toStdString() << i << ".obj";
         d.saveOnObjFile(ss.str());
+    }
+}
+
+void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, Dcel& piece) {
+    for (Dcel::Vertex* v : piece.vertexIterator()){
+        if (tree.getSquaredDistance(v->getCoordinate() < EPSILON)){
+            const Dcel::Vertex* n = tree.getNearestDcelVertex(v->getCoordinate());
+            v->setNormal(n->getNormal());
+        }
     }
 }

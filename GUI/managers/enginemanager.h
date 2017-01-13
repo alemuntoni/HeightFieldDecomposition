@@ -173,6 +173,10 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_limitsConstraintCheckBox_stateChanged(int arg1);
 
+        void on_smartPackingPushButton_clicked();
+
+        void on_explodePushButton_clicked();
+
     signals:
         void finished();
 

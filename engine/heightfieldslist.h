@@ -33,7 +33,7 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         //IGLInterface::IGLMesh getHeightfield(unsigned int i) const;
         void setHeightfield(const IGLInterface::IGLMesh& m, unsigned int i, bool updateColor=false);
         void insertHeightfield(const IGLInterface::IGLMesh& m, const Vec3 &target, unsigned int i);
-        void explode(double dist);
+        void explode(const Pointd &bc, double dist);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;

@@ -209,7 +209,7 @@ void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std
     iglMeshToTrimesh(originalTrimesh, originalSurface);
 
     //restoring
-    restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 50);
+    restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 150);
 
     trimeshToIglMesh(tmp, smoothedTrimesh);
     smoothedSurface = tmp;

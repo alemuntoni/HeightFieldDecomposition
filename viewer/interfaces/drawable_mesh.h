@@ -32,7 +32,7 @@ class DrawableMesh : public DrawableObject{
         virtual void draw() const = 0;
         virtual Pointd sceneCenter() const = 0;
         virtual double sceneRadius() const = 0;
-        bool isVisible() const;
+        virtual bool isVisible() const;
 
         // rendering options
         //
@@ -48,8 +48,8 @@ class DrawableMesh : public DrawableObject{
 
     protected:
         DrawableMesh();
-        void draw(unsigned int nv, unsigned int nt, const double* pCoords, const int* pTriangles, const double* pVertexNormals, const float* pVertexColors, const double* pTriangleNormals, const float* pTriangleColors) const;
-        void renderPass(unsigned int nv, unsigned int nt, const double* coords, const int* triangles, const double* vertexNormals, const float* vertexColors, const double* triangleNormals, const float* triangleColors) const;
+        virtual void draw(unsigned int nv, unsigned int nt, const double* pCoords, const int* pTriangles, const double* pVertexNormals, const float* pVertexColors, const double* pTriangleNormals, const float* pTriangleColors) const;
+        virtual void renderPass(unsigned int nv, unsigned int nt, const double* coords, const int* triangles, const double* vertexNormals, const float* vertexColors, const double* triangleNormals, const float* triangleColors) const;
 
         enum {
             DRAW_MESH        = 0b00000001,

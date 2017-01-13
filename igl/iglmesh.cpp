@@ -395,6 +395,182 @@ namespace IGLInterface {
         return b;
     }
 
+    bool IGLMesh::readFromObj(const std::string& filename) {
+        clear();
+        typedef boost::char_separator<char>     CharSeparator;
+        typedef boost::tokenizer<CharSeparator> Tokenizer;
+        typedef Tokenizer::iterator             TokenizerIterator;
+
+        CharSeparator spaceSeparator(" ");
+        CharSeparator slashSeparator("/");
+
+        static std::string vertex = "v";
+        static std::string vertexnormal = "vn";
+        static std::string face   = "f";
+        static std::string mtl   = "usemtl";
+
+        size_t lastindex = filename.find_last_of(".");
+        std::string rawname = filename.substr(0, lastindex);
+        std::string mtufilename = rawname + ".mtu";
+        bool usingMtu = false;
+        std::ifstream mtufile(mtufilename.c_str());
+        Eigen::MatrixXf colors(0,3);
+        int id = 0;
+        std::map<std::string, int> mapColors;
+        std::string   line;
+        int v = 0, f = 0, c = 0;
+        if (mtufile.is_open()){
+            usingMtu = true;
+            while(std::getline(mtufile,line))
+            {
+                Tokenizer spaceTokenizer(line, spaceSeparator);
+
+                if (spaceTokenizer.begin() == spaceTokenizer.end()) continue;
+
+                TokenizerIterator token = spaceTokenizer.begin();
+                ++token;
+                std::string colorname = *token;
+                std::getline(mtufile,line);
+                spaceTokenizer = Tokenizer(line, spaceSeparator);
+                token = spaceTokenizer.begin();
+                std::string r = *(++token);
+                std::string g = *(++token);
+                std::string b = *(++token);
+
+                std::istringstream rstr(r), gstr(g), bstr(b);
+                float  rf, gf, bf;
+                rstr >> rf;
+                gstr >> gf;
+                bstr >> bf;
+                colors.conservativeResize(id+1, Eigen::NoChange);
+                colors(id, 0) = rf; colors(id, 1) = gf; colors(id, 2) = bf;
+                mapColors[colorname] = id;
+                id++;
+            }
+        }
+        mtufile.close();
+
+
+        std::ifstream file(filename.c_str());
+
+
+        if(!file.is_open())
+        {
+            std::cerr << "ERROR : read() : could not open input file " << filename.c_str() << "\n";
+            return false;
+        }
+
+        while(std::getline(file,line))
+        {
+            Tokenizer spaceTokenizer(line, spaceSeparator);
+
+            if (spaceTokenizer.begin() == spaceTokenizer.end()) continue;
+
+            TokenizerIterator token = spaceTokenizer.begin();
+            std::string header = *token;
+
+            // Handle
+            //
+            // v 0.123 0.234 0.345
+            // v 0.123 0.234 0.345 1.0
+
+            if (strcmp(header.c_str(), vertexnormal.c_str()) == 0)
+            {
+                std::string x = *(++token);
+                std::string y = *(++token);
+                std::string z = *(++token);
+
+                std::istringstream xstr(x), ystr(y), zstr(z);
+                double  xd, yd, zd;
+                xstr >> xd;
+                ystr >> yd;
+                zstr >> zd;
+
+                NV.conservativeResize(v+1, Eigen::NoChange);
+                NV(v, 0) = xd; NV(v, 1) = yd; NV(v, 2) = zd;
+            }
+            if (strcmp(header.c_str(), vertex.c_str()) == 0)
+            {
+                std::string x = *(++token);
+                std::string y = *(++token);
+                std::string z = *(++token);
+
+                std::istringstream xstr(x), ystr(y), zstr(z);
+                double  xd, yd, zd;
+                xstr >> xd;
+                ystr >> yd;
+                zstr >> zd;
+
+                V.conservativeResize(v+1, Eigen::NoChange);
+                V(v, 0) = xd; V(v, 1) = yd; V(v, 2) = zd;
+                v++;
+            }
+
+            // Handle
+            //
+            // f 1 2 3
+            // f 3/1 4/2 5/3
+            // f 6/4/1 3/5/3 7/6/5
+
+            else if (strcmp(header.c_str(), face.c_str()) == 0)
+            {
+                std::vector<std::string> dummy;
+                int i=-1;
+                token++;
+                while (token != spaceTokenizer.end()) {
+                    dummy.push_back(*(token));
+                    token++;
+                    i++;
+                }
+
+                std::vector<Tokenizer> slashTokenizer;
+                for (unsigned int i=0; i<dummy.size(); i++){
+                    Tokenizer t(dummy[i], slashSeparator);
+                    slashTokenizer.push_back(t);
+                }
+
+                std::vector<int> nid;
+                for (unsigned int i=0; i<slashTokenizer.size(); i++){
+                    std::istringstream istr((*slashTokenizer[i].begin()).c_str());
+                    int id;
+                    istr >> id;
+                    nid.push_back(id-1);
+                }
+                F.conservativeResize(f+1, Eigen::NoChange);
+                F(f, 0) = nid[0]; F(f, 1) = nid[1]; F(f, 2) = nid[2];
+                if (usingMtu){
+                    CF.conservativeResize(f+1, Eigen::NoChange);
+                    CF(f, 0) = colors(c,0); CF(f, 1) = colors(c,1); CF(f, 2) = colors(c,2);
+                }
+                f++;
+            }
+            else if (strcmp(header.c_str(), mtl.c_str()) == 0){
+                std::string color = *(++token);
+                std::map<std::string, int>::iterator it = mapColors.find(color);
+                assert(it != mapColors.end());
+                c = it->second;
+            }
+
+            // Ignore
+            //
+            // vt 0.500 1 [0]
+            // vn 0.707 0.000 0.707
+            // vp 0.310000 3.210000 2.100000
+            // ...
+
+        }
+        if (!usingMtu){
+            CF.resize(F.rows(), 3);
+            for (unsigned int i = 0; i < CF.rows(); i++)
+                CF.row(i) << 0.5, 0.5, 0.5;
+        }
+        file.close();
+        updateFaceNormals();
+        updateVertexColorsSize();
+        updateBoundingBox();
+        return true;
+    }
+
     void IGLMesh::setFaceColor(double red, double green, double blue, int f) {
         if (f < 0){
             CF.resize(F.rows(), 3);

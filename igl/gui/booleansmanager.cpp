@@ -90,6 +90,7 @@ void BooleansManager::on_loadIGLMeshButton_clicked() {
     if (!filename.isEmpty()) {
         IGLInterface::DrawableIGLMesh* mesh = new IGLInterface::DrawableIGLMesh();
         mesh->readFromFile(filename.toStdString());
+        //mesh->readFromObj(filename.toStdString());
         mainWindow->pushObj(mesh, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
         setButtonsMeshLoaded(true);
         mainWindow->updateGlCanvas();
@@ -466,4 +467,19 @@ void BooleansManager::on_makeBox2PushButton_clicked() {
     min = std::min(min, ui->z2SpinBox->value());
     min /=10;
     setMesh2(IGLInterface::IGLMesh(IGLInterface::makeBox(BoundingBox(Pointd(0,0,0), Pointd(ui->x2SpinBox->value(),ui->y2SpinBox->value(),ui->z2SpinBox->value())), min)));
+}
+
+void BooleansManager::on_scalePushButton_clicked() {
+    Vec3 scaleFactor(ui->scaleXSpinBox->value(), ui->scaleYSpinBox->value(), ui->scaleZSpinBox->value());
+
+    if (ui->mesh1CheckBox->isChecked() && meshes[0] != nullptr){
+        meshes[0]->scale(scaleFactor);
+    }
+    if (ui->mesh2CheckBox->isChecked() && meshes[1] != nullptr){
+        meshes[1]->scale(scaleFactor);
+    }
+    if (ui->resultCheckBox->isChecked() && result != nullptr){
+        result->scale(scaleFactor);
+    }
+    mainWindow->updateGlCanvas();
 }

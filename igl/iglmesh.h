@@ -44,7 +44,7 @@ namespace IGLInterface {
             template<typename T>
             SimpleIGLMesh(const Trimesh<T>& trimesh);
             #endif
-            void setVertex(unsigned int i, const Eigen::VectorXd &p);
+            virtual void setVertex(unsigned int i, const Eigen::VectorXd &p);
             void setVertex(unsigned int i, const Pointd &p);
             void setVertex(unsigned int i, double x, double y, double z);
             void addVertex(const Eigen::VectorXd &p);
@@ -68,6 +68,7 @@ namespace IGLInterface {
             Pointd getVertex(unsigned int i) const;
             Pointi getFace(unsigned int i) const;
             void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
+            Pointd getBarycenter() const;
             BoundingBox getBoundingBox() const;
             void decimate(unsigned int numberDesiredFaces);
             bool getDecimatedMesh(SimpleIGLMesh& decimated, unsigned int numberDesiredFaces, Eigen::VectorXi &mapping);
@@ -129,6 +130,7 @@ namespace IGLInterface {
             void removeDuplicatedVertices();
             void clear();
             bool readFromFile(const std::string &filename);
+            bool readFromObj(const std::string &filename);
             void setFaceColor(double red, double green, double blue, int f = -1);
             Vec3 getNormal(unsigned int f) const;
             QColor getColor(unsigned int f) const;
@@ -318,6 +320,11 @@ namespace IGLInterface {
             BBmin = Eigen::RowVector3d();
             BBmax = Eigen::RowVector3d();
         }
+    }
+
+    inline Pointd SimpleIGLMesh::getBarycenter() const {
+        Pointd bc(V.col(0).mean(), V.col(1).mean(), V.col(2).mean());
+        return bc;
     }
 
     inline BoundingBox SimpleIGLMesh::getBoundingBox() const {

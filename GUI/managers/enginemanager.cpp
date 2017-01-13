@@ -168,7 +168,7 @@ void EngineManager::deserializeBC(const std::string& filename) {
     mainWindow->pushObj(he, "Heightfields");
     mainWindow->updateGlCanvas();
     ui->showAllSolutionsCheckBox->setEnabled(true);
-    //he->explode(40);
+    //he->explode(150);
     solutions->setVisibleBox(0);
     ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
     ui->allHeightfieldsCheckBox->setChecked(true);
@@ -407,6 +407,7 @@ void EngineManager::on_saveObjsButton_clicked() {
                 ss << heightfieldString.toStdString() << i << ".obj";
                 h.saveOnObj(ss.str());
             }*/
+            d->updateVertexNormals();
             Engine::saveObjs(foldername, originalMesh, *d, *baseComplex, *he);
         }
     }
@@ -1334,7 +1335,9 @@ void EngineManager::on_packPushButton_clicked() {
                 QString bstring = foldername + "/b" + QString::number(i);
                 for (unsigned int j = 0; j < packs[i].size(); j++){
                     QString meshName = bstring + "p" + QString::number(j) + ".obj";
-                    packs[i][j].saveOnObj(meshName.toStdString());
+                    //packs[i][j].saveOnObj(meshName.toStdString());
+                    Dcel d(packs[i][j]);
+                    d.saveOnObjFile(meshName.toStdString());
                     //Dcel d(packs[i][j]);
                     //Segmentation s(d);
                     //Dcel dd = s.getDcelFromSegmentation();
@@ -1344,11 +1347,60 @@ void EngineManager::on_packPushButton_clicked() {
                         packMesh = IGLInterface::IGLMesh::merge(packMesh, packs[i][j]);
                     }
                 }
-                packMesh.saveOnObj(pstring.toStdString());
+                //packMesh.saveOnObj(pstring.toStdString());
+                Dcel d(packMesh);
+                d.saveOnObjFile(pstring.toStdString());
+
+                BoundingBox bb = d.getBoundingBox();
+                IGLInterface::SimpleIGLMesh plane;
+                plane.addVertex(bb.getMinX(), bb.getMinY(), bb.getMinZ() - EPSILON);
+                plane.addVertex(bb.getMaxX(), bb.getMinY(), bb.getMinZ() - EPSILON);
+                plane.addVertex(bb.getMaxX(), bb.getMaxY(), bb.getMinZ() - EPSILON);
+                plane.addVertex(bb.getMinX(), bb.getMaxY(), bb.getMinZ() - EPSILON);
+                plane.addFace(0, 1, 2);
+                plane.addFace(0, 2, 3);
+                plane.saveOnObj(foldername.toStdString() + "/plane.obj");
             }
         }
     }
 }
+
+void EngineManager::on_smartPackingPushButton_clicked() {
+    if (he != nullptr){
+        QString foldername = QFileDialog::getExistingDirectory(nullptr, "SaveObjs");
+        if (!foldername.isEmpty()){
+            HeightfieldsList myHe = *he;
+            Packing::rotateAllPieces(myHe);
+            BoundingBox packSize(Pointd(), Pointd(ui->sizeXPackSpinBox->value(), ui->sizeYPackSpinBox->value(), ui->sizeZPackSpinBox->value()));
+            BoundingBox limits = packSize;
+            double l = packSize.getMaxY();
+            std::vector< std::vector<IGLInterface::IGLMesh> > packs;
+            do {
+                limits.setMaxY(l);
+                double factor;
+                Packing::getMaximum(myHe, limits, factor);
+                Packing::scaleAll(myHe, factor);
+                std::vector< std::vector<std::pair<int, Pointd> > > tmp = Packing::pack(myHe, packSize);
+                packs = Packing::getPacks(tmp, myHe);
+                l -= 1;
+            } while (packs.size() > 1);
+            IGLInterface::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
+
+            for (unsigned int i = 0; i < packs.size(); i++){
+                QString pstring = foldername + "/pack" + QString::number(i) + ".obj";
+                IGLInterface::IGLMesh packMesh = packs[i][0];
+                for (unsigned int j = 1; j < packs[i].size(); j++){
+                    packMesh = IGLInterface::IGLMesh::merge(packMesh, packs[i][j]);
+                }
+                //packMesh.saveOnObj(pstring.toStdString());
+                Dcel d(packMesh);
+                d.updateVertexNormals();
+                d.saveOnObjFile(pstring.toStdString());
+            }
+        }
+    }
+}
+
 
 void EngineManager::on_reconstructionPushButton_clicked() {
     if (d != nullptr && he != nullptr){
@@ -1385,9 +1437,18 @@ void EngineManager::on_snappingPushButton_clicked() {
             Box3D b1 = solutions->getBox(i);
             for (unsigned int j = i+1; j < solutions->getNumberBoxes(); j++){
                 Box3D b2 = solutions->getBox(j);
-                for (unsigned int coord = 0; coord < 6; coord++) {
+                for (unsigned int coord = 0; coord < 3; coord++) {
                     if (std::abs(b1[coord]-b2[coord]) < epsilon) {
                         b2[coord] = b1[coord];
+                    }
+                    else if (std::abs(b1[coord]-b2[coord+3]) < epsilon){
+                        b2[coord+3] = b1[coord];
+                    }
+                    else if (std::abs(b1[coord+3]-b2[coord]) < epsilon){
+                        b2[coord] = b1[coord+3];
+                    }
+                    else if (std::abs(b1[coord+3]-b2[coord+3]) < epsilon){
+                        b2[coord+3] = b1[coord+3];
                     }
                 }
                 b2.generatePiece(av*7);
@@ -1400,17 +1461,18 @@ void EngineManager::on_snappingPushButton_clicked() {
 
 void EngineManager::on_colorPiecesPushButton_clicked() {
     if (he!=nullptr && d != nullptr){
+        CGALInterface::AABBTree tree(*d);
         std::array<QColor, 10> colors;
-        colors[0] = QColor(0,255,0);
-        colors[1] = QColor(0,0,255);
-        colors[2] = QColor(255,0,0);
-        colors[3] = QColor(255,255,0);
-        colors[4] = QColor(0,255,255);
-        colors[5] = QColor(255,0,255);
-        colors[6] = QColor(74,134,232);
-        colors[7] = QColor(152,0,0);
-        colors[8] = QColor(255,153,0);
-        colors[9] = QColor(153,0,255);
+        colors[0] = QColor(182, 215, 168); //
+        colors[1] = QColor(159, 197, 232); //
+        colors[2] = QColor(234, 153, 153); //
+        colors[3] = QColor(255, 229, 153); //
+        colors[4] = QColor(162, 196, 201); //
+        colors[5] = QColor(213, 166, 189); //
+        colors[6] = QColor(164, 194, 244); //
+        colors[7] = QColor(221, 126, 107);//
+        colors[8] = QColor(249, 203, 156);//
+        colors[9] = QColor(180, 167, 214);//
 
 
         std::map< const Dcel::Vertex*, int > mapping = Reconstruction::getMappingId(*d, *he);
@@ -1454,6 +1516,9 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
 
 
                 IGLInterface::IGLMesh mesh = he->getHeightfield(i);
+                Dcel d(mesh);
+                Engine::updatePieceNormals(tree, d);
+                mesh = IGLInterface::IGLMesh(d);
                 mesh.setFaceColor(color.redF(),color.greenF(),color.blueF());
                 he->setHeightfield(mesh, i);
             }
@@ -1601,5 +1666,15 @@ void EngineManager::on_limitsConstraintCheckBox_stateChanged(int arg1) {
         ui->xLimitSpinBox->setEnabled(false);
         ui->zLimitSpinBox->setEnabled(false);
         ui->minEdgeBBSpinBox->setEnabled(false);
+    }
+}
+
+
+void EngineManager::on_explodePushButton_clicked() {
+    if (d != nullptr && he != nullptr){
+        double dist = ui->explodeSpinBox->value();
+        Pointd bc = d->getBarycenter();
+        he->explode(bc, dist);
+        mainWindow->updateGlCanvas();
     }
 }

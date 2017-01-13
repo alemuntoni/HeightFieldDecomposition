@@ -171,6 +171,15 @@ double Dcel::getSurfaceArea() const {
     return area;
 }
 
+Pointd Dcel::getBarycenter() const {
+    Pointd bc;
+    for (const Dcel::Vertex* v : vertexIterator()){
+        bc += v->getCoordinate();
+    }
+    bc /= getNumberVertices();
+    return bc;
+}
+
 double Dcel::getAverageHalfEdgesLength() const {
     double average = 0;
     for (const HalfEdge* he : halfEdgeIterator()){
@@ -227,7 +236,8 @@ void Dcel::saveOnObjFile(std::string fileNameObj) const {
         filestreamObj << "mtllib " << fileNameMtuNoPath << "\n";
         int i = 1;
         for (ConstVertexIterator vit = vertexBegin(); vit != vertexEnd(); vit++) {
-            filestreamObj << "v " << (*vit)->getCoordinate().x() << " "<< (*vit)->getCoordinate().y() << " " <<  (*vit)->getCoordinate().z() << "\n";
+            filestreamObj << "vn " << (*vit)->getNormal().x() << " " << (*vit)->getNormal().y() << " " <<  (*vit)->getNormal().z() << "\n";
+            filestreamObj << "v " << (*vit)->getCoordinate().x() << " " << (*vit)->getCoordinate().y() << " " <<  (*vit)->getCoordinate().z() << "\n";
             vertices[*vit] = i;
             i++;
         }

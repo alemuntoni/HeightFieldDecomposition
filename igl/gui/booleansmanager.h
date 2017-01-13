@@ -93,6 +93,8 @@ class BooleansManager : public QFrame
 
         void on_makeBox2PushButton_clicked();
 
+        void on_scalePushButton_clicked();
+
     private:
         Ui::BooleansManager *ui;
         MainWindow* mainWindow;

@@ -166,21 +166,12 @@ void HeightfieldsList::insertHeightfield(const IGLInterface::IGLMesh& m, const V
     }
 }
 
-void HeightfieldsList::explode(double dist) {
+void HeightfieldsList::explode(const Pointd& bc, double dist) {
     for (unsigned int i = 0; i < heightfields.size(); ++i) {
         Pointd translation;
-        if (targets[i] == XYZ[0])
-            translation.setX(dist);
-        else if (targets[i] == XYZ[1])
-            translation.setY(dist);
-        else if (targets[i] == XYZ[2])
-            translation.setZ(dist);
-        else if (targets[i] == XYZ[3])
-            translation.setX(-dist);
-        else if (targets[i] == XYZ[4])
-            translation.setY(-dist);
-        else if (targets[i] == XYZ[5])
-            translation.setZ(-dist);
+        Vec3 v = heightfields[i].getBarycenter() - bc;
+        v.normalize();
+        translation = v * dist;
         heightfields[i].translate(translation);
     }
 }
