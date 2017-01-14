@@ -1004,9 +1004,11 @@ void EngineManager::on_subtractPushButton_clicked() {
         thread->start();*/
 
         ///cleaning solutions
+        Timer tBooleans("Total Booleans Time");
         Engine::booleanOperations(*he, bc, *solutions);
         Engine::splitConnectedComponents(*he, *solutions);
         Engine::glueInternHeightfieldsToBaseComplex(*he, *solutions, bc, *d);
+        tBooleans.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
@@ -1210,7 +1212,9 @@ void EngineManager::on_cleanAllPushButton_clicked() {
 
 void EngineManager::on_reorderBoxes_clicked() {
     if (d != nullptr && solutions != nullptr){
+        Timer tGraph("Total Time Graph optimization");
         Array2D<int> ordering = Splitting::getOrdering(*solutions, *d);
+        tGraph.stopAndPrint();
         solutions->setIds();
         solutions->sort(ordering);
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
