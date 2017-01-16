@@ -1168,12 +1168,12 @@ IGLInterface::SimpleIGLMesh Engine::getMarkerMesh(const HeightfieldsList& he, co
         const IGLInterface::IGLMesh& mesh = he.getHeightfield(i);
         Eigen::MatrixXi TT = mesh.getFacesAdjacences();
         for (unsigned int f = 0; f < mesh.getNumberFaces(); f++){
-            Vec3 n1 = mesh.getNormal(f);
+            Vec3 n1 = mesh.getFaceNormal(f);
             if (n1.dot(he.getTarget(i))<=EPSILON){
                 for (unsigned int k = 0; k < 3; k++){
                     int adj = TT(f,k);
                     if (adj >= 0){
-                        Vec3 n2 = mesh.getNormal(adj);
+                        Vec3 n2 = mesh.getFaceNormal(adj);
                         if (n2.dot(he.getTarget(i))>=-EPSILON){
                             Pointi f1 = mesh.getFace(f);
                             Pointi f2 = mesh.getFace(adj);

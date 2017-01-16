@@ -132,7 +132,8 @@ namespace IGLInterface {
             bool readFromFile(const std::string &filename);
             bool readFromObj(const std::string &filename);
             void setFaceColor(double red, double green, double blue, int f = -1);
-            Vec3 getNormal(unsigned int f) const;
+            Vec3 getFaceNormal(unsigned int f) const;
+            Vec3 getVertexNormal(unsigned int v) const;
             QColor getColor(unsigned int f) const;
             void getBoundingBox(Eigen::RowVector3d &BBmin, Eigen::RowVector3d &BBmax) const;
             BoundingBox getBoundingBox() const;
@@ -412,9 +413,14 @@ namespace IGLInterface {
         NF.resize(0,Eigen::NoChange);
     }
 
-    inline Vec3 IGLMesh::getNormal(unsigned int f) const {
+    inline Vec3 IGLMesh::getFaceNormal(unsigned int f) const {
         assert (f < F.rows());
         return Vec3(NF(f,0), NF(f,1), NF(f,2));
+    }
+
+    inline Vec3 IGLMesh::getVertexNormal(unsigned int v) const {
+        assert (v < V.rows());
+        return Vec3(NV(v,0), NV(v,1), NV(v,2));
     }
 
     inline QColor IGLMesh::getColor(unsigned int f) const {

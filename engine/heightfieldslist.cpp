@@ -86,10 +86,17 @@ void HeightfieldsList::checkHeightfields() const {
     for (unsigned int i = 0; i < heightfields.size(); i++){
         const IGLInterface::DrawableIGLMesh& m = heightfields[i];
         for (unsigned int f = 0; f < m.getNumberFaces(); f++){
-            if (m.getNormal(f).dot(targets[i]) < FLIP_ANGLE-EPSILON && m.getNormal(f).dot(targets[i]) > -1 + EPSILON){
-                std::cerr << "Hieghtfield: " << i << "; Triangle: " << f << "; Flip: " << m.getNormal(f).dot(targets[i]) << "\n";
+            if (m.getFaceNormal(f).dot(targets[i]) < FLIP_ANGLE-EPSILON && m.getFaceNormal(f).dot(targets[i]) > -1 + EPSILON){
+                std::cerr << "Hieghtfield: " << i << "; Triangle: " << f << "; Flip: " << m.getFaceNormal(f).dot(targets[i]) << "\n";
             }
         }
+    }
+}
+
+void HeightfieldsList::rotate(const Eigen::MatrixXd m) {
+    for (unsigned int i = 0; i < heightfields.size(); i++){
+        heightfields[i].rotate(m);
+        heightfields[i].updateVertexNormals();
     }
 }
 
@@ -100,7 +107,7 @@ void HeightfieldsList::addHeightfield(const IGLInterface::DrawableIGLMesh& m, co
         QColor c = colorOfNormal(target);
         heightfields[heightfields.size()-1].setFaceColor(c.redF(), c.greenF(), c.blueF());
         for (unsigned int i = 0; i < m.getNumberFaces(); i++){
-            if (m.getNormal(i).dot(target) < FLIP_ANGLE-EPSILON)
+            if (m.getFaceNormal(i).dot(target) < FLIP_ANGLE-EPSILON)
                 heightfields[heightfields.size()-1].setFaceColor(0,0,0,i);
         }
     }
@@ -110,7 +117,7 @@ void HeightfieldsList::addHeightfield(const IGLInterface::DrawableIGLMesh& m, co
         QColor c = colorOfNormal(target);
         heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
         for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-            if (m.getNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
+            if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
                 heightfields[i].setFaceColor(0,0,0,j);
         }
     }
@@ -148,7 +155,7 @@ void HeightfieldsList::setHeightfield(const IGLInterface::IGLMesh& m, unsigned i
         QColor c = colorOfNormal(targets[i]);
         heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
         for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-            if (m.getNormal(j).dot(targets[i]) < FLIP_ANGLE-EPSILON)
+            if (m.getFaceNormal(j).dot(targets[i]) < FLIP_ANGLE-EPSILON)
                 heightfields[i].setFaceColor(0,0,0,j);
         }
     }
@@ -161,7 +168,7 @@ void HeightfieldsList::insertHeightfield(const IGLInterface::IGLMesh& m, const V
     QColor c = colorOfNormal(target);
     heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
     for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-        if (m.getNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
+        if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
             heightfields[i].setFaceColor(0,0,0,j);
     }
 }

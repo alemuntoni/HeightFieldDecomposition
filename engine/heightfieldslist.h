@@ -23,6 +23,7 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         void setFlatShading();
         void setSmoothShading();
         void checkHeightfields() const;
+        void rotate(const Eigen::MatrixXd m);
 
         void addHeightfield(const IGLInterface::DrawableIGLMesh &m, const Vec3 &target, int i = -1);
         unsigned int getNumHeightfields() const;

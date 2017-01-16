@@ -185,6 +185,7 @@ std::vector<std::vector<IGLInterface::IGLMesh> > Packing::getPacks(std::vector<s
                 Eigen::Matrix3d rot;
                 Common::getRotationMatrix(Vec3(0,0,1),M_PI/2,rot);
                 mesh.rotate(rot);
+                mesh.updateVertexAndFaceNormals();
             }
             else{
                 id = pair.first-1;

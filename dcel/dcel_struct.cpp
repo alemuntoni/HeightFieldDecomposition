@@ -2355,6 +2355,10 @@ void Dcel::copyFrom(const IGLInterface::IGLMesh& iglMesh) {
     copyFrom((IGLInterface::SimpleIGLMesh)iglMesh);
     for (Dcel::Face* f : faceIterator()){
         f->setColor(iglMesh.getColor(f->getId()));
+        f->setNormal(iglMesh.getFaceNormal(f->getId()));
+    }
+    for (Dcel::Vertex* v : vertexIterator()){
+        v->setNormal(iglMesh.getVertexNormal(v->getId()));
     }
 }
 #endif

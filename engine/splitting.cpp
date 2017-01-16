@@ -231,6 +231,8 @@ double Splitting::minimumSplit(const Box3D &b1, const Box3D &b2){
     double newVolumeb2 = volumeb2 - volumeb3 - volumeb4;
     assert (newVolumeb2 >= 0);
     return std::min(newVolumeb2, volumeb3);
+    //double tmp = std::min(b3.getLengthX(), b3.getLengthY());
+    //return std::min(tmp, b3.getLengthZ());
 }
 
 std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGALInterface::AABBTree& aabb) {
@@ -371,7 +373,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                         if (!exit){
                             double minb1b2 = minimumSplit(b1, b2);
                             double minb2b1 = minimumSplit(b2, b1);
-                            if (minb2b1 < minb1b2)
+                            if (minb2b1 > minb1b2)
                                 std::swap(b1, b2);
                         }
                     }

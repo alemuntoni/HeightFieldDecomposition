@@ -153,6 +153,84 @@ void EngineManager::deserializeBC(const std::string& filename) {
         if (originalMesh.getNumberVertices() > 0)
             mainWindow->pushObj(&originalMesh, "Original Mesh");
     }
+    //BU
+    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(0,0,1), M_PI/2);
+    he->rotate(m);
+    d->rotate(m);
+    originalMesh.rotate(m);
+    baseComplex->rotate(m);
+
+    m = Common::getRotationMatrix(Vec3(0,1,0), M_PI);
+    he->rotate(m);
+    d->rotate(m);
+    d->updateFaceNormals();
+    d->updateVertexNormals();
+    d->updateBoundingBox();
+    originalMesh.rotate(m);
+    originalMesh.updateVertexAndFaceNormals();
+    baseComplex->rotate(m);*/
+    //
+
+    //Statue
+    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+    he->rotate(m);
+    d->rotate(m);
+    originalMesh.rotate(m);
+    baseComplex->rotate(m);
+
+    m = Common::getRotationMatrix(Vec3(0,1,0), M_PI);
+    he->rotate(m);
+    d->rotate(m);
+    d->updateFaceNormals();
+    d->updateVertexNormals();
+    d->updateBoundingBox();
+    originalMesh.rotate(m);
+    originalMesh.updateVertexAndFaceNormals();
+    baseComplex->rotate(m);*/
+    //
+
+    //Airplane
+    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+    he->rotate(m);
+    d->rotate(m);
+    originalMesh.rotate(m);
+    baseComplex->rotate(m);
+
+    m = Common::getRotationMatrix(Vec3(0,1,0), M_PI/2);
+    he->rotate(m);
+    d->rotate(m);
+    d->updateFaceNormals();
+    d->updateVertexNormals();
+    d->updateBoundingBox();
+    originalMesh.rotate(m);
+    originalMesh.updateVertexAndFaceNormals();
+    baseComplex->rotate(m);*/
+    //
+
+    //Batman
+    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+    he->rotate(m);
+    d->rotate(m);
+    d->updateFaceNormals();
+    d->updateVertexNormals();
+    d->updateBoundingBox();
+    originalMesh.rotate(m);
+    originalMesh.updateVertexAndFaceNormals();
+    baseComplex->rotate(m);*/
+    //
+
+    //Bunny
+    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+    he->rotate(m);
+    d->rotate(m);
+    d->updateFaceNormals();
+    d->updateVertexNormals();
+    d->updateBoundingBox();
+    originalMesh.rotate(m);
+    originalMesh.updateVertexAndFaceNormals();
+    baseComplex->rotate(m);*/
+    //
+
     double factor, kernel;
     if (Serializer::deserialize(factor, myfile) && Serializer::deserialize(kernel, myfile)){
         ui->factorSpinBox->setValue(factor);
@@ -1022,7 +1100,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         baseComplex = new IGLInterface::DrawableIGLMesh(bc);
         baseComplex->updateFaceNormals();
         for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
-            Vec3 n = baseComplex->getNormal(i);
+            Vec3 n = baseComplex->getFaceNormal(i);
             n.normalize();
             QColor c = colorOfNearestNormal(n);
             baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
@@ -1041,7 +1119,7 @@ void EngineManager::on_stickPushButton_clicked() {
         baseComplex = new IGLInterface::DrawableIGLMesh(bc);
         baseComplex->updateFaceNormals();
         for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
-            Vec3 n = baseComplex->getNormal(i);
+            Vec3 n = baseComplex->getFaceNormal(i);
             n.normalize();
             QColor c = colorOfNearestNormal(n);
             baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
@@ -1341,6 +1419,7 @@ void EngineManager::on_packPushButton_clicked() {
                     QString meshName = bstring + "p" + QString::number(j) + ".obj";
                     //packs[i][j].saveOnObj(meshName.toStdString());
                     Dcel d(packs[i][j]);
+                    d.updateVertexNormals();
                     d.saveOnObjFile(meshName.toStdString());
                     //Dcel d(packs[i][j]);
                     //Segmentation s(d);
@@ -1353,6 +1432,7 @@ void EngineManager::on_packPushButton_clicked() {
                 }
                 //packMesh.saveOnObj(pstring.toStdString());
                 Dcel d(packMesh);
+                d.updateVertexNormals();
                 d.saveOnObjFile(pstring.toStdString());
 
                 BoundingBox bb = d.getBoundingBox();
@@ -1386,7 +1466,7 @@ void EngineManager::on_smartPackingPushButton_clicked() {
                 Packing::scaleAll(myHe, factor);
                 std::vector< std::vector<std::pair<int, Pointd> > > tmp = Packing::pack(myHe, packSize);
                 packs = Packing::getPacks(tmp, myHe);
-                l -= 1;
+                l -= 0.1;
             } while (packs.size() > 1);
             IGLInterface::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
 
@@ -1398,6 +1478,9 @@ void EngineManager::on_smartPackingPushButton_clicked() {
                 }
                 //packMesh.saveOnObj(pstring.toStdString());
                 Dcel d(packMesh);
+                Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+                d.rotate(m);
+                d.updateFaceNormals();
                 d.updateVertexNormals();
                 d.saveOnObjFile(pstring.toStdString());
             }
@@ -1416,20 +1499,27 @@ void EngineManager::on_reconstructionPushButton_clicked() {
 }
 
 void EngineManager::on_putBoxesAfterPushButton_clicked() {
-    int nTriangles = ui->coveredTrianglesSpinBox->value();
-    if (nTriangles > 0 && solutions != nullptr){
-        BoxList smallBoxes;
-        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
-            if (solutions->getBox(i).getTrianglesCovered() <= nTriangles){
-                Box3D small = solutions->getBox(i);
-                smallBoxes.addBox(small);
-                solutions->removeBox(i);
-                i--;
-            }
-        }
-        for (unsigned int i = 0; i < smallBoxes.getNumberBoxes(); i++){
-            solutions->addBox(smallBoxes.getBox(i));
-        }
+//    int nTriangles = ui->coveredTrianglesSpinBox->value();
+//    if (nTriangles > 0 && solutions != nullptr){
+//        BoxList smallBoxes;
+//        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
+//            if (solutions->getBox(i).getTrianglesCovered() <= nTriangles){
+//                Box3D small = solutions->getBox(i);
+//                smallBoxes.addBox(small);
+//                solutions->removeBox(i);
+//                i--;
+//            }
+//        }
+//        for (unsigned int i = 0; i < smallBoxes.getNumberBoxes(); i++){
+//            solutions->addBox(smallBoxes.getBox(i));
+//        }
+//    }
+    int nbox = ui->coveredTrianglesSpinBox->value();
+    if (nbox >= 0 && solutions != nullptr){
+        Box3D small = solutions->getBox(nbox);
+        solutions->removeBox(nbox);
+        solutions->addBox(small);
+        mainWindow->updateGlCanvas();
     }
 }
 
@@ -1445,13 +1535,13 @@ void EngineManager::on_snappingPushButton_clicked() {
                     if (std::abs(b1[coord]-b2[coord]) < epsilon) {
                         b2[coord] = b1[coord];
                     }
-                    else if (std::abs(b1[coord]-b2[coord+3]) < epsilon){
+                    if (std::abs(b1[coord]-b2[coord+3]) < epsilon){
                         b2[coord+3] = b1[coord];
                     }
-                    else if (std::abs(b1[coord+3]-b2[coord]) < epsilon){
+                    if (std::abs(b1[coord+3]-b2[coord]) < epsilon){
                         b2[coord] = b1[coord+3];
                     }
-                    else if (std::abs(b1[coord+3]-b2[coord+3]) < epsilon){
+                    if (std::abs(b1[coord+3]-b2[coord+3]) < epsilon){
                         b2[coord+3] = b1[coord+3];
                     }
                 }
@@ -1465,6 +1555,7 @@ void EngineManager::on_snappingPushButton_clicked() {
 
 void EngineManager::on_colorPiecesPushButton_clicked() {
     if (he!=nullptr && d != nullptr){
+        d->updateVertexNormals();
         CGALInterface::AABBTree tree(*d);
         std::array<QColor, 10> colors;
         colors[0] = QColor(182, 215, 168); //
