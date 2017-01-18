@@ -219,6 +219,17 @@ void EngineManager::deserializeBC(const std::string& filename) {
     baseComplex->rotate(m);*/
     //
 
+    //Fertility
+    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+    he->rotate(m);
+    d->rotate(m);
+    d->updateFaceNormals();
+    d->updateVertexNormals();
+    d->updateBoundingBox();
+    originalMesh.rotate(m);
+    originalMesh.updateVertexAndFaceNormals();
+    baseComplex->rotate(m);*/
+
     //Bunny
     /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
     he->rotate(m);

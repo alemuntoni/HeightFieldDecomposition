@@ -36,4 +36,9 @@ HEADERS += \
     $$PWD/utils.h \
     $$PWD/hashlib.h \
     $$PWD/file_conversions.h \
-    $$PWD/serializable_object.h
+    $$PWD/serializable_object.h \
+    $$PWD/load_save_file.h \
+    $$PWD/color.h
+
+SOURCES += \
+    $$PWD/load_save_file.cpp
