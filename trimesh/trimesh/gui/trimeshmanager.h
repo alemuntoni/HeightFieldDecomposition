@@ -2,7 +2,7 @@
 #define TRIMESHMANAGER_H
 
 #include <QFrame>
-#include "../../viewer/mainwindow.h"
+#include <viewer/mainwindow.h>
 #include "drawable_trimesh.h"
 
 namespace Ui {

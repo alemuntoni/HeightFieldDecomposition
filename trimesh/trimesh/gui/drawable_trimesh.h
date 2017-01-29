@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "../../viewer/interfaces/drawable_mesh.h"
+#include <viewer/interfaces/drawable_mesh.h>
 #include "../trimesh.h"
 
 class DrawableTrimesh : public Trimesh<double> ,

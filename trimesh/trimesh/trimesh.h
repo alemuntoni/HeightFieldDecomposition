@@ -13,12 +13,11 @@
 #include <set>
 #include <stdlib.h>
 
-#include "../common/bounding_box.h"
-#include "../common/point.h"
+#include <common/bounding_box.h>
 #include "load_save_trimesh.h"
 
 #ifdef IGL_DEFINED
-#include "../igl/iglmesh.h"
+#include <igl/iglmesh.h>
 #endif
 
 //using namespace std;

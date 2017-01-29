@@ -6,13 +6,15 @@ MODULES +=  TRIMESH
 }
 
 HEADERS += \
-    $$PWD/trimesh.h \
-    $$PWD/load_save_trimesh.h
+    $$PWD/trimesh/trimesh.h \
+    $$PWD/trimesh/load_save_trimesh.h
 
 SOURCES += \
-    $$PWD/load_save_trimesh.cpp \
+    $$PWD/trimesh/load_save_trimesh.cpp \
 
 contains(DEFINES, VIEWER_DEFINED){
     #WARNING: BUG on qmake: comment the following line if viewer is not included
-    include ($$PWD/gui/trimeshmanager.pri)
+    include ($$PWD/trimesh/gui/trimeshmanager.pri)
 }
+
+INCLUDEPATH += $$PWD
