@@ -4,3 +4,6 @@
 [submodule "cgal"]
 	path = cgal
 	url = https://github.com/muntonialessandro/cgal.git
+[submodule "dcel"]
+	path = dcel
+	url = https://github.com/muntonialessandro/dcel.git
