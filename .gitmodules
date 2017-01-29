@@ -10,3 +10,6 @@
 [submodule "viewer"]
 	path = viewer
 	url = https://github.com/muntonialessandro/viewer.git
+[submodule "igl"]
+	path = igl
+	url = https://github.com/muntonialessandro/LibIGL-Module.git
