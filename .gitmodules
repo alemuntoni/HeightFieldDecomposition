@@ -7,3 +7,6 @@
 [submodule "dcel"]
 	path = dcel
 	url = https://github.com/muntonialessandro/dcel.git
+[submodule "viewer"]
+	path = viewer
+	url = https://github.com/muntonialessandro/viewer.git
