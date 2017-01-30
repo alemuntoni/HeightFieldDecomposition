@@ -4,11 +4,11 @@ Box3D::Box3D(): visible(true) {
     rotation = Eigen::Matrix3d::Identity();
 }
 
-Box3D::Box3D(const Pointd& min, const Pointd& max, const Pointd& c1, const Pointd& c2, const Pointd& c3, const QColor c) : BoundingBox(min, max), c1(c1), c2(c2), c3(c3), color(c), visible(true){
+Box3D::Box3D(const Pointd& min, const Pointd& max, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Color c) : BoundingBox(min, max), c1(c1), c2(c2), c3(c3), color(c), visible(true){
     rotation = Eigen::Matrix3d::Identity();
 }
 
-Box3D::Box3D(const Pointd& min, const Pointd& max, const QColor c) :BoundingBox(min, max), color(c), visible(true){
+Box3D::Box3D(const Pointd& min, const Pointd& max, const Color c) :BoundingBox(min, max), color(c), visible(true){
     rotation = Eigen::Matrix3d::Identity();
 }
 
@@ -398,7 +398,7 @@ Vec3 Box3D::getRotatedTarget() const {
 }
 
 #ifdef VIEWER_DEFINED
-void Box3D::drawLine(const Pointd &a, const Pointd &b, const QColor& c) const {
+void Box3D::drawLine(const Pointd &a, const Pointd &b, const Color& c) const {
     glBegin(GL_LINES);
     glColor3f(c.redF(), c.greenF(), c.blueF());
     glLineWidth(3);

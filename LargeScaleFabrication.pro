@@ -70,7 +70,11 @@ ALL {
         lib/grid/drawableirregulargrid.h \
         lib/grid/irregulargrid.h \
         lib/graph/directedgraph.h \
-        lib/packing/binpack2d.h
+        lib/packing/binpack2d.h \
+        lib/dcel_segmentation/chart.h \
+        lib/dcel_segmentation/segmentation_iterators.h \
+        lib/dcel_segmentation/segmentation_struct.h \
+        lib/dcel_segmentation/segmentation.h
 
     SOURCES += \
         main.cpp \
@@ -88,8 +92,9 @@ ALL {
         engine/reconstruction.cpp \
         lib/grid/grid.cpp \
         lib/grid/drawablegrid.cpp \
-        lib/grid/drawableirregulargrid.cpp
-
+        lib/grid/drawableirregulargrid.cpp \
+        lib/dcel_segmentation/chart.cpp \
+        lib/dcel_segmentation/segmentation_struct.cpp
 
     FORMS += \
         GUI/managers/enginemanager.ui
@@ -118,18 +123,3 @@ exists($$(GUROBI_HOME)){
     LIBS += -L$$(GUROBI_HOME)/lib -lgurobi_g++5.2 -lgurobi70
     DEFINES += GUROBI_DEFINED
 }
-
-HEADERS += \
-    lib/dcel_segmentation/chart.h \
-    lib/dcel_segmentation/segmentation_iterators.h \
-    lib/dcel_segmentation/segmentation_struct.h \
-    lib/dcel_segmentation/segmentation.h
-
-SOURCES += \
-    lib/dcel_segmentation/chart.cpp \
-    lib/dcel_segmentation/segmentation_struct.cpp
-
-
-
-
-

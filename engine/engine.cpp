@@ -664,7 +664,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
                 for (Dcel::Face* f : d.faceIterator()){
                     if (coveredFaces.find(f->getId()) == coveredFaces.end()){
                         std::cerr << "Uncovered face id: " << f->getId() << "\n";
-                        f->setColor(QColor(0,0,0));
+                        f->setColor(Color(0,0,0));
                     }
                 }
             }

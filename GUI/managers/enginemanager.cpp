@@ -73,17 +73,17 @@ void EngineManager::updateBoxValues() {
 }
 
 void EngineManager::updateColors(double angleThreshold, double areaThreshold) {
-    d->setColor(QColor(128,128,128));
+    d->setColor(Color(128,128,128));
     std::set<const Dcel::Face*> flippedFaces, savedFaces;
     Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], angleThreshold/100, areaThreshold);
 
     for (const Dcel::Face* cf : flippedFaces){
         Dcel::Face* f = d->getFace(cf->getId());
-        f->setColor(QColor(255,0,0));
+        f->setColor(Color(255,0,0));
     }
     for (const Dcel::Face* cf : savedFaces){
         Dcel::Face* f = d->getFace(cf->getId());
-        f->setColor(QColor(0,0,255));
+        f->setColor(Color(0,0,255));
     }
 
     d->update();
@@ -300,7 +300,7 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
     if (! d->deserialize(binaryFile)) return false;
     bool bb = false;
     for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit)
-        (*fit)->setColor(QColor(128,128,128));
+        (*fit)->setColor(Color(128,128,128));
     d->setWireframe(true);
     d->setPointsShading();
     //updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
@@ -1044,7 +1044,7 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
         for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
             const Dcel::Face* cf = *it;
             Dcel::Face* f = d->getFace(cf->getId());
-            f->setColor(QColor(0,0,255));
+            f->setColor(Color(0,0,255));
         }
         d->update();
 
@@ -1113,7 +1113,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
             Vec3 n = baseComplex->getFaceNormal(i);
             n.normalize();
-            QColor c = colorOfNearestNormal(n);
+            Color c = colorOfNearestNormal(n);
             baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
         }
         mainWindow->pushObj(baseComplex, "Base Complex");
@@ -1132,7 +1132,7 @@ void EngineManager::on_stickPushButton_clicked() {
         for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
             Vec3 n = baseComplex->getFaceNormal(i);
             n.normalize();
-            QColor c = colorOfNearestNormal(n);
+            Color c = colorOfNearestNormal(n);
             baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
         }
         mainWindow->pushObj(baseComplex, "Base Complex");
@@ -1568,17 +1568,17 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
     if (he!=nullptr && d != nullptr){
         d->updateVertexNormals();
         CGALInterface::AABBTree tree(*d);
-        std::array<QColor, 10> colors;
-        colors[0] = QColor(182, 215, 168); //
-        colors[1] = QColor(159, 197, 232); //
-        colors[2] = QColor(234, 153, 153); //
-        colors[3] = QColor(255, 229, 153); //
-        colors[4] = QColor(162, 196, 201); //
-        colors[5] = QColor(213, 166, 189); //
-        colors[6] = QColor(164, 194, 244); //
-        colors[7] = QColor(221, 126, 107);//
-        colors[8] = QColor(249, 203, 156);//
-        colors[9] = QColor(180, 167, 214);//
+        std::array<Color, 10> colors;
+        colors[0] = Color(182, 215, 168); //
+        colors[1] = Color(159, 197, 232); //
+        colors[2] = Color(234, 153, 153); //
+        colors[3] = Color(255, 229, 153); //
+        colors[4] = Color(162, 196, 201); //
+        colors[5] = Color(213, 166, 189); //
+        colors[6] = Color(164, 194, 244); //
+        colors[7] = Color(221, 126, 107);//
+        colors[8] = Color(249, 203, 156);//
+        colors[9] = Color(180, 167, 214);//
 
 
         std::map< const Dcel::Vertex*, int > mapping = Reconstruction::getMappingId(*d, *he);
@@ -1599,16 +1599,16 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
         }
 
         std::vector<bool> colored(he->getNumHeightfields(), false);
-        std::vector<QColor> heColors(he->getNumHeightfields(), QColor(0,0,0));
+        std::vector<Color> heColors(he->getNumHeightfields(), Color(0,0,0));
         for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
             if (!colored[i]){
-                std::set<QColor, cmpQColor> adjColors;
+                std::set<Color> adjColors;
                 for (int adj : adjacences[i]){
                     if (colored[adj])
                         adjColors.insert(heColors[adj]);
                 }
 
-                QColor color;
+                Color color;
                 bool finded = false;
                 for (unsigned int k = 0; k < 10 && !finded; k++){
                     if (adjColors.find(colors[k]) == adjColors.end()){

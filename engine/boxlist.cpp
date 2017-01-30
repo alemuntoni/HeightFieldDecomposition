@@ -174,7 +174,7 @@ void BoxList::setVisible(bool b) {
 }
 
 #ifdef VIEWER_DEFINED
-void BoxList::drawLine(const Pointd &a, const Pointd &b, const QColor& c) const {
+void BoxList::drawLine(const Pointd &a, const Pointd &b, const Color& c) const {
     glBegin(GL_LINES);
     glColor3f(c.redF(), c.greenF(), c.blueF());
     glLineWidth(3);
@@ -183,7 +183,7 @@ void BoxList::drawLine(const Pointd &a, const Pointd &b, const QColor& c) const 
     glEnd();
 }
 
-void BoxList::drawCube(const Box3D& b, const QColor &c) const {
+void BoxList::drawCube(const Box3D& b, const Color &c) const {
     std::vector<Pointd> p;
     b.getRotatedExtremes(p);
     drawLine(p[0], p[1], c);

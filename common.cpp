@@ -9,10 +9,10 @@ int WINDOW_MANAGER_ID;
 int DCEL_MANAGER_ID;
 int ENGINE_MANAGER_ID;
 
-QColor colorOfNormal(const Vec3& normal) {
+Color colorOfNormal(const Vec3& normal) {
     for (unsigned int i = 0; i < XYZ.size(); i++)
         if (Common::epsilonEqual(XYZ[i], normal)) return colors[i];
-    return QColor(128, 128, 128);
+    return Color(128, 128, 128);
 }
 
 Vec3 nearestNormal(const Vec3& normal) {
@@ -27,7 +27,7 @@ Vec3 nearestNormal(const Vec3& normal) {
     return XYZ[nid];
 }
 
-QColor colorOfNearestNormal(const Vec3& normal) {
+Color colorOfNearestNormal(const Vec3& normal) {
     double dot = -1;
     int nid = 0;
     for (unsigned int i = 0; i < XYZ.size(); i++){

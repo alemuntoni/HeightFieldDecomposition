@@ -65,37 +65,37 @@ static const std::vector<Vec3> XYZ = {
     Vec3(-ONE_ON_SQRT3,  ONE_ON_SQRT3, -ONE_ON_SQRT3)  //-X+Y-Z : label 25
 };
 
-static const std::vector<QColor> colors = {
-    QColor(255, 0, 0),    //     Red: label 0
-    QColor(0, 255, 0),    //   Green: label 1
-    QColor(0, 0, 255),    //    Blue: label 2
-    QColor(255, 0, 0),    //     Red: label 3
-    QColor(0, 255, 0),    //   Green: label 4
-    QColor(0, 0, 255),    //    Blue: label 5
-    QColor(255, 255, 0),    //  Yellow: label 6
-    QColor(255, 255, 0),    //  Yellow: label 7
-    QColor(255, 255, 0),    //  Yellow: label 8
-    QColor(255, 255, 0),    //  Yellow: label 9
-    QColor(255, 0, 255),    // Magenta: label 10
-    QColor(255, 0, 255),    // Magenta: label 11
-    QColor(255, 0, 255),    // Magenta: label 12
-    QColor(255, 0, 255),    // Magenta: label 13
-    QColor(0, 255, 255),    //   Cyano: label 14
-    QColor(0, 255, 255),    //   Cyano: label 15
-    QColor(0, 255, 255),    //   Cyano: label 16
-    QColor(0, 255, 255),    //   Cyano: label 17
-    QColor(200, 200, 200),    //   White: label 18
-    QColor(200, 200, 200),    //   White: label 19
-    QColor(200, 200, 200),    //   White: label 20
-    QColor(200, 200, 200),    //   White: label 21
-    QColor(200, 200, 200),    //   White: label 22
-    QColor(200, 200, 200),    //   White: label 23
-    QColor(200, 200, 200),    //   White: label 24
-    QColor(200, 200, 200)     //   White: label 25
+static const std::vector<Color> colors = {
+    Color(255, 0, 0),    //     Red: label 0
+    Color(0, 255, 0),    //   Green: label 1
+    Color(0, 0, 255),    //    Blue: label 2
+    Color(255, 0, 0),    //     Red: label 3
+    Color(0, 255, 0),    //   Green: label 4
+    Color(0, 0, 255),    //    Blue: label 5
+    Color(255, 255, 0),    //  Yellow: label 6
+    Color(255, 255, 0),    //  Yellow: label 7
+    Color(255, 255, 0),    //  Yellow: label 8
+    Color(255, 255, 0),    //  Yellow: label 9
+    Color(255, 0, 255),    // Magenta: label 10
+    Color(255, 0, 255),    // Magenta: label 11
+    Color(255, 0, 255),    // Magenta: label 12
+    Color(255, 0, 255),    // Magenta: label 13
+    Color(0, 255, 255),    //   Cyano: label 14
+    Color(0, 255, 255),    //   Cyano: label 15
+    Color(0, 255, 255),    //   Cyano: label 16
+    Color(0, 255, 255),    //   Cyano: label 17
+    Color(200, 200, 200),    //   White: label 18
+    Color(200, 200, 200),    //   White: label 19
+    Color(200, 200, 200),    //   White: label 20
+    Color(200, 200, 200),    //   White: label 21
+    Color(200, 200, 200),    //   White: label 22
+    Color(200, 200, 200),    //   White: label 23
+    Color(200, 200, 200),    //   White: label 24
+    Color(200, 200, 200)     //   White: label 25
 };
 
-QColor colorOfNormal(const Vec3 &normal);
+Color colorOfNormal(const Vec3 &normal);
 Vec3 nearestNormal(const Vec3& normal);
-QColor colorOfNearestNormal(const Vec3& normal);
+Color colorOfNearestNormal(const Vec3& normal);
 
 #endif // MYCOMMON_H

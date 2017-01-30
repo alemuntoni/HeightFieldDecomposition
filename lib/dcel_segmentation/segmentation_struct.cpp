@@ -182,7 +182,7 @@ Dcel Segmentation::getDcelFromSegmentation() const {
         Dcel::HalfEdge* he = *heit;
 
         if (he->getTwin() == nullptr)
-            he->getFace()->setColor(QColor(10,10,10));
+            he->getFace()->setColor(Color(10,10,10));
     }
     d.updateBoundingBox();
     d.saveOnObjFile("SegNotW.obj");

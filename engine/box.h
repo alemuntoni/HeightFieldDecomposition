@@ -1,19 +1,20 @@
 #ifndef BOX_H
 #define BOX_H
 
-#include "viewer/interfaces/drawable_object.h"
-#include "common/bounding_box.h"
-#include "viewer/objects/objects.h"
-#include "igl/iglmesh.h"
+#include <viewer/interfaces/drawable_object.h>
+#include <common/bounding_box.h>
+#include <viewer/objects/objects.h>
+#include <igl/iglmesh.h>
+#include <common/color.h>
 
 class Box3D : public BoundingBox, public DrawableObject{
     public:
         Box3D();
-        Box3D(const Pointd &minCoord, const Pointd &maxCoord, const Pointd &c1 = Pointd(), const Pointd &c2 = Pointd(), const Pointd &c3 = Pointd(), const QColor c = QColor(0,0,0));
-        Box3D(const Pointd &minCoord, const Pointd &maxCoord, const QColor c);
+        Box3D(const Pointd &minCoord, const Pointd &maxCoord, const Pointd &c1 = Pointd(), const Pointd &c2 = Pointd(), const Pointd &c3 = Pointd(), const Color c = Color(0,0,0));
+        Box3D(const Pointd &minCoord, const Pointd &maxCoord, const Color c);
 
-        void setColor(const QColor &c);
-        QColor getColor() const;
+        void setColor(const Color& c);
+        Color getColor() const;
 
         const Pointd& getConstraint1() const;
         const Pointd& getConstraint2() const;
@@ -63,7 +64,7 @@ class Box3D : public BoundingBox, public DrawableObject{
     protected:
         //Pointd min, max;
         Pointd c1, c2, c3;
-        QColor color;
+        Color color;
         bool visible;
         Vec3 target;
         Eigen::Matrix3d rotation;
@@ -71,15 +72,15 @@ class Box3D : public BoundingBox, public DrawableObject{
         IGLInterface::SimpleIGLMesh piece;
         int trianglesCovered;
 
-        void drawLine(const Pointd& a, const Pointd& b, const QColor& c) const;
+        void drawLine(const Pointd& a, const Pointd& b, const Color& c) const;
         void drawCube() const;
 };
 
-inline void Box3D::setColor(const QColor& c) {
+inline void Box3D::setColor(const Color& c) {
     color = c;
 }
 
-inline QColor Box3D::getColor() const {
+inline Color Box3D::getColor() const {
     return color;
 }
 
