@@ -7,13 +7,6 @@ CONFIG(release, debug|release){
     #CONFIG += FINAL_RELEASE
 }
 
-FINAL_RELEASE {
-    unix:!macx{
-        QMAKE_CXXFLAGS_RELEASE -= -g -O2
-        QMAKE_CXXFLAGS += -O3 -DNDEBUG
-    }
-}
-
 CONFIG += ALL
 #CONFIG += SERVER_MODE
 #CONFIG += CONVERTER_MODE
@@ -115,6 +108,13 @@ CONVERTER_MODE {
 message(Included modules: $$MODULES)
 FINAL_RELEASE {
     message(Final Release!)
+}
+
+FINAL_RELEASE {
+    unix:!macx{
+        QMAKE_CXXFLAGS_RELEASE -= -g -O2
+        QMAKE_CXXFLAGS += -O3 -DNDEBUG
+    }
 }
 
 exists($$(GUROBI_HOME)){
