@@ -119,11 +119,103 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
     }
 }
 
+void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const IGLInterface::SimpleIGLMesh &m, double gridUnit, bool integer){
+    assert(gridUnit > 0);
+    // Bounding Box
+    Eigen::RowVector3d Vmin, Vmax;
+    m.getBoundingBox(Vmin, Vmax);
+
+    // create grid GV
+    Eigen::RowVector3d border((int)gridUnit*5, (int)gridUnit*5, (int)gridUnit*5);
+    Eigen::RowVector3d nGmin;
+    Eigen::RowVector3d nGmax;
+    if (integer) {
+        Eigen::RowVector3i Gmini = (Vmin).cast<int>() - border.cast<int>();
+        Eigen::RowVector3i Gmaxi = (Vmax).cast<int>() + border.cast<int>();
+        nGmin = Gmini.cast<double>();
+        nGmax = Gmaxi.cast<double>();
+        gridUnit = (int)gridUnit;
+        assert(gridUnit > 0);
+    }
+    else {
+        nGmin = Vmin - border;
+        nGmax = Vmax + border; //bounding box of the Grid
+    }
+    Eigen::RowVector3i res = (nGmax.cast<int>() - nGmin.cast<int>())/2; res(0)+=1; res(1)+=1; res(2)+=1;
+    std::vector<double> distances;
+    Array3D<int> mapping(res(0), res(1), res(2), -1);
+    std::vector<Pointd> insidePoints;
+    int inside = 0;
+
+    grid.resize(res(0), res(1), res(2));
+    distanceField.resize(res(0), res(1), res(2));
+    distanceField.setConstant(1);
+    CGALInterface::AABBTree tree(m, true);
+    Array3D<unsigned char> isInside(res(0), res(1), res(2));
+    isInside.setConstant(false);
+
+    int xi = nGmin(0), yi = nGmin(1), zi = nGmin(2);
+    for (int i = 0; i < res(0); ++i){
+        yi = nGmin(1);
+        for (int j = 0; j < res(1); ++j){
+            zi = nGmin(2);
+            for (int k = 0; k < res(2); ++k){
+                grid(i,j,k) = Pointd(xi,yi,zi);
+                zi+=gridUnit;
+            }
+            yi+=gridUnit;
+        }
+        xi += gridUnit;
+    }
+
+    unsigned int rr =  res(0)*res(1)*res(2);
+
+    #pragma omp parallel for
+    for (unsigned int n = 0; n < rr; n++){
+        unsigned int k = (n % (res(1)*res(2)))%res(2);
+        unsigned int j = ((n-k)/res(2))%res(1);
+        unsigned int i = ((n-k)/res(2) - j)/res(1);
+        isInside(i,j,k) = tree.isInside(grid(i,j,k), 3);
+    }
+
+    for (unsigned int i = 0; i < res(0); i++){
+        for (unsigned int j = 0; j < res(1); j++){
+            for (unsigned int k = 0; k < res(2); k++){
+                if (isInside(i,j,k)){
+                    insidePoints.push_back(grid(i,j,k));
+                    mapping(i,j,k) = inside;
+                    inside++;
+                }
+            }
+        }
+    }
+
+    // compute values
+    //Eigen::VectorXd S = m.getSignedDistance(GV);
+
+
+
+    distances = CGALInterface::SignedDistances::getSignedDistances(insidePoints, tree);
+
+    for (int i = 0; i < res(0); i++){
+        for (int j = 0; j < res(1); j++){
+            for (int k = 0; k < res(2); k++){
+                if (isInside(i,j,k)){
+                    assert(mapping(i,j,k) >= 0);
+                    distanceField(i,j,k) = -distances[mapping(i,j,k)];
+                }
+            }
+        }
+    }
+}
+
 void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool tolerance, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces) {
     IGLInterface::SimpleIGLMesh m(d);
     Array3D<Pointd> grid;
     Array3D<gridreal> distanceField;
-    IGLInterface::generateGridAndDistanceField(grid, distanceField, m);
+    Timer t("Distance field");
+    Engine::generateGridAndDistanceField(grid, distanceField, m);
+    t.stopAndPrint();
     Pointi res(grid.getSizeX(), grid.getSizeY(), grid.getSizeZ());
     Pointd nGmin(grid(0,0,0));
     Pointd nGmax(grid(res.x()-1, res.y()-1, res.z()-1));

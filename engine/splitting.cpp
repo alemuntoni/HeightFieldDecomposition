@@ -540,7 +540,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     //resorting and map old with new graph
     //this is necessary because small indices prevails if
     //no arcs are on the graph
-    bl.sortByTrianglesCovered();
+    //bl.sortByTrianglesCovered();
+    bl.sortByHeight();
     std::map<unsigned int, unsigned int> mapping;
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         mapping[bl.getBox(i).getId()] = i;

@@ -23,6 +23,7 @@ class BoxList : public DrawableObject, public SerializableObject{
         void setIds();
         void sort(const Array2D<int> &ordering);
         void sortByTrianglesCovered();
+        void sortByHeight();
         void generatePieces(double minimumDistance = -1);
         void calculateTrianglesCovered(const CGALInterface::AABBTree &tree);
 

@@ -102,6 +102,29 @@ void BoxList::sortByTrianglesCovered() {
 
 }
 
+void BoxList::sortByHeight() {
+    struct cmp {
+        bool operator()(const Box3D &a, const Box3D &b) const {
+            double ah, bh;
+            if (a.getTarget() == Vec3(1,0,0) || a.getTarget() == Vec3(-1,0,0))
+                ah = a.getLengthX();
+            else  if (a.getTarget() == Vec3(0,1,0) || a.getTarget() == Vec3(0,-1,0))
+                ah = a.getLengthY();
+            else
+                ah = a.getLengthZ();
+
+            if (b.getTarget() == Vec3(1,0,0) || b.getTarget() == Vec3(-1,0,0))
+                bh = b.getLengthX();
+            else  if (b.getTarget() == Vec3(0,1,0) || b.getTarget() == Vec3(0,-1,0))
+                bh = b.getLengthY();
+            else
+                bh = b.getLengthZ();
+            return (ah > bh);
+        }
+    };
+    std::sort(boxes.begin(), boxes.end(), cmp());
+}
+
 void BoxList::generatePieces(double minimumDistance) {
     for (unsigned int i= 0; i < boxes.size(); i++){
         boxes[i].generatePiece(minimumDistance);

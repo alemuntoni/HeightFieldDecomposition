@@ -2,16 +2,17 @@
 #define ENGINE_H
 
 #include <omp.h>
+#include <stack>
 
 #include "common/timer.h"
 #include "boxlist.h"
 #include "common.h"
 
-#include "dcel/dcel.h"
+#include <dcel/dcel.h>
 #include "lib/grid/grid.h"
 #include "energy.h"
-#include "cgal/aabbtree.h"
-#include "igl/iglinterface.h"
+#include <cgal/cgalinterface.h>
+#include <igl/iglinterface.h>
 #include "heightfieldslist.h"
 #include "lib/grid/irregulargrid.h"
 
@@ -31,6 +32,8 @@ namespace Engine {
     void getFlippedFaces(std::set<const Dcel::Face*>& flippedFaces, std::set<const Dcel::Face*>& savedFaces, const Dcel& d, const Vec3& target, double angleThreshold, double areaThreshold);
 
     void setTrianglesTargets(Dcel scaled[]);
+
+    void generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const IGLInterface::SimpleIGLMesh &m, double gridUnit = 2, bool integer = true);
 
     static std::set<const Dcel::Face*> dummy;
     void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool tolerance = false, const Vec3& target = Vec3(), std::set<const Dcel::Face*> &savedFaces = dummy);
