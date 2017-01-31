@@ -141,25 +141,26 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
         nGmin = Vmin - border;
         nGmax = Vmax + border; //bounding box of the Grid
     }
-    Eigen::RowVector3i res = (nGmax.cast<int>() - nGmin.cast<int>())/2; res(0)+=1; res(1)+=1; res(2)+=1;
+    Eigen::RowVector3i res = (nGmax.cast<int>() - nGmin.cast<int>())/2;
+    unsigned int sizeX = res(0)+1, sizeY = res(1)+1, sizeZ = res(2)+1;
     std::vector<double> distances;
-    Array3D<int> mapping(res(0), res(1), res(2), -1);
+    Array3D<int> mapping(sizeX, sizeY, sizeZ, -1);
     std::vector<Pointd> insidePoints;
     int inside = 0;
 
-    grid.resize(res(0), res(1), res(2));
-    distanceField.resize(res(0), res(1), res(2));
+    grid.resize(sizeX, sizeY, sizeZ);
+    distanceField.resize(sizeX, sizeY, sizeZ);
     distanceField.setConstant(1);
     CGALInterface::AABBTree tree(m, true);
-    Array3D<unsigned char> isInside(res(0), res(1), res(2));
+    Array3D<unsigned char> isInside(sizeX, sizeY, sizeZ);
     isInside.setConstant(false);
 
     int xi = nGmin(0), yi = nGmin(1), zi = nGmin(2);
-    for (int i = 0; i < res(0); ++i){
+    for (unsigned int i = 0; i < sizeX; ++i){
         yi = nGmin(1);
-        for (int j = 0; j < res(1); ++j){
+        for (unsigned int j = 0; j < sizeY; ++j){
             zi = nGmin(2);
-            for (int k = 0; k < res(2); ++k){
+            for (unsigned int k = 0; k < sizeZ; ++k){
                 grid(i,j,k) = Pointd(xi,yi,zi);
                 zi+=gridUnit;
             }
@@ -168,19 +169,19 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
         xi += gridUnit;
     }
 
-    unsigned int rr =  res(0)*res(1)*res(2);
+    unsigned int rr =  sizeX * sizeY * sizeZ;
 
     #pragma omp parallel for
     for (unsigned int n = 0; n < rr; n++){
-        unsigned int k = (n % (res(1)*res(2)))%res(2);
-        unsigned int j = ((n-k)/res(2))%res(1);
-        unsigned int i = ((n-k)/res(2) - j)/res(1);
+        unsigned int k = (n % (sizeY*sizeZ))%sizeZ;
+        unsigned int j = ((n-k)/sizeZ)%sizeY;
+        unsigned int i = ((n-k)/sizeZ - j)/sizeY;
         isInside(i,j,k) = tree.isInside(grid(i,j,k), 3);
     }
 
-    for (unsigned int i = 0; i < res(0); i++){
-        for (unsigned int j = 0; j < res(1); j++){
-            for (unsigned int k = 0; k < res(2); k++){
+    for (unsigned int i = 0; i < sizeX; i++){
+        for (unsigned int j = 0; j < sizeY; j++){
+            for (unsigned int k = 0; k < sizeZ; k++){
                 if (isInside(i,j,k)){
                     insidePoints.push_back(grid(i,j,k));
                     mapping(i,j,k) = inside;
@@ -195,11 +196,11 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
 
 
 
-    distances = CGALInterface::SignedDistances::getSignedDistances(insidePoints, tree);
+    distances = CGALInterface::SignedDistances::getUnsignedDistances(insidePoints, tree);
 
-    for (int i = 0; i < res(0); i++){
-        for (int j = 0; j < res(1); j++){
-            for (int k = 0; k < res(2); k++){
+    for (unsigned int i = 0; i < sizeX; i++){
+        for (unsigned int j = 0; j < sizeY; j++){
+            for (unsigned int k = 0; k < sizeZ; k++){
                 if (isInside(i,j,k)){
                     assert(mapping(i,j,k) >= 0);
                     distanceField(i,j,k) = -distances[mapping(i,j,k)];
