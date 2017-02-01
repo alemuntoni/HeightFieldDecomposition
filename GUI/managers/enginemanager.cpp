@@ -96,7 +96,7 @@ Pointd EngineManager::getLimits() {
     double lx = bb.getLengthX();
     double ly = bb.getLengthY();
     double lz = bb.getLengthZ();
-    double min;
+    double min = lx;
     if (lx <= ly && lx <= lz){
         min = lx;
     }
@@ -1783,4 +1783,20 @@ void EngineManager::on_explodePushButton_clicked() {
         he->explode(bc, dist);
         mainWindow->updateGlCanvas();
     }
+}
+
+void EngineManager::on_createBoxPushButton_clicked() {
+    if (b == nullptr){
+        b = new Box3D(Pointd(0,0,0), Pointd(3,3,3));
+        b->setConstraint1(Pointd(1, 1.5, 1.5));
+        b->setConstraint2(Pointd(1.5, 1.5, 1));
+        b->setConstraint3(Pointd(1, 1.5, 1));
+        b->setColor(Color(0,0,0));
+        mainWindow->pushObj(b, "Box");
+    }
+    //deleteDrawableObject(b);
+    //solutions->getBox(value);
+    //b = new Box3D(solutions->getBox(value));
+    //mainWindow->pushObj(b, "Box");
+    mainWindow->updateGlCanvas();
 }

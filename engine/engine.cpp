@@ -119,7 +119,7 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
     }
 }
 
-void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const IGLInterface::SimpleIGLMesh &m, double gridUnit, bool integer){
+void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const IGLInterface::SimpleIGLMesh &m, bool generateDistanceField, double gridUnit, bool integer){
     assert(gridUnit > 0);
     // Bounding Box
     Eigen::RowVector3d Vmin, Vmax;
@@ -149,8 +149,10 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
     int inside = 0;
 
     grid.resize(sizeX, sizeY, sizeZ);
-    distanceField.resize(sizeX, sizeY, sizeZ);
-    distanceField.setConstant(1);
+    if (generateDistanceField){
+        distanceField.resize(sizeX, sizeY, sizeZ);
+        distanceField.setConstant(1);
+    }
     CGALInterface::AABBTree tree(m, true);
     Array3D<unsigned char> isInside(sizeX, sizeY, sizeZ);
     isInside.setConstant(false);
@@ -169,62 +171,69 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
         xi += gridUnit;
     }
 
-    unsigned int rr =  sizeX * sizeY * sizeZ;
+    if (generateDistanceField){
+        unsigned int rr =  sizeX * sizeY * sizeZ;
 
-    #pragma omp parallel for
-    for (unsigned int n = 0; n < rr; n++){
-        unsigned int k = (n % (sizeY*sizeZ))%sizeZ;
-        unsigned int j = ((n-k)/sizeZ)%sizeY;
-        unsigned int i = ((n-k)/sizeZ - j)/sizeY;
-        isInside(i,j,k) = tree.isInside(grid(i,j,k), 3);
-    }
+        #pragma omp parallel for
+        for (unsigned int n = 0; n < rr; n++){
+            unsigned int k = (n % (sizeY*sizeZ))%sizeZ;
+            unsigned int j = ((n-k)/sizeZ)%sizeY;
+            unsigned int i = ((n-k)/sizeZ - j)/sizeY;
+            isInside(i,j,k) = tree.isInside(grid(i,j,k), 3);
+        }
 
-    for (unsigned int i = 0; i < sizeX; i++){
-        for (unsigned int j = 0; j < sizeY; j++){
-            for (unsigned int k = 0; k < sizeZ; k++){
-                if (isInside(i,j,k)){
-                    insidePoints.push_back(grid(i,j,k));
-                    mapping(i,j,k) = inside;
-                    inside++;
+        for (unsigned int i = 0; i < sizeX; i++){
+            for (unsigned int j = 0; j < sizeY; j++){
+                for (unsigned int k = 0; k < sizeZ; k++){
+                    if (isInside(i,j,k)){
+                        insidePoints.push_back(grid(i,j,k));
+                        mapping(i,j,k) = inside;
+                        inside++;
+                    }
                 }
             }
         }
-    }
-
-    // compute values
-    //Eigen::VectorXd S = m.getSignedDistance(GV);
 
 
+        // compute values
+        //Eigen::VectorXd S = m.getSignedDistance(GV);
 
-    distances = CGALInterface::SignedDistances::getUnsignedDistances(insidePoints, tree);
 
-    for (unsigned int i = 0; i < sizeX; i++){
-        for (unsigned int j = 0; j < sizeY; j++){
-            for (unsigned int k = 0; k < sizeZ; k++){
-                if (isInside(i,j,k)){
-                    assert(mapping(i,j,k) >= 0);
-                    distanceField(i,j,k) = -distances[mapping(i,j,k)];
+
+        distances = CGALInterface::SignedDistances::getUnsignedDistances(insidePoints, tree);
+
+        for (unsigned int i = 0; i < sizeX; i++){
+            for (unsigned int j = 0; j < sizeY; j++){
+                for (unsigned int k = 0; k < sizeZ; k++){
+                    if (isInside(i,j,k)){
+                        assert(mapping(i,j,k) >= 0);
+                        distanceField(i,j,k) = -distances[mapping(i,j,k)];
+                    }
                 }
             }
         }
     }
 }
 
-void Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool tolerance, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces) {
+Array3D<gridreal> Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool tolerance, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces, bool calculateDistancefield, const Array3D<gridreal>& df) {
     IGLInterface::SimpleIGLMesh m(d);
     Array3D<Pointd> grid;
     Array3D<gridreal> distanceField;
     Timer t("Distance field");
-    Engine::generateGridAndDistanceField(grid, distanceField, m);
+    Engine::generateGridAndDistanceField(grid, distanceField, m, calculateDistancefield);
     t.stopAndPrint();
     Pointi res(grid.getSizeX(), grid.getSizeY(), grid.getSizeZ());
     Pointd nGmin(grid(0,0,0));
     Pointd nGmax(grid(res.x()-1, res.y()-1, res.z()-1));
-    g = Grid(res, grid, distanceField, nGmin, nGmax);
+    if (calculateDistancefield)
+        g = Grid(res, grid, distanceField, nGmin, nGmax);
+    else
+        g = Grid(res, grid, df, nGmin, nGmax);
     g.setTarget(target);
     g.calculateWeightsAndFreezeKernel(d, kernelDistance, tolerance, savedFaces);
     Energy e(g);
     e.calculateFullBoxValues(g);
+    return distanceField;
 }
 
 void Engine::setTrianglesTargets(Dcel scaled[]) {
@@ -638,13 +647,29 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
     for (unsigned int i = 0; i < ORIENTATIONS; ++i){
         if (file) {
             double totalTimeGG = 0;
+            bool first = true;
             for (unsigned int j = 0; j < TARGETS; ++j) {
                 //if (j != 1 && j != 4){
+                    Array3D<gridreal> distanceField;
                     std::set<const Dcel::Face*> flippedFaces, savedFaces;
                     Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
                     Grid g;
                     Timer gg("Generating Grid");
-                    Engine::generateGrid(g, scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
+                    if (first){
+                        distanceField = Engine::generateGrid(g, scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
+                        first = false;
+                        std::ofstream myfile;
+                        myfile.open ("df.bin", std::ios::out | std::ios::binary);
+                        distanceField.serialize(myfile);
+                        myfile.close();
+                    }
+                    else {
+                        std::ifstream myfile;
+                        myfile.open ("df.bin", std::ios::in | std::ios::binary);
+                        distanceField.deserialize(myfile);
+                        myfile.close();
+                        Engine::generateGrid(g, scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces, false, distanceField);
+                    }
                     gg.stopAndPrint();
                     totalTimeGG += gg.delay();
                     g.resetSignedDistances();
@@ -657,6 +682,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
                     std::cerr << "Generated grid or " << i << " t " << j << "\n";
                 //}
             }
+            std::remove("df.bin");
             std::cerr << "Total time generating Grids: " << totalTimeGG << "\n";
         }
         else {
@@ -1288,9 +1314,9 @@ IGLInterface::SimpleIGLMesh Engine::getMarkerMesh(const HeightfieldsList& he, co
                                     allDist = false;
                             }
                             if (!allNear && !allDist){
-                                int v1, v2;
+                                int v1 = -1, v2 = -1;
                                 bool finded = false;
-                                unsigned int t1, tmp;
+                                unsigned int t1, tmp = -1;
                                 for (t1 = 0; t1 < 3 && !finded; t1++){
                                     for (unsigned int t2 = 0; t2 < 3  && !finded; t2++){
                                         if (f1[t1] == f2[t2]){

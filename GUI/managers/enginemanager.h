@@ -177,6 +177,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_explodePushButton_clicked();
 
+        void on_createBoxPushButton_clicked();
+
     signals:
         void finished();
 

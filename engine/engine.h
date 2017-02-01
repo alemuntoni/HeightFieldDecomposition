@@ -33,10 +33,11 @@ namespace Engine {
 
     void setTrianglesTargets(Dcel scaled[]);
 
-    void generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const IGLInterface::SimpleIGLMesh &m, double gridUnit = 2, bool integer = true);
+    void generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const IGLInterface::SimpleIGLMesh &m, bool generateDistanceField = true, double gridUnit = 2, bool integer = true);
 
     static std::set<const Dcel::Face*> dummy;
-    void generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool tolerance = false, const Vec3& target = Vec3(), std::set<const Dcel::Face*> &savedFaces = dummy);
+    static Array3D<gridreal> ddf;
+    Array3D<gridreal> generateGrid(Grid &g, const Dcel &d, double kernelDistance = 6, bool tolerance = false, const Vec3& target = Vec3(), std::set<const Dcel::Face*> &savedFaces = dummy, bool calculateDistancefield = true, const Array3D<gridreal>& df = ddf);
 
     void addBox(BoxList& boxList, const Vec3 target, const Dcel::Face* f, const Eigen::Matrix3d& rot);
 
