@@ -32,18 +32,22 @@ int main(int argc, char *argv[]) {
         Engine::scaleAndRotateDcel(d, 0, scale);
         original.scale(bb, d.getBoundingBox());
         double kernelDistance = std::stod(argv[4]);
-        double tolerance = 0.01;
+        double tolerance = 0.0;
         bool file = false;
+        bool tol = true;
         bool decimate = true;
         if (argc > 5){
             tolerance = std::stod(argv[5]);
             if (argc > 6){
                 file = std::stoi(argv[6]);
-                if (argc > 7)
-                    decimate = std::stoi(argv[7]);
+                if (argc > 7){
+                    tol = std::stoi(argv[7]);
+                    if (argc > 8)
+                        decimate = std::stoi(argv[8]);
+                }
             }
         }
-        Engine::optimizeAndDeleteBoxes(solutions, d, kernelDistance, false, Pointd(), true, true, 0.000, tolerance, file, decimate, allSolutions);
+        Engine::optimizeAndDeleteBoxes(solutions, d, kernelDistance, false, Pointd(), tol, true, 0.000, tolerance, file, decimate, allSolutions);
         size_t lastindex = filename_smooth.find_last_of(".");
         std::string rawname = filename_smooth.substr(0, lastindex);
 
