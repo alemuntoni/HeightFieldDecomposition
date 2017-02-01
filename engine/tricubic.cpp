@@ -6,7 +6,7 @@ void TricubicInterpolator::getCoefficients(Array4D<gridreal>& coeffs, const Arra
     assert(coeffs.getSizeZ() == weights.getSizeZ()-1);
     assert(coeffs.getSizeW() == 64);
 
-    int temp[64][64] = {
+    static gridreal temp[64][64] = {
       { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       {-3, 3, 0, 0, 0, 0, 0, 0,-2,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -73,12 +73,12 @@ void TricubicInterpolator::getCoefficients(Array4D<gridreal>& coeffs, const Arra
       { 8,-8,-8, 8,-8, 8, 8,-8, 4, 4,-4,-4,-4,-4, 4, 4, 4,-4, 4,-4,-4, 4,-4, 4, 4,-4,-4, 4, 4,-4,-4, 4, 2, 2, 2, 2,-2,-2,-2,-2, 2, 2,-2,-2, 2, 2,-2,-2, 2,-2, 2,-2, 2,-2, 2,-2, 1, 1, 1, 1, 1, 1, 1, 1}
     };
 
-    Eigen::Matrix<gridreal,64,64> C;
-    for(int i=0;i<64;i++){
+    static Eigen::Map<Eigen::Matrix<gridreal,64,64, Eigen::RowMajor>> C(&temp[0][0]);
+    /*for(int i=0;i<64;i++){
         for(int j=0;j<64;j++){
             C(i,j) = temp[i][j];
         }
-    }
+    }*/
 
     // tutti i primi coefficienti delle tricubiche sono pari al valore del primo punto dei pesi. Questo valore dovrebbe essere uguale in tutto il doppio bordo dei pesi.
     // Dopo, tutti i coefficienti dei cubi "interni" verranno calcolati in base ai valori del grigliato
