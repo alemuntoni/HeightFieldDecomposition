@@ -67,7 +67,9 @@ class Grid : public SerializableObject{
         unsigned int resX, resY, resZ;
         Array3D<gridreal> signedDistances;
         Array3D<gridreal> weights;
-        Array4D<gridreal> coeffs;
+        //Array4D<gridreal> coeffs;
+        std::vector< std::array<gridreal, 64> > coeffs;
+        Array3D<int> mapCoeffs;
         Array3D<gridreal> fullBoxValues;
         Vec3 target;
         double unit;
@@ -109,7 +111,8 @@ inline Pointd Grid::getNearestGridPoint(const Pointd& p) const{
 }
 
 inline void Grid::getCoefficients(const gridreal* &coeffs, unsigned int i, unsigned int j, unsigned int k) const {
-    coeffs = this->coeffs(i, j, k);
+    int id = mapCoeffs(i,j,k);
+    coeffs = this->coeffs[id].data();
 }
 
 inline void Grid::setWeightOnCube(unsigned int i, unsigned int j, unsigned int k, double w) {
@@ -127,9 +130,11 @@ inline void Grid::setWeightOnCube(unsigned int i, unsigned int j, unsigned int k
 }
 
 inline void Grid::getCoefficients(const gridreal*& coeffs, const Pointd& p) const {
-    if(bb.isStrictlyIntern(p))
-        coeffs = this->coeffs(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
-    else coeffs = this->coeffs(0, 0, 0);
+    if(bb.isStrictlyIntern(p)){
+        int id = mapCoeffs(getIndexOfCoordinateX(p.x()), getIndexOfCoordinateY(p.y()), getIndexOfCoordinateZ(p.z()));
+        coeffs = this->coeffs[id].data();
+    }
+    else coeffs = this->coeffs[0].data();
 }
 
 inline double Grid::getFullBoxValue(const Pointd& p) const {

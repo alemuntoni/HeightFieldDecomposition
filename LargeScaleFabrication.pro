@@ -4,7 +4,7 @@ CONFIG(debug, debug|release){
 CONFIG(release, debug|release){
     DEFINES -= DEBUG
     #just uncomment next lines if you want to ignore asserts and got a more optimized binary
-    CONFIG += FINAL_RELEASE
+    #CONFIG += FINAL_RELEASE
 }
 
 CONFIG += ALL

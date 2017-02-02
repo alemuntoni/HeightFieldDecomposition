@@ -19,7 +19,9 @@ Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, con
             }
         }
     }
-    coeffs = Array4D<gridreal>((resX-1),(resY-1),(resZ-1),64, 0);
+    coeffs = std::vector<std::array<gridreal, 64> >(1);
+    mapCoeffs = Array3D<int>((resX-1),(resY-1),(resZ-1), 0);
+    //coeffs = Array4D<gridreal>((resX-1),(resY-1),(resZ-1),64, 0);
 }
 
 /**
@@ -121,56 +123,7 @@ void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool tol
             }
         }
     }
-    TricubicInterpolator::getCoefficients(coeffs, weights);
-    ///
-    /*std::map<std::array<int, 64>, int> map;
-    for (unsigned int i = 0; i < getResX()-1; ++i){
-            for (unsigned int j = 0; j < getResY()-1; ++j){
-                for (unsigned int k = 0; k < getResZ()-1; ++k){
-                    const gridreal* coef = coeffs(i,j,k);
-                    std::array<int, 64> arr;
-                    for (unsigned int l = 0; l < 64; l++){
-                        arr[l] = coef[l];
-                    }
-                    std::map<std::array<int, 64>, int>::iterator it = map.find(arr);
-                    if (it == map.end()){
-                        map[arr] = 1;
-                    }
-                    else {
-                        it->second++;
-                    }
-                }
-            }
-    }
-
-    std::cerr << "Size: " << map.size()<< "\n";
-    std::cerr << "Numbers: \n";
-    int n1 = 0;
-    int n2 = 0;
-    int n3 = 0;
-    int n499 = 0;
-    int n100 = 0;
-
-    for (std::pair<std::array<int, 64>, int> p : map){
-        if (p.second == 1)
-            n1++;
-        else if (p.second == 2)
-            n2++;
-        else if (p.second == 3)
-            n3++;
-        else if (p.second >= 4 && p.second <= 99)
-            n499++;
-        else
-            n100++;
-    }
-
-    std::cerr << "1: " << n1 << "\n";
-    std::cerr << "2: " << n2 << "\n";
-    std::cerr << "3: " << n3 << "\n";
-    std::cerr << "499: " << n499 << "\n";
-    std::cerr << "1100: " << n100 << "\n";*/
-    ///
-
+    TricubicInterpolator::getCoefficients(coeffs, mapCoeffs, weights);
 }
 
 void Grid::calculateFullBoxValues(double (*integralTricubicInterpolation)(const gridreal *&, double, double, double, double, double, double)) {
@@ -195,7 +148,8 @@ double Grid::getValue(const Pointd& p) const {
         return weights(xi,yi,zi);
     else{
         n = (p - n) / getUnit(); // n ora è un punto nell'intervallo 0 - 1
-        const gridreal* coef = coeffs(xi,yi,zi);
+        int id = mapCoeffs(xi, yi, zi);
+        const gridreal* coef = coeffs[id].data();
         return TricubicInterpolator::getValue(n, coef);
     }
 }
@@ -225,7 +179,9 @@ void Grid::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(resZ, binaryFile);
     signedDistances.serialize(binaryFile);
     weights.serialize(binaryFile);
-    coeffs.serialize(binaryFile);
+    Serializer::serialize(coeffs, binaryFile);
+    mapCoeffs.serialize(binaryFile);
+    //coeffs.serialize(binaryFile);
     fullBoxValues.serialize(binaryFile);
     target.serialize(binaryFile);
 
@@ -240,7 +196,9 @@ bool Grid::deserialize(std::ifstream& binaryFile) {
             Serializer::deserialize(tmp.resZ, binaryFile) &&
             tmp.signedDistances.deserialize(binaryFile) &&
             tmp.weights.deserialize(binaryFile) &&
-            tmp.coeffs.deserialize(binaryFile) &&
+            Serializer::deserialize(tmp.coeffs, binaryFile) &&
+            tmp.mapCoeffs.deserialize(binaryFile) &&
+            //tmp.coeffs.deserialize(binaryFile) &&
             tmp.fullBoxValues.deserialize(binaryFile) &&
             tmp.target.deserialize(binaryFile)){
         *this = std::move(tmp);
