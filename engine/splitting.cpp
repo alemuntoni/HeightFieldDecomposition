@@ -247,7 +247,7 @@ std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGAL
 
 Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     CGALInterface::AABBTree tree(d);
-    bl.generatePieces(d.getAverageHalfEdgesLength()*7);
+    bl.generatePieces(d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
     bl.calculateTrianglesCovered(tree);
     bl.sortByTrianglesCovered();
     bl.setIds();
@@ -384,7 +384,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             ///
             ///
 
-            splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*7);
+            splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
             if (!(b3.min() == Pointd() && b3.max() == Pointd())){ //se b3 esiste
                 g.removeEdgeIfExists(arcToRemove.first, arcToRemove.second);
                 g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
@@ -540,8 +540,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     //resorting and map old with new graph
     //this is necessary because small indices prevails if
     //no arcs are on the graph
-    //bl.sortByTrianglesCovered();
-    bl.sortByHeight();
+    bl.sortByTrianglesCovered();
+    //bl.sortByHeight();
     std::map<unsigned int, unsigned int> mapping;
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         mapping[bl.getBox(i).getId()] = i;

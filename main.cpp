@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
         double kernelDistance = std::stod(argv[4]);
         double tolerance = 0.0;
         bool file = false;
-        bool tol = true;
+        bool tol = false;
         bool decimate = true;
         if (argc > 5){
             tolerance = std::stod(argv[5]);

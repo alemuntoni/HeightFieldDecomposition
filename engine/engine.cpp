@@ -806,7 +806,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
             //}
         }
     }
-    solutions.generatePieces(d.getAverageHalfEdgesLength()*7);
+    solutions.generatePieces(d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
 }
 
 /**
@@ -900,7 +900,7 @@ void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& 
 
 void Engine::reduceHeightfields(HeightfieldsList& he, IGLInterface::SimpleIGLMesh& bc, const Dcel& inputMesh) {
     CGALInterface::AABBTree aabb(inputMesh, true);
-    double lEdge = inputMesh.getAverageHalfEdgesLength()*7;
+    double lEdge = inputMesh.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER;
     for (unsigned int i = he.getNumHeightfields()-1; i >= 1; i--){
         BoundingBox realBoundingBox;
         bool first = true;
@@ -918,14 +918,14 @@ void Engine::reduceHeightfields(HeightfieldsList& he, IGLInterface::SimpleIGLMes
                 }
             }
         }
-        for (unsigned int t = 0; t < 6; t++){
+        /*for (unsigned int t = 0; t < 6; t++){
             if (he.getTarget(i) == XYZ[t]){
                 if (t < 3)
                     realBoundingBox[t] = std::max(realBoundingBox[t] - 1, he.getHeightfield(i).getBoundingBox()[t]);
                 else
                     realBoundingBox[t] = std::min(realBoundingBox[t] + 1, he.getHeightfield(i).getBoundingBox()[t]);
             }
-        }
+        }*/
 
 
         if (! Common::epsilonEqual(realBoundingBox.min(), he.getHeightfield(i).getBoundingBox().min()) ||

@@ -60,6 +60,12 @@ bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, co
     cinolib::vec3d vertex = m.vertex(vid);
     if (hf < 0 || ! boxList.getBox(hf).isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z()), -0.5))
         return false;
+    /*if (hf >= 0) {
+        for (int i = 0; i < hf; i++){
+            if (boxList.getBox(i).isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z())))
+                return false;
+        }
+    }*/
     for(int tid : m.adj_vtx2tri(vid))
     {
         cinolib::vec3d tri[3];
@@ -137,6 +143,7 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
     {
         //std::cout << "iter " << i << std::endl;
 
+        #pragma omp parallel for
         for(int vid=0; vid<m_smooth.num_vertices(); ++vid)
         {
             cinolib::vec3d  gauss_iter(0,0,0);
@@ -209,7 +216,7 @@ void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std
     iglMeshToTrimesh(originalTrimesh, originalSurface);
 
     //restoring
-    restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 150);
+    restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 400);
 
     trimeshToIglMesh(tmp, smoothedTrimesh);
     smoothedSurface = tmp;
