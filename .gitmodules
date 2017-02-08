@@ -13,3 +13,6 @@
 [submodule "igl"]
 	path = igl
 	url = https://github.com/muntonialessandro/LibIGL-Module.git
+[submodule "eigenmesh"]
+	path = eigenmesh
+	url = https://github.com/muntonialessandro/EigenMesh-Module.git
