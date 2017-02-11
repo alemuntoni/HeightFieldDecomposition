@@ -38,13 +38,6 @@ class Energy{
         void gradientBarrierLimits(Eigen::VectorXd& gBarrier, const BoundingBox& b, const Pointd& l, double s = S_BARRIER) const;
 
         // Gradient
-        static double gradientXMinComponentOld(const double* &a, double u1, double v1, double w1, double v2, double w2);
-        static double gradientYMinComponentOld(const double* &a, double u1, double v1, double w1, double u2, double w2);
-        static double gradientZMinComponentOld(const double* &a, double u1, double v1, double w1, double u2, double v2);
-        static double gradientXMaxComponentOld(const double* &a, double v1, double w1, double u2, double v2, double w2);
-        static double gradientYMaxComponentOld(const double* &a, double u1, double w1, double u2, double v2, double w2);
-        static double gradientZMaxComponentOld(const double* &a, double u1, double v1, double u2, double v2, double w2);
-
         static double gradientXMinComponent(const gridreal*& a, double u1, double v1, double w1, double v2, double w2);
         static double gradientYMinComponent(const gridreal* &a, double u1, double v1, double w1, double u2, double w2);
         static double gradientZMinComponent(const gridreal*& a, double u1, double v1, double w1, double u2, double v2);
@@ -76,7 +69,7 @@ class Energy{
         double barrierLimitsEnergy(const BoundingBox& b, const Pointd& limits, double s = S_BARRIER) const;
 
         // Integral
-        static double integralTricubicInterpolationOld(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
+        //static double integralTricubicInterpolationOld(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
         static double integralTricubicInterpolation(const gridreal*& a, double u1, double v1, double w1, double u2, double v2, double w2);
         double integralTricubicInterpolationEnergy(const Pointd& min, const Pointd& max) const;
         double integralTricubicInterpolationEnergy(const Eigen::VectorXd &x) const;
@@ -138,7 +131,7 @@ inline void Energy::gradientTricubicInterpolationEnergy(Eigen::VectorXd& gradien
 }
 
 inline double Energy::derivateGBarrier(double x, double s) const {
-    return (3/(pow(s,3)))*pow(x,2) - (6/(pow(s,2)))*x + 3/s;
+    return (3/(s*s*s))*(x*x) - (6/(s*s))*x + 3/s;
 }
 
 inline double Energy::derivateFi(double x, double s) const {
@@ -156,7 +149,7 @@ inline double Energy::highConstraint(const Pointd& max, const Pointd& c, double 
 }
 
 inline double Energy::gBarrier(double x, double s) const {
-    return (1/(pow(s,3)))*pow(x,3) - (3/(pow(s,2)))*pow(x,2) + (3/(s))*x;
+    return (1/((s*s*s)))*(x*x*x) - (3/((s*s)))*(x*x) + (3/(s))*x;
 }
 
 inline double Energy::fi(double x, double s) const {

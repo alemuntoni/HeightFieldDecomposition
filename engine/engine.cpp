@@ -179,7 +179,10 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
             unsigned int k = (n % (sizeY*sizeZ))%sizeZ;
             unsigned int j = ((n-k)/sizeZ)%sizeY;
             unsigned int i = ((n-k)/sizeZ - j)/sizeY;
+            ///
             isInside(i,j,k) = tree.isInside(grid(i,j,k), 3);
+            //isInside(i,j,k) = tree.isInsidePseudoRandom(grid(i,j,k), 3);
+            ///
         }
 
         for (unsigned int i = 0; i < sizeX; i++){
@@ -663,7 +666,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
                         first = false;
                     }
                     else {
-                        calculateGridWeights(g, grid, distanceField, d, kernelDistance, tolerance, XYZ[j], savedFaces);
+                        Engine::calculateGridWeights(g, grid, distanceField, d, kernelDistance, tolerance, XYZ[j], savedFaces);
                     }
                     gg.stopAndPrint();
                     totalTimeGG += gg.delay();
@@ -680,12 +683,16 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
             std::cerr << "Total time generating Grids: " << totalTimeGG << "\n";
         }
         else {
+            Array3D<Pointd> grid;
+            Array3D<gridreal> distanceField;
+            IGLInterface::SimpleIGLMesh m(scaled[i]);
+            Engine::generateGridAndDistanceField(grid, distanceField, m);
             # pragma omp parallel for
             for (unsigned int j = 0; j < TARGETS; ++j) {
                 //if (j != 1 && j != 4){
                     std::set<const Dcel::Face*> flippedFaces, savedFaces;
                     Engine::getFlippedFaces(flippedFaces, savedFaces, scaled[i], XYZ[j], angleTolerance, areaTolerance);
-                    Engine::generateGrid(g[i][j], scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
+                    Engine::calculateGridWeights(g[i][j], grid, distanceField, d, kernelDistance, tolerance, XYZ[j], savedFaces);
                     g[i][j].resetSignedDistances();
                     std::cerr << "Generated grid or " << i << " t " << j << "\n";
                 //}
