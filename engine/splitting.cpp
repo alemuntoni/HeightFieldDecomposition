@@ -3,8 +3,11 @@
 #include "common.h"
 #include "common/timer.h"
 #include "lib/graph/directedgraph.h"
+#include "lib/graph/graph.h"
 #include "igl/iglinterface.h"
 #include <map>
+
+#define BOOL_DEBUG
 
 bool Splitting::boxesIntersect(const Box3D& b1, const Box3D& b2) {
     if (b1.getMaxX() <= b2.getMinX()) return false; // a is left of b
@@ -536,6 +539,11 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     for (std::set<unsigned int>::reverse_iterator rit = boxesToEliminate.rbegin(); rit != boxesToEliminate.rend(); ++rit){
         bl.removeBox(*rit);
     }
+
+    #ifdef BOOL_DEBUG
+    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++)
+        bl.getBox(i).getIGLMesh().saveOnObj("b"+std::to_string(i)+".obj");
+    #endif
 
     //resorting and map old with new graph
     //this is necessary because small indices prevails if

@@ -742,7 +742,10 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
                         }
                         else {
                             std::cerr << "Starting boxes growth\n";
+                            Timer tt("Boxes Growth");
                             Engine::expandBoxes(tmp[i][j], g[i][j], limit, limits);
+                            tt.stop();
+                            totalTbg += tt.delay();
                             std::cerr << "Orientation: " << i << " Target: " << j << " completed.\n";
                         }
                     }

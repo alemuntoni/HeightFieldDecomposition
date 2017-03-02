@@ -4,6 +4,8 @@
 #include <set>
 #include <queue>
 #include <assert.h>
+#include <algorithm>
+#include <map>
 
 class DirectedGraph {
     public:
