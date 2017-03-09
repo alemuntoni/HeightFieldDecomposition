@@ -18,7 +18,7 @@ Color colorOfNormal(const Vec3& normal) {
 Vec3 nearestNormal(const Vec3& normal) {
     double dot = -1;
     int nid = 0;
-    for (unsigned int i = 0; i < XYZ.size(); i++){
+    for (unsigned int i = 0; i < 6; i++){
         if (normal.dot(XYZ[i]) > dot){
             nid = i;
             dot = normal.dot(XYZ[i]);

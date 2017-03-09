@@ -117,6 +117,27 @@ Pointd EngineManager::getLimits() {
     return limits;
 }
 
+void EngineManager::saveMSCFile(const std::string& filename, const Dcel& d, const BoxList& bl) {
+    Array2D<int> mat(bl.getNumberBoxes(), d.getNumberFaces(), 0);
+    CGALInterface::AABBTree tree(d);
+    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
+        std::list<const Dcel::Face*> list = tree.getCompletelyContainedDcelFaces(bl.getBox(i));
+        for (const Dcel::Face* f : list){
+            mat(i,f->getId()) = 1;
+        }
+    }
+    std::ofstream of;
+    of.open(filename);
+    of << mat.getSizeX() << " " << mat.getSizeY() << "\n";
+    for (unsigned int i = 0; i < mat.getSizeX(); i++){
+        for (unsigned int j =0; j < mat.getSizeY(); j++){
+            of << mat(i,j) << " ";
+        }
+        of << "x\n";
+    }
+    of.close();
+}
+
 void EngineManager::serializeBC(const std::string& filename) {
     std::ofstream myfile;
     myfile.open (filename, std::ios::out | std::ios::binary);
@@ -153,6 +174,8 @@ void EngineManager::deserializeBC(const std::string& filename) {
         if (originalMesh.getNumberVertices() > 0)
             mainWindow->pushObj(&originalMesh, "Original Mesh");
     }
+    originalMesh.saveOnObj("OriginalMesh.obj");
+    d->saveOnObjFile("mesh.obj");
     //BU
     /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(0,0,1), M_PI/2);
     he->rotate(m);
@@ -342,6 +365,7 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
     }
 
     mainWindow->updateGlCanvas();
+    //saveMSCFile("prova.txt", *d, *solutions);
     return true;
 }
 
@@ -888,16 +912,14 @@ void EngineManager::on_setFromSolutionButton_clicked() {
                 b = new Box3D(solutions->getBox(value));
                 mainWindow->pushObj(b, "Box");
             }
-            else {
-                b->setMin(solutions->getBox(value).getMin());
-                b->setMax(solutions->getBox(value).getMax());
-                b->setConstraint1(solutions->getBox(value).getConstraint1());
-                b->setConstraint2(solutions->getBox(value).getConstraint2());
-                b->setConstraint3(solutions->getBox(value).getConstraint3());
-                b->setColor(solutions->getBox(value).getColor());
-                b->setRotationMatrix(solutions->getBox(value).getRotationMatrix());
-                b->setTarget(solutions->getBox(value).getTarget());
-            }
+            b->setMin(solutions->getBox(value).getMin());
+            b->setMax(solutions->getBox(value).getMax());
+            b->setConstraint1(solutions->getBox(value).getConstraint1());
+            b->setConstraint2(solutions->getBox(value).getConstraint2());
+            b->setConstraint3(solutions->getBox(value).getConstraint3());
+            b->setColor(solutions->getBox(value).getColor());
+            b->setRotationMatrix(solutions->getBox(value).getRotationMatrix());
+            b->setTarget(solutions->getBox(value).getTarget());
             //deleteDrawableObject(b);
             //solutions->getBox(value);
             //b = new Box3D(solutions->getBox(value));
@@ -905,6 +927,36 @@ void EngineManager::on_setFromSolutionButton_clicked() {
             mainWindow->updateGlCanvas();
         }
 
+    }
+    else if (d != nullptr) {
+        unsigned int value = ui->setFromSolutionSpinBox->value();
+        if (value < d->getNumberFaces()) {
+            const Dcel::Face* f = d->getFace(value);
+            if (b == nullptr){
+                b = new Box3D(solutions->getBox(value));
+                mainWindow->pushObj(b, "Box");
+            }
+            Box3D box;
+            box.setTarget(nearestNormal(f->getNormal()));
+            Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
+            Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
+            Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
+            Pointd bmin = p1;
+            bmin = bmin.min(p2);
+            bmin = bmin.min(p3);
+            bmin = bmin - 1;
+            Pointd bmax = p1;
+            bmax = bmax.max(p2);
+            bmax = bmax.max(p3);
+            bmax = bmax + 1;
+            box.setMin(bmin);
+            box.setMax(bmax);
+            box.setColor(colorOfNearestNormal(f->getNormal()));
+            box.setConstraint1(p1);
+            box.setConstraint2(p2);
+            box.setConstraint3(p3);
+            *b = box;
+        }
     }
 }
 
@@ -1638,6 +1690,7 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
 void EngineManager::on_deleteBoxesPushButton_clicked() {
     if (solutions != nullptr && d != nullptr){
         int n = Engine::deleteBoxes(*solutions, *d);
+        //int n = Engine::deleteBoxesGSC(*solutions, *d);
         std::cerr << "N deleted boxes: " << n << "\n";
         mainWindow->updateGlCanvas();
     }

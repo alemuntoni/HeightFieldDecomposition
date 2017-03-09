@@ -24,27 +24,28 @@ class Graph {
         void deleteAllOutgoingNodes(unsigned int node);
         bool arcExists(unsigned int n1, unsigned int n2);
         void visit(std::set<unsigned int>& visitedNodes, unsigned int startingNode);
+        std::vector<std::vector<unsigned int> > getStronglyConnectedComponents();
+        std::vector<std::vector<unsigned int> > getCircuits();
 
     private:
-        //bool circuit(std::vector<unsigned int>& stack, std::vector<std::vector<unsigned int> >& circuits, unsigned int v);
-        //void unblock(std::map<unsigned int, std::set<unsigned int> >& B, std::map<int, bool>& blocked, int u);
+        void trajanSCC(unsigned int v, unsigned int& index, std::map<unsigned int, int>& nodeToIndex, std::map<unsigned int, unsigned int>& minDist, std::vector<unsigned int>& S, std::vector<std::vector<unsigned int> >& out);
         std::map<unsigned int, std::vector<unsigned int>> nodes;
         int numberNodes;
 };
 
-Graph::Graph() : numberNodes(0){
+inline Graph::Graph() : numberNodes(0){
 }
 
-Graph::Graph(unsigned int numberNodes) : numberNodes(numberNodes){
+inline Graph::Graph(unsigned int numberNodes) : numberNodes(numberNodes){
     for (unsigned int i = 0; i < numberNodes; i++)
         nodes[i] = std::vector<unsigned int>();
 }
 
-unsigned int Graph::size() const {
+inline unsigned int Graph::size() const {
     return numberNodes;
 }
 
-unsigned int Graph::addNode(int n) {
+inline unsigned int Graph::addNode(int n) {
     if (n < 0){
         n = 0;
         while (nodes.find(n) != nodes.end()) n++;
@@ -56,18 +57,18 @@ unsigned int Graph::addNode(int n) {
     return n;
 }
 
-void Graph::addEdge(unsigned int node1, unsigned int node2) {
+inline void Graph::addEdge(unsigned int node1, unsigned int node2) {
     assert(nodes.find(node1) != nodes.end());
     assert(nodes.find(node2) != nodes.end());
     nodes[node1].push_back(node2);
 }
 
-void Graph::removeNode(unsigned int n) {
+inline void Graph::removeNode(unsigned int n) {
     assert(nodes.find(n) != nodes.end());
     nodes.erase(n);
 }
 
-void Graph::removeEdge(unsigned int node1, unsigned int node2) {
+inline void Graph::removeEdge(unsigned int node1, unsigned int node2) {
     assert(nodes.find(node1) != nodes.end());
     assert(nodes.find(node2) != nodes.end());
     std::vector<unsigned int>::iterator it = std::find(nodes[node1].begin(), nodes[node1].end(), node2);
@@ -75,7 +76,7 @@ void Graph::removeEdge(unsigned int node1, unsigned int node2) {
     nodes[node1].erase(it);
 }
 
-bool Graph::removeEdgeIfExists(unsigned int node1, unsigned int node2) {
+inline bool Graph::removeEdgeIfExists(unsigned int node1, unsigned int node2) {
     assert(nodes.find(node1) != nodes.end());
     assert(nodes.find(node2) != nodes.end());
     std::vector<unsigned int>::iterator it = std::find(nodes[node1].begin(), nodes[node1].end(), node2);
@@ -88,7 +89,7 @@ bool Graph::removeEdgeIfExists(unsigned int node1, unsigned int node2) {
     }
 }
 
-std::vector<unsigned int> Graph::getIncomingNodes(unsigned int node) {
+inline std::vector<unsigned int> Graph::getIncomingNodes(unsigned int node) {
     assert(nodes.find(node) != nodes.end());
     std::vector<unsigned int> incoming;
     for(std::pair<unsigned int, std::vector<unsigned int> > p : nodes){
@@ -98,12 +99,12 @@ std::vector<unsigned int> Graph::getIncomingNodes(unsigned int node) {
     return incoming;
 }
 
-std::vector<unsigned int> Graph::getOutgoingNodes(unsigned int node) {
+inline std::vector<unsigned int> Graph::getOutgoingNodes(unsigned int node) {
     assert(nodes.find(node) != nodes.end());
     return nodes[node];
 }
 
-void Graph::deleteAllIncomingNodes(unsigned int node) {
+inline void Graph::deleteAllIncomingNodes(unsigned int node) {
     assert(nodes.find(node) != nodes.end());
     for (std::pair<unsigned int, std::vector<unsigned int> > p : nodes){
         std::vector<unsigned int>::iterator it = std::find(p.second.begin(), p.second.end(), node);
@@ -112,12 +113,12 @@ void Graph::deleteAllIncomingNodes(unsigned int node) {
     }
 }
 
-void Graph::deleteAllOutgoingNodes(unsigned int node) {
+inline void Graph::deleteAllOutgoingNodes(unsigned int node) {
     assert(nodes.find(node) != nodes.end());
     nodes[node].clear();
 }
 
-bool Graph::arcExists(unsigned int n1, unsigned int n2) {
+inline bool Graph::arcExists(unsigned int n1, unsigned int n2) {
     if (nodes.find(n1) == nodes.end())
         return false;
     else {
@@ -125,13 +126,66 @@ bool Graph::arcExists(unsigned int n1, unsigned int n2) {
     }
 }
 
-void Graph::visit(std::set<unsigned int>& visitedNodes, unsigned int startingNode) {
+inline void Graph::visit(std::set<unsigned int>& visitedNodes, unsigned int startingNode) {
     assert(nodes.find(startingNode) != nodes.end());
     visitedNodes.insert(startingNode);
     for(unsigned int adjacent : nodes[startingNode]){
         if (visitedNodes.find(adjacent) == visitedNodes.end()){
             visit(visitedNodes, adjacent);
         }
+    }
+}
+
+inline std::vector<std::vector<unsigned int> > Graph::getStronglyConnectedComponents() {
+    std::vector<std::vector<unsigned int> > out;
+    unsigned int index = 0;
+    std::vector<unsigned int> S;
+    std::map<unsigned int, int> nodeToindex;
+    std::map<unsigned int, unsigned int> minDist;
+    for (std::pair<unsigned int, std::vector<unsigned int> > v : nodes){
+        nodeToindex[v.first] = -1;
+    }
+    for (std::pair<unsigned int, std::vector<unsigned int> > v : nodes){
+        assert(nodeToindex.find(v.first) != nodeToindex.end());
+        if (nodeToindex[v.first] == -1){ // if v is not associated to a Strong Connected Component
+            trajanSCC(v.first, index, nodeToindex, minDist, S, out);
+        }
+    }
+    return out;
+}
+
+inline std::vector<std::vector<unsigned int> > Graph::getCircuits() {
+    std::map<unsigned int, bool> blocked;
+    std::map<unsigned int, std::set<unsigned int> > B;
+    std::vector< std::vector<unsigned int> > scc = getStronglyConnectedComponents();
+    for (unsigned int k = 0; k < scc.size(); k++){
+
+    }
+}
+
+inline void Graph::trajanSCC(unsigned int v, unsigned int &index, std::map<unsigned int, int> &nodeToIndex, std::map<unsigned int, unsigned int> &minDist, std::vector<unsigned int> &S, std::vector<std::vector<unsigned int> > &out) {
+    nodeToIndex[v] = index;
+    minDist[v] = index;
+    index++;
+    S.push_back(v);
+    for (unsigned int w : nodes[v]){
+        if (nodeToIndex[w] == -1){
+            trajanSCC(w, index, nodeToIndex, minDist, S, out);
+            minDist[v] = std::min(minDist[v], minDist[w]);
+        }
+        else if (std::find(S.begin(), S.end(), w) != S.end()){
+            minDist[v] = std::min(minDist[v], minDist[w]);
+        }
+    }
+    if (minDist[v] == (unsigned int)nodeToIndex[v]){
+        unsigned int w;
+        std::vector<unsigned int> scc;
+        do {
+            w = S[S.size()-1];
+            S.pop_back();
+            scc.push_back(w);
+        } while (w != v);
+        out.push_back(scc);
     }
 }
 

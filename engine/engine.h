@@ -57,6 +57,8 @@ namespace Engine {
 
     int deleteBoxes(BoxList& boxList, const Dcel &d);
 
+    int deleteBoxesGSC(BoxList& boxList, const Dcel &d);
+
     static BoxList dummy2;
     void optimize(BoxList &solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits = Pointd(), bool tolerance = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true);
 

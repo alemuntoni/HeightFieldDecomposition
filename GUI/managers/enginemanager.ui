@@ -1468,7 +1468,11 @@
                </widget>
               </item>
               <item row="2" column="2">
-               <widget class="QSpinBox" name="setFromSolutionSpinBox"/>
+               <widget class="QSpinBox" name="setFromSolutionSpinBox">
+                <property name="maximum">
+                 <number>10000000</number>
+                </property>
+               </widget>
               </item>
               <item row="2" column="1">
                <widget class="QPushButton" name="setFromSolutionButton">

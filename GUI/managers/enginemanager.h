@@ -35,6 +35,8 @@ class EngineManager : public QFrame, public SerializableObject {
         void updateColors(double angleThreshold, double areaThreshold);
         Pointd getLimits();
 
+        void saveMSCFile(const std::string &filename, const Dcel &d, const BoxList &bl);
+
         void serializeBC(const std::string& filename);
         void deserializeBC(const std::string& filename);
 
