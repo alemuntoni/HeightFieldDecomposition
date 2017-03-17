@@ -84,7 +84,7 @@ void HeightfieldsList::setSmoothShading() {
 
 void HeightfieldsList::checkHeightfields() const {
     for (unsigned int i = 0; i < heightfields.size(); i++){
-        const IGLInterface::DrawableIGLMesh& m = heightfields[i];
+        const DrawableEigenMesh& m = heightfields[i];
         for (unsigned int f = 0; f < m.getNumberFaces(); f++){
             if (m.getFaceNormal(f).dot(targets[i]) < FLIP_ANGLE-EPSILON && m.getFaceNormal(f).dot(targets[i]) > -1 + EPSILON){
                 std::cerr << "Hieghtfield: " << i << "; Triangle: " << f << "; Flip: " << m.getFaceNormal(f).dot(targets[i]) << "\n";
@@ -96,11 +96,11 @@ void HeightfieldsList::checkHeightfields() const {
 void HeightfieldsList::rotate(const Eigen::MatrixXd m) {
     for (unsigned int i = 0; i < heightfields.size(); i++){
         heightfields[i].rotate(m);
-        heightfields[i].updateVertexNormals();
+        heightfields[i].updateVerticesNormals();
     }
 }
 
-void HeightfieldsList::addHeightfield(const IGLInterface::DrawableIGLMesh& m, const Vec3& target, int i) {
+void HeightfieldsList::addHeightfield(const DrawableEigenMesh& m, const Vec3& target, int i) {
     if (i < 0){
         heightfields.push_back(m);
         targets.push_back(target);
@@ -133,22 +133,17 @@ void HeightfieldsList::removeHeightfield(unsigned int i) {
     targets.erase(targets.begin()+i);
 }
 
-const IGLInterface::IGLMesh& HeightfieldsList::getHeightfield(unsigned int i) const {
+const EigenMesh& HeightfieldsList::getHeightfield(unsigned int i) const {
     assert (i < heightfields.size());
     return heightfields[i];
 }
 
-IGLInterface::IGLMesh& HeightfieldsList::getHeightfield(unsigned int i) {
+EigenMesh& HeightfieldsList::getHeightfield(unsigned int i) {
     assert (i < heightfields.size());
     return heightfields[i];
 }
 
-/*IGLInterface::IGLMesh HeightfieldsList::getHeightfield(unsigned int i) const {
-    assert (i < heightfields.size());
-    return heightfields[i];
-}*/
-
-void HeightfieldsList::setHeightfield(const IGLInterface::IGLMesh& m, unsigned int i, bool updateColor) {
+void HeightfieldsList::setHeightfield(const EigenMesh& m, unsigned int i, bool updateColor) {
     assert (i < heightfields.size());
     heightfields[i] = m;
     if (updateColor){
@@ -161,7 +156,7 @@ void HeightfieldsList::setHeightfield(const IGLInterface::IGLMesh& m, unsigned i
     }
 }
 
-void HeightfieldsList::insertHeightfield(const IGLInterface::IGLMesh& m, const Vec3& target, unsigned int i) {
+void HeightfieldsList::insertHeightfield(const EigenMesh& m, const Vec3& target, unsigned int i) {
     assert (i < heightfields.size()+1);
     heightfields.insert(heightfields.begin() + i, m);
     targets.insert(targets.begin() + i, target);
@@ -189,7 +184,7 @@ void HeightfieldsList::serialize(std::ofstream& binaryFile) const {
 }
 
 bool HeightfieldsList::deserialize(std::ifstream& binaryFile) {
-    std::vector<IGLInterface::DrawableIGLMesh> tmp;
+    std::vector<DrawableEigenMesh> tmp;
     if (Serializer::deserialize(tmp, binaryFile) &&
             Serializer::deserialize(targets, binaryFile)){
         heightfields = std::move(tmp);

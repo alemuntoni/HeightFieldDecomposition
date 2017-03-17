@@ -2,7 +2,6 @@
 #define SPLITTING_H
 
 #include "lib/grid/irregulargrid.h"
-#include "igl/iglmesh.h"
 #include "heightfieldslist.h"
 #include "boxlist.h"
 #include "cgal/aabbtree.h"

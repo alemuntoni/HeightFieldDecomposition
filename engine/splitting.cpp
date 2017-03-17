@@ -4,8 +4,9 @@
 #include "common/timer.h"
 #include "lib/graph/directedgraph.h"
 #include "lib/graph/graph.h"
-#include "igl/iglinterface.h"
 #include <map>
+
+#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
 
 #define BOOL_DEBUG
 
@@ -58,7 +59,7 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                                 return true;
                             }
                             else {
-                                IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                                SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
                                 if (intersection.getNumberVertices() != 0){
                                     ////
                                     //intersection.saveOnObj("int.obj");
@@ -95,7 +96,7 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                             }
                         }
                         ///
-                        IGLInterface::makeBox(bb).saveOnObj("bb.obj");
+                        EigenMeshAlgorithms::makeBox(bb).saveOnObj("bb.obj");
                         ///
                         bool isInside = false;
                         std::vector<Pointd> extremes;
@@ -110,7 +111,7 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                                 return true;
                             }
                             else {
-                                IGLInterface::SimpleIGLMesh intersection = IGLInterface::SimpleIGLMesh::intersection(b1.getIGLMesh(), b2.getIGLMesh());
+                                SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
                                 if (intersection.getNumberVertices() != 0){
                                     ////
                                     //intersection.saveOnObj("int.obj");
@@ -142,8 +143,8 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
     for (unsigned int t = 0; t < 6; t++){
         if (target == XYZ[t]){
             if (t < 3){
-                //b1.getIGLMesh().saveOnObj("b1.obj");
-                //b2.getIGLMesh().saveOnObj("b2.obj");
+                //b1.getEigenMesh().saveOnObj("b1.obj");
+                //b2.getEigenMesh().saveOnObj("b2.obj");
                 //assert(b1.max()[t] <= b2.max()[t]);
                 if (!(b1.max()[t] <= b2.max()[t])) {
                     b3.min() = Pointd();
@@ -164,8 +165,8 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
             }
             else if (t >= 3){
                 unsigned int i = t-3;
-                //b1.getIGLMesh().saveOnObj("b1.obj");
-                //b2.getIGLMesh().saveOnObj("b2.obj");
+                //b1.getEigenMesh().saveOnObj("b1.obj");
+                //b2.getEigenMesh().saveOnObj("b2.obj");
                 //assert(b1.min()[i] >= b2.min()[i]);
                 if (!(b1.min()[i] >= b2.min()[i])) {
                     b3.min() = Pointd();
@@ -205,17 +206,17 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
     b3tmp.generatePiece(subd);
     //
     b3.generatePiece(subd);
-    IGLInterface::SimpleIGLMesh oldBox = b2.getIGLMesh();
-    oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b1.getIGLMesh());
-    IGLInterface::SimpleIGLMesh tmp = oldBox;
-    tmp = IGLInterface::SimpleIGLMesh::intersection(tmp, b3.getIGLMesh());
+    SimpleEigenMesh oldBox = b2.getEigenMesh();
+    oldBox = EigenMeshAlgorithms::difference(oldBox, b1.getEigenMesh());
+    SimpleEigenMesh tmp = oldBox;
+    tmp = EigenMeshAlgorithms::intersection(tmp, b3.getEigenMesh());
     if (tmp.getNumberVertices() > 0){
-        oldBox = IGLInterface::SimpleIGLMesh::difference(oldBox, b3tmp.getIGLMesh());
-        b2.setIGLMesh(oldBox);
+        oldBox = EigenMeshAlgorithms::difference(oldBox, b3tmp.getEigenMesh());
+        b2.setEigenMesh(oldBox);
         BoundingBox newBBb2 = oldBox.getBoundingBox();
         b2.setMin(newBBb2.min());
         b2.setMax(newBBb2.max());
-        b3.setIGLMesh(tmp);
+        b3.setEigenMesh(tmp);
         BoundingBox newBBb3 = tmp.getBoundingBox();
         b3.setMin(newBBb3.min());
         b3.setMax(newBBb3.max());
@@ -287,7 +288,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         std::stringstream ss;
         ss << "b" << i << ".obj";
-        bl.getBox(i).getIGLMesh().saveOnObj(ss.str());
+        bl.getBox(i).getEigenMesh().saveOnObj(ss.str());
     }*/
     //
     do {
@@ -399,9 +400,9 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                 b2.setTrianglesCovered(b2.getTrianglesCovered()-b3.getTrianglesCovered());
                 bl.setBox(b2.getId(), b2);
                 ///
-                //b1.getIGLMesh().saveOnObj("b1.obj");
-                //b2.getIGLMesh().saveOnObj("b2.obj");
-                //b3.getIGLMesh().saveOnObj("b3.obj");
+                //b1.getEigenMesh().saveOnObj("b1.obj");
+                //b2.getEigenMesh().saveOnObj("b2.obj");
+                //b3.getEigenMesh().saveOnObj("b3.obj");
                 ///
                 std::vector<unsigned int> incomingb2 = g.getIncomingNodes(b2.getId());
                 std::vector<unsigned int> outgoingb2 = g.getOutgoingNodes(b2.getId());
@@ -444,8 +445,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                     for (unsigned int incoming : incomingb2){
                         Box3D other = bl.getBox(incoming);
                         ///
-                        //other.getIGLMesh().saveOnObj("checkother.obj");
-                        //b2.getIGLMesh().saveOnObj("checkb2.obj");
+                        //other.getEigenMesh().saveOnObj("checkother.obj");
+                        //b2.getEigenMesh().saveOnObj("checkb2.obj");
                         ///
                         if (boxesIntersect(other,b2)){
                             if (isDangerousIntersection(other, b2, tree, true)){
@@ -456,8 +457,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                     for (unsigned int outgoing : outgoingb2){
                         Box3D other = bl.getBox(outgoing);
                         ///
-                        //other.getIGLMesh().saveOnObj("checkother.obj");
-                        //b2.getIGLMesh().saveOnObj("checkb2.obj");
+                        //other.getEigenMesh().saveOnObj("checkother.obj");
+                        //b2.getEigenMesh().saveOnObj("checkb2.obj");
                         ///
                         if (boxesIntersect(b2, other)){
                             if (isDangerousIntersection(b2, other, tree, true)){
@@ -497,8 +498,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                     for (unsigned int incoming : incomingb2){
                         Box3D other = bl.getBox(incoming);
                         ///
-                        //other.getIGLMesh().saveOnObj("checkother.obj");
-                        //b3.getIGLMesh().saveOnObj("checkb3.obj");
+                        //other.getEigenMesh().saveOnObj("checkother.obj");
+                        //b3.getEigenMesh().saveOnObj("checkb3.obj");
                         ///
                         if (boxesIntersect(other,b3)){
                             if (isDangerousIntersection(other, b3, tree, true)){
@@ -509,8 +510,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                     for (unsigned int outgoing : outgoingb2){
                         Box3D other = bl.getBox(outgoing);
                         ///
-                        //other.getIGLMesh().saveOnObj("checkother.obj");
-                        //b3.getIGLMesh().saveOnObj("checkb3.obj");
+                        //other.getEigenMesh().saveOnObj("checkother.obj");
+                        //b3.getEigenMesh().saveOnObj("checkb3.obj");
                         ///
                         if (boxesIntersect(b3, other)){
                             if (isDangerousIntersection(b3, other, tree, true)){
@@ -542,7 +543,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
 
     #ifdef BOOL_DEBUG
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++)
-        bl.getBox(i).getIGLMesh().saveOnObj("b"+std::to_string(i)+".obj");
+        bl.getBox(i).getEigenMesh().saveOnObj("b"+std::to_string(i)+".obj");
     #endif
 
     //resorting and map old with new graph

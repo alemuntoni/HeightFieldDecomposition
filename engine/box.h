@@ -4,7 +4,7 @@
 #include <viewer/interfaces/drawable_object.h>
 #include <common/bounding_box.h>
 #include <viewer/objects/objects.h>
-#include <igl/iglmesh.h>
+#include <eigenmesh/eigenmesh.h>
 #include <common/color.h>
 
 class Box3D : public BoundingBox, public DrawableObject{
@@ -34,9 +34,9 @@ class Box3D : public BoundingBox, public DrawableObject{
         void moveX(double d);
         void moveY(double d);
         void moveZ(double d);
-        IGLInterface::SimpleIGLMesh calculateIGLMesh(double minimumEdge = -1) const;
-        IGLInterface::SimpleIGLMesh getIGLMesh() const;
-        void setIGLMesh(const IGLInterface::SimpleIGLMesh &piece);
+        SimpleEigenMesh calculateEigenMesh(double minimumEdge = -1) const;
+        SimpleEigenMesh getEigenMesh() const;
+        void setEigenMesh(const SimpleEigenMesh& piece);
         void generatePiece(double minimumEdge = -1);
 
         // DrawableObject interface
@@ -69,7 +69,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         Vec3 target;
         Eigen::Matrix3d rotation;
         int id;
-        IGLInterface::SimpleIGLMesh piece;
+        SimpleEigenMesh piece;
         int trianglesCovered;
 
         void drawLine(const Pointd& a, const Pointd& b, const Color& c) const;

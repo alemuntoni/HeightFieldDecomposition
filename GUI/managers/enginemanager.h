@@ -11,7 +11,7 @@
 #include "engine/energy.h"
 #include "engine/engine.h"
 #include "common/timer.h"
-#include "igl/gui/drawableiglmesh.h"
+#include "eigenmesh/gui/drawableeigenmesh.h"
 #include "engine/heightfieldslist.h"
 #include "engine/splitting.h"
 #include "viewer/wait_dialog.h"
@@ -169,8 +169,6 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_deleteBoxesPushButton_clicked();
 
-        void on_volumePushButton_clicked();
-
         void on_pushButton_clicked();
 
         void on_limitsConstraintCheckBox_stateChanged(int arg1);
@@ -192,10 +190,10 @@ class EngineManager : public QFrame, public SerializableObject {
         Box3D* b;
         BoxList* iterations;
         BoxList* solutions;
-        IGLInterface::DrawableIGLMesh* baseComplex;
+        DrawableEigenMesh* baseComplex;
         Energy e;
         HeightfieldsList *he;
-        IGLInterface::DrawableIGLMesh originalMesh;
+        DrawableEigenMesh originalMesh;
 };
 
 #endif // ENGINEMANAGER_H

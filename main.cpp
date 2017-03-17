@@ -5,8 +5,6 @@
 
 #include "viewer/mainwindow.h"
 #include "dcel/gui/dcelmanager.h"
-//#include "igl/gui/iglmeshmanager.h"
-#include "igl/gui/booleansmanager.h"
 #include "viewer/managers/windowmanager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
@@ -16,8 +14,12 @@
 #include "trimesh/gui/trimeshmanager.h"
 #include "lib/graph/graph.h"
 
+#include "eigenmesh/gui/eigenmeshmanager.h"
+#include "eigenmesh/gui/booleansmanager.h"
+
+
 int main(int argc, char *argv[]) {
-    Graph g (8);
+    /*Graph g (8);
     g.addEdge(0,1);
     g.addEdge(1,2);
     g.addEdge(2,0);
@@ -38,14 +40,14 @@ int main(int argc, char *argv[]) {
             std::cout << scc[i][j] << " ";
         }
         std::cout << "\n";
-    }
+    }*/
 
     #ifdef SERVER_MODE
     if (argc > 4){
         std::string filename_smooth(argv[1]);
         std::string filename(argv[2]);
-        IGLInterface::IGLMesh original;
-        original.readFromFile(filename);
+        EigenMesh original;
+        original.readFromObj(filename);
         Dcel d;
         BoxList solutions;
         BoxList allSolutions;
@@ -120,7 +122,7 @@ int main(int argc, char *argv[]) {
             inputfile.open (filename, std::ios::in | std::ios::binary);
             DrawableDcel d;
             BoxList solutions;
-            IGLInterface::DrawableIGLMesh originalMesh;
+            DrawableEigenMesh originalMesh;
             if (! d.deserialize(inputfile)) return false;
             bool bb = false;
             if (! Serializer::deserialize(bb, inputfile)) return false;
@@ -150,9 +152,9 @@ int main(int argc, char *argv[]) {
             inputfile.open (filename, std::ios::in | std::ios::binary);
             DrawableDcel d;
             BoxList solutions;
-            IGLInterface::DrawableIGLMesh baseComplex;
+            DrawableEigenMesh baseComplex;
             HeightfieldsList he;
-            IGLInterface::DrawableIGLMesh originalMesh;
+            DrawableEigenMesh originalMesh;
             d.deserialize(inputfile);
             solutions.deserialize(inputfile);
             baseComplex.deserialize(inputfile);
@@ -189,14 +191,14 @@ int main(int argc, char *argv[]) {
     EngineManager e(&gui);
     ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
 
-    //IGLMeshManager mm(&gui);
-    //gui.addManager(&mm, "IGL Mesh Manager");
-
     BooleansManager bm(&gui);
     gui.addManager(&bm, "Booleans Manager");
 
     TrimeshManager tm(&gui);
     gui.addManager(&tm, "Trimesh Manager");
+
+    EigenMeshManager em(&gui);
+    gui.addManager(&em, "EigenMesh Manager");
 
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
     gui.updateGlCanvas();

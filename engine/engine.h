@@ -12,7 +12,6 @@
 #include "lib/grid/grid.h"
 #include "energy.h"
 #include <cgal/cgalinterface.h>
-#include <igl/iglinterface.h>
 #include "heightfieldslist.h"
 #include "lib/grid/irregulargrid.h"
 
@@ -33,7 +32,7 @@ namespace Engine {
 
     void setTrianglesTargets(Dcel scaled[]);
 
-    void generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const IGLInterface::SimpleIGLMesh &m, bool generateDistanceField = true, double gridUnit = 2, bool integer = true);
+    void generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const SimpleEigenMesh& m, bool generateDistanceField = true, double gridUnit = 2, bool integer = true);
 
     void calculateGridWeights(Grid& g, const Array3D<Pointd> &grid, const Array3D<gridreal> &distanceField, const Dcel& d, double kernelDistance, bool tolerance, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces);
 
@@ -66,23 +65,23 @@ namespace Engine {
 
     void deleteDuplicatedBoxes(BoxList &solutions);
 
-    void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions);
+    void booleanOperations(HeightfieldsList &he, SimpleEigenMesh& bc, BoxList &solutions);
 
     void splitConnectedComponents(HeightfieldsList &he, BoxList &solutions);
 
-    void glueInternHeightfieldsToBaseComplex(HeightfieldsList &he, BoxList &solutions, IGLInterface::SimpleIGLMesh &bc, const Dcel& inputMesh);
+    void glueInternHeightfieldsToBaseComplex(HeightfieldsList &he, BoxList &solutions, SimpleEigenMesh& bc, const Dcel& inputMesh);
 
-    void reduceHeightfields(HeightfieldsList& he, IGLInterface::SimpleIGLMesh &bc, const Dcel& inputMesh);
+    void reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const Dcel& inputMesh);
 
-    void gluePortionsToBaseComplex(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions, const Dcel& inputMesh);
+    void gluePortionsToBaseComplex(HeightfieldsList &he, SimpleEigenMesh& bc, BoxList &solutions, const Dcel& inputMesh);
 
     //void largeScaleFabrication(const Dcel &input, double kernelDistance = 6, bool heightfields = false);
 
-    IGLInterface::SimpleIGLMesh getMarkerMesh(const HeightfieldsList& he, const Dcel& d);
+    SimpleEigenMesh getMarkerMesh(const HeightfieldsList& he, const Dcel& d);
 
     void updatePieceNormals(const CGALInterface::AABBTree& tree, Dcel &piece);
 
-    void saveObjs(const QString& foldername, const IGLInterface::IGLMesh& originalMesh, const Dcel& inputMesh, const IGLInterface::IGLMesh& baseComplex, const HeightfieldsList& he);
+    void saveObjs(const QString& foldername, const EigenMesh& originalMesh, const Dcel& inputMesh, const EigenMesh& baseComplex, const HeightfieldsList& he);
 }
 
 #endif // ENGINE_H

@@ -18,7 +18,7 @@ class EngineWorker : public QObject
         void error(QString err);
 
     public slots:
-        void booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions);
+        void booleanOperations(HeightfieldsList &he, SimpleEigenMesh& bc, BoxList &solutions);
 };
 
 #endif // ENGINEWORKER_H

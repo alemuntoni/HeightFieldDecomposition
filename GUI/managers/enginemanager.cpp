@@ -7,11 +7,11 @@
 #include <omp.h>
 #include "cgal/aabbtree.h"
 #include "engine/packing.h"
-#include "igl/iglinterface.h"
 #include "engine/reconstruction.h"
 #include "engineworker.h"
 #include <QThread>
 #include "lib/dcel_segmentation/segmentation.h"
+#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -161,7 +161,7 @@ void EngineManager::deserializeBC(const std::string& filename) {
     deleteDrawableObject(he);
     d = new DrawableDcel();
     solutions = new BoxList();
-    baseComplex = new IGLInterface::DrawableIGLMesh();
+    baseComplex = new DrawableEigenMesh();
     he = new HeightfieldsList();
     std::ifstream myfile;
     myfile.open (filename, std::ios::in | std::ios::binary);
@@ -506,20 +506,6 @@ void EngineManager::on_saveObjsButton_clicked() {
     if (d != nullptr && baseComplex != nullptr && he != nullptr) {
         QString foldername = QFileDialog::getExistingDirectory(nullptr, "SaveObjs");
         if (!foldername.isEmpty()){
-            /*QString originalMeshString = foldername + "/OriginalMesh.obj";
-            QString inputMeshString = foldername + "/InputMesh.obj";
-            QString baseComplexString = foldername + "/BaseComplex.obj";
-            QString heightfieldString = foldername + "/Heightfield";
-            if (originalMesh.getNumberVertices() > 0)
-                originalMesh.saveOnObj(originalMeshString.toStdString());
-            d->saveOnObjFile(inputMeshString.toStdString());
-            baseComplex->saveOnObj(baseComplexString.toStdString());
-            for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-                IGLInterface::IGLMesh h = he->getHeightfield(i);
-                std::stringstream ss;
-                ss << heightfieldString.toStdString() << i << ".obj";
-                h.saveOnObj(ss.str());
-            }*/
             d->updateVertexNormals();
             Engine::saveObjs(foldername, originalMesh, *d, *baseComplex, *he);
         }
@@ -1117,8 +1103,8 @@ void EngineManager::on_stepDrawGridSpinBox_valueChanged(double arg1) {
 void EngineManager::on_subtractPushButton_clicked() {
     if (solutions!= nullptr && d != nullptr){
         deleteDrawableObject(baseComplex);
-        IGLInterface::IGLMesh m = (Dcel)*d;
-        baseComplex = new IGLInterface::DrawableIGLMesh(m);
+        EigenMesh m = (Dcel)*d;
+        baseComplex = new DrawableEigenMesh(m);
         mainWindow->pushObj(baseComplex, "Base Complex");
         deleteDrawableObject(he);
         //deleteDrawableObject(entirePieces);
@@ -1127,7 +1113,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         mainWindow->pushObj(he, "Heightfields");
         //mainWindow->pushObj(entirePieces, "Entire Pieces");
         mainWindow->updateGlCanvas();
-        IGLInterface::SimpleIGLMesh bc((IGLInterface::SimpleIGLMesh)*baseComplex);
+        SimpleEigenMesh bc((SimpleEigenMesh)*baseComplex);
 
         /*WaitDialog* dialog = new WaitDialog("Prova", mainWindow);
         connect(this, SIGNAL(finished()), dialog, SLOT(pop()));
@@ -1160,7 +1146,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow->deleteObj(baseComplex);
         delete baseComplex;
-        baseComplex = new IGLInterface::DrawableIGLMesh(bc);
+        baseComplex = new DrawableEigenMesh(bc);
         baseComplex->updateFaceNormals();
         for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
             Vec3 n = baseComplex->getFaceNormal(i);
@@ -1176,10 +1162,10 @@ void EngineManager::on_subtractPushButton_clicked() {
 
 void EngineManager::on_stickPushButton_clicked() {
     if (d!=nullptr && baseComplex != nullptr && he != nullptr){
-        IGLInterface::SimpleIGLMesh bc = *baseComplex;
+        SimpleEigenMesh bc = *baseComplex;
         Engine::reduceHeightfields(*he, bc, *d);
         deleteDrawableObject(baseComplex);
-        baseComplex = new IGLInterface::DrawableIGLMesh(bc);
+        baseComplex = new DrawableEigenMesh(bc);
         baseComplex->updateFaceNormals();
         for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
             Vec3 n = baseComplex->getFaceNormal(i);
@@ -1218,7 +1204,11 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
 
 void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
     if (g == nullptr && d!= nullptr) {
+        BoundingBox bb = d->getBoundingBox();
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
+        if (originalMesh.getNumberVertices() > 0){
+            originalMesh.scale(bb, d->getBoundingBox());
+        }
         std::set<const Dcel::Face*> flippedFaces, savedFaces;
         Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
         updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
@@ -1368,11 +1358,11 @@ void EngineManager::on_reorderBoxes_clicked() {
 
 void EngineManager::on_loadOriginalPushButton_clicked() {
     QString filename = QFileDialog::getOpenFileName(nullptr,
-                       "Open IGL Mesh",
+                       "Open Eigen Mesh",
                        ".",
-                       "OBJ(*.obj);;PLY(*.ply)");
+                       "OBJ(*.obj)");
     if (!filename.isEmpty()) {
-        originalMesh.readFromFile(filename.toStdString());
+        originalMesh.readFromObj(filename.toStdString());
         if (! (mainWindow->contains(&originalMesh)))
             mainWindow->pushObj(&originalMesh, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
         mainWindow->updateGlCanvas();
@@ -1381,7 +1371,7 @@ void EngineManager::on_loadOriginalPushButton_clicked() {
 
 void EngineManager::on_loadSmoothedPushButton_clicked() {
     QString filename = QFileDialog::getOpenFileName(nullptr,
-                       "Open IGL Mesh",
+                       "Open Dcel Mesh",
                        ".",
                        "OBJ(*.obj);;PLY(*.ply)");
     if (!filename.isEmpty()) {
@@ -1405,48 +1395,6 @@ void EngineManager::on_loadSmoothedPushButton_clicked() {
             msgBox.exec();
         }
     }
-    /*if (originalMesh.getNumberVertices() > 0){
-        cinolib::Trimesh m;
-        Reconstruction::iglMeshToTrimesh(m, originalMesh);
-        cinolib::smooth_taubin(m, cinolib::COTANGENT, std::set<int>(), 100, 0.89, -0.9);
-        IGLInterface::SimpleIGLMesh tmp;
-        Reconstruction::trimeshToIglMesh(tmp, m);
-        deleteDrawableObject(d);
-        d = new DrawableDcel(tmp);
-        d->updateVertexNormals();
-        d->setWireframe(true);
-        d->setPointsShading();
-        d->update();
-        mainWindow->pushObj(d, "Smoothed");
-        mainWindow->updateGlCanvas();
-    }
-    else {
-        QString filename = QFileDialog::getOpenFileName(nullptr,
-                                                        "Open IGL Mesh",
-                                                        ".",
-                                                        "OBJ(*.obj);;PLY(*.ply)");
-        if (!filename.isEmpty()) {
-            std::string s = filename.toStdString();
-            deleteDrawableObject(d);
-            d = new DrawableDcel();
-            if (d->loadFromFile(s)){
-                std::cout << "load: " << filename.toStdString() << std::endl;
-                d->updateVertexNormals();
-                d->setWireframe(true);
-                d->setPointsShading();
-                d->update();
-                mainWindow->pushObj(d, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
-                mainWindow->updateGlCanvas();
-            }
-            else {
-                delete d;
-                d = nullptr;
-                QMessageBox msgBox;
-                msgBox.setText("Format file not supported.");
-                msgBox.exec();
-            }
-        }
-    }*/
 }
 
 void EngineManager::on_packPushButton_clicked() {
@@ -1472,11 +1420,11 @@ void EngineManager::on_packPushButton_clicked() {
             Packing::getMaximum(myHe, limits, factor);
             Packing::scaleAll(myHe, factor);
             std::vector< std::vector<std::pair<int, Pointd> > > tmp = Packing::pack(myHe, packSize);
-            std::vector< std::vector<IGLInterface::IGLMesh> > packs = Packing::getPacks(tmp, myHe);
-            IGLInterface::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
+            std::vector< std::vector<EigenMesh> > packs = Packing::getPacks(tmp, myHe);
+            EigenMeshAlgorithms::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
             for (unsigned int i = 0; i < packs.size(); i++){
                 QString pstring = foldername + "/pack" + QString::number(i) + ".obj";
-                IGLInterface::IGLMesh packMesh = packs[i][0];
+                EigenMesh packMesh = packs[i][0];
                 QString bstring = foldername + "/b" + QString::number(i);
                 for (unsigned int j = 0; j < packs[i].size(); j++){
                     QString meshName = bstring + "p" + QString::number(j) + ".obj";
@@ -1490,7 +1438,7 @@ void EngineManager::on_packPushButton_clicked() {
                     //dd.triangulate();
                     //dd.saveOnObjFile(meshName.toStdString());
                     if (j > 0){
-                        packMesh = IGLInterface::IGLMesh::merge(packMesh, packs[i][j]);
+                        packMesh = EigenMesh::merge(packMesh, packs[i][j]);
                     }
                 }
                 //packMesh.saveOnObj(pstring.toStdString());
@@ -1499,7 +1447,7 @@ void EngineManager::on_packPushButton_clicked() {
                 d.saveOnObjFile(pstring.toStdString());
 
                 BoundingBox bb = d.getBoundingBox();
-                IGLInterface::SimpleIGLMesh plane;
+                EigenMesh plane;
                 plane.addVertex(bb.getMinX(), bb.getMinY(), bb.getMinZ() - EPSILON);
                 plane.addVertex(bb.getMaxX(), bb.getMinY(), bb.getMinZ() - EPSILON);
                 plane.addVertex(bb.getMaxX(), bb.getMaxY(), bb.getMinZ() - EPSILON);
@@ -1521,7 +1469,7 @@ void EngineManager::on_smartPackingPushButton_clicked() {
             BoundingBox packSize(Pointd(), Pointd(ui->sizeXPackSpinBox->value(), ui->sizeYPackSpinBox->value(), ui->sizeZPackSpinBox->value()));
             BoundingBox limits = packSize;
             double l = packSize.getMaxY();
-            std::vector< std::vector<IGLInterface::IGLMesh> > packs;
+            std::vector< std::vector<EigenMesh> > packs;
             do {
                 limits.setMaxY(l);
                 double factor;
@@ -1531,13 +1479,13 @@ void EngineManager::on_smartPackingPushButton_clicked() {
                 packs = Packing::getPacks(tmp, myHe);
                 l -= 0.1;
             } while (packs.size() > 1);
-            IGLInterface::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
+            EigenMeshAlgorithms::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
 
             for (unsigned int i = 0; i < packs.size(); i++){
                 QString pstring = foldername + "/pack" + QString::number(i) + ".obj";
-                IGLInterface::IGLMesh packMesh = packs[i][0];
+                EigenMesh packMesh = packs[i][0];
                 for (unsigned int j = 1; j < packs[i].size(); j++){
-                    packMesh = IGLInterface::IGLMesh::merge(packMesh, packs[i][j]);
+                    packMesh = EigenMesh::merge(packMesh, packs[i][j]);
                 }
                 //packMesh.saveOnObj(pstring.toStdString());
                 Dcel d(packMesh);
@@ -1673,10 +1621,10 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
                 colored[i] = true;
 
 
-                IGLInterface::IGLMesh mesh = he->getHeightfield(i);
+                EigenMesh mesh = he->getHeightfield(i);
                 Dcel d(mesh);
                 Engine::updatePieceNormals(tree, d);
-                mesh = IGLInterface::IGLMesh(d);
+                mesh = EigenMesh(d);
                 mesh.setFaceColor(color.redF(),color.greenF(),color.blueF());
                 he->setHeightfield(mesh, i);
             }
@@ -1694,90 +1642,6 @@ void EngineManager::on_deleteBoxesPushButton_clicked() {
         std::cerr << "N deleted boxes: " << n << "\n";
         mainWindow->updateGlCanvas();
     }
-}
-
-void EngineManager::on_volumePushButton_clicked() {
-    if (baseComplex!=nullptr && d != nullptr){
-        Eigen::RowVector3d Vmin, Vmax;
-        Vmin = Eigen::RowVector3d(d->getBoundingBox().minX(), d->getBoundingBox().minY(), d->getBoundingBox().minZ());
-        Vmax = Eigen::RowVector3d(d->getBoundingBox().maxX(), d->getBoundingBox().maxY(), d->getBoundingBox().maxZ());
-
-        // create grid GV
-        Eigen::RowVector3d border(2,2,2);
-        Eigen::RowVector3d nGmin;
-        Eigen::RowVector3d nGmax;
-        Eigen::RowVector3i Gmini = (Vmin).cast<int>() - border.cast<int>();
-        Eigen::RowVector3i Gmaxi = (Vmax).cast<int>() + border.cast<int>();
-        nGmin = Gmini.cast<double>();
-        nGmax = Gmaxi.cast<double>();
-        Eigen::RowVector3i res = (nGmax.cast<int>() - nGmin.cast<int>())/2; res(0)+=1; res(1)+=1; res(2)+=1;
-
-        double gridUnit = 2;
-        res(0) /= ui->factorSpinBox->value();
-        res(1) /= ui->factorSpinBox->value();
-        res(2) /= ui->factorSpinBox->value();
-        gridUnit*=ui->factorSpinBox->value();
-
-
-        CGALInterface::AABBTree td(*d);
-        CGALInterface::AABBTree the(*baseComplex);
-        int counterd = 0, counterhe = 0;
-        int xi = nGmin(0), yi = nGmin(1), zi = nGmin(2);
-        for (int i = 0; i < res(0); ++i){
-            yi = nGmin(1);
-            for (int j = 0; j < res(1); ++j){
-                zi = nGmin(2);
-                for (int k = 0; k < res(2); ++k){
-                    Pointd p(xi,yi,zi);
-                    if (td.isInside(p)){
-                        counterd++;
-                        if (the.isInside(p))
-                            counterhe++;
-                    }
-                    zi+=gridUnit;
-                }
-                yi+=gridUnit;
-            }
-            xi +=gridUnit;
-        }
-
-        std::cerr << "Counter d: " << counterd << "; Counter he: " << counterhe << "\n";
-        double percent = ((double)counterhe / counterd) * 100;
-        percent = 100 - percent;
-        updateLabel(percent, ui->volumePercentLabel);
-        ui->volumePercentLabel->setText(ui->volumePercentLabel->text() + "%");
-    }
-    /*
-    if (he!=nullptr && d != nullptr){
-
-        IGLInterface::SimpleIGLMesh heMesh;
-        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            heMesh = IGLInterface::SimpleIGLMesh::merge(heMesh, he->getHeightfield(i));
-        }
-        Array3D<Pointd> gridd;
-        Array3D<float> dfd, dfhe;
-        double gridUnit = ui->factorSpinBox->value() * 2;
-        IGLInterface::generateGridAndDistanceField(gridd, dfd, IGLInterface::SimpleIGLMesh(*d), gridUnit);
-        IGLInterface::generateGridAndDistanceField(gridd, dfhe, heMesh, gridUnit);
-
-        int counterd = 0, counterhe = 0;
-        for (int i = 0; i < dfd.getSizeX(); ++i){
-            for (int j = 0; j < dfd.getSizeY(); ++j){
-                for (int k = 0; k < dfd.getSizeZ(); ++k){
-                    if (dfd(i,j,k) < 0){
-                        counterd++;
-                        if (dfhe(i,j,k))
-                            counterhe++;
-                    }
-                }
-            }
-        }
-        std::cerr << "Counter d: " << counterd << "; Counter he: " << counterhe << "\n";
-        double percent = ((double)counterhe / counterd) * 100;
-        updateLabel(percent, ui->volumePercentLabel);
-        ui->volumePercentLabel->setText(ui->volumePercentLabel->text() + "%");
-    }
-    */
 }
 
 void EngineManager::on_pushButton_clicked() {

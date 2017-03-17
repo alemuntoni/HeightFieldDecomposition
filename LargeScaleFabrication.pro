@@ -38,12 +38,12 @@ ALL {
     #Optional: Viewer module
     include (trimesh/trimesh.pri)
 
-    include (eigenmesh/eigenmesh.pri)
-
     #Igl module: coontaint an intergace to some functionalities of libIGL
     #Requires: Common module, libIGL (an environment variable named LIBIGL containing the root directory of the library must be setted)
     #Optional: Viewer module, Cgal module
-    include (igl/igl.pri)
+    #include (igl/igl.pri)
+
+    include (eigenmesh/eigenmesh.pri)
 
     include(lib/cinolib.pri)
 

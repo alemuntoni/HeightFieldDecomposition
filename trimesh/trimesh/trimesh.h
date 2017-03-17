@@ -16,8 +16,8 @@
 #include <common/bounding_box.h>
 #include "load_save_trimesh.h"
 
-#ifdef IGL_DEFINED
-#include <igl/iglmesh.h>
+#ifdef EIGENMESH_DEFINED
+#include <eigenmesh/eigenmesh.h>
 #endif
 
 //using namespace std;
@@ -63,11 +63,11 @@ template<typename real> class Trimesh
             init();
         }
 
-        #ifdef IGL_DEFINED
-        Trimesh(const IGLInterface::SimpleIGLMesh& simpleIGLMesh)
+        #ifdef EIGENMESH_DEFINED
+        Trimesh(const SimpleEigenMesh& simpleEigenMesh)
         {
-            unsigned int nVertices=simpleIGLMesh.getNumberVertices();
-            unsigned int nFaces=simpleIGLMesh.getNumberFaces();
+            unsigned int nVertices=simpleEigenMesh.getNumberVertices();
+            unsigned int nFaces=simpleEigenMesh.getNumberFaces();
 
             coords.resize(nVertices*3);
             tris.resize(nFaces*3);
@@ -75,18 +75,18 @@ template<typename real> class Trimesh
             for(unsigned int i=0;i<nVertices;++i)
             {
                 unsigned int j=i*3;
-                coords[j]=simpleIGLMesh.getVertex(i).x();
-                coords[j+1]=simpleIGLMesh.getVertex(i).y();
-                coords[j+2]=simpleIGLMesh.getVertex(i).z();
+                coords[j]=simpleEigenMesh.getVertex(i).x();
+                coords[j+1]=simpleEigenMesh.getVertex(i).y();
+                coords[j+2]=simpleEigenMesh.getVertex(i).z();
 
             }
 
             for(unsigned int i=0;i<nFaces;++i)
             {
                 unsigned int j=i*3;
-                tris[j]=simpleIGLMesh.getFace(i).x();
-                tris[j+1]=simpleIGLMesh.getFace(i).y();
-                tris[j+2]=simpleIGLMesh.getFace(i).z();
+                tris[j]=simpleEigenMesh.getFace(i).x();
+                tris[j+1]=simpleEigenMesh.getFace(i).y();
+                tris[j+2]=simpleEigenMesh.getFace(i).z();
             }
 
             init();

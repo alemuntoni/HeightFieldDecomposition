@@ -10,7 +10,7 @@ read -p "Do you wish to install LibIGL? (Y/n)" yn
             cd /usr/include/
             sudo git clone --recursive https://github.com/libigl/libigl.git
             sudo chown -R $USER libigl/
-            echo "export LIBIGL=/usr/include/libigl" >> ~/.profile
+            echo "export LIBIGL_HOME=/usr/include/libigl" >> ~/.profile
             cd ~
             break;;
         * ) exit;;

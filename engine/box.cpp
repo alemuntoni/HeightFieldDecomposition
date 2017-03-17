@@ -56,8 +56,8 @@ void Box3D::getRotatedExtremes(std::vector<Pointd>& v) const {
     v[7] = p;
 }
 
-IGLInterface::SimpleIGLMesh Box3D::calculateIGLMesh(double minimumEdge) const {
-    IGLInterface::SimpleIGLMesh box;
+SimpleEigenMesh Box3D::calculateEigenMesh(double minimumEdge) const {
+    SimpleEigenMesh box;
     if (minimumEdge <= 0) {
         std::vector<Pointd> extremes;
         getRotatedExtremes(extremes);
@@ -291,16 +291,16 @@ IGLInterface::SimpleIGLMesh Box3D::calculateIGLMesh(double minimumEdge) const {
     return box;
 }
 
-IGLInterface::SimpleIGLMesh Box3D::getIGLMesh() const {
+SimpleEigenMesh Box3D::getEigenMesh() const {
     return piece;
 }
 
-void Box3D::setIGLMesh(const IGLInterface::SimpleIGLMesh& piece) {
+void Box3D::setEigenMesh(const SimpleEigenMesh& piece) {
     this->piece = piece;
 }
 
 void Box3D::generatePiece(double minimumEdge) {
-    piece = calculateIGLMesh(minimumEdge);
+    piece = calculateEigenMesh(minimumEdge);
 }
 
 void Box3D::draw() const {

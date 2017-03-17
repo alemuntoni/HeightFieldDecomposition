@@ -161,6 +161,7 @@ inline std::vector<std::vector<unsigned int> > Graph::getCircuits() {
     for (unsigned int k = 0; k < scc.size(); k++){
 
     }
+    return std::vector<std::vector<unsigned int> >();
 }
 
 inline void Graph::trajanSCC(unsigned int v, unsigned int &index, std::map<unsigned int, int> &nodeToIndex, std::map<unsigned int, unsigned int> &minDist, std::vector<unsigned int> &S, std::vector<std::vector<unsigned int> > &out) {

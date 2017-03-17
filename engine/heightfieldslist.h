@@ -1,7 +1,7 @@
 #ifndef HEIGHTFIELDSLIST_H
 #define HEIGHTFIELDSLIST_H
 
-#include "igl/gui/drawableiglmesh.h"
+#include "eigenmesh/gui/drawableeigenmesh.h"
 #include "viewer/interfaces/drawable_object.h"
 
 class HeightfieldsList : public DrawableObject, public SerializableObject{
@@ -25,15 +25,14 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         void checkHeightfields() const;
         void rotate(const Eigen::MatrixXd m);
 
-        void addHeightfield(const IGLInterface::DrawableIGLMesh &m, const Vec3 &target, int i = -1);
+        void addHeightfield(const DrawableEigenMesh &m, const Vec3 &target, int i = -1);
         unsigned int getNumHeightfields() const;
 
         void removeHeightfield(unsigned int i);
-        const IGLInterface::IGLMesh& getHeightfield(unsigned int i) const;
-        IGLInterface::IGLMesh& getHeightfield(unsigned int i);
-        //IGLInterface::IGLMesh getHeightfield(unsigned int i) const;
-        void setHeightfield(const IGLInterface::IGLMesh& m, unsigned int i, bool updateColor=false);
-        void insertHeightfield(const IGLInterface::IGLMesh& m, const Vec3 &target, unsigned int i);
+        const EigenMesh& getHeightfield(unsigned int i) const;
+        EigenMesh& getHeightfield(unsigned int i);
+        void setHeightfield(const EigenMesh& m, unsigned int i, bool updateColor=false);
+        void insertHeightfield(const EigenMesh& m, const Vec3 &target, unsigned int i);
         void explode(const Pointd &bc, double dist);
 
         // SerializableObject interface
@@ -42,7 +41,7 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
 
 
     private:
-        std::vector<IGLInterface::DrawableIGLMesh> heightfields;
+        std::vector<DrawableEigenMesh> heightfields;
         std::vector<Vec3> targets;
         bool visible;
         int nVisible;

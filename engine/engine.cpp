@@ -1,4 +1,5 @@
 #include "engine.h"
+#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
 
 #ifdef GUROBI_DEFINED
 #include <gurobi_c++.h>
@@ -119,7 +120,7 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
     }
 }
 
-void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const IGLInterface::SimpleIGLMesh &m, bool generateDistanceField, double gridUnit, bool integer){
+void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const SimpleEigenMesh &m, bool generateDistanceField, double gridUnit, bool integer){
     assert(gridUnit > 0);
     // Bounding Box
     Eigen::RowVector3d Vmin, Vmax;
@@ -230,7 +231,7 @@ void Engine::calculateGridWeights(Grid& g, const Array3D<Pointd> &grid, const Ar
 }
 
 Array3D<gridreal> Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool tolerance, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces) {
-    IGLInterface::SimpleIGLMesh m(d);
+    SimpleEigenMesh m(d);
     Array3D<Pointd> grid;
     Array3D<gridreal> distanceField;
     Engine::generateGridAndDistanceField(grid, distanceField, m);
@@ -726,7 +727,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
                     Timer gg("Generating Grid");
                     //distanceField = Engine::generateGrid(g, scaled[i], kernelDistance, tolerance, XYZ[j], savedFaces);
                     if (first) {
-                        IGLInterface::SimpleIGLMesh m(scaled[i]);
+                        SimpleEigenMesh m(scaled[i]);
                         Engine::generateGridAndDistanceField(grid, distanceField, m);
                         calculateGridWeights(g, grid, distanceField, d, kernelDistance, tolerance, XYZ[j], savedFaces);
                         first = false;
@@ -753,7 +754,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
         else {
             Array3D<Pointd> grid;
             Array3D<gridreal> distanceField;
-            IGLInterface::SimpleIGLMesh m(scaled[i]);
+            SimpleEigenMesh m(scaled[i]);
             Engine::generateGridAndDistanceField(grid, distanceField, m);
             # pragma omp parallel for
             for (unsigned int j = 0; j < TARGETS; ++j) {
@@ -778,10 +779,8 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
         BoxList tmp[ORIENTATIONS][TARGETS];
         Eigen::VectorXi faces[ORIENTATIONS];
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            IGLInterface::IGLMesh m(scaled[i]);
-            IGLInterface::IGLMesh dec;
-            bool b = m.getDecimatedMesh(dec, numberFaces, faces[i]);
-            std::cerr << "Decimated mesh " << i << ": " << b <<"\n";
+            EigenMesh m(scaled[i]);
+            EigenMeshAlgorithms::decimateMesh(m, numberFaces, faces[i]);
         }
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned int j = 0; j < TARGETS; ++j){
@@ -940,17 +939,17 @@ void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
     }
 }
 
-void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh &bc, BoxList &solutions) {
+void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxList &solutions) {
     deleteDuplicatedBoxes(solutions);
     Timer timer("Boolean Operations");
     he.resize(solutions.getNumberBoxes());
     for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
-        IGLInterface::SimpleIGLMesh box;
-        IGLInterface::SimpleIGLMesh intersection;
-        box = solutions.getBox(i).getIGLMesh();
-        IGLInterface::SimpleIGLMesh::intersection(intersection, bc, box);
-        IGLInterface::SimpleIGLMesh::difference(bc, bc, box);
-        IGLInterface::DrawableIGLMesh dimm(intersection);
+        SimpleEigenMesh box;
+        SimpleEigenMesh intersection;
+        box = solutions.getBox(i).getEigenMesh();
+        EigenMeshAlgorithms::intersection(intersection, bc, box);
+        EigenMeshAlgorithms::difference(bc, bc, box);
+        DrawableEigenMesh dimm(intersection);
         he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i);
         std::cerr << i << "\n";
     }
@@ -965,9 +964,9 @@ void Engine::booleanOperations(HeightfieldsList &he, IGLInterface::SimpleIGLMesh
 
 void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions) {
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        IGLInterface::IGLMesh m = he.getHeightfield(i);
-        std::vector<IGLInterface::SimpleIGLMesh> cc;
-        m.getConnectedComponents(cc);
+        EigenMesh m = he.getHeightfield(i);
+        std::vector<SimpleEigenMesh> cc;
+        cc = EigenMeshAlgorithms::getConnectedComponents(m);
         if (cc.size() > 1){
             ///
             std::cerr << "Split: " << i << "; Number: " << cc.size() << "\n";
@@ -984,24 +983,24 @@ void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions) 
     }
 }
 
-void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& solutions, IGLInterface::SimpleIGLMesh& bc, const Dcel& inputMesh) {
+void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& solutions, SimpleEigenMesh& bc, const Dcel& inputMesh) {
     CGALInterface::AABBTree aabb(inputMesh, true);
     for (int i = (int)he.getNumHeightfields()-1; i >= 0; i--){
-        IGLInterface::IGLMesh m = he.getHeightfield(i);
+        EigenMesh m = he.getHeightfield(i);
         bool inside = true;
         for (unsigned int j = 0; j < m.getNumberVertices() && inside; j++){
             if (aabb.getSquaredDistance(m.getVertex(j)) < EPSILON)
                 inside = false;
         }
         if (inside){
-            IGLInterface::SimpleIGLMesh::unionn(bc, bc, m);
+            EigenMeshAlgorithms::union_(bc, bc, m);
             he.removeHeightfield(i);
             solutions.removeBox(i);
         }
     }
 }
 
-void Engine::reduceHeightfields(HeightfieldsList& he, IGLInterface::SimpleIGLMesh& bc, const Dcel& inputMesh) {
+void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const Dcel& inputMesh) {
     CGALInterface::AABBTree aabb(inputMesh, true);
     double lEdge = inputMesh.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER;
     for (unsigned int i = he.getNumHeightfields()-1; i >= 1; i--){
@@ -1033,20 +1032,20 @@ void Engine::reduceHeightfields(HeightfieldsList& he, IGLInterface::SimpleIGLMes
 
         if (! Common::epsilonEqual(realBoundingBox.min(), he.getHeightfield(i).getBoundingBox().min()) ||
             ! Common::epsilonEqual(realBoundingBox.max(), he.getHeightfield(i).getBoundingBox().max()) ){
-            IGLInterface::SimpleIGLMesh box = IGLInterface::makeBox(realBoundingBox, lEdge);
-            IGLInterface::SimpleIGLMesh oldHeightfield = he.getHeightfield(i);
-            IGLInterface::SimpleIGLMesh gluePortion = IGLInterface::SimpleIGLMesh::difference(oldHeightfield, box);
-            IGLInterface::SimpleIGLMesh newHeightfield = IGLInterface::SimpleIGLMesh::intersection(oldHeightfield, box);
-            IGLInterface::SimpleIGLMesh::unionn(bc, bc, gluePortion);
+            SimpleEigenMesh box = EigenMeshAlgorithms::makeBox(realBoundingBox, lEdge);
+            SimpleEigenMesh oldHeightfield = he.getHeightfield(i);
+            SimpleEigenMesh gluePortion = EigenMeshAlgorithms::difference(oldHeightfield, box);
+            SimpleEigenMesh newHeightfield = EigenMeshAlgorithms::intersection(oldHeightfield, box);
+            EigenMeshAlgorithms::union_(bc, bc, gluePortion);
             he.setHeightfield(newHeightfield,i,true);
         }
     }
 }
 
-void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, IGLInterface::SimpleIGLMesh& bc, BoxList& solutions, const Dcel& inputMesh) {
+void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc, BoxList& solutions, const Dcel& inputMesh) {
     CGALInterface::AABBTree aabb(inputMesh, true);
     for (unsigned int i = solutions.getNumberBoxes()-1; i >= 1; i--){
-        IGLInterface::SimpleIGLMesh heightfield = he.getHeightfield(i);
+        SimpleEigenMesh heightfield = he.getHeightfield(i);
         std::vector<Pointd> pointsOnSurface;
         for (unsigned int j = 0; j < heightfield.getNumberVertices(); j++){
             Pointd p = heightfield.getVertex(j);
@@ -1104,15 +1103,15 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, IGLInterface::Simpl
             b.setMaxZ(b.getMaxZ()+5*EPSILON);
         }
         else assert(0);
-        IGLInterface::SimpleIGLMesh inters;
-        IGLInterface::SimpleIGLMesh diff;
-        IGLInterface::SimpleIGLMesh box;
+        SimpleEigenMesh inters;
+        SimpleEigenMesh diff;
+        SimpleEigenMesh box;
         //solutions.setBox(i,b);
-        box = b.getIGLMesh();
-        IGLInterface::SimpleIGLMesh::intersection(inters, heightfield, box);
-        IGLInterface::SimpleIGLMesh::difference(diff, heightfield, box);
-        IGLInterface::SimpleIGLMesh::unionn(bc, bc, diff);
-        he.addHeightfield(IGLInterface::DrawableIGLMesh(inters), solutions.getBox(i).getRotatedTarget(),  i);
+        box = b.getEigenMesh();
+        EigenMeshAlgorithms::intersection(inters, heightfield, box);
+        EigenMeshAlgorithms::difference(diff, heightfield, box);
+        EigenMeshAlgorithms::union_(bc, bc, diff);
+        he.addHeightfield(DrawableEigenMesh(inters), solutions.getBox(i).getRotatedTarget(),  i);
         std::cerr << i << "\n";
     }
 
@@ -1209,12 +1208,12 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, IGLInterface::Simpl
 
 }*/
 
-IGLInterface::SimpleIGLMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d) {
+SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d) {
     CGALInterface::AABBTree tree(d, true);
     std::set< std::pair<Pointd, Pointd> > edges;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        const IGLInterface::IGLMesh& mesh = he.getHeightfield(i);
-        Eigen::MatrixXi TT = mesh.getFacesAdjacences();
+        const EigenMesh& mesh = he.getHeightfield(i);
+        Eigen::MatrixXi TT = EigenMeshAlgorithms::getFaceAdjacences(mesh);
         for (unsigned int f = 0; f < mesh.getNumberFaces(); f++){
             Vec3 n1 = mesh.getFaceNormal(f);
             if (n1.dot(he.getTarget(i))<=EPSILON){
@@ -1286,7 +1285,7 @@ IGLInterface::SimpleIGLMesh Engine::getMarkerMesh(const HeightfieldsList& he, co
         }
 
     }
-    IGLInterface::SimpleIGLMesh marked;
+    SimpleEigenMesh marked;
     std::map<Pointd, int> mapVertices;
     int n = 0;
     for (std::pair<Pointd, Pointd> edge : edges){
@@ -1326,7 +1325,7 @@ IGLInterface::SimpleIGLMesh Engine::getMarkerMesh(const HeightfieldsList& he, co
     return marked;
 }
 
-void Engine::saveObjs(const QString& foldername, const IGLInterface::IGLMesh &originalMesh, const Dcel& inputMesh, const IGLInterface::IGLMesh &baseComplex, const HeightfieldsList &he) {
+void Engine::saveObjs(const QString& foldername, const EigenMesh &originalMesh, const Dcel& inputMesh, const EigenMesh &baseComplex, const HeightfieldsList &he) {
     QString originalMeshString = foldername + "/OriginalMesh.obj";
     QString inputMeshString = foldername + "/InputMesh.obj";
     QString baseComplexString = foldername + "/BaseComplex.obj";
@@ -1337,10 +1336,10 @@ void Engine::saveObjs(const QString& foldername, const IGLInterface::IGLMesh &or
         originalMesh.saveOnObj(originalMeshString.toStdString());
     inputMesh.saveOnObjFile(inputMeshString.toStdString());
     baseComplex.saveOnObj(baseComplexString.toStdString());
-    IGLInterface::SimpleIGLMesh marker = getMarkerMesh(he, inputMesh);
+    SimpleEigenMesh marker = getMarkerMesh(he, inputMesh);
     marker.saveOnObj(markerString.toStdString());
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        IGLInterface::IGLMesh h = he.getHeightfield(i);
+        EigenMesh h = he.getHeightfield(i);
         Dcel d(h);
         //updatePieceNormals(tree, d);
         std::stringstream ss;

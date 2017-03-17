@@ -3,7 +3,7 @@
 
 void Packing::rotateAllPieces(HeightfieldsList& he) {
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        IGLInterface::IGLMesh m = he.getHeightfield(i);
+        EigenMesh m = he.getHeightfield(i);
         Vec3 normal = he.getTarget(i);
         Vec3 zAxis(0,0,1);
         Vec3 axis = normal.cross(zAxis);
@@ -171,21 +171,22 @@ std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const Heightfi
     return packs;
 }
 
-std::vector<std::vector<IGLInterface::IGLMesh> > Packing::getPacks(std::vector<std::vector<std::pair<int, Pointd> > >& packing, const HeightfieldsList& he) {
-    std::vector<std::vector<IGLInterface::IGLMesh> > out;
+std::vector<std::vector<EigenMesh> > Packing::getPacks(std::vector<std::vector<std::pair<int, Pointd> > >& packing, const HeightfieldsList& he) {
+    std::vector<std::vector<EigenMesh> > out;
     for (unsigned int i = 0; i < packing.size(); i++){
-        std::vector<IGLInterface::IGLMesh> actualPack;
+        std::vector<EigenMesh> actualPack;
         for (unsigned int j = 0; j < packing[i].size(); j++){
             std::pair<int, Pointd> pair = packing[i][j];
             int id;
-            IGLInterface::IGLMesh mesh;
+            EigenMesh mesh;
             if (pair.first < 0){
                 id = (-pair.first)-1;
                 mesh = he.getHeightfield(id);
                 Eigen::Matrix3d rot;
                 Common::getRotationMatrix(Vec3(0,0,1),M_PI/2,rot);
                 mesh.rotate(rot);
-                mesh.updateVertexAndFaceNormals();
+                mesh.updateFaceNormals();
+                mesh.updateVerticesNormals();
             }
             else{
                 id = pair.first-1;

@@ -14,7 +14,7 @@ namespace Packing {
 
     std::vector<std::vector<std::pair<int, Pointd> > > pack(const HeightfieldsList &he, const BoundingBox& packSize);
 
-    std::vector< std::vector<IGLInterface::IGLMesh> > getPacks(std::vector<std::vector<std::pair<int, Pointd> > > &packing, const HeightfieldsList &he);
+    std::vector< std::vector<EigenMesh> > getPacks(std::vector<std::vector<std::pair<int, Pointd> > > &packing, const HeightfieldsList &he);
 }
 
 #endif // PACKING_H

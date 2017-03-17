@@ -7,7 +7,7 @@ std::map< const Dcel::Vertex*,int > Reconstruction::getMappingId(const Dcel& smo
     CGALInterface::AABBTree tree(smoothedSurface);
     //int referenced = 0;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        const IGLInterface::IGLMesh m = he.getHeightfield(i);
+        const EigenMesh m = he.getHeightfield(i);
         for (unsigned int j = 0; j < m.getNumberVertices(); j++){
             const Dcel::Vertex* v = tree.getNearestDcelVertex(m.getVertex(j));
             assert(v != nullptr);
@@ -29,7 +29,7 @@ std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothe
     CGALInterface::AABBTree tree(smoothedSurface);
     int referenced = 0;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        const IGLInterface::IGLMesh m = he.getHeightfield(i);
+        const EigenMesh m = he.getHeightfield(i);
         for (unsigned int j = 0; j < m.getNumberVertices(); j++){
             const Dcel::Vertex* v = tree.getNearestDcelVertex(m.getVertex(j));
             assert(v != nullptr);
@@ -167,9 +167,9 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
     }
 }
 
-void Reconstruction::iglMeshToTrimesh(cinolib::Trimesh& m, const IGLInterface::SimpleIGLMesh& simpleIGLMesh) {
-    unsigned int nVertices=simpleIGLMesh.getNumberVertices();
-    unsigned int nFaces=simpleIGLMesh.getNumberFaces();
+void Reconstruction::eigenMeshToTrimesh(cinolib::Trimesh& m, const SimpleEigenMesh& simpleEigenMesh) {
+    unsigned int nVertices=simpleEigenMesh.getNumberVertices();
+    unsigned int nFaces=simpleEigenMesh.getNumberFaces();
 
     std::vector<double> coords;
     std::vector<unsigned int> tris;
@@ -179,45 +179,45 @@ void Reconstruction::iglMeshToTrimesh(cinolib::Trimesh& m, const IGLInterface::S
 
     for(unsigned int i=0;i<nVertices;++i) {
         unsigned int j=i*3;
-        coords[j]=simpleIGLMesh.getVertex(i).x();
-        coords[j+1]=simpleIGLMesh.getVertex(i).y();
-        coords[j+2]=simpleIGLMesh.getVertex(i).z();
+        coords[j]=simpleEigenMesh.getVertex(i).x();
+        coords[j+1]=simpleEigenMesh.getVertex(i).y();
+        coords[j+2]=simpleEigenMesh.getVertex(i).z();
 
     }
     for(unsigned int i=0;i<nFaces;++i) {
         unsigned int j=i*3;
-        tris[j]=simpleIGLMesh.getFace(i).x();
-        tris[j+1]=simpleIGLMesh.getFace(i).y();
-        tris[j+2]=simpleIGLMesh.getFace(i).z();
+        tris[j]=simpleEigenMesh.getFace(i).x();
+        tris[j+1]=simpleEigenMesh.getFace(i).y();
+        tris[j+2]=simpleEigenMesh.getFace(i).z();
     }
     m = cinolib::Trimesh(coords, tris);
 }
 
-void Reconstruction::trimeshToIglMesh(IGLInterface::SimpleIGLMesh& simpleIGLMesh, const cinolib::Trimesh& m) {
-    simpleIGLMesh.clear();
-    simpleIGLMesh.resizeVertices(m.num_vertices());
-    simpleIGLMesh.resizeFaces(m.num_triangles());
+void Reconstruction::trimeshToEigenMesh(SimpleEigenMesh& simpleEigenMesh, const cinolib::Trimesh& m) {
+    simpleEigenMesh.clear();
+    simpleEigenMesh.resizeVertices(m.num_vertices());
+    simpleEigenMesh.resizeFaces(m.num_triangles());
     for (int i = 0; i <m.num_vertices(); i++){
         cinolib::vec3d v = m.vertex(i);
-        simpleIGLMesh.setVertex(i, v.x(), v.y(), v.z());
+        simpleEigenMesh.setVertex(i, v.x(), v.y(), v.z());
     }
     for (int i = 0; i < m.num_triangles(); i++){
-        simpleIGLMesh.setFace(i, m.triangle_vertex_id(i,0), m.triangle_vertex_id(i,1), m.triangle_vertex_id(i,2));
+        simpleEigenMesh.setFace(i, m.triangle_vertex_id(i,0), m.triangle_vertex_id(i,1), m.triangle_vertex_id(i,2));
     }
 
 }
 
-void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std::pair<int, int>>& mapping, const IGLInterface::IGLMesh& originalSurface, const BoxList &bl) {
-    IGLInterface::SimpleIGLMesh tmp(smoothedSurface);
+void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std::pair<int, int>>& mapping, const EigenMesh& originalSurface, const BoxList &bl) {
+    SimpleEigenMesh tmp(smoothedSurface);
     cinolib::logger.disable();
     cinolib::Trimesh smoothedTrimesh;
     cinolib::Trimesh originalTrimesh;
-    iglMeshToTrimesh(smoothedTrimesh, tmp);
-    iglMeshToTrimesh(originalTrimesh, originalSurface);
+    eigenMeshToTrimesh(smoothedTrimesh, tmp);
+    eigenMeshToTrimesh(originalTrimesh, originalSurface);
 
     //restoring
     restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 400);
 
-    trimeshToIglMesh(tmp, smoothedTrimesh);
+    trimeshToEigenMesh(tmp, smoothedTrimesh);
     smoothedSurface = tmp;
 }
