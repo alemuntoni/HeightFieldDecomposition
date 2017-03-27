@@ -261,7 +261,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     }
     std::set<unsigned int> boxesToEliminate;
     std::vector<std::vector<unsigned int> > loops;
-    DirectedGraph g(bl.getNumberBoxes());
+    //DirectedGraph g(bl.getNumberBoxes());
+    Graph g(bl.getNumberBoxes());
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
         for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
@@ -269,11 +270,11 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             if (boxesIntersect(b1,b2)){
                 if (isDangerousIntersection(b1, b2, tree)){
                     g.addEdge(i,j);
-                    //std::cerr << i << " -> " << j << "\n";
+                    std::cerr << i << " -> " << j << "\n";
                 }
                 if (isDangerousIntersection(b2, b1, tree)){
                     g.addEdge(j,i);
-                    //std::cerr << j << " -> " << i << "\n";
+                    std::cerr << j << " -> " << i << "\n";
                 }
 
             }
@@ -292,7 +293,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     }*/
     //
     do {
-        g.getLoops(loops);
+        //g.getLoops(loops);
+        loops = g.getCircuits();
         std::cerr << "Number loops: " << loops.size() << "\n";
         if (loops.size() > 0){ // I need to modify bl
 

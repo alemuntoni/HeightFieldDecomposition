@@ -19,28 +19,64 @@
 
 
 int main(int argc, char *argv[]) {
-    /*Graph g (8);
+    /*Graph g(6);
     g.addEdge(0,1);
+    g.addEdge(0,3);
     g.addEdge(1,2);
+    g.addEdge(1,4);
     g.addEdge(2,0);
-    g.addEdge(3,1);
-    g.addEdge(3,2);
-    g.addEdge(3,4);
+    g.addEdge(2,5);
+    g.addEdge(3,0);
+    g.addEdge(3,5);
     g.addEdge(4,3);
-    g.addEdge(4,5);
+    g.addEdge(4,1);
+    g.addEdge(5,4);
     g.addEdge(5,2);
-    g.addEdge(5,6);
-    g.addEdge(6,5);
-    g.addEdge(7,4);
-    g.addEdge(7,6);
-    g.addEdge(7,5);
-    std::vector< std::vector<unsigned int>> scc = g.getStronglyConnectedComponents();
-    for (unsigned int i = 0; i < scc.size(); i++){
-        for (unsigned int j = 0; j < scc[i].size(); j++){
-            std::cout << scc[i][j] << " ";
+
+    std::vector< std::vector<unsigned int>> circuits =  g.getCircuits();
+    for (unsigned int i = 0; i < circuits.size(); i++){
+        std::cout << "Circuit " << i << ": ";
+        for (unsigned int j = 0; j < circuits[i].size(); j++){
+            std::cout << circuits[i][j] << "; ";
         }
         std::cout << "\n";
     }*/
+
+    //buddha
+    /*Graph g(9);
+    g.addEdge(0,7);
+    g.addEdge(2,1);
+    g.addEdge(3,1);
+    g.addEdge(5,1);
+    g.addEdge(8,1);
+    g.addEdge(2,4);
+    g.addEdge(4,2);
+    g.addEdge(3,4);
+    g.addEdge(4,3);
+    g.addEdge(3,8);
+    g.addEdge(4,5);
+    g.addEdge(5,4);
+    g.addEdge(4,6);
+    g.addEdge(8,6);
+    std::vector< std::vector<unsigned int>> scc = g.getStronglyConnectedComponents();
+    for (unsigned int i = 0; i < scc.size(); i++){
+        std::cout << "Scc " << i << ": ";
+        for (unsigned int j = 0; j < scc[i].size(); j++){
+            std::cout << scc[i][j] << "; ";
+        }
+        std::cout << "\n";
+    }
+
+
+    std::vector< std::vector<unsigned int>> circuits =  g.getCircuits();
+    for (unsigned int i = 0; i < circuits.size(); i++){
+        std::cout << "Circuit " << i << ": ";
+        for (unsigned int j = 0; j < circuits[i].size(); j++){
+            std::cout << circuits[i][j] << "; ";
+        }
+        std::cout << "\n";
+    }*/
+
 
     #ifdef SERVER_MODE
     if (argc > 4){
