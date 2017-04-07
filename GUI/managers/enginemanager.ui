@@ -62,9 +62,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-268</y>
+        <y>-400</y>
         <width>406</width>
-        <height>1284</height>
+        <height>1312</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_7">
@@ -319,6 +319,20 @@
               <property name="sizeConstraint">
                <enum>QLayout::SetDefaultConstraint</enum>
               </property>
+              <item row="0" column="0" colspan="2">
+               <widget class="Line" name="line">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="19" column="0">
+               <widget class="QLabel" name="label_26">
+                <property name="text">
+                 <string>Z</string>
+                </property>
+               </widget>
+              </item>
               <item row="19" column="1">
                <widget class="QDoubleSpinBox" name="zLimitSpinBox">
                 <property name="enabled">
@@ -333,13 +347,6 @@
                 </property>
                 <property name="checked">
                  <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0" colspan="2">
-               <widget class="Line" name="line">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
@@ -556,6 +563,16 @@
                 </item>
                </widget>
               </item>
+              <item row="26" column="0">
+               <widget class="QRadioButton" name="kernelRadioButton">
+                <property name="text">
+                 <string>Kernel</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
               <item row="36" column="1">
                <widget class="QPushButton" name="createAndMinimizeAllPushButton">
                 <property name="text">
@@ -581,16 +598,6 @@
                <widget class="QLabel" name="label_3">
                 <property name="text">
                  <string>Target:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="26" column="0">
-               <widget class="QRadioButton" name="kernelRadioButton">
-                <property name="text">
-                 <string>Kernel</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -638,6 +645,13 @@
                 </property>
                </widget>
               </item>
+              <item row="17" column="0">
+               <widget class="QLabel" name="label_27">
+                <property name="text">
+                 <string>Dim Min BB</string>
+                </property>
+               </widget>
+              </item>
               <item row="4" column="0">
                <widget class="QCheckBox" name="onlyNearestTargetCheckBox">
                 <property name="text">
@@ -648,24 +662,17 @@
                 </property>
                </widget>
               </item>
-              <item row="19" column="0">
-               <widget class="QLabel" name="label_26">
-                <property name="text">
-                 <string>Z</string>
-                </property>
-               </widget>
-              </item>
-              <item row="17" column="0">
-               <widget class="QLabel" name="label_27">
-                <property name="text">
-                 <string>Dim Min BB</string>
-                </property>
-               </widget>
-              </item>
               <item row="17" column="1">
                <widget class="QDoubleSpinBox" name="minEdgeBBSpinBox">
                 <property name="enabled">
                  <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="37" column="1">
+               <widget class="QPushButton" name="coveredTrianglesPushButton">
+                <property name="text">
+                 <string>One Box Triangles Covered</string>
                 </property>
                </widget>
               </item>

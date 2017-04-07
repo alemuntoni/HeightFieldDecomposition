@@ -69,7 +69,6 @@ class Energy{
         double barrierLimitsEnergy(const BoundingBox& b, const Pointd& limits, double s = S_BARRIER) const;
 
         // Integral
-        //static double integralTricubicInterpolationOld(const double* & a, double u1, double v1, double w1, double u2, double v2, double w2);
         static double integralTricubicInterpolation(const gridreal*& a, double u1, double v1, double w1, double u2, double v2, double w2);
         double integralTricubicInterpolationEnergy(const Pointd& min, const Pointd& max) const;
         double integralTricubicInterpolationEnergy(const Eigen::VectorXd &x) const;
@@ -137,7 +136,7 @@ inline double Energy::derivateGBarrier(double x, double s) const {
 inline double Energy::derivateFi(double x, double s) const {
     return x <= 0 ? 0 :
                     x > s ?
-                        0 : -(derivateGBarrier(x,s)/pow(gBarrier(x,s), 2));
+                        0 : -(derivateGBarrier(x,s)/(gBarrier(x,s)*gBarrier(x,s)));
 }
 
 inline double Energy::lowConstraint(const Pointd& min, const Pointd& c, double s) const {

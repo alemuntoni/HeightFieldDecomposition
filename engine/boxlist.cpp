@@ -127,7 +127,7 @@ void BoxList::sortByHeight() {
 
 void BoxList::generatePieces(double minimumDistance) {
     for (unsigned int i= 0; i < boxes.size(); i++){
-        boxes[i].generatePiece(minimumDistance);
+        boxes[i].generateEigenMesh(minimumDistance);
     }
 }
 

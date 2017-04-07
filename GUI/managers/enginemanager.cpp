@@ -176,6 +176,10 @@ void EngineManager::deserializeBC(const std::string& filename) {
     }
     originalMesh.saveOnObj("OriginalMesh.obj");
     d->saveOnObjFile("mesh.obj");
+    /*d->saveOnObjFile("boxes/mesh.obj");
+    for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
+        solutions->getBox(i).saveOnObjFile("boxes/box" + std::to_string(i) + ".obj", solutions->getBox(i).getColor());
+    }*/
     //BU
     /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(0,0,1), M_PI/2);
     he->rotate(m);
@@ -1350,6 +1354,7 @@ void EngineManager::on_reorderBoxes_clicked() {
         solutions->sort(ordering);
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
             std::cerr << solutions->getBox(i).getId() << " ";
+            solutions->getBox(i).getEigenMesh().saveOnObj("ob" + std::to_string(i) + "_" + std::to_string(solutions->getBox(i).getId()) + ".obj");
         }
         std::cerr << "\n";
         mainWindow->updateGlCanvas();
@@ -1556,7 +1561,7 @@ void EngineManager::on_snappingPushButton_clicked() {
                         b2[coord+3] = b1[coord+3];
                     }
                 }
-                b2.generatePiece(av*7);
+                b2.generateEigenMesh(av*7);
                 solutions->setBox(j, b2);
             }
         }
@@ -1716,4 +1721,33 @@ void EngineManager::on_createBoxPushButton_clicked() {
     //b = new Box3D(solutions->getBox(value));
     //mainWindow->pushObj(b, "Box");
     mainWindow->updateGlCanvas();
+}
+
+void EngineManager::on_coveredTrianglesPushButton_clicked() {
+    if (solutions != nullptr && d != nullptr){
+        for (Dcel::Face* f : d->faceIterator())
+            f->setColor(Color(128,128,128));
+        std::vector< std::set<const Dcel::Face*> > trianglesCovered (solutions->getNumberBoxes());
+        CGALInterface::AABBTree tree(*d);
+        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++) {
+            std::list<const Dcel::Face*> ltmp = tree.getCompletelyContainedDcelFaces(solutions->getBox(i));
+            std::set<const Dcel::Face*> tcbox(ltmp.begin(), ltmp.end());
+            trianglesCovered[i] = tcbox;
+        }
+        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++) {
+            std::set<const Dcel::Face*> lonelyTriangles = trianglesCovered[i];
+            for (unsigned int j = 0; j < solutions->getNumberBoxes(); j++){
+                if (j != i){
+                    lonelyTriangles = Common::setDifference(lonelyTriangles, trianglesCovered[j]);
+                }
+            }
+            assert(lonelyTriangles.size() > 0);
+            for (const Dcel::Face* f : lonelyTriangles){
+                d->getFace(f->getId())->setColor(solutions->getBox(i).getColor());
+            }
+        }
+        d->update();
+        d->saveOnObjFile("boxes/MeshTriangles.obj");
+    }
+
 }

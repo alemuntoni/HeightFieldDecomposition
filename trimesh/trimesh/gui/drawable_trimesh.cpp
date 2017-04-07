@@ -30,7 +30,7 @@ void DrawableTrimesh::clear() {
 }
 
 void DrawableTrimesh::draw() const {
-    DrawableMesh::draw(coords.size()/3, tris.size()/3, coords.data(), tris.data(), vertexNormals.data(), vertexColors.data(), triangleNormals.data(), triangleColors.data());
+    DrawableMesh::draw(coords.size()/3, tris.size()/3, coords.data(), tris.data(), vertexNormals.data(), vertexColors.data(), triangleNormals.data(), triangleColors.data(), bbox.min(), bbox.max());
 }
 
 Pointd DrawableTrimesh::sceneCenter() const {
@@ -39,7 +39,7 @@ Pointd DrawableTrimesh::sceneCenter() const {
 }
 
 double DrawableTrimesh::sceneRadius() const {
-    return bbox.diag();
+    return bbox.diag() / 2;
 }
 
 void DrawableTrimesh::setVertexColor(float r, float g, float b) {

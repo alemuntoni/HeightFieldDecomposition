@@ -299,7 +299,7 @@ void Box3D::setEigenMesh(const SimpleEigenMesh& piece) {
     this->piece = piece;
 }
 
-void Box3D::generatePiece(double minimumEdge) {
+void Box3D::generateEigenMesh(double minimumEdge) {
     piece = calculateEigenMesh(minimumEdge);
 }
 

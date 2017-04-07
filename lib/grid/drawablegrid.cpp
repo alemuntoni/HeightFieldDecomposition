@@ -207,7 +207,7 @@ Pointd DrawableGrid::sceneCenter() const {
 }
 
 double DrawableGrid::sceneRadius() const {
-   return bb.diag();
+   return bb.diag() / 2;
 }
 
 bool DrawableGrid::isVisible() const {

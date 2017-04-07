@@ -924,9 +924,19 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
 void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate, BoxList& allSolutions) {
     optimize(solutions, d, kernelDistance, limit, limits, tolerance, onlyNearestTarget, areaTolerance, angleTolerance, file, decimate);
     allSolutions=solutions;
+
+    for (unsigned int i = 0; i < allSolutions.getNumberBoxes(); i++){
+        allSolutions.getBox(i).saveOnObjFile(std::string("boxes/before/box") + std::to_string(i) + ".obj", allSolutions.getBox(i).getColor());
+    }
+
     Timer tGurobi("Gurobi");
     deleteBoxes(solutions, d);
     tGurobi.stopAndPrint();
+
+    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
+        solutions.getBox(i).saveOnObjFile(std::string("boxes/after/box") + std::to_string(i) + ".obj", solutions.getBox(i).getColor());
+    }
+    d.saveOnObjFile("boxes/mesh.obj");
 }
 
 void Engine::deleteDuplicatedBoxes(BoxList& solutions) {

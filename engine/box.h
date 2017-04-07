@@ -37,7 +37,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         SimpleEigenMesh calculateEigenMesh(double minimumEdge = -1) const;
         SimpleEigenMesh getEigenMesh() const;
         void setEigenMesh(const SimpleEigenMesh& piece);
-        void generatePiece(double minimumEdge = -1);
+        void generateEigenMesh(double minimumEdge = -1);
 
         // DrawableObject interface
         void draw() const;
