@@ -14,6 +14,8 @@ class BoxList : public DrawableObject, public SerializableObject{
 
         void clearBoxes();
         unsigned int getNumberBoxes() const;
+        unsigned int size() const;
+        Box3D& operator[](unsigned int i);
         Box3D getBox(unsigned int i) const;
         void setBox(unsigned int i, const Box3D &b);
         void insert(const BoxList &o);
@@ -26,6 +28,10 @@ class BoxList : public DrawableObject, public SerializableObject{
         void sortByHeight();
         void generatePieces(double minimumDistance = -1);
         void calculateTrianglesCovered(const CGALInterface::AABBTree &tree);
+        std::vector<Box3D>::const_iterator begin() const;
+        std::vector<Box3D>::const_iterator end() const;
+        std::vector<Box3D>::iterator begin();
+        std::vector<Box3D>::iterator end();
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -37,6 +43,7 @@ class BoxList : public DrawableObject, public SerializableObject{
 
         void setVisibleBox(int i);
         void setCylinders(bool b);
+        void visualizeEigenMeshBox(bool b);
 
         // DrawableObject interface
         void draw() const;
@@ -52,6 +59,7 @@ class BoxList : public DrawableObject, public SerializableObject{
         bool visible;
         int visibleBox;
         bool cylinder;
+        bool eigenMesh;
         #ifdef VIEWER_DEFINED
         void drawLine(const Pointd& a, const Pointd& b, const Color& c) const;
         void drawCube(const Box3D& b, const Color& c) const;

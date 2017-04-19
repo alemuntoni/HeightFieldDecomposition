@@ -12,7 +12,7 @@ void DrawableIrregularGrid::draw() const {
         for (unsigned int i = 0; i < resX-1; i++) {
             for (unsigned int j = 0; j < resY-1; j++) {
                 for (unsigned int k = 0; k < resZ-1; k++) {
-                    drawBox(points(i,j,k),points(i+1,j,k),points(i+1,j,k+1),points(i,j,k+1),points(i,j+1,k),points(i+1,j+1,k),points(i+1,j+1,k+1),points(i,j+1,k+1),QColor(0,0,0));
+                    Viewer::drawBox(points(i,j,k),points(i+1,j,k),points(i+1,j,k+1),points(i,j,k+1),points(i,j+1,k),points(i+1,j+1,k),points(i+1,j+1,k+1),points(i,j+1,k+1),QColor(0,0,0));
                 }
             }
         }

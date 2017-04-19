@@ -34,19 +34,18 @@ class Graph {
         void unblock(unsigned int u, std::map<unsigned int, bool> &blocked, std::map<unsigned int, std::set<unsigned> > &B);
         void trajanSCC(unsigned int v, unsigned int& index, std::map<unsigned int, int>& nodeToIndex, std::map<unsigned int, unsigned int>& minDist, std::vector<unsigned int>& S, std::vector<std::vector<unsigned int> >& out);
         std::map<unsigned int, std::vector<unsigned int> > nodes;
-        int numberNodes;
 };
 
-inline Graph::Graph() : numberNodes(0){
+inline Graph::Graph() {
 }
 
-inline Graph::Graph(unsigned int numberNodes) : numberNodes(numberNodes){
+inline Graph::Graph(unsigned int numberNodes){
     for (unsigned int i = 0; i < numberNodes; i++)
         nodes[i] = std::vector<unsigned int>();
 }
 
 inline unsigned int Graph::size() const {
-    return numberNodes;
+    return nodes.size();
 }
 
 inline unsigned int Graph::addNode(int n) {

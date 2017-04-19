@@ -1,10 +1,11 @@
 #include "boxlist.h"
+#include "eigenmesh/gui/drawableeigenmesh.h"
 
-BoxList::BoxList() : visible(true), visibleBox(-1), cylinder(true){
+BoxList::BoxList() : visible(true), visibleBox(-1), cylinder(true), eigenMesh(false){
 
 }
 
-BoxList::BoxList(bool cylinders) : visible(true), visibleBox(-1), cylinder(cylinders){
+BoxList::BoxList(bool cylinders) : visible(true), visibleBox(-1), cylinder(cylinders), eigenMesh(false){
 }
 
 void BoxList::addBox(const Box3D& b, int i) {
@@ -21,6 +22,15 @@ void BoxList::clearBoxes() {
 
 unsigned int BoxList::getNumberBoxes() const{
     return boxes.size();
+}
+
+unsigned int BoxList::size() const {
+    return boxes.size();
+}
+
+Box3D& BoxList::operator[](unsigned int i) {
+    assert(i < boxes.size());
+    return boxes[i];
 }
 
 Box3D BoxList::getBox(unsigned int i) const {
@@ -137,6 +147,22 @@ void BoxList::calculateTrianglesCovered(const CGALInterface::AABBTree& tree) {
     }
 }
 
+std::vector<Box3D>::const_iterator BoxList::begin() const {
+    return boxes.begin();
+}
+
+std::vector<Box3D>::const_iterator BoxList::end() const {
+    return boxes.end();
+}
+
+std::vector<Box3D>::iterator BoxList::begin() {
+    return boxes.begin();
+}
+
+std::vector<Box3D>::iterator BoxList::end() {
+    return boxes.end();
+}
+
 void BoxList::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(boxes, binaryFile);
 }
@@ -160,6 +186,10 @@ void BoxList::setCylinders(bool b) {
     cylinder = b;
 }
 
+void BoxList::visualizeEigenMeshBox(bool b) {
+    eigenMesh = b;
+}
+
 void BoxList::draw() const {
     #ifdef VIEWER_DEFINED
     if (visible){
@@ -174,8 +204,16 @@ void BoxList::draw() const {
                 }
             }
         }
-        else
+        else {
+
             boxes[visibleBox].draw();
+            if (eigenMesh){
+                DrawableEigenMesh dm(boxes[visibleBox].getEigenMesh());
+                //dm.setWireframe(true);
+                //dm.setPointsShading();
+                dm.draw();
+            }
+        }
     }
     #endif
 }

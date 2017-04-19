@@ -7,6 +7,7 @@
 #include "cgal/aabbtree.h"
 #include "lib/graph/graph.h"
 
+#define SPLIT_DEBUG
 
 namespace Splitting {
 
@@ -23,7 +24,7 @@ namespace Splitting {
 
     std::set<unsigned int> getTrianglesCovered(const Box3D& b, const CGALInterface::AABBTree &aabb);
 
-    Graph getGraph(const BoxList& bl, const Dcel& d, const CGALInterface::AABBTree &tree);
+    Graph getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree);
 
     std::pair<unsigned int, unsigned int> getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList& bl);
 

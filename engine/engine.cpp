@@ -1,5 +1,6 @@
 #include "engine.h"
 #include <eigenmesh/algorithms/eigenmesh_algorithms.h>
+#include <dcel/algorithms/dcel_algorithms.h>
 
 #ifdef GUROBI_DEFINED
 #include <gurobi_c++.h>
@@ -406,7 +407,7 @@ void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector
 }
 
 
-int Engine::deleteBoxesOld(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces){
+int Engine::deleteBoxesNonOptimal(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces){
 
     //ordering vector of triples
     struct triplesOrdering {
@@ -489,7 +490,7 @@ int Engine::deleteBoxesOld(BoxList& boxList, std::vector< std::tuple<int, Box3D,
     return n-eliminate.size();
 }
 
-int Engine::deleteBoxesOld(BoxList& boxList, const Dcel& d) {
+int Engine::deleteBoxesNonOptimal(BoxList& boxList, const Dcel& d) {
     Dcel scaled0(d);
     Eigen::Matrix3d m[ORIENTATIONS];
     m[0] = Eigen::Matrix3d::Identity();
@@ -552,7 +553,7 @@ int Engine::deleteBoxesOld(BoxList& boxList, const Dcel& d) {
         vectorTriples.push_back(triple);
     }
 
-    return deleteBoxesOld(boxList, vectorTriples, d.getNumberFaces());
+    return deleteBoxesNonOptimal(boxList, vectorTriples, d.getNumberFaces());
 }
 
 
@@ -584,7 +585,6 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
         std::cerr << "Warning: Uncovered triangles.\n";
 
     try {
-        Timer t("AAA");
         GRBEnv env;
         GRBModel model(env);
 
@@ -614,10 +614,7 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
                 deleted++;
             }
         }
-        t.stopAndPrint();
         return nBoxes - deleted;
-
-
     }
     catch (GRBException e) {
         std::cerr << "Gurobi Exception\n" << e.getErrorCode() << " : " << e.getMessage() << std::endl;
@@ -629,7 +626,7 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
     }
     return -1;
     #else
-    return deleteBoxesOld(boxList, d);
+    return deleteBoxesNonOptimal(boxList, d);
     #endif
 }
 
@@ -939,6 +936,37 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
     d.saveOnObjFile("boxes/mesh.obj");
 }
 
+void Engine::boxPostProcessing(BoxList& solutions, const Dcel& d) {
+    //this just count how many surface connected components generates every box
+    std::vector< std::set<const Dcel::Face*> > lonelyTriangles (solutions.getNumberBoxes());
+    std::vector< std::set<const Dcel::Face*> > trianglesCovered (solutions.getNumberBoxes());
+    CGALInterface::AABBTree tree(d);
+    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++) {
+        std::list<const Dcel::Face*> ltmp = tree.getCompletelyContainedDcelFaces(solutions.getBox(i));
+        std::set<const Dcel::Face*> tcbox(ltmp.begin(), ltmp.end());
+        trianglesCovered[i] = tcbox;
+    }
+    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++) {
+        std::set<const Dcel::Face*> lonelyTrianglesBox = trianglesCovered[i];
+        for (unsigned int j = 0; j < solutions.getNumberBoxes(); j++){
+            if (j != i){
+                lonelyTrianglesBox = Common::setDifference(lonelyTrianglesBox, trianglesCovered[j]);
+            }
+        }
+        assert(lonelyTrianglesBox.size() > 0);
+        lonelyTriangles[i] = lonelyTrianglesBox;
+    }
+    unsigned int bi = 0;
+    for (Box3D& b : solutions) {
+        std::list<const Dcel::Face*> list = tree.getCompletelyContainedDcelFaces(b);
+        std::vector<std::set<const Dcel::Face*> > connectedComponents = DcelAlgorithms::getConnectedComponents(list.begin(), list.end());
+        if (connectedComponents.size() > 1){
+            std::cerr << "Box " << bi << " has " << connectedComponents.size() << " connected components\n";
+        }
+        bi++;
+    }
+}
+
 void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
     for (unsigned int i = 0; i < solutions.getNumberBoxes()-1; i++){
         if (solutions.getBox(i).min() == solutions.getBox(i+1).min() &&
@@ -957,6 +985,9 @@ void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxLis
         SimpleEigenMesh box;
         SimpleEigenMesh intersection;
         box = solutions.getBox(i).getEigenMesh();
+        #ifdef BOOL_DEBUG
+        box.saveOnObj("bool_" + std::to_string(i) + "_" + std::to_string(solutions.getBox(i).getId()) + ".obj");
+        #endif
         EigenMeshAlgorithms::intersection(intersection, bc, box);
         EigenMeshAlgorithms::difference(bc, bc, box);
         DrawableEigenMesh dimm(intersection);
@@ -1366,3 +1397,4 @@ void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, Dcel& piece
         }
     }
 }
+

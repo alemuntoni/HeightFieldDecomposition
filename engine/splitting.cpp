@@ -6,8 +6,6 @@
 
 #include <eigenmesh/algorithms/eigenmesh_algorithms.h>
 
-#define BOOL_DEBUG
-#define SPLIT_DEBUG
 
 bool Splitting::boxesIntersect(const Box3D& b1, const Box3D& b2) {
     if (b1.getMaxX() <= b2.getMinX()) return false; // a is left of b
@@ -252,11 +250,8 @@ std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGAL
     return trianglesCovered;
 }
 
-Graph Splitting::getGraph(const BoxList& bl, const Dcel& d, const CGALInterface::AABBTree &tree){
+Graph Splitting::getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree){
     Graph g(bl.getNumberBoxes());
-    #ifdef SPLIT_DEBUG
-    d.saveOnObjFile("bmodel.obj");
-    #endif
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
         for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
@@ -268,11 +263,15 @@ Graph Splitting::getGraph(const BoxList& bl, const Dcel& d, const CGALInterface:
             if (boxesIntersect(b1,b2)){
                 if (isDangerousIntersection(b1, b2, tree)){
                     g.addEdge(i,j);
+                    #ifdef SPLIT_DEBUG
                     std::cerr << i << " -> " << j << "\n";
+                    #endif
                 }
                 if (isDangerousIntersection(b2, b1, tree)){
                     g.addEdge(j,i);
+                    #ifdef SPLIT_DEBUG
                     std::cerr << j << " -> " << i << "\n";
+                    #endif
                 }
 
             }
@@ -385,8 +384,10 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     std::set<unsigned int> boxesToEliminate; //set of boxes to eliminate after the splitting -> these boxes cannot removed from bl during the splitting
     std::vector<std::vector<unsigned int> > loops;
 
-
-    Graph g = getGraph(bl, d, tree);
+    #ifdef SPLIT_DEBUG
+    d.saveOnObjFile("bmodel.obj");
+    #endif
+    Graph g = getGraph(bl, tree);
 
     ///Detect and delete cycles on graph (modifying bl)
 
@@ -403,10 +404,6 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             // now I can remove "arcToRemove"
             Box3D b1 = bl.getBox(arcToRemove.first), b2 = bl.getBox(arcToRemove.second), b3;
 
-            #ifdef SPLIT_DEBUG
-            b1.getEigenMesh().saveOnObj("bb1.obj");
-            b2.getEigenMesh().saveOnObj("bb2.obj");
-            #endif
             ///
             ///
             /// now I can choose which box split, b1 or b2
@@ -414,13 +411,23 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
             chooseBestSplit(b1, b2, bl, tree, boxesToEliminate, trianglesCovered);
             //now b1 will split b2 in b2+b3
 
+            #ifdef SPLIT_DEBUG
+            b1.getEigenMesh().saveOnObj("bb1.obj");
+            b2.getEigenMesh().saveOnObj("bb2.obj");
+            #endif
+
             ///
             ///
             ///
 
             splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
+            #ifdef SPLIT_DEBUG
             b2.getEigenMesh().saveOnObj("newb2.obj");
+            #endif
             if (!(b3.min() == Pointd() && b3.max() == Pointd())){ //se b3 esiste
+                #ifdef SPLIT_DEBUG
+                b3.getEigenMesh().saveOnObj("newb3.obj");
+                #endif
                 g.removeEdgeIfExists(arcToRemove.first, arcToRemove.second);
                 g.removeEdgeIfExists(arcToRemove.second, arcToRemove.first);
                 b3.setId(bl.getNumberBoxes());
@@ -445,9 +452,9 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                 std::set<unsigned int> trianglesCoveredB1 = trianglesCovered[b1.getId()];
                 std::set<unsigned int> trianglesCoveredB2 = trianglesCovered[b2.getId()];
                 std::set<unsigned int> tmp;
-                std::set_difference(trianglesCoveredB2.begin(), trianglesCoveredB2.end(), trianglesCoveredB1.begin(), trianglesCoveredB1.end(), std::inserter(tmp, tmp.begin()));
+                tmp = Common::setDifference(trianglesCoveredB2, trianglesCoveredB1);
                 trianglesCoveredB2.clear();
-                std::set_difference(tmp.begin(), tmp.end(), trianglesCoveredB3.begin(), trianglesCoveredB3.end(), std::inserter(trianglesCoveredB2,trianglesCoveredB2.begin()));
+                trianglesCoveredB2 = Common::setDifference(tmp, trianglesCoveredB3);
                 trianglesCovered[b2.getId()] = trianglesCoveredB2;
 
                 //qualcuno copre già tutti i triangoli coperti da b2? se si, b2 viene aggiunta alle box da eliminare, e nessun arco punterà più ad essa
@@ -493,7 +500,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                         #endif
                         if (boxesIntersect(b2, other)){
                             if (isDangerousIntersection(b2, other, tree, true)){
-                            g.addEdge(b2.getId(), outgoing);
+                                g.addEdge(b2.getId(), outgoing);
                             }
                         }
                     }
@@ -526,27 +533,22 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                     bl.addBox(b3);
                     //costruisco tutti i conflitti di b3 (archi entranti e uscenti)
                     g.addNode();
-                    for (unsigned int incoming : incomingb2){
-                        Box3D other = bl.getBox(incoming);
-                        #ifdef SPLIT_DEBUG
-                        b3.getEigenMesh().saveOnObj("ba.obj");
-                        other.getEigenMesh().saveOnObj("bb.obj");
-                        #endif
-                        if (boxesIntersect(other,b3)){
-                            if (isDangerousIntersection(other, b3, tree, true)){
-                                g.addEdge(incoming,b3.getId());
+                    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
+                        if ((int)i != b1.getId() && (int)i != b2.getId() && (int)i != b3.getId()){
+                            Box3D other = bl.getBox(i);
+                            #ifdef SPLIT_DEBUG
+                            b3.getEigenMesh().saveOnObj("ba.obj");
+                            other.getEigenMesh().saveOnObj("bb.obj");
+                            #endif
+                            if (boxesIntersect(other,b3)){
+                                if (isDangerousIntersection(other, b3, tree, true)){
+                                    g.addEdge(i, b3.getId());
+                                }
                             }
-                        }
-                    }
-                    for (unsigned int outgoing : outgoingb2){
-                        Box3D other = bl.getBox(outgoing);
-                        #ifdef SPLIT_DEBUG
-                        b3.getEigenMesh().saveOnObj("ba.obj");
-                        other.getEigenMesh().saveOnObj("bb.obj");
-                        #endif
-                        if (boxesIntersect(b3, other)){
-                            if (isDangerousIntersection(b3, other, tree, true)){
-                                g.addEdge(b3.getId(), outgoing);
+                            if (boxesIntersect(b3, other)){
+                                if (isDangerousIntersection(b3, other, tree, true)){
+                                    g.addEdge(b3.getId(), i);
+                                }
                             }
                         }
                     }
@@ -571,10 +573,13 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
         bl.removeBox(*rit);
     }
 
-    #ifdef BOOL_DEBUG
-    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++)
-        bl.getBox(i).getEigenMesh().saveOnObj("b"+std::to_string(i)+".obj");
-    #endif
+    std::cerr << "Graph after splitting: \n";
+    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
+        std::vector<unsigned int> v = g.getOutgoingNodes(i);
+        for (unsigned int j = 0; j < v.size(); j++){
+            std::cerr << i << " -> " << j << "\n";
+        }
+    }
 
     //resorting and map old with new graph
     //this is necessary because small indices prevails if

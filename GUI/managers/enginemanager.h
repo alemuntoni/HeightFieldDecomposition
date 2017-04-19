@@ -14,7 +14,6 @@
 #include "eigenmesh/gui/drawableeigenmesh.h"
 #include "engine/heightfieldslist.h"
 #include "engine/splitting.h"
-#include "viewer/wait_dialog.h"
 
 
 namespace Ui {
@@ -181,6 +180,10 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_coveredTrianglesPushButton_clicked();
 
+        void on_drawBoxMeshCheckBox_stateChanged(int arg1);
+
+        void on_markerMeshPushButton_clicked();
+
     signals:
         void finished();
 
@@ -196,6 +199,7 @@ class EngineManager : public QFrame, public SerializableObject {
         Energy e;
         HeightfieldsList *he;
         DrawableEigenMesh originalMesh;
+        DrawableEigenMesh markerMesh;
 };
 
 #endif // ENGINEMANAGER_H

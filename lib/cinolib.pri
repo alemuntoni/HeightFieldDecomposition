@@ -5,4 +5,4 @@ CONFIG          -= app_bundle
 macx{
     QMAKE_CXXFLAGS   = -Wno-c++11-extensions
 }
-INCLUDEPATH     += $$PWD/CinoLib/ #-> link to cinolib
+INCLUDEPATH     += $$(CINOLIB_HOME) #-> link to cinolib

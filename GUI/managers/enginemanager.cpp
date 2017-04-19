@@ -1354,7 +1354,7 @@ void EngineManager::on_reorderBoxes_clicked() {
         solutions->sort(ordering);
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
             std::cerr << solutions->getBox(i).getId() << " ";
-            solutions->getBox(i).getEigenMesh().saveOnObj("ob" + std::to_string(i) + "_" + std::to_string(solutions->getBox(i).getId()) + ".obj");
+            //solutions->getBox(i).getEigenMesh().saveOnObj("ob" + std::to_string(i) + "_" + std::to_string(solutions->getBox(i).getId()) + ".obj");
         }
         std::cerr << "\n";
         mainWindow->updateGlCanvas();
@@ -1734,7 +1734,11 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
             std::set<const Dcel::Face*> tcbox(ltmp.begin(), ltmp.end());
             trianglesCovered[i] = tcbox;
         }
+        int h = 0;
+        int step = 240 / solutions->getNumberBoxes();
+        Color c;
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++) {
+            c.setHsv(h, 255, 255);
             std::set<const Dcel::Face*> lonelyTriangles = trianglesCovered[i];
             for (unsigned int j = 0; j < solutions->getNumberBoxes(); j++){
                 if (j != i){
@@ -1743,11 +1747,32 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
             }
             assert(lonelyTriangles.size() > 0);
             for (const Dcel::Face* f : lonelyTriangles){
-                d->getFace(f->getId())->setColor(solutions->getBox(i).getColor());
+                d->getFace(f->getId())->setColor(c);
             }
+            h+=step;
         }
         d->update();
         d->saveOnObjFile("boxes/MeshTriangles.obj");
+
+        Engine::boxPostProcessing(*solutions, *d);
+        mainWindow->updateGlCanvas();
     }
 
+}
+
+void EngineManager::on_drawBoxMeshCheckBox_stateChanged(int arg1) {
+    if (solutions!=nullptr){
+        solutions->visualizeEigenMeshBox(arg1==Qt::Checked);
+        mainWindow->updateGlCanvas();
+    }
+}
+
+void EngineManager::on_markerMeshPushButton_clicked() {
+    if (he != nullptr && d != nullptr){
+        markerMesh = Engine::getMarkerMesh(*he, *d);
+        markerMesh.setPointsShading();
+        markerMesh.setWireframe(true);
+        markerMesh.setWireframeWidth(4);
+        mainWindow->pushObj(&markerMesh, "MarkerMesh");
+    }
 }

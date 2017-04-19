@@ -11,14 +11,14 @@
 #include <QApplication>
 //#include "common/comparators.h"
 #include "engine/engine.h"
-#include "trimesh/gui/trimeshmanager.h"
+//#include "trimesh/gui/trimeshmanager.h"
 #include "lib/graph/graph.h"
 
 #include "eigenmesh/gui/eigenmeshmanager.h"
 #include "eigenmesh/gui/booleansmanager.h"
 
-
 int main(int argc, char *argv[]) {
+
     /*Graph g(6);
     g.addEdge(0,1);
     g.addEdge(0,3);
@@ -230,8 +230,8 @@ int main(int argc, char *argv[]) {
     BooleansManager bm(&gui);
     gui.addManager(&bm, "Booleans Manager");
 
-    TrimeshManager tm(&gui);
-    gui.addManager(&tm, "Trimesh Manager");
+    //TrimeshManager tm(&gui);
+    //gui.addManager(&tm, "Trimesh Manager");
 
     EigenMeshManager em(&gui);
     gui.addManager(&em, "EigenMesh Manager");

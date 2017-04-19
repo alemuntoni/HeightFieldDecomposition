@@ -1,18 +1,14 @@
-Come far compilare il progetto su ubuntu:
+How to run everything on ubuntu:
 
-Installare QtCreator e Qt5.
-sudo apt-get install qtcreator qt5-default
+install qtcreator and qt5:
+sudo apt-get install qt5-default
+(I sugest to install qtcreator downloading it from the official website, it is more stable: https://www.qt.io/)
 
-Installare le seguenti librerie:
+install these libraries:
 sudo apt-get install libboost-all-dev libcgal-dev libgmp-dev libqglviewer-dev
 
+clone libigl and create an environment variable named LIBIGL_HOME containing its directory
+install gurobi and create an environment variable named GUROBI_HOME containing its directory
+clone cinolib and create an environment variable named CINOLIB_HOME containing its directory
 
-Documentazione Dcel:
 
-Installare Doxygen:
-sudo apt-get install doxygen
-
-dalla cartella lib:
-doxygen dcel_doxygen_config
-
-verrà creata una cartella chiamata "dcel_doc" contenente html e latex della documentazione

@@ -19,6 +19,8 @@
 #define TARGETS 6
 #define STARTING_NUMBER_FACES 300
 
+//#define BOOL_DEBUG
+
 namespace Engine {
     Vec3 getClosestTarget(const Vec3 &n);
 
@@ -50,9 +52,9 @@ namespace Engine {
 
     void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<bool> > >& vectorTriples, const BoxList& boxList, const Dcel &d);
 
-    int deleteBoxesOld(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);
+    int deleteBoxesNonOptimal(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);
 
-    int deleteBoxesOld(BoxList& boxList, const Dcel &d);
+    int deleteBoxesNonOptimal(BoxList& boxList, const Dcel &d);
 
     int deleteBoxes(BoxList& boxList, const Dcel &d);
 
@@ -62,6 +64,8 @@ namespace Engine {
     void optimize(BoxList &solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits = Pointd(), bool tolerance = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true);
 
     void optimizeAndDeleteBoxes(BoxList &solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits = Pointd(), bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true, BoxList& allSolutions = dummy2);
+
+    void boxPostProcessing(BoxList &solutions, const Dcel& d);
 
     void deleteDuplicatedBoxes(BoxList &solutions);
 
