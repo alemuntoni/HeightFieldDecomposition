@@ -905,6 +905,11 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
             #endif
         }
     }
+
+    /** @todo To test */
+    ////TO TEST
+    //Engine::boxPostProcessing(solutions, d);
+
     solutions.generatePieces(d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
 }
 
@@ -937,34 +942,51 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
 }
 
 void Engine::boxPostProcessing(BoxList& solutions, const Dcel& d) {
-    //this just count how many surface connected components generates every box
-    std::vector< std::set<const Dcel::Face*> > lonelyTriangles (solutions.getNumberBoxes());
-    std::vector< std::set<const Dcel::Face*> > trianglesCovered (solutions.getNumberBoxes());
     CGALInterface::AABBTree tree(d);
-    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++) {
-        std::list<const Dcel::Face*> ltmp = tree.getCompletelyContainedDcelFaces(solutions.getBox(i));
-        std::set<const Dcel::Face*> tcbox(ltmp.begin(), ltmp.end());
-        trianglesCovered[i] = tcbox;
-    }
-    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++) {
-        std::set<const Dcel::Face*> lonelyTrianglesBox = trianglesCovered[i];
-        for (unsigned int j = 0; j < solutions.getNumberBoxes(); j++){
-            if (j != i){
-                lonelyTrianglesBox = Common::setDifference(lonelyTrianglesBox, trianglesCovered[j]);
-            }
-        }
-        assert(lonelyTrianglesBox.size() > 0);
-        lonelyTriangles[i] = lonelyTrianglesBox;
-    }
-    unsigned int bi = 0;
-    for (Box3D& b : solutions) {
+    for (int bi = solutions.getNumberBoxes(); bi >= 0; bi--) {
+        Box3D b = solutions.getBox(bi);
         std::list<const Dcel::Face*> list = tree.getCompletelyContainedDcelFaces(b);
         std::vector<std::set<const Dcel::Face*> > connectedComponents = DcelAlgorithms::getConnectedComponents(list.begin(), list.end());
         if (connectedComponents.size() > 1){
             std::cerr << "Box " << bi << " has " << connectedComponents.size() << " connected components\n";
+            std::vector<Box3D> tmpvect = splitBoxWithMoreThanOneConnectedComponent(b, connectedComponents);
+            solutions.removeBox(bi);
+            for (Box3D& bb : tmpvect){
+                solutions.addBox(bb);
+            }
         }
-        bi++;
     }
+}
+
+std::vector<Box3D> Engine::splitBoxWithMoreThanOneConnectedComponent(const Box3D& originalBox, const std::vector<std::set<const Dcel::Face*> > &connectedComponents) {
+    std::vector<Box3D> splittedBoxes;
+    for (unsigned int i = 0; i < connectedComponents.size(); i++){
+        Box3D b;
+        b.setTarget(originalBox.getTarget());
+        b.setColor(originalBox.getColor());
+        bool first = true;
+        for (const Dcel::Face* f : connectedComponents[i]){
+            for (const Dcel::Vertex* v : f->incidentVertexIterator()){
+                if (first){
+                    first = false;
+                    b.setMin(v->getCoordinate());
+                    b.setMax(v->getCoordinate());
+                }
+                else {
+                    b.setMin(b.min().min(v->getCoordinate()));
+                    b.setMax(b.max().max(v->getCoordinate()));
+                }
+            }
+        }
+        for (unsigned int orientation = 0; orientation < 3; orientation++){
+            if (originalBox.getTarget() == XYZ[orientation] || originalBox.getTarget() == XYZ[orientation+3]){
+                b.min()[orientation] = originalBox.min()[orientation];
+                b.max()[orientation] = originalBox.max()[orientation];
+            }
+        }
+        splittedBoxes.push_back(b);
+    }
+    return splittedBoxes;
 }
 
 void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
@@ -1397,4 +1419,3 @@ void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, Dcel& piece
         }
     }
 }
-

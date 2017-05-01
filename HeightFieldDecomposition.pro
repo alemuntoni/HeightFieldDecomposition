@@ -45,7 +45,7 @@ ALL {
 
     include (eigenmesh/eigenmesh.pri)
 
-    include(lib/cinolib.pri)
+    include(cinolib_interface/cinolib.pri)
 
     HEADERS += \
         common.h \

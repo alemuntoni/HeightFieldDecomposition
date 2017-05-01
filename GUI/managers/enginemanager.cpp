@@ -1396,9 +1396,25 @@ void EngineManager::on_loadSmoothedPushButton_clicked() {
             delete d;
             d = nullptr;
             QMessageBox msgBox;
-            msgBox.setText("Format file not supported.");
+            msgBox.setText("File Format not supported.");
             msgBox.exec();
         }
+    }
+}
+
+void EngineManager::on_taubinPushButton_clicked() {
+    if (d == nullptr){
+        d = new DrawableDcel(Reconstruction::taubinSmoothing(originalMesh, ui->nItersSpinBox->value(), ui->lambdaSpinBox->value(), ui->muSpinBox->value()));
+        d->setWireframe(true);
+        d->setPointsShading();
+        d->update();
+        mainWindow->pushObj(d, "Smoothed Mesh");
+        mainWindow->updateGlCanvas();
+    }
+    else {
+        *d = DrawableDcel(Reconstruction::taubinSmoothing(*d, ui->nItersSpinBox->value(), ui->lambdaSpinBox->value(), ui->muSpinBox->value()));
+        d->update();
+        mainWindow->updateGlCanvas();
     }
 }
 
@@ -1633,8 +1649,6 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
                 mesh.setFaceColor(color.redF(),color.greenF(),color.blueF());
                 he->setHeightfield(mesh, i);
             }
-
-
         }
     }
     mainWindow->updateGlCanvas();
@@ -1645,13 +1659,18 @@ void EngineManager::on_deleteBoxesPushButton_clicked() {
         int n = Engine::deleteBoxes(*solutions, *d);
         //int n = Engine::deleteBoxesGSC(*solutions, *d);
         std::cerr << "N deleted boxes: " << n << "\n";
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow->updateGlCanvas();
     }
 }
 
 void EngineManager::on_pushButton_clicked() {
     if (g == nullptr && d!= nullptr) {
+        BoundingBox bb = d->getBoundingBox();
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
+        if (originalMesh.getNumberVertices() > 0){
+            originalMesh.scale(bb, d->getBoundingBox());
+        }
         std::set<const Dcel::Face*> flippedFaces, savedFaces;
         Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
         updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
@@ -1745,7 +1764,7 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
                     lonelyTriangles = Common::setDifference(lonelyTriangles, trianglesCovered[j]);
                 }
             }
-            assert(lonelyTriangles.size() > 0);
+            //assert(lonelyTriangles.size() > 0);
             for (const Dcel::Face* f : lonelyTriangles){
                 d->getFace(f->getId())->setColor(c);
             }
@@ -1754,7 +1773,6 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
         d->update();
         d->saveOnObjFile("boxes/MeshTriangles.obj");
 
-        Engine::boxPostProcessing(*solutions, *d);
         mainWindow->updateGlCanvas();
     }
 
@@ -1774,5 +1792,11 @@ void EngineManager::on_markerMeshPushButton_clicked() {
         markerMesh.setWireframe(true);
         markerMesh.setWireframeWidth(4);
         mainWindow->pushObj(&markerMesh, "MarkerMesh");
+    }
+}
+
+void EngineManager::on_splitConnectedComponentsPushButton_clicked() {
+    if (d != nullptr && solutions != nullptr){
+        Engine::boxPostProcessing(*solutions, *d);
     }
 }

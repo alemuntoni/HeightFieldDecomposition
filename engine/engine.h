@@ -67,6 +67,8 @@ namespace Engine {
 
     void boxPostProcessing(BoxList &solutions, const Dcel& d);
 
+    std::vector<Box3D> splitBoxWithMoreThanOneConnectedComponent(const Box3D& originalBox, const std::vector<std::set<const Dcel::Face*> >& connectedComponents);
+
     void deleteDuplicatedBoxes(BoxList &solutions);
 
     void booleanOperations(HeightfieldsList &he, SimpleEigenMesh& bc, BoxList &solutions);

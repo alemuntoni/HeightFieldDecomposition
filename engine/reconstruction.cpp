@@ -1,6 +1,15 @@
 #include "reconstruction.h"
 #include "cgal/aabbtree.h"
 #include "common.h"
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Wunused-variable" //Don't know why it doesn't work...
+#include <cinolib/smoothing.h>
+#pragma GCC diagnostic pop
+#endif //__GNUC__
+
+#include <cinolib_interface/mesh_conversions.h>
 
 std::map< const Dcel::Vertex*,int > Reconstruction::getMappingId(const Dcel& smoothedSurface, const HeightfieldsList& he) {
     std::map< const Dcel::Vertex*,int > mapping;
@@ -167,44 +176,21 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
     }
 }
 
-void Reconstruction::eigenMeshToTrimesh(cinolib::Trimesh& m, const SimpleEigenMesh& simpleEigenMesh) {
-    unsigned int nVertices=simpleEigenMesh.getNumberVertices();
-    unsigned int nFaces=simpleEigenMesh.getNumberFaces();
-
-    std::vector<double> coords;
-    std::vector<unsigned int> tris;
-
-    coords.resize(nVertices*3);
-    tris.resize(nFaces*3);
-
-    for(unsigned int i=0;i<nVertices;++i) {
-        unsigned int j=i*3;
-        coords[j]=simpleEigenMesh.getVertex(i).x();
-        coords[j+1]=simpleEigenMesh.getVertex(i).y();
-        coords[j+2]=simpleEigenMesh.getVertex(i).z();
-
-    }
-    for(unsigned int i=0;i<nFaces;++i) {
-        unsigned int j=i*3;
-        tris[j]=simpleEigenMesh.getFace(i).x();
-        tris[j+1]=simpleEigenMesh.getFace(i).y();
-        tris[j+2]=simpleEigenMesh.getFace(i).z();
-    }
-    m = cinolib::Trimesh(coords, tris);
+Dcel Reconstruction::taubinSmoothing(const SimpleEigenMesh& m, int n_iters, double lambda, const double mu) {
+    cinolib::Trimesh trimesh;
+    MeshConversions::eigenMeshToTrimesh(trimesh, m);
+    cinolib::smooth_taubin(trimesh, cinolib::COTANGENT, std::set<int>(), n_iters, lambda, mu);
+    //trimesh.save("smoothed.obj");
+    Dcel d(trimesh);
+    return d;
 }
 
-void Reconstruction::trimeshToEigenMesh(SimpleEigenMesh& simpleEigenMesh, const cinolib::Trimesh& m) {
-    simpleEigenMesh.clear();
-    simpleEigenMesh.resizeVertices(m.num_vertices());
-    simpleEigenMesh.resizeFaces(m.num_triangles());
-    for (int i = 0; i <m.num_vertices(); i++){
-        cinolib::vec3d v = m.vertex(i);
-        simpleEigenMesh.setVertex(i, v.x(), v.y(), v.z());
-    }
-    for (int i = 0; i < m.num_triangles(); i++){
-        simpleEigenMesh.setFace(i, m.triangle_vertex_id(i,0), m.triangle_vertex_id(i,1), m.triangle_vertex_id(i,2));
-    }
-
+Dcel Reconstruction::taubinSmoothing(const Dcel& d, int n_iters, double lambda, const double mu) {
+    cinolib::Trimesh trimesh;
+    MeshConversions::dcelToTrimesh(trimesh, d);
+    cinolib::smooth_taubin(trimesh, cinolib::COTANGENT, std::set<int>(), n_iters, lambda, mu);
+    Dcel d1(trimesh);
+    return d1;
 }
 
 void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std::pair<int, int>>& mapping, const EigenMesh& originalSurface, const BoxList &bl) {
@@ -212,12 +198,11 @@ void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std
     cinolib::logger.disable();
     cinolib::Trimesh smoothedTrimesh;
     cinolib::Trimesh originalTrimesh;
-    eigenMeshToTrimesh(smoothedTrimesh, tmp);
-    eigenMeshToTrimesh(originalTrimesh, originalSurface);
+    MeshConversions::eigenMeshToTrimesh(smoothedTrimesh, tmp);
+    MeshConversions::eigenMeshToTrimesh(originalTrimesh, originalSurface);
 
     //restoring
     restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 400);
 
-    trimeshToEigenMesh(tmp, smoothedTrimesh);
-    smoothedSurface = tmp;
+    smoothedSurface = SimpleEigenMesh(smoothedTrimesh);
 }

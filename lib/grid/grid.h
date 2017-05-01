@@ -9,12 +9,6 @@
 
 #include "cgal/aabbtree.h"
 
-#define BORDER_PAY 5
-#define STD_PAY 0
-#define MIN_PAY -10
-#define MAX_PAY 500
-
-
 class Grid : public SerializableObject{
     public:
 

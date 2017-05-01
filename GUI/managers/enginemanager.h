@@ -156,6 +156,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_loadSmoothedPushButton_clicked();
 
+        void on_taubinPushButton_clicked();
+
         void on_packPushButton_clicked();
 
         void on_reconstructionPushButton_clicked();
@@ -183,6 +185,8 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_drawBoxMeshCheckBox_stateChanged(int arg1);
 
         void on_markerMeshPushButton_clicked();
+
+        void on_splitConnectedComponentsPushButton_clicked();
 
     signals:
         void finished();

@@ -12,6 +12,11 @@
 #include <Eigen/Core>
 #include <memory>
 
+#define BORDER_PAY 5
+#define STD_PAY 0
+#define MIN_PAY -10
+#define MAX_PAY 800
+
 #define FLIP_ANGLE 0//-0.2588190451
 #define LENGTH_MULTIPLIER 7
 //#define USE_2D_ONLY
