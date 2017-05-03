@@ -100,25 +100,29 @@ void HeightfieldsList::rotate(const Eigen::MatrixXd m) {
     }
 }
 
-void HeightfieldsList::addHeightfield(const DrawableEigenMesh& m, const Vec3& target, int i) {
+void HeightfieldsList::addHeightfield(const DrawableEigenMesh& m, const Vec3& target, int i, bool updateColor) {
     if (i < 0){
         heightfields.push_back(m);
         targets.push_back(target);
-        Color c = colorOfNormal(target);
-        heightfields[heightfields.size()-1].setFaceColor(c.redF(), c.greenF(), c.blueF());
-        for (unsigned int i = 0; i < m.getNumberFaces(); i++){
-            if (m.getFaceNormal(i).dot(target) < FLIP_ANGLE-EPSILON)
-                heightfields[heightfields.size()-1].setFaceColor(0,0,0,i);
+        if (updateColor){
+            Color c = colorOfNormal(target);
+            heightfields[heightfields.size()-1].setFaceColor(c.redF(), c.greenF(), c.blueF());
+            for (unsigned int i = 0; i < m.getNumberFaces(); i++){
+                if (m.getFaceNormal(i).dot(target) < FLIP_ANGLE-EPSILON)
+                    heightfields[heightfields.size()-1].setFaceColor(0,0,0,i);
+            }
         }
     }
     else {
         heightfields[i] = m;
         targets[i] = target;
-        Color c = colorOfNormal(target);
-        heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
-        for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-            if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
-                heightfields[i].setFaceColor(0,0,0,j);
+        if (updateColor) {
+            Color c = colorOfNormal(target);
+            heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
+            for (unsigned int j = 0; j < m.getNumberFaces(); j++){
+                if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
+                    heightfields[i].setFaceColor(0,0,0,j);
+            }
         }
     }
 }
@@ -156,15 +160,17 @@ void HeightfieldsList::setHeightfield(const EigenMesh& m, unsigned int i, bool u
     }
 }
 
-void HeightfieldsList::insertHeightfield(const EigenMesh& m, const Vec3& target, unsigned int i) {
+void HeightfieldsList::insertHeightfield(const EigenMesh& m, const Vec3& target, unsigned int i, bool updateColor) {
     assert (i < heightfields.size()+1);
     heightfields.insert(heightfields.begin() + i, m);
     targets.insert(targets.begin() + i, target);
-    Color c = colorOfNormal(target);
-    heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
-    for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-        if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
-            heightfields[i].setFaceColor(0,0,0,j);
+    if (updateColor){
+        Color c = colorOfNormal(target);
+        heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
+        for (unsigned int j = 0; j < m.getNumberFaces(); j++){
+            if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
+                heightfields[i].setFaceColor(0,0,0,j);
+        }
     }
 }
 

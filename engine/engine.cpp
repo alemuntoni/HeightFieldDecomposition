@@ -999,11 +999,14 @@ void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
     }
 }
 
-void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxList &solutions) {
+void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxList &solutions, bool alternativeColors) {
     deleteDuplicatedBoxes(solutions);
     Timer timer("Boolean Operations");
     he.resize(solutions.getNumberBoxes());
+    const double pass = 240.0 / solutions.getNumberBoxes();
+    Color c;
     for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
+        c.setHsv((int)(i*pass),255,255);
         SimpleEigenMesh box;
         SimpleEigenMesh intersection;
         box = solutions.getBox(i).getEigenMesh();
@@ -1013,7 +1016,12 @@ void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxLis
         EigenMeshAlgorithms::intersection(intersection, bc, box);
         EigenMeshAlgorithms::difference(bc, bc, box);
         DrawableEigenMesh dimm(intersection);
-        he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i);
+        if (alternativeColors){
+            dimm.setFaceColor(c.redF(), c.greenF(), c.blueF());
+            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i, false);
+        }
+        else
+            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i, true);
         std::cerr << i << "\n";
     }
     timer.stopAndPrint();
@@ -1036,9 +1044,13 @@ void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions) 
             ///
             Box3D box = solutions.getBox(i);
             Vec3 target = he.getTarget(i);
-            he.setHeightfield(cc[0], i, true);
+            EigenMesh em(cc[0]);
+            em.setFaceColor(m.getColor(0));
+            he.setHeightfield(em, i, false);
             for (unsigned int j = 1; j < cc.size(); j++){
-                he.insertHeightfield(cc[j], target, i+j);
+                em = EigenMesh(cc[j]);
+                em.setFaceColor(m.getColor(0));
+                he.insertHeightfield(em, target, i+j, false);
                 solutions.insert(box, i+j);
             }
             i = i+cc.size()-1;
@@ -1417,5 +1429,22 @@ void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, Dcel& piece
             const Dcel::Vertex* n = tree.getNearestDcelVertex(v->getCoordinate());
             v->setNormal(n->getNormal());
         }
+    }
+}
+
+void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, EigenMesh& piece) {
+    Dcel d(piece);
+    for (Dcel::Vertex* v : d.vertexIterator()){
+        if (tree.getSquaredDistance(v->getCoordinate() < EPSILON)){
+            const Dcel::Vertex* n = tree.getNearestDcelVertex(v->getCoordinate());
+            v->setNormal(n->getNormal());
+        }
+    }
+    piece = EigenMesh(d);
+}
+
+void Engine::updatePiecesNormals(const CGALInterface::AABBTree& tree, HeightfieldsList& he) {
+    for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
+        updatePieceNormals(tree, he.getHeightfield(i));
     }
 }

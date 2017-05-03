@@ -25,14 +25,14 @@ class HeightfieldsList : public DrawableObject, public SerializableObject{
         void checkHeightfields() const;
         void rotate(const Eigen::MatrixXd m);
 
-        void addHeightfield(const DrawableEigenMesh &m, const Vec3 &target, int i = -1);
+        void addHeightfield(const DrawableEigenMesh &m, const Vec3 &target, int i = -1, bool updateColor = true);
         unsigned int getNumHeightfields() const;
 
         void removeHeightfield(unsigned int i);
         const EigenMesh& getHeightfield(unsigned int i) const;
         EigenMesh& getHeightfield(unsigned int i);
         void setHeightfield(const EigenMesh& m, unsigned int i, bool updateColor=false);
-        void insertHeightfield(const EigenMesh& m, const Vec3 &target, unsigned int i);
+        void insertHeightfield(const EigenMesh& m, const Vec3 &target, unsigned int i, bool updateColor = true);
         void explode(const Pointd &bc, double dist);
 
         // SerializableObject interface

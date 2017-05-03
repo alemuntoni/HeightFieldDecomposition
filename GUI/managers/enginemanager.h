@@ -188,6 +188,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_splitConnectedComponentsPushButton_clicked();
 
+        void on_globalOptimalOrientationPushButton_clicked();
+
     signals:
         void finished();
 

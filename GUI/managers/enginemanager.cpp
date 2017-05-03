@@ -8,10 +8,10 @@
 #include "cgal/aabbtree.h"
 #include "engine/packing.h"
 #include "engine/reconstruction.h"
-#include "engineworker.h"
 #include <QThread>
 #include "lib/dcel_segmentation/segmentation.h"
 #include <eigenmesh/algorithms/eigenmesh_algorithms.h>
+#include "engine/orientation.h"
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -1136,9 +1136,11 @@ void EngineManager::on_subtractPushButton_clicked() {
 
         ///cleaning solutions
         Timer tBooleans("Total Booleans Time");
-        Engine::booleanOperations(*he, bc, *solutions);
+        Engine::booleanOperations(*he, bc, *solutions, true);
         Engine::splitConnectedComponents(*he, *solutions);
         Engine::glueInternHeightfieldsToBaseComplex(*he, *solutions, bc, *d);
+        CGALInterface::AABBTree tree(*d);
+        Engine::updatePiecesNormals(tree, *he);
         tBooleans.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
         solutions->setVisibleBox(0);
@@ -1798,5 +1800,18 @@ void EngineManager::on_markerMeshPushButton_clicked() {
 void EngineManager::on_splitConnectedComponentsPushButton_clicked() {
     if (d != nullptr && solutions != nullptr){
         Engine::boxPostProcessing(*solutions, *d);
+    }
+}
+
+void EngineManager::on_globalOptimalOrientationPushButton_clicked() {
+    if (d != nullptr){
+        Eigen::Matrix3d matr = Orientation::optimalOrientation(*d);
+        std::cerr << "Rotation Matrix: " << matr << "\n";
+        d->rotate(matr);
+        d->update();
+        if (originalMesh.getNumberVertices() > 0){
+            originalMesh.rotate(matr);
+        }
+        mainWindow->updateGlCanvas();
     }
 }

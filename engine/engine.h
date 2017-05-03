@@ -71,7 +71,7 @@ namespace Engine {
 
     void deleteDuplicatedBoxes(BoxList &solutions);
 
-    void booleanOperations(HeightfieldsList &he, SimpleEigenMesh& bc, BoxList &solutions);
+    void booleanOperations(HeightfieldsList &he, SimpleEigenMesh& bc, BoxList &solutions, bool alternativeColors = false);
 
     void splitConnectedComponents(HeightfieldsList &he, BoxList &solutions);
 
@@ -86,6 +86,9 @@ namespace Engine {
     SimpleEigenMesh getMarkerMesh(const HeightfieldsList& he, const Dcel& d);
 
     void updatePieceNormals(const CGALInterface::AABBTree& tree, Dcel &piece);
+    void updatePieceNormals(const CGALInterface::AABBTree& tree, EigenMesh &piece);
+
+    void updatePiecesNormals(const CGALInterface::AABBTree& tree, HeightfieldsList &he);
 
     void saveObjs(const QString& foldername, const EigenMesh& originalMesh, const Dcel& inputMesh, const EigenMesh& baseComplex, const HeightfieldsList& he);
 }

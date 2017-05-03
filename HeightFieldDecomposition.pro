@@ -50,7 +50,6 @@ ALL {
     HEADERS += \
         common.h \
         GUI/managers/enginemanager.h \
-        GUI/managers/engineworker.h \
         engine/tricubic.h \
         engine/energy.h \
         engine/box.h \
@@ -76,7 +75,6 @@ ALL {
         main.cpp \
         common.cpp \
         GUI/managers/enginemanager.cpp \
-        GUI/managers/engineworker.cpp \
         engine/tricubic.cpp \
         engine/energy.cpp \
         engine/box.cpp \
@@ -126,3 +124,9 @@ exists($$(GUROBI_HOME)){
     LIBS += -L$$(GUROBI_HOME)/lib -lgurobi_g++5.2 -lgurobi70
     DEFINES += GUROBI_DEFINED
 }
+
+HEADERS += \
+    engine/orientation.h
+
+SOURCES += \
+    engine/orientation.cpp
