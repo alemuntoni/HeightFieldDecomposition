@@ -12,12 +12,49 @@
 //#include "common/comparators.h"
 #include "engine/engine.h"
 //#include "trimesh/gui/trimeshmanager.h"
-#include "lib/graph/graph.h"
+#include "lib/graph/directedgraph.h"
 
 #include "eigenmesh/gui/eigenmeshmanager.h"
 #include "eigenmesh/gui/booleansmanager.h"
 
+#include "lib/graph/bipartitegraph.h"
+
 int main(int argc, char *argv[]) {
+
+    /*BipartiteGraph<int, float> cacca;
+    cacca.addUNode(1);
+    cacca.addUNode(2);
+    cacca.addUNode(3);
+    cacca.addUNode(4);
+    cacca.addUNode(5);
+    cacca.addVNode(1.5);
+    cacca.addVNode(2.5);
+    cacca.addVNode(3.5);
+    cacca.addVNode(4.5);
+    cacca.addVNode(5.5);
+    cacca.addVNode(6.5);
+    cacca.addArc(1, 2.5);
+    cacca.addArc(1, 4.5);
+    cacca.addArc(2, 1.5);
+    cacca.addArc(2, 2.5);
+    cacca.addArc(3, 2.5);
+    cacca.addArc(3, 3.5);
+    cacca.addArc(4, 2.5);
+    cacca.addArc(4, 4.5);
+    cacca.addArc(4, 6.5);
+    cacca.addArc(5, 4.5);
+    cacca.addArc(5, 5.5);
+    cacca.addArc(5, 6.5);
+
+    cacca.deleteVNode(6.5);
+    for (const float& f : cacca.adjacentUNodeIterator(5)){
+        std::cerr << f << "; ";
+    }
+    std::cerr << "\n";
+    for (int i : cacca.adjacentVNodeIterator(2.5)){
+        std::cerr << i << "; ";
+    }
+    std::cerr << "\n";*/
 
     /*Graph g(6);
     g.addEdge(0,1);

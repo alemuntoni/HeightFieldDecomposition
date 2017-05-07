@@ -63,13 +63,16 @@ ALL {
         lib/grid/drawablegrid.h \
         lib/grid/drawableirregulargrid.h \
         lib/grid/irregulargrid.h \
-        lib/graph/graph.h \
-        lib/graph/directedgraph.h \
         lib/packing/binpack2d.h \
         lib/dcel_segmentation/chart.h \
         lib/dcel_segmentation/segmentation_iterators.h \
         lib/dcel_segmentation/segmentation_struct.h \
-        lib/dcel_segmentation/segmentation.h
+        lib/dcel_segmentation/segmentation.h \
+        engine/orientation.h \
+        lib/graph/bipartitegraph.h \
+        lib/graph/undirectednode.h \
+        lib/graph/bipartitegraphiterators.h \
+        lib/graph/directedgraph.h
 
     SOURCES += \
         main.cpp \
@@ -88,7 +91,8 @@ ALL {
         lib/grid/drawablegrid.cpp \
         lib/grid/drawableirregulargrid.cpp \
         lib/dcel_segmentation/chart.cpp \
-        lib/dcel_segmentation/segmentation_struct.cpp
+        lib/dcel_segmentation/segmentation_struct.cpp \
+        engine/orientation.cpp
 
     FORMS += \
         GUI/managers/enginemanager.ui
@@ -125,8 +129,3 @@ exists($$(GUROBI_HOME)){
     DEFINES += GUROBI_DEFINED
 }
 
-HEADERS += \
-    engine/orientation.h
-
-SOURCES += \
-    engine/orientation.cpp

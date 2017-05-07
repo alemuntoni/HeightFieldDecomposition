@@ -5,7 +5,7 @@
 #include "heightfieldslist.h"
 #include "boxlist.h"
 #include "cgal/aabbtree.h"
-#include "lib/graph/graph.h"
+#include "lib/graph/directedgraph.h"
 
 #define SPLIT_DEBUG
 
@@ -24,7 +24,7 @@ namespace Splitting {
 
     std::set<unsigned int> getTrianglesCovered(const Box3D& b, const CGALInterface::AABBTree &aabb);
 
-    Graph getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree);
+    DirectedGraph getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree);
 
     std::pair<unsigned int, unsigned int> getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList& bl);
 

@@ -250,8 +250,8 @@ std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGAL
     return trianglesCovered;
 }
 
-Graph Splitting::getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree){
-    Graph g(bl.getNumberBoxes());
+DirectedGraph Splitting::getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree){
+    DirectedGraph g(bl.getNumberBoxes());
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
         for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
@@ -387,7 +387,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     #ifdef SPLIT_DEBUG
     d.saveOnObjFile("bmodel.obj");
     #endif
-    Graph g = getGraph(bl, tree);
+    DirectedGraph g = getGraph(bl, tree);
 
     ///Detect and delete cycles on graph (modifying bl)
 
@@ -590,7 +590,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         mapping[bl.getBox(i).getId()] = i;
     }
-    Graph newGraph(bl.getNumberBoxes());
+    DirectedGraph newGraph(bl.getNumberBoxes());
     for (unsigned int node = 0; node < g.size(); ++node){
         std::vector<unsigned int> outgoing = g.getOutgoingNodes(node);
         for (unsigned int o : outgoing){

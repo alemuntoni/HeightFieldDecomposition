@@ -1136,7 +1136,7 @@ void EngineManager::on_subtractPushButton_clicked() {
 
         ///cleaning solutions
         Timer tBooleans("Total Booleans Time");
-        Engine::booleanOperations(*he, bc, *solutions, true);
+        Engine::booleanOperations(*he, bc, *solutions, false);
         Engine::splitConnectedComponents(*he, *solutions);
         Engine::glueInternHeightfieldsToBaseComplex(*he, *solutions, bc, *d);
         CGALInterface::AABBTree tree(*d);
