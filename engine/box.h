@@ -61,6 +61,8 @@ class Box3D : public BoundingBox, public DrawableObject{
         int getTrianglesCovered() const;
         void setTrianglesCovered(int value);
 
+        bool operator <(const Box3D& other) const;
+
     protected:
         //Pointd min, max;
         Pointd c1, c2, c3;

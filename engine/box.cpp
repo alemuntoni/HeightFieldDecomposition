@@ -397,6 +397,10 @@ Vec3 Box3D::getRotatedTarget() const {
     return std::move(r);
 }
 
+bool Box3D::operator <(const Box3D& other) const {
+    return id < other.id;
+}
+
 #ifdef VIEWER_DEFINED
 void Box3D::drawLine(const Pointd &a, const Pointd &b, const Color& c) const {
     glBegin(GL_LINES);

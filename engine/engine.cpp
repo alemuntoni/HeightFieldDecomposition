@@ -338,7 +338,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool limit, const Poin
     Timer total("Boxlist expanding");
     int np = boxList.getNumberBoxes();
     Timer t("");
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic, 2)
     for (int i = 0; i < np; i++){
         Box3D b = boxList.getBox(i);
         if (printTimes){
@@ -952,6 +952,7 @@ void Engine::boxPostProcessing(BoxList& solutions, const Dcel& d) {
             std::vector<Box3D> tmpvect = splitBoxWithMoreThanOneConnectedComponent(b, connectedComponents);
             solutions.removeBox(bi);
             for (Box3D& bb : tmpvect){
+                bb.generateEigenMesh();
                 solutions.addBox(bb);
             }
         }

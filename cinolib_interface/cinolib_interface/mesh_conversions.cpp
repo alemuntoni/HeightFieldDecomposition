@@ -1,5 +1,6 @@
 #include "mesh_conversions.h"
 
+#ifdef EIGENMESH_DEFINED
 void MeshConversions::eigenMeshToTrimesh(cinolib::Trimesh& m, const SimpleEigenMesh& simpleEigenMesh) {
     unsigned int nVertices=simpleEigenMesh.getNumberVertices();
     unsigned int nFaces=simpleEigenMesh.getNumberFaces();
@@ -25,7 +26,9 @@ void MeshConversions::eigenMeshToTrimesh(cinolib::Trimesh& m, const SimpleEigenM
     }
     m = cinolib::Trimesh(coords, tris);
 }
+#endif
 
+#ifdef DCEL_DEFINED
 void MeshConversions::dcelToTrimesh(cinolib::Trimesh& m, const Dcel& d) {
     unsigned int nVertices=d.getNumberVertices();
     unsigned int nFaces=d.getNumberFaces();
@@ -62,3 +65,4 @@ void MeshConversions::dcelToTrimesh(cinolib::Trimesh& m, const Dcel& d) {
     }
     m = cinolib::Trimesh(coords, tris);
 }
+#endif

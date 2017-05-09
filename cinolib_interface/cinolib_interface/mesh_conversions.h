@@ -12,10 +12,13 @@
 #endif //DCEL_DEFINED
 
 namespace MeshConversions {
-
+    #ifdef EIGENMESH_DEFINED
     void eigenMeshToTrimesh(cinolib::Trimesh& m, const SimpleEigenMesh& simpleEigenMesh);
+    #endif //EIGENMESH_DEFINED
 
+    #ifdef DCEL_DEFINED
     void dcelToTrimesh(cinolib::Trimesh& m, const Dcel &d);
+    #endif //DCEL_DEFINED
 }
 
 #endif // MESHCONVERSIONS_H

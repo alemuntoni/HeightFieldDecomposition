@@ -18,9 +18,10 @@
 #include "eigenmesh/gui/booleansmanager.h"
 
 #include "lib/graph/bipartitegraph.h"
+#include <typeinfo>       // operator typeid
 
 int main(int argc, char *argv[]) {
-
+    //std::cerr << sizeof(double) << "\n";
     /*BipartiteGraph<int, float> cacca;
     cacca.addUNode(1);
     cacca.addUNode(2);
@@ -46,12 +47,12 @@ int main(int argc, char *argv[]) {
     cacca.addArc(5, 5.5);
     cacca.addArc(5, 6.5);
 
-    cacca.deleteVNode(6.5);
-    for (const float& f : cacca.adjacentUNodeIterator(5)){
+    cacca.deleteVNode(5.5);
+    for (const float& f : cacca.vNodeIterator()){
         std::cerr << f << "; ";
     }
     std::cerr << "\n";
-    for (int i : cacca.adjacentVNodeIterator(2.5)){
+    for (int i : cacca.uNodeIterator()){
         std::cerr << i << "; ";
     }
     std::cerr << "\n";*/

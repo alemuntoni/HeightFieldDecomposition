@@ -17,6 +17,7 @@ class UndirectedNode {
         void clearAdjacentNodes();
         std::set<unsigned int>::iterator begin() const;
         std::set<unsigned int>::iterator end() const;
+        unsigned int sizeAdjacentNodes() const;
 
     protected:
         T info;
@@ -74,6 +75,11 @@ std::set<unsigned int>::iterator UndirectedNode<T>::begin() const {
 template <class T>
 std::set<unsigned int>::iterator UndirectedNode<T>::end() const {
     return adjacentNodes.end();
+}
+
+template<class T>
+unsigned int UndirectedNode<T>::sizeAdjacentNodes() const {
+    return adjacentNodes.size();
 }
 
 #endif // UNDIRECTEDNODE_H

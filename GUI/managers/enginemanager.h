@@ -190,6 +190,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_globalOptimalOrientationPushButton_clicked();
 
+        void on_experimentButton_clicked();
+
     signals:
         void finished();
 

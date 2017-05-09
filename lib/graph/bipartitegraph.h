@@ -16,6 +16,8 @@ class BipartiteGraph {
         bool existsVNode(const T2& vNode) const;
         unsigned int sizeU() const;
         unsigned int sizeV() const;
+        int sizeAdjacencesUNode(const T1& uNode) const;
+        int sizeAdjacencesVNode(const T2 &vNode) const;
         bool deleteUNode(const T1& uNode);
         bool deleteVNode(const T2& vNode);
         bool addArc(const T1& uNode, const T2 &vNode);
@@ -28,8 +30,14 @@ class BipartiteGraph {
         class AdjacentUNodeIterator;
         class AdjacentVNodeIterator;
 
+        class UNodeIterator;
+        class VNodeIterator;
+
         class AdjacentUNodeRangeBasedIterator;
         class AdjacentVNodeRangeBasedIterator;
+
+        class UNodeRangeBasedIterator;
+        class VNodeRangeBasedIterator;
 
         AdjacentUNodeIterator adjacentUNodeBegin(const T1 &uNode) const;
         AdjacentUNodeIterator adjacentUNodeEnd(const T1 &uNode) const;
@@ -37,8 +45,17 @@ class BipartiteGraph {
         AdjacentVNodeIterator adjacentVNodeBegin(const T2 &vNode) const;
         AdjacentVNodeIterator adjacentVNodeEnd(const T2 &vNode) const;
 
+        UNodeIterator uNodeBegin() const;
+        UNodeIterator uNodeEnd() const;
+
+        VNodeIterator vNodeBegin() const;
+        VNodeIterator vNodeEnd() const;
+
         AdjacentUNodeRangeBasedIterator adjacentUNodeIterator(const T1& uNode) const;
         AdjacentVNodeRangeBasedIterator adjacentVNodeIterator(const T2& vNode) const;
+
+        UNodeRangeBasedIterator uNodeIterator() const;
+        VNodeRangeBasedIterator vNodeIterator() const;
 
     protected:
         int getIdU(const T1& uNode) const;
@@ -122,6 +139,24 @@ unsigned int BipartiteGraph<T1, T2>::sizeU() const {
 template <class T1, class T2>
 unsigned int BipartiteGraph<T1, T2>::sizeV() const {
     return nodesV.size() - unusedVNodes.size();
+}
+
+template<class T1, class T2>
+int BipartiteGraph<T1, T2>::sizeAdjacencesUNode(const T1& uNode) const {
+    int uid = getIdU(uNode);
+    if (uid >= 0)
+        return nodesU[uid].sizeAdjacentNodes();
+    else
+        return -1;
+}
+
+template<class T1, class T2>
+int BipartiteGraph<T1, T2>::sizeAdjacencesVNode(const T2& vNode) const {
+    int vid = getIdV(vNode);
+    if (vid >= 0)
+        return nodesV[vid].sizeAdjacentNodes();
+    else
+        return -1;
 }
 
 template <class T1, class T2>
@@ -261,6 +296,26 @@ typename BipartiteGraph<T1, T2>::AdjacentVNodeIterator BipartiteGraph<T1, T2>::a
 }
 
 template<class T1, class T2>
+typename BipartiteGraph<T1, T2>::UNodeIterator BipartiteGraph<T1, T2>::uNodeBegin() const {
+    return UNodeIterator(nodesU.begin(), *this);
+}
+
+template<class T1, class T2>
+typename BipartiteGraph<T1, T2>::UNodeIterator BipartiteGraph<T1, T2>::uNodeEnd() const {
+    return UNodeIterator(nodesU.end(), *this);
+}
+
+template<class T1, class T2>
+typename BipartiteGraph<T1, T2>::VNodeIterator BipartiteGraph<T1, T2>::vNodeBegin() const {
+    return VNodeIterator(nodesV.begin(), *this);
+}
+
+template<class T1, class T2>
+typename BipartiteGraph<T1, T2>::VNodeIterator BipartiteGraph<T1, T2>::vNodeEnd() const {
+    return VNodeIterator(nodesV.end(), *this);
+}
+
+template<class T1, class T2>
 typename BipartiteGraph<T1, T2>::AdjacentUNodeRangeBasedIterator BipartiteGraph<T1, T2>::adjacentUNodeIterator(const T1& uNode) const {
     return AdjacentUNodeRangeBasedIterator(this, uNode);
 }
@@ -268,6 +323,16 @@ typename BipartiteGraph<T1, T2>::AdjacentUNodeRangeBasedIterator BipartiteGraph<
 template<class T1, class T2>
 typename BipartiteGraph<T1, T2>::AdjacentVNodeRangeBasedIterator BipartiteGraph<T1, T2>::adjacentVNodeIterator(const T2& vNode) const {
     return AdjacentVNodeRangeBasedIterator(this, vNode);
+}
+
+template<class T1, class T2>
+typename BipartiteGraph<T1, T2>::UNodeRangeBasedIterator BipartiteGraph<T1, T2>::uNodeIterator() const {
+    return UNodeRangeBasedIterator(this);
+}
+
+template<class T1, class T2>
+typename BipartiteGraph<T1, T2>::VNodeRangeBasedIterator BipartiteGraph<T1, T2>::vNodeIterator() const {
+    return VNodeRangeBasedIterator(this);
 }
 
 template <class T1, class T2>
