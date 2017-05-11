@@ -17,6 +17,53 @@ bool Splitting::boxesIntersect(const Box3D& b1, const Box3D& b2) {
     return true; //boxes overlap
 }
 
+bool Splitting::meshCollide(const SimpleEigenMesh &b1, const SimpleEigenMesh &b2){
+        CGALInterface::AABBTree tree(b1, true);
+        BoundingBox bb;
+        bool first = true;
+        for (unsigned int i = 0; i < b2.getNumberVertices() && first; i++){
+            Pointd p = b2.getVertex(i);
+            if (tree.isInside(p)){
+                if (tree.getSquaredDistance(p) > 0)
+                    first = false;
+            }
+        }
+        /*for (unsigned int i = 0; i < b2.getNumberFaces(); i++){
+            Pointi face = b2.getFace(i);
+            for (unsigned f =0; f < 3; f++){
+                Pointd p1 = b2.getVertex(face[f]);
+                Pointd p2 = b2.getVertex(face[(f+1)%3]);
+                if (tree.getNumberIntersectedPrimitives(p1, p2) > 0){
+                    if (first){
+                        bb.min() = p1.min(p2);
+                        bb.max() = p1.max(p2);
+                        first = false;
+                    }
+                    else {
+                        bb.min() = bb.min().min(p1);
+                        bb.min() = bb.min().min(p2);
+                        bb.max() = bb.max().max(p1);
+                        bb.max() = bb.max().max(p2);
+                    }
+                }
+            }
+        }*/
+        if (first)
+            return false;
+        else
+            return true;
+        /*else {
+            if (!Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
+                ////
+                //intersection.saveOnObj("int.obj");
+                ////
+                return true;
+            }
+            else
+                return false;
+        }*/
+}
+
 bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const CGALInterface::AABBTree &tree, bool checkMeshes) {
     Vec3 target2 = b2.getTarget();
     BoundingBox bb = b1;
@@ -59,15 +106,19 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                         return true;
                     }
                     else {
+                        bool b = false;
                         SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
-                        //if (intersection.getNumberVertices() != 0){
                         BoundingBox bb = intersection.getBoundingBox();
-                        if (!Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
-                            ////
-                            //intersection.saveOnObj("int.obj");
-                            ////
-                            return true;
+                        if (intersection.getNumberVertices() > 0 && !Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
+                            b = true;
                         }
+                        //return Splitting::meshCollide(b1.getEigenMesh(), b2.getEigenMesh());
+                        /*if (b != Splitting::meshCollide(b1.getEigenMesh(), b2.getEigenMesh())){
+                            b1.getEigenMesh().saveOnObj("b1coll.obj");
+                            b2.getEigenMesh().saveOnObj("b2coll.obj");
+                            std::cerr << "aaa\n";
+                        }*/
+                        return b;
                     }
                 }
             }
@@ -111,15 +162,20 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                         return true;
                     }
                     else {
+                        bool b = false;
                         SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
-                        //if (intersection.getNumberVertices() != 0){
                         BoundingBox bb = intersection.getBoundingBox();
-                        if (!Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
-                            ////
-                            //intersection.saveOnObj("int.obj");
-                            ////
-                            return true;
+                        if (intersection.getNumberVertices() > 0 && !Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
+                            b =  true;
                         }
+                        //return Splitting::meshCollide(b1.getEigenMesh(), b2.getEigenMesh());
+                        /*if (b != Splitting::meshCollide(b1.getEigenMesh(), b2.getEigenMesh())){
+                            b1.getEigenMesh().saveOnObj("b1coll.obj");
+                            b2.getEigenMesh().saveOnObj("b2coll.obj");
+                            std::cerr << "aaa\n";
+                        }*/
+
+                        return b;
                     }
                 }
             }
@@ -235,9 +291,9 @@ double Splitting::minimumSplit(const Box3D &b1, const Box3D &b2){
     double volumeb3 = b3.getVolume();
     double newVolumeb2 = volumeb2 - volumeb3 - volumeb4;
     assert (newVolumeb2 >= 0);
-    return std::min(newVolumeb2, volumeb3);
-    //double tmp = std::min(b3.getLengthX(), b3.getLengthY());
-    //return std::min(tmp, b3.getLengthZ());
+    //return std::min(newVolumeb2, volumeb3);
+    double tmp = std::min(b3.getLengthX(), b3.getLengthY());
+    return std::min(tmp, b3.getLengthZ());
 }
 
 std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGALInterface::AABBTree& aabb) {
@@ -310,11 +366,18 @@ std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vecto
             candidateArcs.push_back(arc);
         }
         double volmax = minimumSplit(bl.getBox(candidateArcs[0].first), bl.getBox(candidateArcs[0].second));
+        double a = minimumSplit(bl.getBox(candidateArcs[0].second), bl.getBox(candidateArcs[0].first));
+        if (a > volmax) volmax = a;
         int maxarc = 0;
 
         for (unsigned int i = 1; i < candidateArcs.size(); i++) {
             std::pair<unsigned int, unsigned int> arc = candidateArcs[i];
             double tmp = minimumSplit(bl.getBox(arc.first), bl.getBox(arc.second));
+            if (tmp > volmax){
+                volmax = tmp;
+                maxarc = i;
+            }
+            tmp = minimumSplit(bl.getBox(arc.second), bl.getBox(arc.first));
             if (tmp > volmax){
                 volmax = tmp;
                 maxarc = i;
@@ -366,6 +429,25 @@ void Splitting::chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const C
             }
         }
     }
+}
+
+bool Splitting::checkDeleteBox(const Box3D &b, const std::set<unsigned int>& trianglesCoveredB,const std::vector<std::set<unsigned int> >& trianglesCovered, const std::set<unsigned int>& boxesToEliminate,  const BoxList &bl){
+    bool b3IsEliminated = false;
+    if (trianglesCoveredB.size() == 0){
+        b3IsEliminated = true;
+    }
+    else {
+        for (unsigned int i = 0; i < bl.getNumberBoxes() && !b3IsEliminated; i++){
+            if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b.getId()){
+                const std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
+
+                if (Common::isSubset(trianglesCoveredB, trianglesCoveredBi)){
+                    b3IsEliminated = true;
+                }
+            }
+        }
+    }
+    return b3IsEliminated;
 }
 
 Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
@@ -458,27 +540,13 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
                 trianglesCovered[b2.getId()] = trianglesCoveredB2;
 
                 //qualcuno copre già tutti i triangoli coperti da b2? se si, b2 viene aggiunta alle box da eliminare, e nessun arco punterà più ad essa
-                bool b2IsEliminated = false;
+                bool b2IsEliminated = Splitting::checkDeleteBox(b2, trianglesCoveredB2, trianglesCovered, boxesToEliminate, bl);
 
-                if (trianglesCoveredB2.size() == 0){
-                    b2IsEliminated = true;
+                if (b2IsEliminated){
                     boxesToEliminate.insert(b2.getId());
                     deletedBoxes++;
                 }
-                else {
-                    for (unsigned int i = 0; i < bl.getNumberBoxes() && !b2IsEliminated; i++){
-                        if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
-                            if (Common::isSubset(trianglesCoveredB2,trianglesCovered[i])){
-                                b2IsEliminated = true;
-                                boxesToEliminate.insert(b2.getId());
-                                deletedBoxes++;
-                            }
-                        }
-                    }
-                }
-
-                if (!b2IsEliminated){
-
+                else{
                     //ricontrollo tutti i conflitti di b2 (archi entranti e uscenti)
                     for (unsigned int incoming : incomingb2){
                         Box3D other = bl.getBox(incoming);
@@ -512,24 +580,12 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
 
 
                 //qualcuno copre già tutti i triangoli coperti da b3? se si, b3 non viene aggiunta alla box list
-                bool b3IsEliminated = false;
-                if (trianglesCoveredB3.size() == 0){
-                    b3IsEliminated = true;
+                bool b3IsEliminated = Splitting::checkDeleteBox(b3, trianglesCoveredB3, trianglesCovered, boxesToEliminate, bl);
+
+                if (b3IsEliminated){
                     deletedBoxes++;
                 }
                 else {
-                    for (unsigned int i = 0; i < bl.getNumberBoxes() && !b3IsEliminated; i++){
-                        if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
-                            std::set<unsigned int>& trianglesCoveredBi = trianglesCovered[i];
-                            if (std::includes(trianglesCoveredBi.begin(), trianglesCoveredBi.end(), trianglesCoveredB3.begin(), trianglesCoveredB3.end())){
-                                b3IsEliminated = true;
-                                deletedBoxes++;
-                            }
-                        }
-                    }
-                }
-
-                if (!b3IsEliminated){
                     bl.addBox(b3);
                     //costruisco tutti i conflitti di b3 (archi entranti e uscenti)
                     g.addNode();
@@ -577,7 +633,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d) {
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         std::vector<unsigned int> v = g.getOutgoingNodes(i);
         for (unsigned int j = 0; j < v.size(); j++){
-            std::cerr << i << " -> " << j << "\n";
+            std::cerr << i << " -> " << v[j] << "\n";
         }
     }
 

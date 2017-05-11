@@ -19,6 +19,8 @@
 
 #include "lib/graph/bipartitegraph.h"
 #include <typeinfo>       // operator typeid
+#include <lib/csgtree/aabbcsgtree.h>
+
 
 int main(int argc, char *argv[]) {
     //std::cerr << sizeof(double) << "\n";

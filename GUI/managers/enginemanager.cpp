@@ -13,6 +13,7 @@
 #include <eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include "engine/orientation.h"
 #include <lib/graph/bipartitegraph.h>
+#include <engine/greedysubdivision.h>
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -1820,38 +1821,10 @@ void EngineManager::on_globalOptimalOrientationPushButton_clicked() {
 void EngineManager::on_experimentButton_clicked() {
     if (d != nullptr && solutions != nullptr) {
         BoxList altSolutions;
-        BipartiteGraph<const Dcel::Face*, Box3D> bigraph;
-        std::vector<const Dcel::Face*> vf;
-        vf.reserve(d->getNumberFaces());
         solutions->setIds();
-        for (const Dcel::Face* f : d->faceIterator()) {
-            bigraph.addUNode(f);
-            vf.push_back(f);
-        }
-        for (Box3D b : *solutions) {
-            bigraph.addVNode(b);
-        }
-        CGALInterface::AABBTree tree(*d);
-        for (Box3D b : *solutions) {
-            std::list<const Dcel::Face*> list = tree.getCompletelyContainedDcelFaces(b);
-            for (const Dcel::Face* f : list){
-                bigraph.addArc(f, b);
-            }
-        }
-        struct cmp {
-                const BipartiteGraph<const Dcel::Face*, Box3D> &bip;
-                cmp(const BipartiteGraph<const Dcel::Face*, Box3D> &bip) : bip(bip) {}
-                bool operator ()(const Dcel::Face* f1, const Dcel::Face* f2) const{
-                    return bip.sizeAdjacencesUNode(f1) < bip.sizeAdjacencesUNode(f2);
-                }
-        };
-        std::sort(vf.begin(), vf.end(), cmp(bigraph));
-        // vf contains triangles sorted by # of boxes wich contain that triangle
-        std::set<Box3D> firstBoxes;
-        // look just on triangles contained by only one box
-        for (unsigned int i = 0; i < vf.size() && bigraph.sizeAdjacencesUNode(vf[i]) == 1; i++){
-            firstBoxes.insert((*(bigraph.adjacentUNodeBegin(vf[i]))));
-        }
+        BipartiteGraph<const Dcel::Face*, Box3D> bigraph = GreedySubdivision::getBipartiteGraph(*solutions, *d);
+
+        std::set<Box3D> firstBoxes = GreedySubdivision::getMandatoryBoxesToCompute(bigraph);
 
         Color c;
         unsigned int pass = 240 / firstBoxes.size();
@@ -1866,7 +1839,13 @@ void EngineManager::on_experimentButton_clicked() {
             }
             i++;
         }
-        Splitting::getOrdering(altSolutions, *d);
+        CGALInterface::AABBTree tree(*d);
+        altSolutions.calculateTrianglesCovered(tree);
+        altSolutions.sortByTrianglesCovered();
+        altSolutions.setIds();
+        Array2D<int> ord = Splitting::getOrdering(altSolutions, *d);
+        altSolutions.sort(ord);
+
         d->update();
         mainWindow->updateGlCanvas();
     }

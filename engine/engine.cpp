@@ -928,7 +928,7 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
     allSolutions=solutions;
 
     for (unsigned int i = 0; i < allSolutions.getNumberBoxes(); i++){
-        allSolutions.getBox(i).saveOnObjFile(std::string("boxes/before/box") + std::to_string(i) + ".obj", allSolutions.getBox(i).getColor());
+        allSolutions.getBox(i).saveOnObj(std::string("boxes/before/box") + std::to_string(i) + ".obj", allSolutions.getBox(i).getColor());
     }
 
     Timer tGurobi("Gurobi");
@@ -936,7 +936,7 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
     tGurobi.stopAndPrint();
 
     for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
-        solutions.getBox(i).saveOnObjFile(std::string("boxes/after/box") + std::to_string(i) + ".obj", solutions.getBox(i).getColor());
+        solutions.getBox(i).saveOnObj(std::string("boxes/after/box") + std::to_string(i) + ".obj", solutions.getBox(i).getColor());
     }
     d.saveOnObjFile("boxes/mesh.obj");
 }

@@ -72,7 +72,9 @@ ALL {
         lib/graph/bipartitegraph.h \
         lib/graph/undirectednode.h \
         lib/graph/bipartitegraphiterators.h \
-        lib/graph/directedgraph.h
+        lib/graph/directedgraph.h \
+        engine/greedysubdivision.h
+
 
     SOURCES += \
         main.cpp \
@@ -92,7 +94,9 @@ ALL {
         lib/grid/drawableirregulargrid.cpp \
         lib/dcel_segmentation/chart.cpp \
         lib/dcel_segmentation/segmentation_struct.cpp \
-        engine/orientation.cpp
+        engine/orientation.cpp \
+        engine/greedysubdivision.cpp
+
 
     FORMS += \
         GUI/managers/enginemanager.ui
@@ -128,4 +132,10 @@ exists($$(GUROBI_HOME)){
     LIBS += -L$$(GUROBI_HOME)/lib -lgurobi_g++5.2 -lgurobi70
     DEFINES += GUROBI_DEFINED
 }
+
+HEADERS += \
+    lib/csgtree/aabbcsgtree.h
+
+SOURCES += \
+    lib/csgtree/aabbcsgtree.cpp
 

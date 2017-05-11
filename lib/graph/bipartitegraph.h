@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <assert.h>
 
 #include "undirectednode.h"
 
