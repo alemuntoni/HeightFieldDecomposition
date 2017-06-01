@@ -1,14 +1,16 @@
 #include "box.h"
+#include "common.h"
+#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
 
-Box3D::Box3D(): visible(true) {
+Box3D::Box3D(): visible(true), splitted(false){
     rotation = Eigen::Matrix3d::Identity();
 }
 
-Box3D::Box3D(const Pointd& min, const Pointd& max, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Color c) : BoundingBox(min, max), c1(c1), c2(c2), c3(c3), color(c), visible(true){
+Box3D::Box3D(const Pointd& min, const Pointd& max, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Color c) : BoundingBox(min, max), c1(c1), c2(c2), c3(c3), color(c), visible(true), splitted(false){
     rotation = Eigen::Matrix3d::Identity();
 }
 
-Box3D::Box3D(const Pointd& min, const Pointd& max, const Color c) :BoundingBox(min, max), color(c), visible(true){
+Box3D::Box3D(const Pointd& min, const Pointd& max, const Color c) :BoundingBox(min, max), color(c), visible(true), splitted(false){
     rotation = Eigen::Matrix3d::Identity();
 }
 
@@ -339,8 +341,8 @@ Pointd Box3D::sceneCenter() const {
 }
 
 double Box3D::sceneRadius() const {
-    return -1;
-    //return min.dist(max);
+    //return -1;
+    return diag();
 }
 
 bool Box3D::isVisible() const {
@@ -376,6 +378,10 @@ bool Box3D::deserialize(std::ifstream& binaryFile) {
         tmp.min() = tmpbb.min();
         tmp.max() = tmpbb.max();
         *this = std::move(tmp);
+        if (! EigenMeshAlgorithms::isABox(piece))
+            splitted = true;
+        else
+            splitted = false;
         return true;
     }
     else
@@ -399,6 +405,108 @@ Vec3 Box3D::getRotatedTarget() const {
 
 bool Box3D::operator <(const Box3D& other) const {
     return id < other.id;
+}
+
+bool Box3D::isSplitted() const
+{
+    return splitted;
+}
+
+void Box3D::setSplitted(bool value)
+{
+    splitted = value;
+}
+
+std::string Box3D::typeSplitToString(const Box3D::Split& s) {
+    std::string out;
+    if (s.hs & LOW){
+        out += "Low; ";
+    }
+    if (s.hs & MIDDLE){
+        out += "Middle; ";
+    }
+    if (s.hs & HIGH){
+        out += "High; ";
+    }
+    if (s.hs & ALL){
+        out += "All; ";
+    }
+    if (s.ts & ONE_CORNER) {
+        out += "One Corner.";
+    }
+    if (s.ts & TWO_CORNERS) {
+        out += "Two Corners.";
+    }
+    if (s.ts & ONE_EDGE) {
+        out += "One Edge.";
+    }
+    if (s.ts & TWO_EDGES) {
+        out += "Two Edges.";
+    }
+    if (s.ts & TOTALLY_INSIDE) {
+        out += "Totally Inside.";
+    }
+    if (s.ts & TOTALLY_OUTSIDE) {
+        out += "Totally Outside.";
+    }
+    return out;
+}
+
+Box3D::Split Box3D::getSplit(const Box& other) {
+    unsigned int ind = getTargetIndex();
+    unsigned int oi1 = (ind+1)%3;
+    unsigned int oi2 = (oi1+1)%3;
+    Split split;
+    if (other.min()[ind] <= minCoord[ind] && other.max()[ind] >= maxCoord[ind])
+        split.hs = ALL;
+    else if (other.min()[ind] <= minCoord[ind] && other.max()[ind] < maxCoord[ind])
+        split.hs = LOW;
+    else if (other.min()[ind] > minCoord[ind] && other.max()[ind] >= maxCoord[ind])
+        split.hs = HIGH;
+    else if (other.min()[ind] > minCoord[ind] && other.max()[ind] < maxCoord[ind])
+        split.hs = MIDDLE;
+    else assert(0);
+
+    if ((other.min()[oi1] <= minCoord[oi1] && other.max()[oi1] >= maxCoord[oi1]) &&
+        (other.min()[oi2] <= minCoord[oi2] && other.max()[oi2] >= maxCoord[oi2]))
+        split.ts = TOTALLY_OUTSIDE;
+    else if ((other.min()[oi1] > minCoord[oi1] && other.max()[oi1] < maxCoord[oi1]) &&
+             (other.min()[oi2] > minCoord[oi2] && other.max()[oi2] < maxCoord[oi2]))
+        split.ts = TOTALLY_INSIDE;
+    else if (((other.min()[oi1] <= minCoord[oi1] && other.max()[oi1] >= maxCoord[oi1]) &&
+              (other.min()[oi2] > minCoord[oi2] && other.max()[oi2] < maxCoord[oi2]))     ||
+             ((other.min()[oi1] > minCoord[oi1] && other.max()[oi1] < maxCoord[oi1]) &&
+              (other.min()[oi2] <= minCoord[oi2] && other.max()[oi2] >= maxCoord[oi2])))
+        split.ts = TWO_EDGES;
+    else {
+        if ((other.min()[oi1] < minCoord[oi1] && other.max()[oi1] < maxCoord[oi1]) ||
+            (other.min()[oi1] > minCoord[oi1] && other.max()[oi1] > maxCoord[oi1])){
+
+            if ((other.min()[oi2] < minCoord[oi2] && other.max()[oi2] < maxCoord[oi2]) ||
+                (other.min()[oi2] > minCoord[oi2] && other.max()[oi2] > maxCoord[oi2]))
+                split.ts = ONE_CORNER;
+
+            else if (other.min()[oi2] < minCoord[oi2] && other.max()[oi2] > maxCoord[oi2])
+                split.ts = TWO_CORNERS;
+            else if (other.min()[oi2] > minCoord[oi2] && other.max()[oi2] < maxCoord[oi2])
+                split.ts =  ONE_EDGE;
+            else assert(0);
+        }
+        else {
+            if (other.min()[oi1] < minCoord[oi1] && other.max()[oi1] > maxCoord[oi1]){
+                assert((other.min()[oi2] < minCoord[oi2] && other.max()[oi2] < maxCoord[oi2]) ||
+                        (other.min()[oi2] > minCoord[oi2] && other.max()[oi2] > maxCoord[oi2]));
+                split.ts = TWO_CORNERS;
+            }
+            else if (other.min()[oi1] > minCoord[oi1] && other.max()[oi1] < maxCoord[oi1]){
+                assert((other.min()[oi2] < minCoord[oi2] && other.max()[oi2] < maxCoord[oi2]) ||
+                        (other.min()[oi2] > minCoord[oi2] && other.max()[oi2] > maxCoord[oi2]));
+                split.ts = ONE_EDGE;
+            }
+            else assert(0);
+        }
+    }
+    return split;
 }
 
 #ifdef VIEWER_DEFINED
@@ -430,3 +538,12 @@ void Box3D::drawCube() const {
     drawLine(p[3], p[7], color);
 }
 #endif
+
+unsigned int Box3D::getTargetIndex() {
+    for (unsigned int i = 0; i < 6; i++){
+        if (target == XYZ[i])
+            return i%3;
+    }
+    assert(0);
+    return -1;
+}

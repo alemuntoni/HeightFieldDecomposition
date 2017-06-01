@@ -4,7 +4,7 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wunused-variable" //Don't know why it doesn't work...
+#pragma GCC diagnostic ignored "-Wunused-variable" //Doesn't work on gcc < 6.0
 #include <cinolib/smoothing.h>
 #pragma GCC diagnostic pop
 #endif //__GNUC__

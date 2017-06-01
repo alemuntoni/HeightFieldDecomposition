@@ -10,7 +10,7 @@
 namespace Orientation {
     void define_rotation(const cinolib::vec3d & Z_axis, cinolib::vec3d & rot_axis, double & angle);
 
-    Eigen::Matrix3d optimalOrientation(const Dcel& inputMesh, unsigned int n_dirs = 1000);
+    Eigen::Matrix3d optimalOrientation(const Dcel& inputMesh, unsigned int n_dirs = 10000);
 }
 
 #endif // ORIENTATION_H

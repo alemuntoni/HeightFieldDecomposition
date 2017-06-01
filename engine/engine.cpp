@@ -570,6 +570,8 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
         }
     }
 
+    //this piece of code allows to find a solution also if there are uncovered triangles.
+    //it creates a "dummy box" for every uncovered triangles
     bool bb = false;
     for (unsigned int j = 0; j < B.getSizeY(); j++){
         int sum = 0;
@@ -1448,4 +1450,45 @@ void Engine::updatePiecesNormals(const CGALInterface::AABBTree& tree, Heightfiel
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         updatePieceNormals(tree, he.getHeightfield(i));
     }
+}
+
+bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
+    bool first = true;
+    bool heightfield = true;
+    double baseCoord = -1;
+    int dir = -1;
+    if (v == XYZ[0] || v == XYZ[3])
+        dir = 0;
+    else if (v == XYZ[1] || v == XYZ[4])
+        dir = 1;
+    else if (v == XYZ[2] || v == XYZ[5])
+        dir = 2;
+    else
+        assert(0);
+    for (unsigned int i = 0; i < m.getNumberFaces() && heightfield; i++){
+        Vec3 normal = m.getFaceNormal(i);
+        if (Common::epsilonEqual(normal, -v)){
+            Pointi face = m.getFace(i);
+            Pointd p0 = m.getVertex(face[0]);
+            Pointd p1 = m.getVertex(face[1]);
+            Pointd p2 = m.getVertex(face[2]);
+            if (first){
+                first = false;
+                baseCoord = p0[dir];
+            }
+            else {
+                if (! Common::epsilonEqual(p0[dir],baseCoord))
+                    heightfield = false;
+            }
+            if (! Common::epsilonEqual(p1[dir],baseCoord))
+                heightfield = false;
+            if (! Common::epsilonEqual(p2[dir],baseCoord))
+                heightfield = false;
+        }
+        else if (strictly) {
+            if (normal.dot(v) < 0)
+                heightfield = false;
+        }
+    }
+    return heightfield;
 }

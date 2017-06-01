@@ -91,6 +91,8 @@ namespace Engine {
     void updatePiecesNormals(const CGALInterface::AABBTree& tree, HeightfieldsList &he);
 
     void saveObjs(const QString& foldername, const EigenMesh& originalMesh, const Dcel& inputMesh, const EigenMesh& baseComplex, const HeightfieldsList& he);
+
+    bool isAnHeightfield(const EigenMesh &m, const Vec3& v, bool strictly = false);
 }
 
 #endif // ENGINE_H

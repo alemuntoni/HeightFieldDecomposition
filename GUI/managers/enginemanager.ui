@@ -62,7 +62,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-271</y>
+        <y>-432</y>
         <width>420</width>
         <height>1467</height>
        </rect>
@@ -228,7 +228,7 @@
               <item row="4" column="0">
                <widget class="QPushButton" name="snappingPushButton">
                 <property name="text">
-                 <string>Snap Boxes</string>
+                 <string>Snap and Merge Boxes</string>
                 </property>
                </widget>
               </item>
@@ -1500,6 +1500,20 @@
                <widget class="QPushButton" name="setFromSolutionButton">
                 <property name="text">
                  <string>Set From Sol</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QPushButton" name="createBox2PushButton">
+                <property name="text">
+                 <string>Create Box 2</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="2">
+               <widget class="QRadioButton" name="box2RadioButton">
+                <property name="text">
+                 <string>Box2</string>
                 </property>
                </widget>
               </item>

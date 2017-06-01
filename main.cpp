@@ -23,6 +23,14 @@
 
 
 int main(int argc, char *argv[]) {
+
+    /*SplittableBox b(Pointd(0,0,0), Pointd(5,5,5));
+    b.setTarget(XYZ[1]);
+    SplittableBox::Split split;
+
+    split = b.getSplit(Box(Pointd(2,-1,2), Pointd(6, 7, 9)));
+    std::cerr << SplittableBox::typeSplitToString(split) << "\n";*/
+
     //std::cerr << sizeof(double) << "\n";
     /*BipartiteGraph<int, float> cacca;
     cacca.addUNode(1);
@@ -279,6 +287,8 @@ int main(int argc, char *argv[]) {
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
     gui.updateGlCanvas();
     gui.show();
+
+
 
     return app.exec();
     #endif

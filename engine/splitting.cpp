@@ -102,7 +102,7 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                 }
                 if(isInside || tree.getNumberIntersectedPrimitives(bb) > 0){
                     //if (tree.getNumberIntersectedPrimitives(bb) > 0){
-                    if (!checkMeshes){
+                    if (!checkMeshes || (!(b1.isSplitted()) && !(b2.isSplitted()))){
                         return true;
                     }
                     else {
@@ -280,6 +280,8 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
         b3.min() = b3.max() = Pointd();
         b2.getEigenMesh().saveOnObj("b2modified.obj");
     }
+    b2.setSplitted(true);
+    b3.setSplitted(true);
 }
 
 
@@ -308,26 +310,19 @@ std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGAL
 
 DirectedGraph Splitting::getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree){
     DirectedGraph g(bl.getNumberBoxes());
+    std::cerr << "Graph: "<< bl.getNumberBoxes() <<"\n";
     for (unsigned int i = 0; i < bl.getNumberBoxes()-1; i++){
         Box3D b1 = bl.getBox(i);
         for (unsigned int j = i+1; j < bl.getNumberBoxes(); j++){
             Box3D b2 = bl.getBox(j);
-            #ifdef SPLIT_DEBUG
-            b1.getEigenMesh().saveOnObj("b1.obj");
-            b2.getEigenMesh().saveOnObj("b2.obj");
-            #endif
             if (boxesIntersect(b1,b2)){
-                if (isDangerousIntersection(b1, b2, tree)){
+                if (isDangerousIntersection(b1, b2, tree, b1.isSplitted() || b2.isSplitted())){
                     g.addEdge(i,j);
-                    #ifdef SPLIT_DEBUG
-                    std::cerr << i << " -> " << j << "\n";
-                    #endif
+                    std::cerr << i << " -> " << j <<"\n";
                 }
-                if (isDangerousIntersection(b2, b1, tree)){
+                if (isDangerousIntersection(b2, b1, tree, b1.isSplitted() || b2.isSplitted())){
                     g.addEdge(j,i);
-                    #ifdef SPLIT_DEBUG
-                    std::cerr << j << " -> " << i << "\n";
-                    #endif
+                    std::cerr << j << " -> " << i <<"\n";
                 }
 
             }

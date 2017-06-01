@@ -9,6 +9,28 @@
 
 class Box3D : public BoundingBox, public DrawableObject{
     public:
+
+        typedef enum {
+            LOW =    0b0001,
+            MIDDLE = 0b0010,
+            HIGH =   0b0100,
+            ALL =    0b1000
+        } HeightSplit;
+
+        typedef enum {
+            ONE_CORNER =      0b000001,
+            TWO_CORNERS =     0b000010,
+            ONE_EDGE =        0b000100,
+            TWO_EDGES =       0b001000,
+            TOTALLY_INSIDE =  0b010000,
+            TOTALLY_OUTSIDE = 0b100000
+        } TypeSplit;
+
+        struct Split {
+                HeightSplit hs;
+                TypeSplit ts;
+        };
+
         Box3D();
         Box3D(const Pointd &minCoord, const Pointd &maxCoord, const Pointd &c1 = Pointd(), const Pointd &c2 = Pointd(), const Pointd &c3 = Pointd(), const Color c = Color(0,0,0));
         Box3D(const Pointd &minCoord, const Pointd &maxCoord, const Color c);
@@ -63,6 +85,12 @@ class Box3D : public BoundingBox, public DrawableObject{
 
         bool operator <(const Box3D& other) const;
 
+        bool isSplitted() const;
+        void setSplitted(bool value);
+
+        static std::string typeSplitToString(const Split& s);
+        Split getSplit(const Box& other);
+
     protected:
         //Pointd min, max;
         Pointd c1, c2, c3;
@@ -73,9 +101,12 @@ class Box3D : public BoundingBox, public DrawableObject{
         int id;
         SimpleEigenMesh piece;
         int trianglesCovered;
+        bool splitted;
 
         void drawLine(const Pointd& a, const Pointd& b, const Color& c) const;
         void drawCube() const;
+
+        unsigned int getTargetIndex();
 };
 
 inline void Box3D::setColor(const Color& c) {

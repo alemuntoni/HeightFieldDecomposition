@@ -192,15 +192,18 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_experimentButton_clicked();
 
+        void on_createBox2PushButton_clicked();
+
     signals:
         void finished();
 
     private:
         Ui::EngineManager *ui;
-        MainWindow* mainWindow; //puntatore alla mainWindow
+        MainWindow& mainWindow; //puntatore alla mainWindow
         DrawableGrid* g;
         DrawableDcel* d;
         Box3D* b;
+        Box3D* b2;
         BoxList* iterations;
         BoxList* solutions;
         DrawableEigenMesh* baseComplex;
