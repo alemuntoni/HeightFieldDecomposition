@@ -35,7 +35,7 @@ EngineManager::EngineManager(QWidget *parent) :
 }
 
 void EngineManager::deleteDrawableObject(DrawableObject* d) {
-    if (d != nullptr){
+    if (d != nullptr) {
         //d->setVisible(false);
         mainWindow.deleteObj(d);
         delete d;
@@ -1741,7 +1741,7 @@ void EngineManager::on_deleteBoxesPushButton_clicked() {
     if (solutions != nullptr && d != nullptr){
         int n = Engine::deleteBoxes(*solutions, *d);
         //int n = Engine::deleteBoxesGSC(*solutions, *d);
-        std::cerr << "N deleted boxes: " << n << "\n";
+        std::cerr << "N survived boxes: " << n << "\n";
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow.updateGlCanvas();
     }

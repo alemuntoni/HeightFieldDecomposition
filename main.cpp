@@ -21,7 +21,6 @@
 #include <typeinfo>       // operator typeid
 #include <lib/csgtree/aabbcsgtree.h>
 
-
 int main(int argc, char *argv[]) {
 
     /*SplittableBox b(Pointd(0,0,0), Pointd(5,5,5));

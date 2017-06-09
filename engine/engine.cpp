@@ -602,10 +602,18 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
             }
             model.addConstr(line >= 1);
         }
+
         //obj
-        GRBLinExpr obj = 0;
-        for (unsigned int i = 0; i < nBoxes; i++)
-            obj += x[i];
+        GRBQuadExpr obj = 0;
+        /*for (unsigned int i = 0; i < nBoxes; i++)
+            obj += x[i];*/
+        for (unsigned int i = 0; i < nBoxes; i++){
+            for (unsigned int j = i+1; j < nBoxes; j++){
+                if (boxList[i].isIntern(boxList[j].center()) ||
+                        boxList[j].isIntern(boxList[i].center()))
+                    obj += (x[i] * x[j]);
+            }
+        }
         model.setObjective(obj, GRB_MINIMIZE);
         model.optimize();
 
