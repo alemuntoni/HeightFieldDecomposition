@@ -1588,17 +1588,17 @@ void EngineManager::on_snappingPushButton_clicked() {
             for (unsigned int j = i+1; j < solutions->getNumberBoxes(); j++){
                 Box3D b2 = solutions->getBox(j);
                 for (unsigned int coord = 0; coord < 3; coord++) {
-                    if (std::abs(b1[coord]-b2[coord]) < epsilon) {
-                        b2[coord] = b1[coord];
+                    if (std::abs(b1(coord)-b2(coord)) < epsilon) {
+                        b2(coord) = b1(coord);
                     }
-                    if (std::abs(b1[coord]-b2[coord+3]) < epsilon){
-                        b2[coord+3] = b1[coord];
+                    if (std::abs(b1(coord)-b2(coord+3)) < epsilon){
+                        b2(coord+3) = b1(coord);
                     }
-                    if (std::abs(b1[coord+3]-b2[coord]) < epsilon){
-                        b2[coord] = b1[coord+3];
+                    if (std::abs(b1(coord+3)-b2(coord)) < epsilon){
+                        b2(coord) = b1(coord+3);
                     }
-                    if (std::abs(b1[coord+3]-b2[coord+3]) < epsilon){
-                        b2[coord+3] = b1[coord+3];
+                    if (std::abs(b1(coord+3)-b2(coord+3)) < epsilon){
+                        b2(coord+3) = b1(coord+3);
                     }
                 }
                 b2.generateEigenMesh(av*7);
