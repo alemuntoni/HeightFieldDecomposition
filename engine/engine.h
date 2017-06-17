@@ -73,7 +73,7 @@ namespace Engine {
 
     void booleanOperations(HeightfieldsList &he, SimpleEigenMesh& bc, BoxList &solutions, bool alternativeColors = false);
 
-    void splitConnectedComponents(HeightfieldsList &he, BoxList &solutions);
+    void splitConnectedComponents(HeightfieldsList &he, BoxList &solutions, std::map<unsigned int, unsigned int>& mapping);
 
     void glueInternHeightfieldsToBaseComplex(HeightfieldsList &he, BoxList &solutions, SimpleEigenMesh& bc, const Dcel& inputMesh);
 

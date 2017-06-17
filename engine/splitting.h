@@ -34,7 +34,9 @@ namespace Splitting {
 
     bool checkDeleteBox(const Box3D &b, const std::set<unsigned int>& trianglesCoveredB,const std::vector<std::set<unsigned int> >& trianglesCovered, const std::set<unsigned int>& boxesToEliminate,  const BoxList &bl);
 
-    Array2D<int> getOrdering(BoxList& bl, const Dcel &d);
+    void splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const Dcel& d, const CGALInterface::AABBTree& tree, std::vector< std::set<unsigned int> >& trianglesCovered, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes);
+
+    Array2D<int> getOrdering(BoxList& bl, const Dcel &d, std::map<unsigned int, unsigned int>& mappingNewToOld, std::list<unsigned int>& priorityBoxes);
 }
 
 #endif // SPLITTING_H

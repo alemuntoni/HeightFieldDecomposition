@@ -2,7 +2,6 @@
 #include "eigenmesh/gui/drawableeigenmesh.h"
 
 BoxList::BoxList() : visible(true), visibleBox(-1), cylinder(true), eigenMesh(false){
-
 }
 
 BoxList::BoxList(bool cylinders) : visible(true), visibleBox(-1), cylinder(cylinders), eigenMesh(false){
@@ -20,7 +19,7 @@ void BoxList::clearBoxes() {
     boxes.clear();
 }
 
-unsigned int BoxList::getNumberBoxes() const{
+unsigned int BoxList::getNumberBoxes() const {
     return boxes.size();
 }
 

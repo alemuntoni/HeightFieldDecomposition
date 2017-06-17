@@ -194,6 +194,10 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_createBox2PushButton_clicked();
 
+        void on_restoreBoxesPushButton_clicked();
+
+        void on_pushPriorityBoxButton_clicked();
+
     signals:
         void finished();
 
@@ -211,6 +215,12 @@ class EngineManager : public QFrame, public SerializableObject {
         HeightfieldsList *he;
         DrawableEigenMesh originalMesh;
         DrawableEigenMesh markerMesh;
+
+        BoxList originalSolutions;
+        bool alreadySplitted;
+
+        std::map<unsigned int, unsigned int> splittedBoxesToOriginals;
+        std::list<unsigned int> priorityBoxes;
 };
 
 #endif // ENGINEMANAGER_H

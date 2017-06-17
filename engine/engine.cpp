@@ -604,16 +604,16 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
         }
 
         //obj
-        GRBQuadExpr obj = 0;
-        /*for (unsigned int i = 0; i < nBoxes; i++)
-            obj += x[i];*/
-        for (unsigned int i = 0; i < nBoxes; i++){
+        GRBLinExpr obj = 0;
+        for (unsigned int i = 0; i < nBoxes; i++)
+            obj += x[i];
+        /*for (unsigned int i = 0; i < nBoxes; i++){
             for (unsigned int j = i+1; j < nBoxes; j++){
                 if (boxList[i].isIntern(boxList[j].center()) ||
                         boxList[j].isIntern(boxList[i].center()))
                     obj += (x[i] * x[j]);
             }
-        }
+        }*/
         model.setObjective(obj, GRB_MINIMIZE);
         model.optimize();
 
@@ -1010,48 +1010,14 @@ void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
     }
 }
 
-void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxList &solutions, bool alternativeColors) {
-    deleteDuplicatedBoxes(solutions);
-    Timer timer("Boolean Operations");
-    he.resize(solutions.getNumberBoxes());
-    const double pass = 240.0 / solutions.getNumberBoxes();
-    Color c;
-    for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
-        c.setHsv((int)(i*pass),255,255);
-        SimpleEigenMesh box;
-        SimpleEigenMesh intersection;
-        box = solutions.getBox(i).getEigenMesh();
-        #ifdef BOOL_DEBUG
-        box.saveOnObj("bool_" + std::to_string(i) + "_" + std::to_string(solutions.getBox(i).getId()) + ".obj");
-        #endif
-        EigenMeshAlgorithms::intersection(intersection, bc, box);
-        EigenMeshAlgorithms::difference(bc, bc, box);
-        DrawableEigenMesh dimm(intersection);
-        if (alternativeColors){
-            dimm.setFaceColor(c.redF(), c.greenF(), c.blueF());
-            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i, false);
-        }
-        else
-            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i, true);
-        std::cerr << i << "\n";
-    }
-    timer.stopAndPrint();
-    for (int i = he.getNumHeightfields()-1; i >= 0 ; i--) {
-        if (he.getNumberVerticesHeightfield(i) == 0) {
-            he.removeHeightfield(i);
-            solutions.removeBox(i);
-        }
-    }
-}
-
-void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions) {
+void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions, std::map<unsigned int, unsigned int> &mapping) {
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         EigenMesh m = he.getHeightfield(i);
         std::vector<SimpleEigenMesh> cc;
         cc = EigenMeshAlgorithms::getConnectedComponents(m);
         if (cc.size() > 1){
             ///
-            std::cerr << "Split: " << i << "; Number: " << cc.size() << "\n";
+            std::cerr << "Split: " << solutions[i].getId() << "; Number: " << cc.size() << "\n";
             ///
             Box3D box = solutions.getBox(i);
             Vec3 target = he.getTarget(i);
@@ -1063,6 +1029,8 @@ void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions) 
                 em.setFaceColor(m.getColor(0));
                 he.insertHeightfield(em, target, i+j, false);
                 solutions.insert(box, i+j);
+                solutions[i+j].setId(solutions.size());
+                mapping[solutions.size()] = mapping[solutions[i].getId()];
             }
             i = i+cc.size()-1;
         }

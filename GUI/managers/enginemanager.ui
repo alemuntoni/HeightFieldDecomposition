@@ -62,9 +62,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-432</y>
+        <y>-597</y>
         <width>420</width>
-        <height>1467</height>
+        <height>1530</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -112,7 +112,7 @@
                 </property>
                </widget>
               </item>
-              <item row="19" column="0">
+              <item row="21" column="0">
                <widget class="QPushButton" name="stickPushButton">
                 <property name="text">
                  <string>Stick</string>
@@ -181,14 +181,14 @@
                 </property>
                </widget>
               </item>
-              <item row="12" column="0">
+              <item row="14" column="0">
                <widget class="QPushButton" name="explodePushButton">
                 <property name="text">
                  <string>Explode</string>
                 </property>
                </widget>
               </item>
-              <item row="12" column="1">
+              <item row="14" column="1">
                <widget class="QDoubleSpinBox" name="explodeSpinBox">
                 <property name="minimum">
                  <double>-1000.000000000000000</double>
@@ -211,17 +211,24 @@
                 </property>
                </widget>
               </item>
-              <item row="11" column="0">
+              <item row="13" column="0">
                <widget class="QPushButton" name="reconstructionPushButton">
                 <property name="text">
                  <string>Restore High Freq</string>
                 </property>
                </widget>
               </item>
-              <item row="11" column="1">
+              <item row="13" column="1">
                <widget class="QPushButton" name="colorPiecesPushButton">
                 <property name="text">
                  <string>Color Pieces</string>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="1">
+               <widget class="QSpinBox" name="coveredTrianglesSpinBox">
+                <property name="maximum">
+                 <number>100</number>
                 </property>
                </widget>
               </item>
@@ -232,31 +239,48 @@
                 </property>
                </widget>
               </item>
-              <item row="13" column="0">
+              <item row="15" column="0">
                <widget class="QPushButton" name="putBoxesAfterPushButton">
                 <property name="text">
                  <string>Put Boxes After</string>
                 </property>
                </widget>
               </item>
-              <item row="13" column="1">
-               <widget class="QSpinBox" name="coveredTrianglesSpinBox">
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="1">
+              <item row="12" column="1">
                <widget class="QCheckBox" name="drawBoxMeshCheckBox">
                 <property name="text">
                  <string>BoxMesh</string>
                 </property>
                </widget>
               </item>
-              <item row="10" column="0">
+              <item row="12" column="0">
                <widget class="QPushButton" name="markerMeshPushButton">
                 <property name="text">
                  <string>Marker Mesh</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="0">
+               <widget class="QLabel" name="label_30">
+                <property name="text">
+                 <string>Priority Box</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="1">
+               <widget class="QSpinBox" name="prioritySpinBox"/>
+              </item>
+              <item row="11" column="0">
+               <widget class="QPushButton" name="pushPriorityBoxButton">
+                <property name="text">
+                 <string>Push Priority Box</string>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="1">
+               <widget class="QPushButton" name="restoreBoxesPushButton">
+                <property name="text">
+                 <string>Restore Boxes</string>
                 </property>
                </widget>
               </item>
@@ -966,8 +990,11 @@
              <layout class="QGridLayout" name="gridLayout_15">
               <item row="2" column="0">
                <widget class="QDoubleSpinBox" name="sizeXPackSpinBox">
+                <property name="maximum">
+                 <double>10000.000000000000000</double>
+                </property>
                 <property name="value">
-                 <double>15.000000000000000</double>
+                 <double>150.000000000000000</double>
                 </property>
                </widget>
               </item>
@@ -980,15 +1007,21 @@
               </item>
               <item row="2" column="2">
                <widget class="QDoubleSpinBox" name="sizeZPackSpinBox">
+                <property name="maximum">
+                 <double>2000.000000000000000</double>
+                </property>
                 <property name="value">
-                 <double>5.000000000000000</double>
+                 <double>50.000000000000000</double>
                 </property>
                </widget>
               </item>
               <item row="2" column="1">
                <widget class="QDoubleSpinBox" name="sizeYPackSpinBox">
+                <property name="maximum">
+                 <double>10000.000000000000000</double>
+                </property>
                 <property name="value">
-                 <double>10.000000000000000</double>
+                 <double>100.000000000000000</double>
                 </property>
                </widget>
               </item>

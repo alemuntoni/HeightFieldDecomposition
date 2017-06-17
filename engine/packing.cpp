@@ -48,9 +48,9 @@ int Packing::getMaximum(const HeightfieldsList& he, const BoundingBox& block, do
             maxz = he.getHeightfield(i).getBoundingBox().getLengthZ();
         }
     }
-    double factorx = block.getLengthX() > 0 ? (block.getLengthX()-0.5) / maxx : std::numeric_limits<double>::max();
-    double factory = block.getLengthY() > 0 ? (block.getLengthY()-0.5) / maxy : std::numeric_limits<double>::max();
-    double factorz = block.getLengthZ() > 0 ? (block.getLengthZ()-0.5) / maxz : std::numeric_limits<double>::max();
+    double factorx = block.getLengthX() > 0 ? (block.getLengthX()-5) / maxx : std::numeric_limits<double>::max();
+    double factory = block.getLengthY() > 0 ? (block.getLengthY()-5) / maxy : std::numeric_limits<double>::max();
+    double factorz = block.getLengthZ() > 0 ? (block.getLengthZ()-5) / maxz : std::numeric_limits<double>::max();
     if (factorx <= factory && factorx <= factorz){
         factor = factorx;
         return ix;
@@ -93,8 +93,8 @@ std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const Heightfi
         for(int i : piecesToPack) {
 
             // random size for this content
-            int width  = he.getHeightfield(i).getBoundingBox().getLengthX()*10 + 3;
-            int height = he.getHeightfield(i).getBoundingBox().getLengthY()*10 + 3;
+            int width  = he.getHeightfield(i).getBoundingBox().getLengthX()*10 + 30;
+            int height = he.getHeightfield(i).getBoundingBox().getLengthY()*10 + 30;
 
             // whatever data you want to associate with this content
 
