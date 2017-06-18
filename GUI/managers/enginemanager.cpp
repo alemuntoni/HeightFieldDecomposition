@@ -2051,6 +2051,8 @@ void EngineManager::on_restoreBoxesPushButton_clicked() {
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
+    baseComplex = nullptr;
+    he = nullptr;
     solutions = new BoxList(originalSolutions);
     mainWindow.pushObj(solutions, "Boxes");
     ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);

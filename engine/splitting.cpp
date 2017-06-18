@@ -83,7 +83,7 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                         b = true;
                 }
             }
-            if (b){
+            /*if (b){
                 //check if bb is empty
                 bb.min()[t]= b1.max()[t]-EPSILON;
                 for (unsigned int i = 0; i < 3; i++){
@@ -101,7 +101,6 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                         isInside = true;
                 }
                 if(isInside || tree.getNumberIntersectedPrimitives(bb) > 0){
-                    //if (tree.getNumberIntersectedPrimitives(bb) > 0){
                     if (!checkMeshes || (!(b1.isSplitted()) && !(b2.isSplitted()))){
                         return true;
                     }
@@ -112,14 +111,40 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                         if (intersection.getNumberVertices() > 0 && !Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
                             b = true;
                         }
-                        //return Splitting::meshCollide(b1.getEigenMesh(), b2.getEigenMesh());
-                        /*if (b != Splitting::meshCollide(b1.getEigenMesh(), b2.getEigenMesh())){
-                            b1.getEigenMesh().saveOnObj("b1coll.obj");
-                            b2.getEigenMesh().saveOnObj("b2coll.obj");
-                            std::cerr << "aaa\n";
-                        }*/
                         return b;
                     }
+                }
+            }*/
+            if (b){
+                if (!checkMeshes || (!(b1.isSplitted()) && !(b2.isSplitted()))){
+                    //check if bb is empty
+                    bb.min()[t]= b1.max()[t]-EPSILON;
+                    for (unsigned int i = 0; i < 3; i++){
+                        if (i != t){
+                            bb.min()[i] = std::max(b1.min()[i], b2.min()[i]);
+                            bb.max()[i] = std::min(b1.max()[i], b2.max()[i]);
+                            assert(bb.min()[i] < bb.max()[i]);
+                        }
+                    }
+                    bool isInside = false;
+                    std::vector<Pointd> extremes;
+                    bb.getExtremes(extremes);
+                    for (unsigned int i = 0; i < extremes.size() && !isInside; i++){
+                        if (tree.isInside(extremes[i]))
+                            isInside = true;
+                    }
+                    if(isInside || tree.getNumberIntersectedPrimitives(bb) > 0){
+                        return true;
+                    }
+                }
+                else {
+                    bool b = false;
+                    SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
+                    BoundingBox bb = intersection.getBoundingBox();
+                    if (intersection.getNumberVertices() > 0 && !Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
+                        b = true;
+                    }
+                    return b;
                 }
             }
         }
@@ -137,46 +162,35 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                 }
             }
             if (b){
-                //check if bb is empty
-                bb.max()[ot] = (b1.min()[ot]+EPSILON);
-                for (unsigned int i = 0; i < 3; i++){
-                    if (i != ot){
-                        bb.min()[i] = std::max(b1.min()[i], b2.min()[i]);
-                        bb.max()[i] = std::min(b1.max()[i], b2.max()[i]);
-                        assert(bb.min()[i] < bb.max()[i]);
+                if (!checkMeshes || (!(b1.isSplitted()) && !(b2.isSplitted()))){
+                    //check if bb is empty
+                    bb.max()[ot] = (b1.min()[ot]+EPSILON);
+                    for (unsigned int i = 0; i < 3; i++){
+                        if (i != ot){
+                            bb.min()[i] = std::max(b1.min()[i], b2.min()[i]);
+                            bb.max()[i] = std::min(b1.max()[i], b2.max()[i]);
+                            assert(bb.min()[i] < bb.max()[i]);
+                        }
                     }
-                }
-                ///
-                EigenMeshAlgorithms::makeBox(bb).saveOnObj("bb.obj");
-                ///
-                bool isInside = false;
-                std::vector<Pointd> extremes;
-                bb.getExtremes(extremes);
-                for (unsigned int i = 0; i < extremes.size() && !isInside; i++){
-                    if (tree.isInside(extremes[i]))
-                        isInside = true;
-                }
-                if (isInside  || tree.getNumberIntersectedPrimitives(bb) > 0){
-                    //if (tree.getNumberIntersectedPrimitives(bb) > 0){
-                    if (!checkMeshes){
+                    bool isInside = false;
+                    std::vector<Pointd> extremes;
+                    bb.getExtremes(extremes);
+                    for (unsigned int i = 0; i < extremes.size() && !isInside; i++){
+                        if (tree.isInside(extremes[i]))
+                            isInside = true;
+                    }
+                    if (isInside  || tree.getNumberIntersectedPrimitives(bb) > 0){
                         return true;
                     }
-                    else {
-                        bool b = false;
-                        SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
-                        BoundingBox bb = intersection.getBoundingBox();
-                        if (intersection.getNumberVertices() > 0 && !Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
-                            b =  true;
-                        }
-                        //return Splitting::meshCollide(b1.getEigenMesh(), b2.getEigenMesh());
-                        /*if (b != Splitting::meshCollide(b1.getEigenMesh(), b2.getEigenMesh())){
-                            b1.getEigenMesh().saveOnObj("b1coll.obj");
-                            b2.getEigenMesh().saveOnObj("b2coll.obj");
-                            std::cerr << "aaa\n";
-                        }*/
-
-                        return b;
+                }
+                else {
+                    bool b = false;
+                    SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
+                    BoundingBox bb = intersection.getBoundingBox();
+                    if (intersection.getNumberVertices() > 0 && !Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
+                        b = true;
                     }
+                    return b;
                 }
             }
         }
@@ -216,7 +230,7 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
             if (u != t){
                 b3.min()[u] = b4.min()[u] = std::max(b1.min()[u], b2.min()[u]);
                 b3.max()[u] = b4.max()[u] = std::min(b1.max()[u], b2.max()[u]);
-                assert(b3.min()[u] < b3.max()[u]);
+                assert(b3.min()[u] <= b3.max()[u]);
             }
         }
     }
@@ -235,7 +249,7 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
             if (u != i){
                 b3.min()[u] = b4.min()[u] = std::max(b1.min()[u], b2.min()[u]);
                 b3.max()[u] = b4.max()[u] = std::min(b1.max()[u], b2.max()[u]);
-                assert(b3.min()[u] < b3.max()[u]);
+                assert(b3.min()[u] <= b3.max()[u]);
             }
         }
     }
@@ -244,44 +258,55 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
 
 void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
     getSplits(b1, b2, b3);
-    //
-    Box3D b3tmp = b3;
-    for (unsigned int i = 0; i < 6; i++){
-        if (b3tmp[i] == b2[i]){
-            if (i < 3)
-                b3tmp[i]-=EPSILON;
-            else
-                b3tmp[i]+=EPSILON;
+    if (b3.getVolume() > 0){
+        //
+        Box3D b3tmp = b3;
+        for (unsigned int i = 0; i < 6; i++){
+            if (b3tmp[i] == b2[i]){
+                if (i < 3)
+                    b3tmp[i]-=EPSILON;
+                else
+                    b3tmp[i]+=EPSILON;
+            }
         }
+        b3tmp.generateEigenMesh(subd);
+        //
+        b3.generateEigenMesh(subd);
+        SimpleEigenMesh oldBox = b2.getEigenMesh();
+        oldBox = EigenMeshAlgorithms::difference(oldBox, b1.getEigenMesh());
+        SimpleEigenMesh tmp = oldBox;
+        tmp = EigenMeshAlgorithms::intersection(tmp, b3.getEigenMesh());
+        if (tmp.getNumberVertices() > 0){
+            oldBox = EigenMeshAlgorithms::difference(oldBox, b3tmp.getEigenMesh());
+            b2.setEigenMesh(oldBox);
+            BoundingBox newBBb2 = oldBox.getBoundingBox();
+            b2.setMin(newBBb2.min());
+            b2.setMax(newBBb2.max());
+            b3.setEigenMesh(tmp);
+            BoundingBox newBBb3 = tmp.getBoundingBox();
+            b3.setMin(newBBb3.min());
+            b3.setMax(newBBb3.max());
+        }
+        else{
+            b2.setEigenMesh(oldBox);
+            BoundingBox newBBb2 = oldBox.getBoundingBox();
+            b2.setMin(newBBb2.min());
+            b2.setMax(newBBb2.max());
+            b3.min() = b3.max() = Pointd();
+            b2.getEigenMesh().saveOnObj("b2modified.obj");
+        }
+        b2.setSplitted(true);
+        b3.setSplitted(true);
     }
-    b3tmp.generateEigenMesh(subd);
-    //
-    b3.generateEigenMesh(subd);
-    SimpleEigenMesh oldBox = b2.getEigenMesh();
-    oldBox = EigenMeshAlgorithms::difference(oldBox, b1.getEigenMesh());
-    SimpleEigenMesh tmp = oldBox;
-    tmp = EigenMeshAlgorithms::intersection(tmp, b3.getEigenMesh());
-    if (tmp.getNumberVertices() > 0){
-        oldBox = EigenMeshAlgorithms::difference(oldBox, b3tmp.getEigenMesh());
-        b2.setEigenMesh(oldBox);
-        BoundingBox newBBb2 = oldBox.getBoundingBox();
-        b2.setMin(newBBb2.min());
-        b2.setMax(newBBb2.max());
-        b3.setEigenMesh(tmp);
-        BoundingBox newBBb3 = tmp.getBoundingBox();
-        b3.setMin(newBBb3.min());
-        b3.setMax(newBBb3.max());
-    }
-    else{
+    else {
+        SimpleEigenMesh oldBox = b2.getEigenMesh();
+        oldBox = EigenMeshAlgorithms::difference(oldBox, b1.getEigenMesh());
         b2.setEigenMesh(oldBox);
         BoundingBox newBBb2 = oldBox.getBoundingBox();
         b2.setMin(newBBb2.min());
         b2.setMax(newBBb2.max());
         b3.min() = b3.max() = Pointd();
-        b2.getEigenMesh().saveOnObj("b2modified.obj");
     }
-    b2.setSplitted(true);
-    b3.setSplitted(true);
 }
 
 
@@ -585,20 +610,40 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
     #endif
     DirectedGraph g = getGraph(bl, tree);
 
+    int numberOfSplits = 0;
+    int deletedBoxes = 0;
+    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++)
+        mappingNewToOld[i] = i;
+
     if (priorityBoxes.size() != 0){
         for (unsigned int pb : priorityBoxes){
+            Box3D b1 = bl.getBox(pb);
             std::vector<unsigned int> incoming = g.getIncomingNodes(pb);
             std::vector<unsigned int> outgoing = g.getIncomingNodes(pb);
+            for (unsigned int inc : incoming){
+                Box3D b2 = bl.getBox(inc);
+                splitB2(b1, b2, bl, g, d, tree, trianglesCovered, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes);
+            }
+            for (unsigned int out : outgoing) {
+                Box3D b2 = bl.getBox(out);
+                splitB2(b1, b2, bl, g, d, tree, trianglesCovered, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes);
+            }
+
+            for (unsigned int inc : incoming){
+                assert(! g.arcExists(pb, inc));
+                assert(! g.arcExists(inc, pb));
+            }
+            for (unsigned int out : outgoing) {
+                assert(! g.arcExists(pb, out));
+                assert(! g.arcExists(out, pb));
+            }
 
         }
     }
 
     ///Detect and delete cycles on graph (modifying bl)
 
-    int numberOfSplits = 0;
-    int deletedBoxes = 0;
-    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++)
-        mappingNewToOld[i] = i;
+
     do {
         loops = g.getCircuits();
         std::cerr << "Number loops: " << loops.size() << "\n";
@@ -691,7 +736,12 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
             }
         }
     }*/
-    Array2D<int> ordering(bl.getNumberBoxes(), bl.getNumberBoxes(), -1); // true -> "<", false -> ">=", undefined -> "-1"
+    int lastId = bl[0].getId();
+    for (unsigned int i = 1; i < bl.getNumberBoxes(); i++){
+        if (bl[i].getId() > lastId)
+            lastId = bl[i].getId();
+    }
+    Array2D<int> ordering(lastId+1, lastId+1, -1); // true -> "<", false -> ">=", undefined -> "-1"
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         std::set<unsigned int> visited;
         newGraph.visit(visited, i);
@@ -713,6 +763,16 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
                         ordering(bl[k].getId(),bl[i].getId()) = true;
                     }
                 }
+            }
+        }
+    }
+
+    for (std::list<unsigned int>::reverse_iterator it = priorityBoxes.rbegin(); it != priorityBoxes.rend(); ++it){
+        unsigned int pb = *it;
+        for (unsigned int j = 0; j < bl.getNumberBoxes(); j++){
+            if (j != pb){
+                ordering(pb, j) = true;
+                ordering(j, pb) = false;
             }
         }
     }
