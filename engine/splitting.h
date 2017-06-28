@@ -6,6 +6,7 @@
 #include "boxlist.h"
 #include "cgal/aabbtree.h"
 #include "lib/graph/directedgraph.h"
+#include <common/comparators.h>
 
 #define SPLIT_DEBUG
 
@@ -24,17 +25,17 @@ namespace Splitting {
 
     double minimumSplit(const Box3D &b1, const Box3D &b2);
 
-    std::set<unsigned int> getTrianglesCovered(const Box3D& b, const CGALInterface::AABBTree &aabb);
+    std::set<unsigned int> getTrianglesCovered(const Box3D& b, const CGALInterface::AABBTree &aabb, bool completely = true);
 
     DirectedGraph getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree);
 
     std::pair<unsigned int, unsigned int> getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList& bl);
 
-    void chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const CGALInterface::AABBTree& tree, const std::set<unsigned int>& boxToEliminate, std::vector<std::set<unsigned int> >& trianglesCovered);
+    void chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const CGALInterface::AABBTree& tree, const std::set<unsigned int>& boxToEliminate);
 
-    bool checkDeleteBox(const Box3D &b, const std::set<unsigned int>& trianglesCoveredB,const std::vector<std::set<unsigned int> >& trianglesCovered, const std::set<unsigned int>& boxesToEliminate,  const BoxList &bl);
+    bool checkDeleteBox(const Box3D &b, const std::set<unsigned int>& boxesToEliminate,  const BoxList &bl);
 
-    void splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const Dcel& d, const CGALInterface::AABBTree& tree, std::vector< std::set<unsigned int> >& trianglesCovered, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes);
+    void splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const Dcel& d, const CGALInterface::AABBTree& tree, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes, std::set<std::pair<unsigned int, unsigned int>, cmpUnorderedStdPair<unsigned int> >& impossibleArcs);
 
     Array2D<int> getOrdering(BoxList& bl, const Dcel &d, std::map<unsigned int, unsigned int>& mappingNewToOld, std::list<unsigned int>& priorityBoxes);
 }

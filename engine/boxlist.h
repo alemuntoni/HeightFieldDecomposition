@@ -16,7 +16,10 @@ class BoxList : public DrawableObject, public SerializableObject{
         unsigned int getNumberBoxes() const;
         unsigned int size() const;
         Box3D& operator[](unsigned int i);
+        const Box3D& operator[](unsigned int i) const;
         Box3D getBox(unsigned int i) const;
+        const Box3D& find(unsigned int id) const;
+        Box3D& find(unsigned int id);
         void setBox(unsigned int i, const Box3D &b);
         void insert(const BoxList &o);
         void insert(const Box3D &b, int i = -1);

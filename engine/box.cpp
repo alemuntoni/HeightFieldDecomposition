@@ -362,6 +362,11 @@ void Box3D::serialize(std::ofstream& binaryFile) const {
     target.serialize(binaryFile);
     Serializer::serialize(rotation, binaryFile);
     piece.serialize(binaryFile);
+    std::string s = "id";
+    Serializer::serialize(s, binaryFile);
+    Serializer::serialize(id, binaryFile);
+    s = "stc";
+    Serializer::serialize(trianglesCovered, binaryFile);
 }
 
 bool Box3D::deserialize(std::ifstream& binaryFile) {
@@ -382,6 +387,25 @@ bool Box3D::deserialize(std::ifstream& binaryFile) {
             splitted = true;
         else
             splitted = false;
+
+        int begin = binaryFile.tellg();
+        std::string s;
+        if (Serializer::deserialize(s, binaryFile) && s == "id"){
+            Serializer::deserialize(id, binaryFile);
+        }
+        else{
+            binaryFile.clear();
+            binaryFile.seekg(begin);
+        }
+        begin = binaryFile.tellg();
+        if (Serializer::deserialize(s, binaryFile) && s == "stc"){
+            Serializer::deserialize(trianglesCovered, binaryFile);
+        }
+        else{
+            binaryFile.clear();
+            binaryFile.seekg(begin);
+        }
+
         return true;
     }
     else
@@ -507,6 +531,18 @@ Box3D::Split Box3D::getSplit(const Box& other) {
         }
     }
     return split;
+}
+
+const std::set<unsigned int>& Box3D::getTrianglesCovered() const {
+    return trianglesCovered;
+}
+
+void Box3D::setTrianglesCovered(const std::set<unsigned int>& value) {
+    trianglesCovered = value;
+}
+
+void Box3D::addTrianglesCovered(const std::set<unsigned int>& value) {
+    trianglesCovered.insert(value.begin(), value.end());
 }
 
 #ifdef VIEWER_DEFINED

@@ -198,6 +198,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_pushPriorityBoxButton_clicked();
 
+        void on_clearPriorityPushButton_clicked();
+
     signals:
         void finished();
 

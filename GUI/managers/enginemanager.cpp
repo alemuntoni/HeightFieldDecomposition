@@ -313,6 +313,11 @@ void EngineManager::deserializeBC(const std::string& filename) {
     ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
     ui->setFromSolutionSpinBox->setValue(0);
     ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+
+    for (unsigned int i : priorityBoxes){
+        std::string s = ui->listLabel->text().toStdString();
+        ui->listLabel->setText(QString::fromStdString(s + std::to_string(i) + "; "));
+    }
 }
 
 void EngineManager::serialize(std::ofstream& binaryFile) const {
@@ -925,7 +930,7 @@ void EngineManager::on_showAllSolutionsCheckBox_stateChanged(int arg1) {
 }
 
 void EngineManager::on_solutionsSlider_valueChanged(int value) {
-    if (ui->solutionsSlider->isEnabled()){
+    if (ui->solutionsSlider->isEnabled() && value >= 0){
         solutions->setVisibleBox(value);
         ui->setFromSolutionSpinBox->setValue(value);
         ui->solutionNumberLabel->setText(QString::number((*solutions)[value].getId()));
@@ -1081,7 +1086,7 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
         std::list<const Dcel::Face*> covered;
         if (mb == m[0]){
             CGALInterface::AABBTree t(dd);
-            t.getIntersectedDcelFaces(covered, *b);
+            t.getContainedDcelFaces(covered, *b);
         }
         #if ORIENTATIONS > 1
         else if (mb == m[1]){
@@ -1399,11 +1404,6 @@ void EngineManager::on_cleanAllPushButton_clicked() {
 
 void EngineManager::on_reorderBoxes_clicked() {
     if (d != nullptr && solutions != nullptr){
-        CGALInterface::AABBTree tree(*d);
-        solutions->generatePieces(d->getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
-        solutions->calculateTrianglesCovered(tree);
-        solutions->sortByTrianglesCovered();
-        solutions->setIds();
         if (! alreadySplitted){
             originalSolutions = *solutions;
             alreadySplitted = true;
@@ -1605,13 +1605,15 @@ void EngineManager::on_smartPackingPushButton_clicked() {
             for (unsigned int i = 0; i < packs.size(); i++){
                 QString pstring = foldername + "/pack" + QString::number(i) + ".obj";
                 EigenMesh packMesh = packs[i][0];
+                packs[i][0].saveOnObj(foldername.toStdString() + "/p0b0.obj");
                 for (unsigned int j = 1; j < packs[i].size(); j++){
+                    packs[i][j].saveOnObj(foldername.toStdString() + "/p0b" + std::to_string(j) + ".obj");
                     packMesh = EigenMesh::merge(packMesh, packs[i][j]);
                 }
                 //packMesh.saveOnObj(pstring.toStdString());
                 Dcel d(packMesh);
-                Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
-                d.rotate(m);
+                //Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+                //d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 d.saveOnObjFile(pstring.toStdString());
@@ -1631,21 +1633,6 @@ void EngineManager::on_reconstructionPushButton_clicked() {
 }
 
 void EngineManager::on_putBoxesAfterPushButton_clicked() {
-//    int nTriangles = ui->coveredTrianglesSpinBox->value();
-//    if (nTriangles > 0 && solutions != nullptr){
-//        BoxList smallBoxes;
-//        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
-//            if (solutions->getBox(i).getTrianglesCovered() <= nTriangles){
-//                Box3D small = solutions->getBox(i);
-//                smallBoxes.addBox(small);
-//                solutions->removeBox(i);
-//                i--;
-//            }
-//        }
-//        for (unsigned int i = 0; i < smallBoxes.getNumberBoxes(); i++){
-//            solutions->addBox(smallBoxes.getBox(i));
-//        }
-//    }
     int nbox = ui->coveredTrianglesSpinBox->value();
     if (nbox >= 0 && solutions != nullptr){
         Box3D small = solutions->getBox(nbox);
@@ -1681,6 +1668,11 @@ void EngineManager::on_snappingPushButton_clicked() {
                 solutions->setBox(j, b2);
             }
         }
+
+        CGALInterface::AABBTree tree(*d);
+        solutions->generatePieces(d->getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
+        solutions->calculateTrianglesCovered(tree);
+
         //merging
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
             for (unsigned int j = i+1; j < solutions->getNumberBoxes(); j++){
@@ -1733,6 +1725,7 @@ void EngineManager::on_snappingPushButton_clicked() {
                         a.setMin(bb.min());
                         a.setMax(bb.max());
                         a.setSplitted(true);
+                        a.addTrianglesCovered(b.getTrianglesCovered());
                         solutions->setBox(i, a);
                         solutions->removeBox(j);
                         j--;
@@ -1741,6 +1734,12 @@ void EngineManager::on_snappingPushButton_clicked() {
             }
         }
     }
+
+    //setting ids
+    solutions->sortByTrianglesCovered();
+    solutions->setIds();
+
+    ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
     mainWindow.updateGlCanvas();
 }
 
@@ -1790,12 +1789,23 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
 
                 Color color;
                 bool finded = false;
-                for (unsigned int k = 0; k < 10 && !finded; k++){
+                unsigned int k = i %10;
+                do {
                     if (adjColors.find(colors[k]) == adjColors.end()){
                         finded = true;
                         color = colors[k];
                     }
-                }
+                    k = (k+1)%10;
+                } while(k != i %10 && !finded);
+
+                //
+                /*for (unsigned int k = 0; k < 10 && !finded; k++){
+                    if (adjColors.find(colors[k]) == adjColors.end()){
+                        finded = true;
+                        color = colors[k];
+                    }
+                }*/
+                //
                 assert(finded);
                 heColors[i] = color;
                 colored[i] = true;
@@ -2059,8 +2069,16 @@ void EngineManager::on_restoreBoxesPushButton_clicked() {
     ui->solutionsSlider->setValue(0);
     splittedBoxesToOriginals.clear();
     mainWindow.updateGlCanvas();
+    mainWindow.fitScene();
 }
 
 void EngineManager::on_pushPriorityBoxButton_clicked() {
+    std::string s = ui->listLabel->text().toStdString();
+    ui->listLabel->setText(QString::fromStdString(s + std::to_string(ui->prioritySpinBox->value()) + "; "));
     priorityBoxes.push_back(ui->prioritySpinBox->value());
+}
+
+void EngineManager::on_clearPriorityPushButton_clicked() {
+    priorityBoxes.clear();
+    ui->listLabel->setText("");
 }

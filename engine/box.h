@@ -80,8 +80,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         int getId() const;
         void setId(int value);
 
-        int getTrianglesCovered() const;
-        void setTrianglesCovered(int value);
+        int getNumberTrianglesCovered() const;
 
         bool operator <(const Box3D& other) const;
 
@@ -90,6 +89,10 @@ class Box3D : public BoundingBox, public DrawableObject{
 
         static std::string typeSplitToString(const Split& s);
         Split getSplit(const Box& other);
+
+        const std::set<unsigned int>& getTrianglesCovered() const;
+        void setTrianglesCovered(const std::set<unsigned int>& value);
+        void addTrianglesCovered(const std::set<unsigned int>& value);
 
     protected:
         //Pointd min, max;
@@ -100,8 +103,8 @@ class Box3D : public BoundingBox, public DrawableObject{
         Eigen::Matrix3d rotation;
         int id;
         SimpleEigenMesh piece;
-        int trianglesCovered;
         bool splitted;
+        std::set<unsigned int> trianglesCovered;
 
         void drawLine(const Pointd& a, const Pointd& b, const Color& c) const;
         void drawCube() const;
@@ -188,12 +191,8 @@ inline void Box3D::setId(int value) {
     id = value;
 }
 
-inline int Box3D::getTrianglesCovered() const {
-    return trianglesCovered;
-}
-
-inline void Box3D::setTrianglesCovered(int value) {
-    trianglesCovered = value;
+inline int Box3D::getNumberTrianglesCovered() const {
+    return trianglesCovered.size();
 }
 
 #endif // BOX_H

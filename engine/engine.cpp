@@ -381,7 +381,7 @@ void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); ++i){
         Box3D b = boxList.getBox(i);
         std::list<const Dcel::Face*> covered;
-        t.getIntersectedDcelFaces(covered, b);
+        t.getContainedDcelFaces(covered, b);
 
         std::list<const Dcel::Face*>::iterator it = covered.begin();
         while (it != covered.end()) {
@@ -520,7 +520,7 @@ int Engine::deleteBoxesNonOptimal(BoxList& boxList, const Dcel& d) {
         Box3D b = boxList.getBox(i);
         std::list<const Dcel::Face*> covered;
         if (b.getRotationMatrix() == m[0])
-            t0.getIntersectedDcelFaces(covered, b);
+            t0.getContainedDcelFaces(covered, b);
         #if ORIENTATIONS > 1
         else if (b.getRotationMatrix() == m[1])
             t1.getIntersectedDcelFaces(covered, b);
@@ -1011,6 +1011,11 @@ void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
 }
 
 void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions, std::map<unsigned int, unsigned int> &mapping) {
+    int lastId = solutions[0].getId();
+    for (unsigned int i = 1; i < solutions.getNumberBoxes(); i++){
+        if (solutions[i].getId() > lastId)
+            lastId = solutions[i].getId();
+    }
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         EigenMesh m = he.getHeightfield(i);
         std::vector<SimpleEigenMesh> cc;
@@ -1029,8 +1034,18 @@ void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions, 
                 em.setFaceColor(m.getColor(0));
                 he.insertHeightfield(em, target, i+j, false);
                 solutions.insert(box, i+j);
-                solutions[i+j].setId(solutions.size());
-                mapping[solutions.size()] = mapping[solutions[i].getId()];
+                solutions[i+j].setId(lastId+1);
+                unsigned int tmp = mapping[solutions[i].getId()];
+                bool cont = true;
+                do {
+                    mapping[lastId+1] = tmp;
+                    if (mapping[tmp] == tmp)
+                        cont = false;
+                    else {
+                        tmp = mapping[tmp];
+                    }
+                } while (cont);
+                lastId++;
             }
             i = i+cc.size()-1;
         }

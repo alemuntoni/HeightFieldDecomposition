@@ -32,10 +32,38 @@ Box3D& BoxList::operator[](unsigned int i) {
     return boxes[i];
 }
 
+const Box3D&BoxList::operator[](unsigned int i) const {
+    assert(i < boxes.size());
+    return boxes[i];
+}
+
 Box3D BoxList::getBox(unsigned int i) const {
     if (i < boxes.size())
         return (boxes[i]);
     return Box3D();
+}
+
+const Box3D& BoxList::find(unsigned int id) const {
+    //https://stackoverflow.com/questions/6679096/using-find-if-on-a-vector-of-object
+    struct MyClassComp {
+      explicit MyClassComp(int i) : n(i) { }
+      inline bool operator()(const Box3D & m) const { return m.getId() == n; }
+      int n;
+    };
+
+    std::vector<Box3D>::const_iterator it = std::find_if(boxes.begin(), boxes.end(), MyClassComp(id));
+    return *it;
+}
+
+Box3D&BoxList::find(unsigned int id) {
+    struct MyClassComp {
+      explicit MyClassComp(int i) : n(i) { }
+      inline bool operator()(const Box3D & m) const { return m.getId() == n; }
+      int n;
+    };
+
+    std::vector<Box3D>::iterator it = std::find_if(boxes.begin(), boxes.end(), MyClassComp(id));
+    return *it;
 }
 
 void BoxList::setBox(unsigned int i, const Box3D& b) {
@@ -50,14 +78,14 @@ void BoxList::insert(const BoxList& o) {
 void BoxList::insert(const Box3D& b, int i) {
     if (i < 0){
         boxes.push_back(b);
-        boxes[boxes.size()-1].setId(boxes.size()-1);
+        //boxes[boxes.size()-1].setId(boxes.size()-1);
     }
     else {
         assert ((unsigned int)i < boxes.size()+1);
         boxes.insert(boxes.begin()+i, b);
-        for (; (unsigned int)i < boxes.size(); i++){
+        /*for (; (unsigned int)i < boxes.size(); i++){
             boxes[i].setId(i);
-        }
+        }*/
     }
 }
 
@@ -102,9 +130,9 @@ void BoxList::sort(const Array2D<int>& ordering) {
 void BoxList::sortByTrianglesCovered() {
     struct cmp {
         bool operator()(const Box3D &a, const Box3D &b) const {
-            if (a.getTrianglesCovered() == b.getTrianglesCovered())
+            if (a.getNumberTrianglesCovered() == b.getNumberTrianglesCovered())
                 return a.getVolume() < b.getVolume();
-            return a.getTrianglesCovered() < b.getTrianglesCovered();
+            return a.getNumberTrianglesCovered() < b.getNumberTrianglesCovered();
         }
     };
     std::sort(boxes.begin(), boxes.end(), cmp());
@@ -142,7 +170,9 @@ void BoxList::generatePieces(double minimumDistance) {
 
 void BoxList::calculateTrianglesCovered(const CGALInterface::AABBTree& tree) {
     for (unsigned int i = 0; i < boxes.size(); i++){
-        boxes[i].setTrianglesCovered(tree.getNumberIntersectedPrimitives((BoundingBox)boxes[i]));
+        std::list<unsigned int> ids;
+        tree.getCompletelyContainedDcelFaces(ids, boxes[i]);
+        boxes[i].setTrianglesCovered(std::set<unsigned int>(ids.begin(), ids.end()));
     }
 }
 
