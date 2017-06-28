@@ -94,6 +94,9 @@ class Box3D : public BoundingBox, public DrawableObject{
         void setTrianglesCovered(const std::set<unsigned int>& value);
         void addTrianglesCovered(const std::set<unsigned int>& value);
 
+        double getBaseLevel() const;
+        void setBaseLevel(double newBase);
+
     protected:
         //Pointd min, max;
         Pointd c1, c2, c3;

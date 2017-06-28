@@ -29,7 +29,7 @@ namespace Splitting {
 
     DirectedGraph getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree);
 
-    std::pair<unsigned int, unsigned int> getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList& bl);
+    std::pair<unsigned int, unsigned int> getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList& bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs);
 
     void chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const CGALInterface::AABBTree& tree, const std::set<unsigned int>& boxToEliminate);
 
@@ -37,7 +37,7 @@ namespace Splitting {
 
     void splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const Dcel& d, const CGALInterface::AABBTree& tree, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes, std::set<std::pair<unsigned int, unsigned int>, cmpUnorderedStdPair<unsigned int> >& impossibleArcs);
 
-    Array2D<int> getOrdering(BoxList& bl, const Dcel &d, std::map<unsigned int, unsigned int>& mappingNewToOld, std::list<unsigned int>& priorityBoxes);
+    Array2D<int> getOrdering(BoxList& bl, const Dcel &d, std::map<unsigned int, unsigned int>& mappingNewToOld, std::list<unsigned int>& priorityBoxes, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs);
 }
 
 #endif // SPLITTING_H

@@ -124,6 +124,9 @@ bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, co
 void Reconstruction::differential_coordinates(const cinolib::Trimesh & m, std::vector<cinolib::vec3d> & diff_coords)
 {
     assert(diff_coords.empty());
+    diff_coords.resize(m.num_vertices());
+
+    #pragma omp parallel for
     for(int vid=0; vid<m.num_vertices(); ++vid)
     {
         double w    = 1.0 / double(m.vertex_valence(vid));
@@ -133,7 +136,7 @@ void Reconstruction::differential_coordinates(const cinolib::Trimesh & m, std::v
         {
             delta += w * (curr - m.vertex(nbr));
         }
-        diff_coords.push_back(delta);
+        diff_coords[vid] = delta;
     }
 }
 
@@ -150,7 +153,7 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
 
     for(int i=0; i<n_iters; ++i)
     {
-        //std::cout << "iter " << i << std::endl;
+        std::cerr << "iter " << i << std::endl;
 
         #pragma omp parallel for
         for(int vid=0; vid<m_smooth.num_vertices(); ++vid)

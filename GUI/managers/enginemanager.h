@@ -200,6 +200,10 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_clearPriorityPushButton_clicked();
 
+        void on_pushUserArcButton_clicked();
+
+        void on_clearUserArcsPushButton_clicked();
+
     signals:
         void finished();
 
@@ -223,6 +227,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         std::map<unsigned int, unsigned int> splittedBoxesToOriginals;
         std::list<unsigned int> priorityBoxes;
+
+        std::vector<std::pair<unsigned int, unsigned int>> userArcs;
 };
 
 #endif // ENGINEMANAGER_H

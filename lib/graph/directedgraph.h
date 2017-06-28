@@ -15,6 +15,7 @@ class DirectedGraph {
         unsigned int size() const;
         unsigned int addNode(int n = -1);
         void addEdge(unsigned int node1, unsigned int node2);
+        void addEdgeIfNotExists(unsigned int node1, unsigned int node2);
         void removeNode(unsigned int n);
         void removeEdge(unsigned int node1, unsigned int node2);
         bool removeEdgeIfExists(unsigned int node1, unsigned int node2);
@@ -64,6 +65,13 @@ inline void DirectedGraph::addEdge(unsigned int node1, unsigned int node2) {
     assert(nodes.find(node1) != nodes.end());
     assert(nodes.find(node2) != nodes.end());
     nodes[node1].push_back(node2);
+}
+
+inline void DirectedGraph::addEdgeIfNotExists(unsigned int node1, unsigned int node2) {
+    assert(nodes.find(node1) != nodes.end());
+    assert(nodes.find(node2) != nodes.end());
+    if (std::find(nodes[node1].begin(), nodes[node1].end(), node2) == nodes[node1].end())
+        nodes[node1].push_back(node2);
 }
 
 inline void DirectedGraph::removeNode(unsigned int n) {

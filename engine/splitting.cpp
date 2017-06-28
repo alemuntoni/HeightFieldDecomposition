@@ -365,7 +365,7 @@ DirectedGraph Splitting::getGraph(const BoxList& bl, const CGALInterface::AABBTr
     return g;
 }
 
-std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList &bl){
+std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList &bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs){
     //looking for the more convinient box to split
     std::map<std::pair<unsigned int, unsigned int>, int> arcs;
     for (std::vector<unsigned int> loop : loops){
@@ -382,37 +382,47 @@ std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vecto
     std::multimap<int,std::pair<unsigned int, unsigned int> > rev = Common::flipMap(arcs);
 
     std::multimap<int,std::pair<unsigned int, unsigned int> >::reverse_iterator it = rev.rbegin();
+    bool found = false;
 
-    unsigned int size = rev.count((*it).first); // number of arcs that belongs with the maximum number of loops
     std::pair<unsigned int, unsigned int> arcToRemove;
-    if (size == 1){ // there is just one arc associated to the maximum number of loops
-        arcToRemove = (*it).second; // if I remove this arc, I will remove the maximum number of loops
-    }
-    else { // I need to choose wich arc I want to eliminate -> maximum split criteria
-        std::vector<std::pair<unsigned int, unsigned int> > candidateArcs;
-        for (auto i=rev.equal_range((*it).first).first; i!=rev.equal_range((*it).first).second; ++i){
-            std::pair<unsigned int, unsigned int> arc = (*i).second;
-            candidateArcs.push_back(arc);
-        }
-        double volmax = minimumSplit(bl.find(candidateArcs[0].first), bl.find(candidateArcs[0].second));
-        double a = minimumSplit(bl.find(candidateArcs[0].second), bl.find(candidateArcs[0].first));
-        if (a > volmax) volmax = a;
-        int maxarc = 0;
+    while (!found){
+        unsigned int size = rev.count((*it).first); // number of arcs that belongs with the maximum number of loops
 
-        for (unsigned int i = 1; i < candidateArcs.size(); i++) {
-            std::pair<unsigned int, unsigned int> arc = candidateArcs[i];
-            double tmp = minimumSplit(bl.find(arc.first), bl.find(arc.second));
-            if (tmp > volmax){
-                volmax = tmp;
-                maxarc = i;
+        if (size == 1){ // there is just one arc associated to the maximum number of loops
+            arcToRemove = (*it).second; // if I remove this arc, I will remove the maximum number of loops
+            if (std::find(userArcs.begin(), userArcs.end(), arcToRemove) == userArcs.end())
+                found = true;
+        }
+        else { // I need to choose wich arc I want to eliminate -> maximum split criteria
+            std::vector<std::pair<unsigned int, unsigned int> > candidateArcs;
+            for (auto i=rev.equal_range((*it).first).first; i!=rev.equal_range((*it).first).second; ++i){
+                std::pair<unsigned int, unsigned int> arc = (*i).second;
+                candidateArcs.push_back(arc);
             }
-            tmp = minimumSplit(bl.find(arc.second), bl.find(arc.first));
-            if (tmp > volmax){
-                volmax = tmp;
-                maxarc = i;
+            double volmax = -1;
+            int maxarc = -1;
+
+            for (unsigned int i = 0; i < candidateArcs.size(); i++) {
+                std::pair<unsigned int, unsigned int> arc = candidateArcs[i];
+                if (std::find(userArcs.begin(), userArcs.end(), arc) == userArcs.end()){
+                    double tmp = minimumSplit(bl.find(arc.first), bl.find(arc.second));
+                    if (tmp > volmax){
+                        volmax = tmp;
+                        maxarc = i;
+                    }
+                    tmp = minimumSplit(bl.find(arc.second), bl.find(arc.first));
+                    if (tmp > volmax){
+                        volmax = tmp;
+                        maxarc = i;
+                    }
+                }
+            }
+            if (maxarc >= 0){
+                arcToRemove = candidateArcs[maxarc];
+                found = true;
             }
         }
-        arcToRemove = candidateArcs[maxarc];
+        it++;
     }
     return arcToRemove;
 }
@@ -622,7 +632,7 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
     }
 }
 
-Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigned int, unsigned int> &mappingNewToOld, std::list<unsigned int>& priorityBoxes) {
+Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigned int, unsigned int> &mappingNewToOld, std::list<unsigned int>& priorityBoxes, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs) {
     CGALInterface::AABBTree tree(d);
     int lastId = bl[0].getId();
     for (unsigned int i = 1; i < bl.getNumberBoxes(); i++){
@@ -643,6 +653,9 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
     #endif
     DirectedGraph g = getGraph(bl, tree);
 
+    for (const std::pair<unsigned int, unsigned int>& p : userArcs)
+        g.addEdge(p.first, p.second);
+
     int numberOfSplits = 0;
     int deletedBoxes = 0;
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++)
@@ -651,28 +664,29 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
     if (priorityBoxes.size() != 0){
         for (unsigned int pb : priorityBoxes){
             Box3D b1 = bl.find(pb);
-            std::vector<unsigned int> incoming = g.getIncomingNodes(pb);
+            /*std::vector<unsigned int> incoming = g.getIncomingNodes(pb);
             for (unsigned int inc : incoming){
                 Box3D b2 = bl.find(inc);
                 std::cerr << b1.getId() << " will split " << b2.getId() << "\n";
                 splitB2(b1, b2, bl, g, d, tree, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes, impossibleArcs);
-            }
+            }*/
 
             // Don't need to split outgoings: if no arcs enter on b1, no cycles are possible and b1 will never be splitted.
-            /*std::vector<unsigned int> outgoing = g.getIncomingNodes(pb);
+            std::vector<unsigned int> outgoing = g.getOutgoingNodes(pb);
             for (unsigned int out : outgoing) {
-                Box3D b2 = bl.getBox(out);
-                splitB2(b1, b2, bl, g, d, tree, trianglesCovered, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes, impossibleArcs);
-            }*/
+                Box3D b2 = bl.find(out);
+                std::cerr << b1.getId() << " will split " << b2.getId() << "\n";
+                splitB2(b1, b2, bl, g, d, tree, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes, impossibleArcs);
+            }
 
-            for (unsigned int inc : incoming){
+            /*for (unsigned int inc : incoming){
                 assert(! g.arcExists(pb, inc));
                 assert(! g.arcExists(inc, pb));
-            }
-            /*for (unsigned int out : outgoing) {
+            }*/
+            for (unsigned int out : outgoing) {
                 assert(! g.arcExists(pb, out));
                 assert(! g.arcExists(out, pb));
-            }*/
+            }
 
         }
     }
@@ -689,7 +703,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
         if (loops.size() > 0){ // I need to modify bl
 
             std::pair<unsigned int, unsigned int> arcToRemove;
-            arcToRemove = getArcToRemove(loops, bl);
+            arcToRemove = getArcToRemove(loops, bl, userArcs);
+            assert(std::find(userArcs.begin(), userArcs.end(), arcToRemove) == userArcs.end());
 
             std::cerr << "Arc to Remove: " << arcToRemove.first << ", " << arcToRemove.second << "\n";
 
@@ -700,7 +715,8 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
             ///
             /// now I can choose which box split, b1 or b2
 
-            chooseBestSplit(b1, b2, bl, tree, boxesToEliminate);
+            if (std::find(userArcs.begin(), userArcs.end(), std::pair<unsigned int, unsigned int>(arcToRemove.second, arcToRemove.first)) == userArcs.end())
+                chooseBestSplit(b1, b2, bl, tree, boxesToEliminate);
             //now b1 will split b2 in b2+b3
 
             #ifdef SPLIT_DEBUG
@@ -715,6 +731,10 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
             splitB2(b1, b2, bl, g, d, tree, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes, impossibleArcs);
         }
     }while (loops.size() > 0);
+
+    for (const std::pair<unsigned int, unsigned int>& p : userArcs)
+        g.addEdgeIfNotExists(p.first, p.second);
+
     std::cerr << "Number of Splits: " << numberOfSplits << "\n";
     std::cerr << "Number of Deleted Boxes: " << deletedBoxes << "\n";
 

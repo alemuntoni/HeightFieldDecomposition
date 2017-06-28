@@ -955,7 +955,7 @@ void Engine::boxPostProcessing(BoxList& solutions, const Dcel& d) {
     CGALInterface::AABBTree tree(d);
     for (int bi = solutions.getNumberBoxes(); bi >= 0; bi--) {
         Box3D b = solutions.getBox(bi);
-        std::list<const Dcel::Face*> list = tree.getCompletelyContainedDcelFaces(b);
+        std::list<const Dcel::Face*> list = tree.getContainedDcelFaces(b);
         std::vector<std::set<const Dcel::Face*> > connectedComponents = DcelAlgorithms::getConnectedComponents(list.begin(), list.end());
         if (connectedComponents.size() > 1){
             std::cerr << "Box " << bi << " has " << connectedComponents.size() << " connected components\n";

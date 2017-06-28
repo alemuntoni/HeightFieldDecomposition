@@ -366,6 +366,7 @@ void Box3D::serialize(std::ofstream& binaryFile) const {
     Serializer::serialize(s, binaryFile);
     Serializer::serialize(id, binaryFile);
     s = "stc";
+    Serializer::serialize(s, binaryFile);
     Serializer::serialize(trianglesCovered, binaryFile);
 }
 
@@ -382,7 +383,7 @@ bool Box3D::deserialize(std::ifstream& binaryFile) {
             tmp.piece.deserialize(binaryFile)) {
         tmp.min() = tmpbb.min();
         tmp.max() = tmpbb.max();
-        *this = std::move(tmp);
+
         if (! EigenMeshAlgorithms::isABox(piece))
             splitted = true;
         else
@@ -405,7 +406,7 @@ bool Box3D::deserialize(std::ifstream& binaryFile) {
             binaryFile.clear();
             binaryFile.seekg(begin);
         }
-
+        *this = std::move(tmp);
         return true;
     }
     else
@@ -543,6 +544,48 @@ void Box3D::setTrianglesCovered(const std::set<unsigned int>& value) {
 
 void Box3D::addTrianglesCovered(const std::set<unsigned int>& value) {
     trianglesCovered.insert(value.begin(), value.end());
+}
+
+double Box3D::getBaseLevel() const {
+    for (unsigned int i = 0; i < 6; i++){
+        if (target == XYZ[i]){
+            if (i < 3)
+                return maxCoord[i];
+            else
+                return minCoord[i-3];
+        }
+    }
+    assert(0);
+    return -1;
+}
+
+void Box3D::setBaseLevel(double newBase) {
+    for (unsigned int i = 0; i < 6; i++)
+        if (target == XYZ[i]){
+            double oldBase;
+            if (i < 3){
+                oldBase = maxCoord[i];
+                maxCoord[i] = newBase;
+                for (unsigned  int j = 0; j < piece.getNumberVertices(); j++){
+                    if (piece.getVertex(j)[i] == oldBase){
+                        Pointd p = piece.getVertex(j);
+                        p[i] = newBase;
+                        piece.setVertex(j, p);
+                    }
+                }
+            }
+            else{
+                oldBase = minCoord[i-3];
+                minCoord[i-3] = newBase;
+                for (unsigned int j = 0; j < piece.getNumberVertices(); j++){
+                    if (piece.getVertex(j)[i-3] == oldBase){
+                        Pointd p = piece.getVertex(j);
+                        p[i-3] = newBase;
+                        piece.setVertex(j, p);
+                    }
+                }
+            }
+        }
 }
 
 #ifdef VIEWER_DEFINED
