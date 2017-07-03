@@ -6,6 +6,10 @@
 #include <gurobi_c++.h>
 #endif
 
+#include <cgal/cgalutils.h>
+#include <CGAL/mesh_segmentation.h>
+#include <CGAL/property_map.h>
+
 Vec3 Engine::getClosestTarget(const Vec3& n) {
     double angle = n.dot(XYZ[0]);
     int k = 0;
@@ -1000,6 +1004,78 @@ std::vector<Box3D> Engine::splitBoxWithMoreThanOneConnectedComponent(const Box3D
     return splittedBoxes;
 }
 
+bool checkNewBox(const Box3D& tmp, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const CGALInterface::AABBTree& tree){
+    std::list<unsigned int> newTriangles;
+    tree.getCompletelyContainedDcelFaces(newTriangles, tmp);
+    std::set<unsigned int> uncovered = Common::setDifference(b2.getTrianglesCovered(), std::set<unsigned int>(newTriangles.begin(), newTriangles.end()));
+    bool shrink = true;
+    for (unsigned int t : uncovered){
+        if (trianglesCovered[t] == 1)
+            shrink = false;
+    }
+    if (shrink){
+        b2 = tmp;
+        b2.setTrianglesCovered(std::set<unsigned int>(newTriangles.begin(), newTriangles.end()));
+        for (unsigned int t : uncovered){
+            trianglesCovered[t]--;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const CGALInterface::AABBTree& tree) {
+    bool found = false;
+    Box3D tmp = b2;
+    if (Common::isInBounds(b2.getMinX(), b1.getMinX(), b1.getMaxX()) && b2.getMaxX() > b1.getMaxX()){
+        tmp.setMinX(b1.getMaxX());
+        found = checkNewBox(tmp, b2, trianglesCovered, tree);
+        if (found)
+            return true;
+        else
+            tmp = b2;
+    }
+    if (Common::isInBounds(b2.getMinY(), b1.getMinY(), b1.getMaxY()) && b2.getMaxY() > b1.getMaxY()) {
+        tmp.setMinY(b1.getMaxY());
+        found = checkNewBox(tmp, b2, trianglesCovered, tree);
+        if (found)
+            return true;
+        else
+            tmp = b2;
+    }
+    if (Common::isInBounds(b2.getMinZ(), b1.getMinZ(), b1.getMaxZ()) && b2.getMaxZ() > b1.getMaxZ()) {
+        tmp.setMinZ(b1.getMaxZ());
+        found = checkNewBox(tmp, b2, trianglesCovered, tree);
+        if (found)
+            return true;
+        else
+            tmp = b2;
+    }
+    if (Common::isInBounds(b2.getMaxX(), b1.getMinX(), b1.getMaxX()) && b2.getMinX() < b1.getMinX()){
+        tmp.setMaxX(b1.getMinX());
+        found = checkNewBox(tmp, b2, trianglesCovered, tree);
+        if (found)
+            return true;
+        else
+            tmp = b2;
+    }
+    if (Common::isInBounds(b2.getMaxY(), b1.getMinY(), b1.getMaxY()) && b2.getMinY() < b1.getMinY()){
+        tmp.setMaxY(b1.getMinY());
+        found = checkNewBox(tmp, b2, trianglesCovered, tree);
+        if (found)
+            return true;
+        else
+            tmp = b2;
+    }
+    if (Common::isInBounds(b2.getMaxZ(), b1.getMinZ(), b1.getMaxZ()) && b2.getMinZ() < b1.getMinZ()){
+        tmp.setMaxZ(b1.getMinZ());
+        found = checkNewBox(tmp, b2, trianglesCovered, tree);
+        if (found)
+            return true;
+    }
+    return false;
+}
+
 void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
     for (unsigned int i = 0; i < solutions.getNumberBoxes()-1; i++){
         if (solutions.getBox(i).min() == solutions.getBox(i+1).min() &&
@@ -1482,4 +1558,33 @@ bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
         }
     }
     return heightfield;
+}
+
+void Engine::tinyFeatures(EigenMesh& m, double threshold) {
+    CGALInterface::Utils::Polyhedron_3 mesh = CGALInterface::Utils::getPolyhedronFromEigenMesh(m);
+
+    // create a property-map
+    typedef std::map<CGALInterface::Utils::Polyhedron_3::Facet_const_handle, double> Facet_double_map;
+    Facet_double_map internal_map;
+    boost::associative_property_map<Facet_double_map> sdf_property_map(internal_map);
+    // compute SDF values
+    std::pair<double, double> min_max_sdf = CGAL::sdf_values(mesh, sdf_property_map);
+    // It is possible to compute the raw SDF values and post-process them using
+    // the following lines:
+    // const std::size_t number_of_rays = 25;  // cast 25 rays per facet
+    // const double cone_angle = 2.0 / 3.0 * CGAL_PI; // set cone opening-angle
+    // CGAL::sdf_values(mesh, sdf_property_map, cone_angle, number_of_rays, false);
+    // std::pair<double, double> min_max_sdf =
+    //  CGAL::sdf_values_postprocessing(mesh, sdf_property_map);
+    // print minimum & maximum SDF values
+    std::cout << "minimum SDF: " << min_max_sdf.first
+              << " maximum SDF: " << min_max_sdf.second << std::endl;
+    // print SDF values
+
+    for(auto facet_it = mesh.facets_begin(); facet_it != mesh.facets_end(); ++facet_it) {
+        if (sdf_property_map[facet_it] < threshold) {
+            uint fid = std::distance(mesh.facets_begin(), facet_it);
+            m.setFaceColor(Color(255,0,0), fid);
+        }
+    }
 }

@@ -105,5 +105,6 @@ static const std::vector<Color> colors = {
 Color colorOfNormal(const Vec3 &normal);
 Vec3 nearestNormal(const Vec3& normal);
 Color colorOfNearestNormal(const Vec3& normal);
+int indexOfNormal(const Vec3& v);
 
 #endif // MYCOMMON_H

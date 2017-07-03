@@ -38,3 +38,11 @@ Color colorOfNearestNormal(const Vec3& normal) {
     }
     return colors[nid];
 }
+
+int indexOfNormal(const Vec3& v) {
+    std::vector<Vec3>::const_iterator it = std::find(XYZ.begin(), XYZ.end(), v);
+    if (it != XYZ.end())
+        return it - XYZ.begin();
+    else
+        return -1;
+}

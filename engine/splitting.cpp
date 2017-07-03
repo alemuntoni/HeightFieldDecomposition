@@ -17,6 +17,16 @@ bool Splitting::boxesIntersect(const Box3D& b1, const Box3D& b2) {
     return true; //boxes overlap
 }
 
+bool Splitting::boxesIntersectNS(const Box3D& b1, const Box3D& b2) {
+    if (b1.getMaxX() < b2.getMinX()) return false; // a is left of b
+    if (b1.getMinX() > b2.getMaxX()) return false; // a is right of b
+    if (b1.getMaxY() < b2.getMinY()) return false; // a is above b
+    if (b1.getMinY() > b2.getMaxY()) return false; // a is below b
+    if (b1.getMaxZ() < b2.getMinZ()) return false; // a is behind b
+    if (b1.getMinZ() > b2.getMaxZ()) return false; // a is in front b
+    return true; //boxes overlap
+}
+
 bool Splitting::meshCollide(const SimpleEigenMesh &b1, const SimpleEigenMesh &b2){
         CGALInterface::AABBTree tree(b1, true);
         BoundingBox bb;
@@ -740,14 +750,6 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
 
     for (std::set<unsigned int>::reverse_iterator rit = boxesToEliminate.rbegin(); rit != boxesToEliminate.rend(); ++rit){
         bl.removeBox(*rit);
-    }
-
-    std::cerr << "Graph after splitting: \n";
-    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
-        std::vector<unsigned int> v = g.getOutgoingNodes(i);
-        for (unsigned int j = 0; j < v.size(); j++){
-            std::cerr << i << " -> " << v[j] << "\n";
-        }
     }
 
     //resorting and map old with new graph

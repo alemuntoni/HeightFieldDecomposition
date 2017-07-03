@@ -66,6 +66,17 @@ Box3D&BoxList::find(unsigned int id) {
     return *it;
 }
 
+unsigned int BoxList::getIndexOf(unsigned int id) const {
+    struct MyClassComp {
+      explicit MyClassComp(int i) : n(i) { }
+      inline bool operator()(const Box3D & m) const { return m.getId() == n; }
+      int n;
+    };
+
+    std::vector<Box3D>::const_iterator it = std::find_if(boxes.begin(), boxes.end(), MyClassComp(id));
+    return it - boxes.begin();
+}
+
 void BoxList::setBox(unsigned int i, const Box3D& b) {
     assert (i < boxes.size());
     boxes[i] = b;

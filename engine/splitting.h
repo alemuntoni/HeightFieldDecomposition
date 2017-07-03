@@ -15,6 +15,8 @@ namespace Splitting {
     //Naive splitting
     bool boxesIntersect(const Box3D &b1, const Box3D &b2);
 
+    bool boxesIntersectNS(const Box3D &b1, const Box3D &b2);
+
     bool meshCollide(const SimpleEigenMesh &b1, const SimpleEigenMesh &b2);
 
     bool isDangerousIntersection(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree, bool checkMeshes = false);

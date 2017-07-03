@@ -20,6 +20,7 @@ class BoxList : public DrawableObject, public SerializableObject{
         Box3D getBox(unsigned int i) const;
         const Box3D& find(unsigned int id) const;
         Box3D& find(unsigned int id);
+        unsigned int getIndexOf(unsigned int id) const;
         void setBox(unsigned int i, const Box3D &b);
         void insert(const BoxList &o);
         void insert(const Box3D &b, int i = -1);

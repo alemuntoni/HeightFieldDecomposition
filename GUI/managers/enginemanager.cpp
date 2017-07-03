@@ -1644,6 +1644,9 @@ void EngineManager::on_putBoxesAfterPushButton_clicked() {
 void EngineManager::on_snappingPushButton_clicked() {
     if (solutions != nullptr && d != nullptr){
         double av = d->getAverageHalfEdgesLength();
+        CGALInterface::AABBTree tree(*d);
+
+        //snapping
         double epsilon = ui->snappingSpinBox->value();
         for (unsigned int i = 0; i < solutions->getNumberBoxes()-1; i++){
             Box3D b1 = solutions->getBox(i);
@@ -1663,23 +1666,125 @@ void EngineManager::on_snappingPushButton_clicked() {
                         b2(coord+3) = b1(coord+3);
                     }
                 }
+                solutions->setBox(j, b2);
             }
         }
 
-        CGALInterface::AABBTree tree(*d);
+        //new: forced snapping
+        solutions->calculateTrianglesCovered(tree);
+        std::vector<unsigned int> trianglesCovered(d->getNumberFaces(), 0);
+        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
+            const std::set<unsigned int>& s = (*solutions)[i].getTrianglesCovered();
+            for (unsigned int j : s){
+                trianglesCovered[j]++;
+            }
+        }
+        for (unsigned int i = 0; i < solutions->getNumberBoxes()-1; i++){
+            Box3D b1 = solutions->getBox(i);
+            for (unsigned int j = i+1; j < solutions->getNumberBoxes(); j++){
+                Box3D b2 = solutions->getBox(j);
+                if (Splitting::boxesIntersect(b1,b2)){
+                    if (Splitting::isDangerousIntersection(b1, b2, tree, false) ||
+                            Splitting::isDangerousIntersection(b2, b1, tree, false)){
+                        if (Engine::smartSnapping(b1, b2, trianglesCovered, tree)){
+                            std::cerr << "Smart snapping " << j << " in " << i << "\n";
+                            solutions->setBox(j, b2);
+                        }
+                        else if (Engine::smartSnapping(b2, b1, trianglesCovered, tree)){
+                            std::cerr << "Smart snapping " << i << " in " << j << "\n";
+                            solutions->setBox(i, b1);
+                        }
+                    }
+                }
+            }
+        }
+        //
+
         solutions->generatePieces(av*LENGTH_MULTIPLIER);
         solutions->calculateTrianglesCovered(tree);
         solutions->sortByTrianglesCovered();
 
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
-            for (unsigned int j = i+1; j < solutions->getNumberBoxes(); j++){
-                if ((*solutions)[i].getTarget() == (*solutions)[j].getTarget() &&  Splitting::boxesIntersect((*solutions)[i], (*solutions)[j]))
+            for (unsigned int j = 0; j < solutions->getNumberBoxes() && j != i; j++){
+                if ((*solutions)[i].getTarget() == (*solutions)[j].getTarget() &&  Splitting::boxesIntersect((*solutions)[i], (*solutions)[j])){
                     std::cerr << "Boxes " << i << " and " << j << " may be merged. \n";
+                    Box3D& a = (*solutions)[i];
+                    Box3D& b = (*solutions)[j];
+                    int t = indexOfNormal((*solutions)[i].getTarget());
+                    assert(t >= 0);
+                    double baseA = a.getBaseLevel(), baseB = b.getBaseLevel();
+                    if (baseA <= baseB){
+                        if (baseA != baseB){
+                            if (t < 3){
+                                //x, y, z
+                                Box3D tmpa = a;
+                                tmpa.setBaseLevel(baseB);
+                                std::list<unsigned int> newTrianglesA;
+                                tree.getCompletelyContainedDcelFaces(newTrianglesA, tmpa);
+                                std::set<unsigned int> nonCoveredTrianglesA(newTrianglesA.begin(), newTrianglesA.end());
+                                nonCoveredTrianglesA = Common::setDifference(a.getTrianglesCovered(), nonCoveredTrianglesA);
+                                bool shrink = true;
+                                for (unsigned int t : nonCoveredTrianglesA){
+                                    if (trianglesCovered[t] == 1)
+                                        shrink = false;
+                                }
+                                if (shrink){
+                                    for (unsigned int t : nonCoveredTrianglesA){
+                                        trianglesCovered[t]--;
+                                    }
+                                    a.setBaseLevel(baseB);
+                                    a.setTrianglesCovered(std::set<unsigned int>(newTrianglesA.begin(), newTrianglesA.end()));
+                                    std::cerr << "Box " << i << " shrinked to level of Box " << j << "\n";
+
+                                    SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
+                                    a.setEigenMesh(u);
+                                    a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                    a.setMin(u.getBoundingBox().min());
+                                    a.setMax(u.getBoundingBox().max());
+                                    (*solutions)[i].setSplitted(true);
+                                    solutions->removeBox(j);
+                                    j--;
+                                }
+                            }
+                            else {
+                                //-x, -y, -z
+                                Box3D tmpb = b;
+                                tmpb.setBaseLevel(baseA);
+                                std::list<unsigned int> newTrianglesB;
+                                tree.getCompletelyContainedDcelFaces(newTrianglesB, tmpb);
+                                std::set<unsigned int> nonCoveredTrianglesB(newTrianglesB.begin(), newTrianglesB.end());
+                                nonCoveredTrianglesB = Common::setDifference(b.getTrianglesCovered(), nonCoveredTrianglesB);
+                                bool shrink = true;
+                                for (unsigned int t : nonCoveredTrianglesB){
+                                    if (trianglesCovered[t] == 1)
+                                        shrink = false;
+                                }
+                                if (shrink){
+                                    for (unsigned int t : nonCoveredTrianglesB){
+                                        trianglesCovered[t]--;
+                                    }
+                                    b.setBaseLevel(baseA);
+                                    b.setTrianglesCovered(std::set<unsigned int>(newTrianglesB.begin(), newTrianglesB.end()));
+                                    std::cerr << "Box " << j << " shrinked to level of Box " << i << "\n";
+
+                                    SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
+                                    a.setEigenMesh(u);
+                                    a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                    a.setMin(u.getBoundingBox().min());
+                                    a.setMax(u.getBoundingBox().max());
+                                    (*solutions)[i].setSplitted(true);
+                                    solutions->removeBox(j);
+                                    j--;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
         //merging
-        for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
+        /*for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
             for (unsigned int j = i+1; j < solutions->getNumberBoxes(); j++){
                 Box3D a = solutions->getBox(i);
                 Box3D b = solutions->getBox(j);
@@ -1737,7 +1842,7 @@ void EngineManager::on_snappingPushButton_clicked() {
                     }
                 }
             }
-        }
+        }*/
         //setting ids
         solutions->sortByTrianglesCovered();
         solutions->setIds();
@@ -2057,4 +2162,48 @@ void EngineManager::on_pushUserArcButton_clicked() {
 void EngineManager::on_clearUserArcsPushButton_clicked() {
     userArcs.clear();
     ui->userArcsLabel->setText("");
+}
+
+void EngineManager::on_deleteBlockPushButton_clicked() {
+    if (solutions != nullptr && he != nullptr){
+        unsigned int index = solutions->getIndexOf(ui->deleteBlockSpinBox->value());
+        solutions->removeBox(index);
+        he->removeHeightfield(index);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
+        mainWindow.updateGlCanvas();
+    }
+}
+
+void EngineManager::on_sdfPushButton_clicked() {
+    if (d != nullptr && he != nullptr){
+        double threshold = d->getBoundingBox().diag() /10000;
+        std::cerr << "Threshold: " << threshold << "\n";
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            EigenMesh m = he->getHeightfield(i);
+            m.removeDegenerateTriangles(1e-1);
+            m.saveOnObj("prova.obj");
+            if (EigenMeshAlgorithms::isEdgeManifold(m)){
+                Engine::tinyFeatures(m, threshold);
+            }
+            else
+                std::cerr << "Block n. " << i << " is not Edge Manifold\n";
+            he->setHeightfield(m, i);
+        }
+    }
+    mainWindow.updateGlCanvas();
+}
+
+void EngineManager::on_deleteBoxPushButton_clicked() {
+    if (b != nullptr){
+        deleteDrawableObject((b));
+        b = nullptr;
+    }
+}
+
+void EngineManager::on_deleteBox2PushButton_clicked() {
+    if (b2 != nullptr){
+        deleteDrawableObject((b2));
+        b2 = nullptr;
+    }
 }

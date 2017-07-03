@@ -204,6 +204,14 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_clearUserArcsPushButton_clicked();
 
+        void on_deleteBlockPushButton_clicked();
+
+        void on_sdfPushButton_clicked();
+
+        void on_deleteBoxPushButton_clicked();
+
+        void on_deleteBox2PushButton_clicked();
+
     signals:
         void finished();
 

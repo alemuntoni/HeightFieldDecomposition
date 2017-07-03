@@ -69,6 +69,8 @@ namespace Engine {
 
     std::vector<Box3D> splitBoxWithMoreThanOneConnectedComponent(const Box3D& originalBox, const std::vector<std::set<const Dcel::Face*> >& connectedComponents);
 
+    bool smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const CGALInterface::AABBTree& tree);
+
     void deleteDuplicatedBoxes(BoxList &solutions);
 
     void booleanOperations(HeightfieldsList &he, SimpleEigenMesh& bc, BoxList &solutions, bool alternativeColors = false);
@@ -93,6 +95,8 @@ namespace Engine {
     void saveObjs(const QString& foldername, const EigenMesh& originalMesh, const Dcel& inputMesh, const EigenMesh& baseComplex, const HeightfieldsList& he);
 
     bool isAnHeightfield(const EigenMesh &m, const Vec3& v, bool strictly = false);
+
+    void tinyFeatures(EigenMesh &m, double threshold);
 }
 
 #endif // ENGINE_H

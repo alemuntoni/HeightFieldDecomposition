@@ -819,7 +819,7 @@
                 </property>
                </widget>
               </item>
-              <item row="21" column="1">
+              <item row="22" column="1">
                <widget class="QDoubleSpinBox" name="explodeSpinBox">
                 <property name="minimum">
                  <double>-1000.000000000000000</double>
@@ -832,14 +832,14 @@
                 </property>
                </widget>
               </item>
-              <item row="22" column="0">
+              <item row="23" column="0">
                <widget class="QPushButton" name="putBoxesAfterPushButton">
                 <property name="text">
                  <string>Put Boxes After</string>
                 </property>
                </widget>
               </item>
-              <item row="22" column="1">
+              <item row="23" column="1">
                <widget class="QSpinBox" name="coveredTrianglesSpinBox">
                 <property name="maximum">
                  <number>100</number>
@@ -887,6 +887,9 @@
                 </property>
                </widget>
               </item>
+              <item row="15" column="1">
+               <widget class="QSpinBox" name="prioritySpinBox"/>
+              </item>
               <item row="17" column="1">
                <widget class="QPushButton" name="restoreBoxesPushButton">
                 <property name="text">
@@ -900,9 +903,6 @@
                  <string>Boolean Operations</string>
                 </property>
                </widget>
-              </item>
-              <item row="15" column="1">
-               <widget class="QSpinBox" name="prioritySpinBox"/>
               </item>
               <item row="9" column="1">
                <widget class="QCheckBox" name="allHeightfieldsCheckBox">
@@ -935,14 +935,7 @@
                 </property>
                </widget>
               </item>
-              <item row="20" column="1">
-               <widget class="QPushButton" name="colorPiecesPushButton">
-                <property name="text">
-                 <string>Color Pieces</string>
-                </property>
-               </widget>
-              </item>
-              <item row="21" column="0">
+              <item row="22" column="0">
                <widget class="QPushButton" name="explodePushButton">
                 <property name="text">
                  <string>Explode</string>
@@ -977,6 +970,9 @@
                 </property>
                </widget>
               </item>
+              <item row="11" column="0">
+               <widget class="QSpinBox" name="boxASpinBox"/>
+              </item>
               <item row="19" column="1">
                <widget class="QPushButton" name="stickPushButton">
                 <property name="text">
@@ -998,6 +994,9 @@
                 </property>
                </widget>
               </item>
+              <item row="11" column="1">
+               <widget class="QSpinBox" name="boxBSpinBox"/>
+              </item>
               <item row="10" column="0">
                <widget class="QLabel" name="label_31">
                 <property name="text">
@@ -1005,8 +1004,12 @@
                 </property>
                </widget>
               </item>
-              <item row="11" column="0">
-               <widget class="QSpinBox" name="boxASpinBox"/>
+              <item row="14" column="0" colspan="2">
+               <widget class="QLabel" name="userArcsLabel">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
               </item>
               <item row="13" column="0">
                <widget class="QPushButton" name="pushUserArcButton">
@@ -1015,6 +1018,9 @@
                 </property>
                </widget>
               </item>
+              <item row="24" column="1">
+               <widget class="QSpinBox" name="deleteBlockSpinBox"/>
+              </item>
               <item row="13" column="1">
                <widget class="QPushButton" name="clearUserArcsPushButton">
                 <property name="text">
@@ -1022,13 +1028,24 @@
                 </property>
                </widget>
               </item>
-              <item row="11" column="1">
-               <widget class="QSpinBox" name="boxBSpinBox"/>
-              </item>
-              <item row="14" column="0" colspan="2">
-               <widget class="QLabel" name="userArcsLabel">
+              <item row="24" column="0">
+               <widget class="QPushButton" name="deleteBlockPushButton">
                 <property name="text">
-                 <string/>
+                 <string>Delete Block</string>
+                </property>
+               </widget>
+              </item>
+              <item row="21" column="1">
+               <widget class="QPushButton" name="colorPiecesPushButton">
+                <property name="text">
+                 <string>Color Pieces</string>
+                </property>
+               </widget>
+              </item>
+              <item row="21" column="0">
+               <widget class="QPushButton" name="sdfPushButton">
+                <property name="text">
+                 <string>SDF</string>
                 </property>
                </widget>
               </item>
@@ -1623,6 +1640,20 @@
                <widget class="QRadioButton" name="box2RadioButton">
                 <property name="text">
                  <string>Box2</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QPushButton" name="deleteBoxPushButton">
+                <property name="text">
+                 <string>Delete Box</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="2">
+               <widget class="QPushButton" name="deleteBox2PushButton">
+                <property name="text">
+                 <string>Delete Box2</string>
                 </property>
                </widget>
               </item>
