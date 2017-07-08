@@ -1,6 +1,7 @@
 #include "engine.h"
 #include <eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include <dcel/algorithms/dcel_algorithms.h>
+#include "lib/dcel_segmentation/segmentation.h"
 
 #ifdef GUROBI_DEFINED
 #include <gurobi_c++.h>
@@ -924,7 +925,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
     ////TO TEST
     //Engine::boxPostProcessing(solutions, d);
 
-    solutions.generatePieces(d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
+    solutions.generatePieces();
 }
 
 /**
@@ -1082,6 +1083,44 @@ void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
             solutions.getBox(i).max() == solutions.getBox(i+1).max()){
             solutions.removeBox(i);
             i--;
+        }
+    }
+}
+
+void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxList &solutions, bool alternativeColors) {
+    deleteDuplicatedBoxes(solutions);
+    igl::copyleft::cgal::CSGTree tree = EigenMeshAlgorithms::eigenMeshToCSGTree(bc);
+    Timer timer("Boolean Operations");
+    he.resize(solutions.getNumberBoxes());
+    const double pass = 240.0 / solutions.getNumberBoxes();
+    Color c;
+    for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
+        c.setHsv((int)(i*pass),255,255);
+        SimpleEigenMesh box;
+        SimpleEigenMesh intersection;
+        box = solutions.getBox(i).getEigenMesh();
+        //double eps = ((double) rand() / (RAND_MAX));
+        //box.scale(Vec3(1+ eps* 1e-5, 1+ eps* 1e-5, 1+ eps* 1e-5));
+        //#ifdef BOOL_DEBUG
+        //box.saveOnObj("booleans/box" + std::to_string(i) + ".obj");
+        //#endif
+        EigenMeshAlgorithms::intersection(intersection, tree, box);
+        tree = EigenMeshAlgorithms::difference(tree, box);
+        DrawableEigenMesh dimm(intersection);
+        if (alternativeColors){
+            dimm.setFaceColor(c.redF(), c.greenF(), c.blueF());
+            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i, false);
+        }
+        else
+            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i, true);
+        std::cerr << i << ": " << solutions[i].getId() << "\n";
+    }
+    timer.stopAndPrint();
+    bc = EigenMeshAlgorithms::CSGTreeToEigenMesh(tree);
+    for (int i = he.getNumHeightfields()-1; i >= 0 ; i--) {
+        if (he.getNumberVerticesHeightfield(i) == 0) {
+            he.removeHeightfield(i);
+            solutions.removeBox(i);
         }
     }
 }
@@ -1560,31 +1599,58 @@ bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
     return heightfield;
 }
 
-void Engine::tinyFeatures(EigenMesh& m, double threshold) {
-    CGALInterface::Utils::Polyhedron_3 mesh = CGALInterface::Utils::getPolyhedronFromEigenMesh(m);
-
-    // create a property-map
-    typedef std::map<CGALInterface::Utils::Polyhedron_3::Facet_const_handle, double> Facet_double_map;
-    Facet_double_map internal_map;
-    boost::associative_property_map<Facet_double_map> sdf_property_map(internal_map);
-    // compute SDF values
-    std::pair<double, double> min_max_sdf = CGAL::sdf_values(mesh, sdf_property_map);
-    // It is possible to compute the raw SDF values and post-process them using
-    // the following lines:
-    // const std::size_t number_of_rays = 25;  // cast 25 rays per facet
-    // const double cone_angle = 2.0 / 3.0 * CGAL_PI; // set cone opening-angle
-    // CGAL::sdf_values(mesh, sdf_property_map, cone_angle, number_of_rays, false);
-    // std::pair<double, double> min_max_sdf =
-    //  CGAL::sdf_values_postprocessing(mesh, sdf_property_map);
-    // print minimum & maximum SDF values
-    std::cout << "minimum SDF: " << min_max_sdf.first
-              << " maximum SDF: " << min_max_sdf.second << std::endl;
-    // print SDF values
-
-    for(auto facet_it = mesh.facets_begin(); facet_it != mesh.facets_end(); ++facet_it) {
-        if (sdf_property_map[facet_it] < threshold) {
-            uint fid = std::distance(mesh.facets_begin(), facet_it);
-            m.setFaceColor(Color(255,0,0), fid);
+bool Engine::cleanHeightFiled(EigenMesh& m, const Vec3& target) {
+    Dcel d(m);
+    BoundingBox bb = d.getBoundingBox();
+    int index = indexOfNormal(target);
+    double b;
+    if (index < 3) b = bb.min()[index];
+    else b = bb.max()[index-3];
+    bool found = false;
+    Segmentation s(d);
+    std::vector<Segmentation::Chart*> bases;
+    for (Segmentation::ChartIterator cit = s.chartBegin(); cit != s.chartEnd(); ++cit) {
+        Segmentation::Chart* c = *cit;
+        if (Common::epsilonEqual(c->getNormal(), -target)){
+            const Dcel::Face* f = *(c->faceBegin());
+            if (Common::epsilonEqual(f->getOuterHalfEdge()->getFromVertex()->getCoordinate()[index < 3 ? index : index - 3], b)){
+                found = true;
+                bases.push_back(c);
+            }
         }
     }
+    if (found){
+        std::set<const Dcel::HalfEdge*> borderHalfEdges;
+        for (Segmentation::Chart* c : bases){
+            for (Segmentation::Chart::ConstFaceIterator fit = c->faceBegin(); fit != c->faceEnd(); ++fit){
+                for (Dcel::Face::ConstIncidentHalfEdgeIterator afit = (*fit)->incidentHalfEdgeBegin(); afit != (*fit)->incidentHalfEdgeEnd(); ++afit){
+                    if (! c->faceExists((*afit)->getTwin()->getFace()))
+                        borderHalfEdges.insert(*afit);
+                }
+                d.getFace((*fit)->getId())->setColor(Color(255,0,255));
+            }
+        }
+        //manage here the case of more than one base.
+
+        //
+        std::vector<Pointd> border;
+        Pointd first = (*borderHalfEdges.begin())->getFromVertex()->getCoordinate();
+        Pointd actual = (*borderHalfEdges.begin())->getToVertex()->getCoordinate();
+        border.push_back(first);
+        while (actual != first){
+            border.push_back(actual);
+            bool found = false;
+            for (const Dcel::HalfEdge* he : borderHalfEdges){
+                if (he->getFromVertex()->getCoordinate() == actual){
+                    actual = he->getToVertex()->getCoordinate();
+                    found = true;
+                    break;
+                }
+            }
+            assert(found);
+        }
+        m = d;
+    }
+    return found;
+
 }

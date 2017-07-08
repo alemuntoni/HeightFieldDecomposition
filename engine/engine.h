@@ -19,7 +19,7 @@
 #define TARGETS 6
 #define STARTING_NUMBER_FACES 300
 
-//#define BOOL_DEBUG
+#define BOOL_DEBUG
 
 namespace Engine {
     Vec3 getClosestTarget(const Vec3 &n);
@@ -96,7 +96,7 @@ namespace Engine {
 
     bool isAnHeightfield(const EigenMesh &m, const Vec3& v, bool strictly = false);
 
-    void tinyFeatures(EigenMesh &m, double threshold);
+    bool cleanHeightFiled(EigenMesh& m, const Vec3& target);
 }
 
 #endif // ENGINE_H

@@ -107,7 +107,6 @@ exists($$(GUROBI_HOME)){
         lib/octree/octree_node.h
 
 
-
     SOURCES += \
         main.cpp \
         common.cpp \
@@ -130,7 +129,6 @@ exists($$(GUROBI_HOME)){
         engine/greedysubdivision.cpp \
         lib/csgtree/aabbcsgtree.cpp \
         lib/octree/octree_node.cpp
-
 
     FORMS += \
         GUI/managers/enginemanager.ui

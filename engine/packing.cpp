@@ -50,7 +50,7 @@ int Packing::getMaximum(const HeightfieldsList& he, const BoundingBox& block, do
     }
     double factorx = block.getLengthX() > 0 ? (block.getLengthX()-5) / maxx : std::numeric_limits<double>::max();
     double factory = block.getLengthY() > 0 ? (block.getLengthY()-5) / maxy : std::numeric_limits<double>::max();
-    double factorz = block.getLengthZ() > 0 ? (block.getLengthZ()-5) / maxz : std::numeric_limits<double>::max();
+    double factorz = block.getLengthZ() > 0 ? (block.getLengthZ()-1) / maxz : std::numeric_limits<double>::max();
     if (factorx <= factory && factorx <= factorz){
         factor = factorx;
         return ix;

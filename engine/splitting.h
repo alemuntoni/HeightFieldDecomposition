@@ -25,13 +25,13 @@ namespace Splitting {
 
     void splitBox(const Box3D &b1, Box3D& b2, Box3D& b3, double subd = -1);
 
-    double minimumSplit(const Box3D &b1, const Box3D &b2);
+    int minimumSplit(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree);
 
     std::set<unsigned int> getTrianglesCovered(const Box3D& b, const CGALInterface::AABBTree &aabb, bool completely = true);
 
     DirectedGraph getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree);
 
-    std::pair<unsigned int, unsigned int> getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList& bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs);
+    std::pair<unsigned int, unsigned int> getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList& bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs, const CGALInterface::AABBTree& tree);
 
     void chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const CGALInterface::AABBTree& tree, const std::set<unsigned int>& boxToEliminate);
 

@@ -1045,7 +1045,7 @@
               <item row="21" column="0">
                <widget class="QPushButton" name="sdfPushButton">
                 <property name="text">
-                 <string>SDF</string>
+                 <string>Tiny Features</string>
                 </property>
                </widget>
               </item>

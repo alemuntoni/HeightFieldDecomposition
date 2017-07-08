@@ -1426,40 +1426,6 @@ void EngineManager::on_reorderBoxes_clicked() {
     }
 }
 
-void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxList &solutions, bool alternativeColors) {
-    deleteDuplicatedBoxes(solutions);
-    Timer timer("Boolean Operations");
-    he.resize(solutions.getNumberBoxes());
-    const double pass = 240.0 / solutions.getNumberBoxes();
-    Color c;
-    for (unsigned int i = 0; i <solutions.getNumberBoxes() ; i++){
-        c.setHsv((int)(i*pass),255,255);
-        SimpleEigenMesh box;
-        SimpleEigenMesh intersection;
-        box = solutions.getBox(i).getEigenMesh();
-        #ifdef BOOL_DEBUG
-        box.saveOnObj("bool_" + std::to_string(i) + "_" + std::to_string(solutions.getBox(i).getId()) + ".obj");
-        #endif
-        EigenMeshAlgorithms::intersection(intersection, bc, box);
-        EigenMeshAlgorithms::difference(bc, bc, box);
-        DrawableEigenMesh dimm(intersection);
-        if (alternativeColors){
-            dimm.setFaceColor(c.redF(), c.greenF(), c.blueF());
-            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i, false);
-        }
-        else
-            he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i, true);
-        std::cerr << i << ": " << solutions[i].getId() << "\n";
-    }
-    timer.stopAndPrint();
-    for (int i = he.getNumHeightfields()-1; i >= 0 ; i--) {
-        if (he.getNumberVerticesHeightfield(i) == 0) {
-            he.removeHeightfield(i);
-            solutions.removeBox(i);
-        }
-    }
-}
-
 void EngineManager::on_loadOriginalPushButton_clicked() {
     QString filename = QFileDialog::getOpenFileName(nullptr,
                        "Open Eigen Mesh",
@@ -1643,11 +1609,41 @@ void EngineManager::on_putBoxesAfterPushButton_clicked() {
 
 void EngineManager::on_snappingPushButton_clicked() {
     if (solutions != nullptr && d != nullptr){
-        double av = d->getAverageHalfEdgesLength();
         CGALInterface::AABBTree tree(*d);
+        double epsilon = ui->snappingSpinBox->value();
+
+        for (unsigned int i = 0; i < solutions->getNumberBoxes()-1; i++){
+            Box3D b= solutions->getBox(i);
+            for (unsigned j = 0; j < 6; j++){
+                std::cerr << std::setprecision(17) << "before: " << b(j) << "\n";
+                b(j) = Common::truncate(b(j), 5);
+                std::cerr << std::setprecision(17) << "after: " << b(j) << "\n";
+            }
+            solutions->setBox(i, b);
+        }
 
         //snapping
-        double epsilon = ui->snappingSpinBox->value();
+        BoundingBox bb = d->getBoundingBox();
+        for (unsigned int i = 0; i < solutions->getNumberBoxes()-1; i++){
+            Box3D b1 = solutions->getBox(i);
+            for (unsigned int coord = 0; coord < 3; coord++) {
+                if (std::abs(b1(coord)-bb(coord)) < epsilon) {
+                    b1(coord) = bb(coord);
+                }
+                if (std::abs(b1(coord)-bb(coord+3)) < epsilon){
+                    b1(coord+3) = bb(coord);
+                }
+                if (std::abs(b1(coord+3)-bb(coord)) < epsilon){
+                    b1(coord) = bb(coord+3);
+                }
+                if (std::abs(b1(coord+3)-bb(coord+3)) < epsilon){
+                    b1(coord+3) = bb(coord+3);
+                }
+            }
+            solutions->setBox(i, b1);
+        }
+
+
         for (unsigned int i = 0; i < solutions->getNumberBoxes()-1; i++){
             Box3D b1 = solutions->getBox(i);
             for (unsigned int j = i+1; j < solutions->getNumberBoxes(); j++){
@@ -1700,7 +1696,7 @@ void EngineManager::on_snappingPushButton_clicked() {
         }
         //
 
-        solutions->generatePieces(av*LENGTH_MULTIPLIER);
+        solutions->generatePieces();
         solutions->calculateTrianglesCovered(tree);
         solutions->sortByTrianglesCovered();
 
@@ -1921,8 +1917,10 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
                     }
                 }*/
                 //
-                assert(finded);
-                heColors[i] = color;
+                if (finded)
+                    heColors[i] = color;
+                else
+                    heColors[i] = Color(0,0,0);
                 colored[i] = true;
 
 
@@ -2103,12 +2101,26 @@ void EngineManager::on_globalOptimalOrientationPushButton_clicked() {
 }
 
 void EngineManager::on_experimentButton_clicked() {
-    std::vector<unsigned int> triangles(d->getNumberFaces(), 0);
+    /*std::vector<unsigned int> triangles(d->getNumberFaces(), 0);
     for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
         for (unsigned int t : (*solutions)[i].getTrianglesCovered()){
             triangles[t]++;
         }
+    }*/
+    for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+        EigenMesh m = he->getHeightfield(i);
+        if (Engine::cleanHeightFiled(m, he->getTarget(i))){
+            he->setHeightfield(m, i);
+        }
+        else {
+            he->removeHeightfield(i);
+            solutions->removeBox(i);
+            i--;
+        }
     }
+    mainWindow.updateGlCanvas();
+    ui->solutionsSlider->setMaximum(solutions->getNumberBoxes());
+    ui->heightfieldsSlider->setMaximum(he->getNumHeightfields());
 }
 
 void EngineManager::on_createBox2PushButton_clicked() {
@@ -2177,19 +2189,7 @@ void EngineManager::on_deleteBlockPushButton_clicked() {
 
 void EngineManager::on_sdfPushButton_clicked() {
     if (d != nullptr && he != nullptr){
-        double threshold = d->getBoundingBox().diag() /10000;
-        std::cerr << "Threshold: " << threshold << "\n";
-        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            EigenMesh m = he->getHeightfield(i);
-            m.removeDegenerateTriangles(1e-1);
-            m.saveOnObj("prova.obj");
-            if (EigenMeshAlgorithms::isEdgeManifold(m)){
-                Engine::tinyFeatures(m, threshold);
-            }
-            else
-                std::cerr << "Block n. " << i << " is not Edge Manifold\n";
-            he->setHeightfield(m, i);
-        }
+        ;
     }
     mainWindow.updateGlCanvas();
 }

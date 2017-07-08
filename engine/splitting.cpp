@@ -321,17 +321,29 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
 }
 
 
-double Splitting::minimumSplit(const Box3D &b1, const Box3D &b2){
+int Splitting::minimumSplit(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree){
+
     Box3D b3;
+    getSplits(b1, b2, b3);
+    std::set<unsigned int> b3t = getTrianglesCovered(b3, tree);
+    b3t = Common::setIntersection(b3t, b2.getTrianglesCovered());
+    std::set<unsigned int> b2t = Common::setDifference(Common::setDifference(b2.getTrianglesCovered(), b1.getTrianglesCovered()), b3t);
+
+    if (b3t.size() == 0){
+        return b2t.size();
+    }
+    int min = std::min(b3t.size(), b2t.size());
+    return min;
+
     //b4 is the piece cutted by b1 on b2, therefore oldb2 = newB2 + b3 + b4
-    double volumeb4 = getSplits(b1, b2, b3);
+    /*double volumeb4 = getSplits(b1, b2, b3);
     double volumeb2 = b2.getVolume();
     double volumeb3 = b3.getVolume();
     double newVolumeb2 = volumeb2 - volumeb3 - volumeb4;
     assert (newVolumeb2 >= 0);
     //return std::min(newVolumeb2, volumeb3);
     double tmp = std::min(b3.getLengthX(), b3.getLengthY());
-    return std::min(tmp, b3.getLengthZ());
+    return std::min(tmp, b3.getLengthZ());*/
 }
 
 std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGALInterface::AABBTree& aabb, bool completely) {
@@ -375,7 +387,7 @@ DirectedGraph Splitting::getGraph(const BoxList& bl, const CGALInterface::AABBTr
     return g;
 }
 
-std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList &bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs){
+std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList &bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs, const CGALInterface::AABBTree& tree){
     //looking for the more convinient box to split
     std::map<std::pair<unsigned int, unsigned int>, int> arcs;
     for (std::vector<unsigned int> loop : loops){
@@ -392,58 +404,62 @@ std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vecto
     std::multimap<int,std::pair<unsigned int, unsigned int> > rev = Common::flipMap(arcs);
 
     std::multimap<int,std::pair<unsigned int, unsigned int> >::reverse_iterator it = rev.rbegin();
-    bool found = false;
+    //bool found = false;
 
+    std::pair<unsigned int, unsigned int> bestForCycles;
     std::pair<unsigned int, unsigned int> arcToRemove;
-    while (!found){
-        unsigned int size = rev.count((*it).first); // number of arcs that belongs with the maximum number of loops
+    while (it != rev.rend()){
+        /*unsigned int size = rev.count((*it).first); // number of arcs that belongs with the maximum number of loops
 
         if (size == 1){ // there is just one arc associated to the maximum number of loops
             arcToRemove = (*it).second; // if I remove this arc, I will remove the maximum number of loops
-            if (std::find(userArcs.begin(), userArcs.end(), arcToRemove) == userArcs.end())
+            if (std::find(userArcs.begin(), userArcs.end(), arcToRemove) == userArcs.end()){
+                bestForCycles = arcToRemove;
                 found = true;
+            }
         }
-        else { // I need to choose wich arc I want to eliminate -> maximum split criteria
+        else {*/ // I need to choose wich arc I want to eliminate -> maximum split criteria
             std::vector<std::pair<unsigned int, unsigned int> > candidateArcs;
             for (auto i=rev.equal_range((*it).first).first; i!=rev.equal_range((*it).first).second; ++i){
                 std::pair<unsigned int, unsigned int> arc = (*i).second;
                 candidateArcs.push_back(arc);
             }
-            double volmax = -1;
+            int nTrimax = -1;
             int maxarc = -1;
 
             for (unsigned int i = 0; i < candidateArcs.size(); i++) {
                 std::pair<unsigned int, unsigned int> arc = candidateArcs[i];
                 if (std::find(userArcs.begin(), userArcs.end(), arc) == userArcs.end()){
-                    double tmp = minimumSplit(bl.find(arc.first), bl.find(arc.second));
-                    if (tmp > volmax){
-                        volmax = tmp;
+                    int tmp = minimumSplit(bl.find(arc.first), bl.find(arc.second), tree);
+                    if (tmp >= nTrimax){
+                        nTrimax = tmp;
                         maxarc = i;
                     }
-                    tmp = minimumSplit(bl.find(arc.second), bl.find(arc.first));
-                    if (tmp > volmax){
-                        volmax = tmp;
+                    tmp = minimumSplit(bl.find(arc.second), bl.find(arc.first), tree);
+                    if (tmp >= nTrimax){
+                        nTrimax = tmp;
                         maxarc = i;
                     }
                 }
             }
             if (maxarc >= 0){
                 arcToRemove = candidateArcs[maxarc];
-                found = true;
+                bestForCycles = arcToRemove;
+                //found = true;
             }
-        }
+        //}
         it++;
     }
     return arcToRemove;
 }
 
 void Splitting::chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const CGALInterface::AABBTree& tree, const std::set<unsigned int>& boxesToEliminate){
-    Box3D btmp1, btmp2;
-    getSplits(b2,b1,btmp2);
+    Box3D bt3mp1, b3tmp2;
+    getSplits(b2,b1,b3tmp2);
     //std::set<unsigned int> trianglesCoveredTmp2 = getTrianglesCovered(btmp2, tree, false);
-    std::set<unsigned int> trianglesCoveredTmp2 = getTrianglesCovered(btmp2, tree);
-    trianglesCoveredTmp2 = Common::setDifference(Common::setIntersection(trianglesCoveredTmp2, b1.getTrianglesCovered()), b2.getTrianglesCovered());
-    if (trianglesCoveredTmp2.size() == 0 || ((btmp2.min() == btmp2.max()) && (btmp2.min() == Pointd()))){
+    std::set<unsigned int> trianglesCoveredB3Tmp2 = getTrianglesCovered(b3tmp2, tree);
+    trianglesCoveredB3Tmp2 = Common::setDifference(Common::setIntersection(trianglesCoveredB3Tmp2, b1.getTrianglesCovered()), b2.getTrianglesCovered());
+    if (trianglesCoveredB3Tmp2.size() == 0 || ((b3tmp2.min() == b3tmp2.max()) && (b3tmp2.min() == Pointd()))){
         std::swap(b1, b2);
     }
     else {
@@ -452,7 +468,7 @@ void Splitting::chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const C
         for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
             if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b1.getId()){
                 const std::set<unsigned int>& trianglesCoveredBi = bl[i].getTrianglesCovered();
-                if (Common::isSubset(trianglesCoveredTmp2, trianglesCoveredBi)){
+                if (Common::isSubset(trianglesCoveredB3Tmp2, trianglesCoveredBi)){
                     exit = true;
                 }
             }
@@ -460,25 +476,21 @@ void Splitting::chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const C
         if (exit)
             std::swap(b1, b2);
         else {
-            getSplits(b1,b2,btmp1);
-            std::set<unsigned int> trianglesCoveredTmp1 = getTrianglesCovered(btmp1, tree, false);
-            trianglesCoveredTmp1 = Common::setDifference(Common::setIntersection(trianglesCoveredTmp1, b2.getTrianglesCovered()), b1.getTrianglesCovered());
-            if ((btmp1.min() != Pointd() || btmp1.max() != Pointd()) && trianglesCoveredTmp1.size() != 0){
+            getSplits(b1,b2,bt3mp1);
+            std::set<unsigned int> trianglesCoveredB3Tmp1 = getTrianglesCovered(bt3mp1, tree);
+            trianglesCoveredB3Tmp1 = Common::setDifference(Common::setIntersection(trianglesCoveredB3Tmp1, b2.getTrianglesCovered()), b1.getTrianglesCovered());
+            if ((bt3mp1.min() != Pointd() || bt3mp1.max() != Pointd()) && trianglesCoveredB3Tmp1.size() != 0){
                 bool exit = false;
                 for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
                     if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
                         const std::set<unsigned int>& trianglesCoveredBi = bl[i].getTrianglesCovered();
-                        if (Common::isSubset(trianglesCoveredTmp1, trianglesCoveredBi)){
+                        if (Common::isSubset(trianglesCoveredB3Tmp1, trianglesCoveredBi)){
                             exit = true;
                         }
                     }
                 }
                 if (!exit){
-                    //double minb1b2 = minimumSplit(b1, b2);
-                    //double minb2b1 = minimumSplit(b2, b1);
-                    //if (minb2b1 > minb1b2)
-                    //    std::swap(b1, b2);
-                    if (trianglesCoveredTmp2.size() > trianglesCoveredTmp1.size())
+                    if (trianglesCoveredB3Tmp2.size() > trianglesCoveredB3Tmp1.size())
                         std::swap(b1, b2);
                 }
             }
@@ -713,7 +725,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
         if (loops.size() > 0){ // I need to modify bl
 
             std::pair<unsigned int, unsigned int> arcToRemove;
-            arcToRemove = getArcToRemove(loops, bl, userArcs);
+            arcToRemove = getArcToRemove(loops, bl, userArcs, tree);
             assert(std::find(userArcs.begin(), userArcs.end(), arcToRemove) == userArcs.end());
 
             std::cerr << "Arc to Remove: " << arcToRemove.first << ", " << arcToRemove.second << "\n";
