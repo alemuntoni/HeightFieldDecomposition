@@ -11,6 +11,21 @@
 #include <CGAL/mesh_segmentation.h>
 #include <CGAL/property_map.h>
 
+#include "splitting.h"
+#include "reconstruction.h"
+#include "orientation.h"
+
+void Engine::findOptimalOrientation(Dcel &d, EigenMesh& originalMesh) {
+    Eigen::Matrix3d matr = Orientation::optimalOrientation(d);
+    d.rotate(matr);
+    Pointd c = d.getBoundingBox().center();
+    d.translate(-c);
+    if (originalMesh.getNumberVertices() > 0){
+        originalMesh.rotate(matr);
+        originalMesh.translate(-c);
+    }
+}
+
 Vec3 Engine::getClosestTarget(const Vec3& n) {
     double angle = n.dot(XYZ[0]);
     int k = 0;
@@ -620,7 +635,9 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
             }
         }*/
         model.setObjective(obj, GRB_MINIMIZE);
+        Timer tGurobi("tGurobi");
         model.optimize();
+        tGurobi.stopAndPrint();
 
         unsigned int deleted = 0;
         for (int i = nBoxes-1; i >= 0; i--){
@@ -629,7 +646,8 @@ int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
                 deleted++;
             }
         }
-        return nBoxes - deleted;
+        std::cerr << "N survived boxes: " << nBoxes - deleted << "\n";
+        return tGurobi.delay();
     }
     catch (GRBException e) {
         std::cerr << "Gurobi Exception\n" << e.getErrorCode() << " : " << e.getMessage() << std::endl;
@@ -693,7 +711,7 @@ int Engine::deleteBoxesGSC(BoxList& boxList, const Dcel& d) {
 }
 
 
-void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate) {
+double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate) {
     assert(kernelDistance >= 0 && kernelDistance <= 1);
     solutions.clearBoxes();
     Dcel scaled[ORIENTATIONS];
@@ -920,12 +938,7 @@ void Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool l
             #endif
         }
     }
-
-    /** @todo To test */
-    ////TO TEST
-    //Engine::boxPostProcessing(solutions, d);
-
-    solutions.generatePieces();
+    return totalTbg;
 }
 
 /**
@@ -1025,6 +1038,51 @@ bool checkNewBox(const Box3D& tmp, Box3D& b2, std::vector<unsigned int>& triangl
     return false;
 }
 
+void Engine::stupidSnapping(const Dcel& d, BoxList& solutions, double epsilon) {
+    BoundingBox bb = d.getBoundingBox();
+    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
+        Box3D b1 = solutions.getBox(i);
+        for (unsigned int coord = 0; coord < 3; coord++) {
+            if (std::abs(b1(coord)-bb(coord)) < epsilon) {
+                b1(coord) = bb(coord);
+            }
+            if (std::abs(b1(coord)-bb(coord+3)) < epsilon){
+                b1(coord+3) = bb(coord);
+            }
+            if (std::abs(b1(coord+3)-bb(coord)) < epsilon){
+                b1(coord) = bb(coord+3);
+            }
+            if (std::abs(b1(coord+3)-bb(coord+3)) < epsilon){
+                b1(coord+3) = bb(coord+3);
+            }
+        }
+        solutions.setBox(i, b1);
+    }
+
+
+    for (unsigned int i = 0; i < solutions.getNumberBoxes()-1; i++){
+        Box3D b1 = solutions.getBox(i);
+        for (unsigned int j = i+1; j < solutions.getNumberBoxes(); j++){
+            Box3D b2 = solutions.getBox(j);
+            for (unsigned int coord = 0; coord < 3; coord++) {
+                if (std::abs(b1(coord)-b2(coord)) < epsilon) {
+                    b2(coord) = b1(coord);
+                }
+                if (std::abs(b1(coord)-b2(coord+3)) < epsilon){
+                    b2(coord+3) = b1(coord);
+                }
+                if (std::abs(b1(coord+3)-b2(coord)) < epsilon){
+                    b2(coord) = b1(coord+3);
+                }
+                if (std::abs(b1(coord+3)-b2(coord+3)) < epsilon){
+                    b2(coord+3) = b1(coord+3);
+                }
+            }
+            solutions.setBox(j, b2);
+        }
+    }
+}
+
 bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const CGALInterface::AABBTree& tree) {
     bool found = false;
     Box3D tmp = b2;
@@ -1075,6 +1133,131 @@ bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>
             return true;
     }
     return false;
+}
+
+void Engine::smartSnapping(const Dcel& d, BoxList& solutions) {
+    CGALInterface::AABBTree tree(d);
+    solutions.calculateTrianglesCovered(tree);
+    std::vector<unsigned int> trianglesCovered(d.getNumberFaces(), 0);
+    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
+        const std::set<unsigned int>& s = solutions[i].getTrianglesCovered();
+        for (unsigned int j : s){
+            trianglesCovered[j]++;
+        }
+    }
+    for (unsigned int i = 0; i < solutions.getNumberBoxes()-1; i++){
+        Box3D b1 = solutions.getBox(i);
+        for (unsigned int j = i+1; j < solutions.getNumberBoxes(); j++){
+            Box3D b2 = solutions.getBox(j);
+            if (Splitting::boxesIntersect(b1,b2)){
+                if (Splitting::isDangerousIntersection(b1, b2, tree, false) ||
+                        Splitting::isDangerousIntersection(b2, b1, tree, false)){
+                    if (Engine::smartSnapping(b1, b2, trianglesCovered, tree)){
+                        //std::cerr << "Smart snapping " << j << " in " << i << "\n";
+                        solutions.setBox(j, b2);
+                    }
+                    else if (Engine::smartSnapping(b2, b1, trianglesCovered, tree)){
+                        //std::cerr << "Smart snapping " << i << " in " << j << "\n";
+                        solutions.setBox(i, b1);
+                    }
+                }
+            }
+        }
+    }
+    //
+
+    solutions.generatePieces();
+    solutions.calculateTrianglesCovered(tree);
+    solutions.sortByTrianglesCovered();
+}
+
+void Engine::merging(const Dcel& d, BoxList& solutions) {
+    CGALInterface::AABBTree tree(d);
+    std::vector<unsigned int> trianglesCovered(d.getNumberFaces(), 0);
+    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
+        const std::set<unsigned int>& s = solutions[i].getTrianglesCovered();
+        for (unsigned int j : s){
+            trianglesCovered[j]++;
+        }
+    }
+    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
+        for (unsigned int j = 0; j < solutions.getNumberBoxes() && j != i; j++){
+            if (solutions[i].getTarget() == solutions[j].getTarget() &&  Splitting::boxesIntersect(solutions[i], solutions[j])){
+                //std::cerr << "Boxes " << i << " and " << j << " may be merged. \n";
+                Box3D& a = solutions[i];
+                Box3D& b = solutions[j];
+                int t = indexOfNormal(solutions[i].getTarget());
+                assert(t >= 0);
+                double baseA = a.getBaseLevel(), baseB = b.getBaseLevel();
+                if (baseA <= baseB){
+                    if (baseA != baseB){
+                        if (t < 3){
+                            //x, y, z
+                            Box3D tmpa = a;
+                            tmpa.setBaseLevel(baseB);
+                            std::list<unsigned int> newTrianglesA;
+                            tree.getCompletelyContainedDcelFaces(newTrianglesA, tmpa);
+                            std::set<unsigned int> nonCoveredTrianglesA(newTrianglesA.begin(), newTrianglesA.end());
+                            nonCoveredTrianglesA = Common::setDifference(a.getTrianglesCovered(), nonCoveredTrianglesA);
+                            bool shrink = true;
+                            for (unsigned int t : nonCoveredTrianglesA){
+                                if (trianglesCovered[t] == 1)
+                                    shrink = false;
+                            }
+                            if (shrink){
+                                for (unsigned int t : nonCoveredTrianglesA){
+                                    trianglesCovered[t]--;
+                                }
+                                a.setBaseLevel(baseB);
+                                a.setTrianglesCovered(std::set<unsigned int>(newTrianglesA.begin(), newTrianglesA.end()));
+                                std::cerr << "Box " << i << " shrinked to level of Box " << j << "\n";
+
+                                SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
+                                a.setEigenMesh(u);
+                                a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                a.setMin(u.getBoundingBox().min());
+                                a.setMax(u.getBoundingBox().max());
+                                solutions[i].setSplitted(true);
+                                solutions.removeBox(j);
+                                j--;
+                            }
+                        }
+                        else {
+                            //-x, -y, -z
+                            Box3D tmpb = b;
+                            tmpb.setBaseLevel(baseA);
+                            std::list<unsigned int> newTrianglesB;
+                            tree.getCompletelyContainedDcelFaces(newTrianglesB, tmpb);
+                            std::set<unsigned int> nonCoveredTrianglesB(newTrianglesB.begin(), newTrianglesB.end());
+                            nonCoveredTrianglesB = Common::setDifference(b.getTrianglesCovered(), nonCoveredTrianglesB);
+                            bool shrink = true;
+                            for (unsigned int t : nonCoveredTrianglesB){
+                                if (trianglesCovered[t] == 1)
+                                    shrink = false;
+                            }
+                            if (shrink){
+                                for (unsigned int t : nonCoveredTrianglesB){
+                                    trianglesCovered[t]--;
+                                }
+                                b.setBaseLevel(baseA);
+                                b.setTrianglesCovered(std::set<unsigned int>(newTrianglesB.begin(), newTrianglesB.end()));
+                                std::cerr << "Box " << j << " shrinked to level of Box " << i << "\n";
+
+                                SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
+                                a.setEigenMesh(u);
+                                a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                a.setMin(u.getBoundingBox().min());
+                                a.setMax(u.getBoundingBox().max());
+                                solutions[i].setSplitted(true);
+                                solutions.removeBox(j);
+                                j--;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
@@ -1186,7 +1369,6 @@ void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& 
 
 void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const Dcel& inputMesh) {
     CGALInterface::AABBTree aabb(inputMesh, true);
-    double lEdge = inputMesh.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER;
     for (unsigned int i = he.getNumHeightfields()-1; i >= 1; i--){
         BoundingBox realBoundingBox;
         bool first = true;
@@ -1216,7 +1398,7 @@ void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const
 
         if (! Common::epsilonEqual(realBoundingBox.min(), he.getHeightfield(i).getBoundingBox().min()) ||
             ! Common::epsilonEqual(realBoundingBox.max(), he.getHeightfield(i).getBoundingBox().max()) ){
-            SimpleEigenMesh box = EigenMeshAlgorithms::makeBox(realBoundingBox, lEdge);
+            SimpleEigenMesh box = EigenMeshAlgorithms::makeBox(realBoundingBox);
             SimpleEigenMesh oldHeightfield = he.getHeightfield(i);
             SimpleEigenMesh gluePortion = EigenMeshAlgorithms::difference(oldHeightfield, box);
             SimpleEigenMesh newHeightfield = EigenMeshAlgorithms::intersection(oldHeightfield, box);
@@ -1599,58 +1781,80 @@ bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
     return heightfield;
 }
 
-bool Engine::cleanHeightFiled(EigenMesh& m, const Vec3& target) {
-    Dcel d(m);
-    BoundingBox bb = d.getBoundingBox();
-    int index = indexOfNormal(target);
-    double b;
-    if (index < 3) b = bb.min()[index];
-    else b = bb.max()[index-3];
-    bool found = false;
-    Segmentation s(d);
-    std::vector<Segmentation::Chart*> bases;
-    for (Segmentation::ChartIterator cit = s.chartBegin(); cit != s.chartEnd(); ++cit) {
-        Segmentation::Chart* c = *cit;
-        if (Common::epsilonEqual(c->getNormal(), -target)){
-            const Dcel::Face* f = *(c->faceBegin());
-            if (Common::epsilonEqual(f->getOuterHalfEdge()->getFromVertex()->getCoordinate()[index < 3 ? index : index - 3], b)){
-                found = true;
-                bases.push_back(c);
+void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
+    CGALInterface::AABBTree tree(d);
+    std::array<Color, 10> colors;
+    colors[0] = Color(182, 215, 168); //
+    colors[1] = Color(159, 197, 232); //
+    colors[2] = Color(234, 153, 153); //
+    colors[3] = Color(255, 229, 153); //
+    colors[4] = Color(162, 196, 201); //
+    colors[5] = Color(213, 166, 189); //
+    colors[6] = Color(164, 194, 244); //
+    colors[7] = Color(221, 126, 107);//
+    colors[8] = Color(249, 203, 156);//
+    colors[9] = Color(180, 167, 214);//
+
+
+    std::map< const Dcel::Vertex*, int > mapping = Reconstruction::getMappingId(d, he);
+    std::vector< std::set<int> > adjacences(he.getNumHeightfields());
+    for (const Dcel::Vertex* v : d.vertexIterator()){
+        if (mapping.find(v) != mapping.end()){
+            int hev = mapping[v];
+            for (const Dcel::Vertex* adj : v->adjacentVertexIterator()){
+                if (mapping.find(adj) != mapping.end()){
+                    int headj = mapping[adj];
+                    if (hev != headj){
+                        adjacences[hev].insert(headj);
+                        adjacences[headj].insert(hev);
+                    }
+                }
             }
         }
     }
-    if (found){
-        std::set<const Dcel::HalfEdge*> borderHalfEdges;
-        for (Segmentation::Chart* c : bases){
-            for (Segmentation::Chart::ConstFaceIterator fit = c->faceBegin(); fit != c->faceEnd(); ++fit){
-                for (Dcel::Face::ConstIncidentHalfEdgeIterator afit = (*fit)->incidentHalfEdgeBegin(); afit != (*fit)->incidentHalfEdgeEnd(); ++afit){
-                    if (! c->faceExists((*afit)->getTwin()->getFace()))
-                        borderHalfEdges.insert(*afit);
-                }
-                d.getFace((*fit)->getId())->setColor(Color(255,0,255));
-            }
-        }
-        //manage here the case of more than one base.
 
-        //
-        std::vector<Pointd> border;
-        Pointd first = (*borderHalfEdges.begin())->getFromVertex()->getCoordinate();
-        Pointd actual = (*borderHalfEdges.begin())->getToVertex()->getCoordinate();
-        border.push_back(first);
-        while (actual != first){
-            border.push_back(actual);
-            bool found = false;
-            for (const Dcel::HalfEdge* he : borderHalfEdges){
-                if (he->getFromVertex()->getCoordinate() == actual){
-                    actual = he->getToVertex()->getCoordinate();
-                    found = true;
-                    break;
-                }
+    std::vector<bool> colored(he.getNumHeightfields(), false);
+    std::vector<Color> heColors(he.getNumHeightfields(), Color(0,0,0));
+    for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
+        if (!colored[i]){
+            std::set<Color> adjColors;
+            for (int adj : adjacences[i]){
+                if (colored[adj])
+                    adjColors.insert(heColors[adj]);
             }
-            assert(found);
+
+            Color color;
+            bool finded = false;
+            unsigned int k = i %10;
+            do {
+                if (adjColors.find(colors[k]) == adjColors.end()){
+                    finded = true;
+                    color = colors[k];
+                }
+                k = (k+1)%10;
+            } while(k != i %10 && !finded);
+
+            //
+            /*for (unsigned int k = 0; k < 10 && !finded; k++){
+                if (adjColors.find(colors[k]) == adjColors.end()){
+                    finded = true;
+                    color = colors[k];
+                }
+            }*/
+            //
+            if (finded)
+                heColors[i] = color;
+            else
+                heColors[i] = Color(0,0,0);
+            colored[i] = true;
+
+
+            EigenMesh mesh = he.getHeightfield(i);
+            Dcel dd(mesh);
+            Engine::updatePieceNormals(tree, dd);
+            mesh = EigenMesh(dd);
+            mesh.setFaceColor(color.redF(),color.greenF(),color.blueF());
+            he.setHeightfield(mesh, i);
         }
-        m = d;
     }
-    return found;
-
 }

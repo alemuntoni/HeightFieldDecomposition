@@ -21,179 +21,157 @@
 #include <typeinfo>       // operator typeid
 #include <lib/csgtree/aabbcsgtree.h>
 
+#include "engine/reconstruction.h"
+
+#ifdef SERVER_MODE
+void serializeBeforeBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, double factor, double kernel);
+void serializeAfterBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, const EigenMesh& baseComplex, const HeightfieldsList& he, double factor, double kernel, const BoxList& originalSolutions, const std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, const std::list<unsigned int> &priorityBoxes);
+#endif
+
 int main(int argc, char *argv[]) {
-
-    /*SplittableBox b(Pointd(0,0,0), Pointd(5,5,5));
-    b.setTarget(XYZ[1]);
-    SplittableBox::Split split;
-
-    split = b.getSplit(Box(Pointd(2,-1,2), Pointd(6, 7, 9)));
-    std::cerr << SplittableBox::typeSplitToString(split) << "\n";*/
-
-    //std::cerr << sizeof(double) << "\n";
-    /*BipartiteGraph<int, float> cacca;
-    cacca.addUNode(1);
-    cacca.addUNode(2);
-    cacca.addUNode(3);
-    cacca.addUNode(4);
-    cacca.addUNode(5);
-    cacca.addVNode(1.5);
-    cacca.addVNode(2.5);
-    cacca.addVNode(3.5);
-    cacca.addVNode(4.5);
-    cacca.addVNode(5.5);
-    cacca.addVNode(6.5);
-    cacca.addArc(1, 2.5);
-    cacca.addArc(1, 4.5);
-    cacca.addArc(2, 1.5);
-    cacca.addArc(2, 2.5);
-    cacca.addArc(3, 2.5);
-    cacca.addArc(3, 3.5);
-    cacca.addArc(4, 2.5);
-    cacca.addArc(4, 4.5);
-    cacca.addArc(4, 6.5);
-    cacca.addArc(5, 4.5);
-    cacca.addArc(5, 5.5);
-    cacca.addArc(5, 6.5);
-
-    cacca.deleteVNode(5.5);
-    for (const float& f : cacca.vNodeIterator()){
-        std::cerr << f << "; ";
-    }
-    std::cerr << "\n";
-    for (int i : cacca.uNodeIterator()){
-        std::cerr << i << "; ";
-    }
-    std::cerr << "\n";*/
-
-    /*Graph g(6);
-    g.addEdge(0,1);
-    g.addEdge(0,3);
-    g.addEdge(1,2);
-    g.addEdge(1,4);
-    g.addEdge(2,0);
-    g.addEdge(2,5);
-    g.addEdge(3,0);
-    g.addEdge(3,5);
-    g.addEdge(4,3);
-    g.addEdge(4,1);
-    g.addEdge(5,4);
-    g.addEdge(5,2);
-
-    std::vector< std::vector<unsigned int>> circuits =  g.getCircuits();
-    for (unsigned int i = 0; i < circuits.size(); i++){
-        std::cout << "Circuit " << i << ": ";
-        for (unsigned int j = 0; j < circuits[i].size(); j++){
-            std::cout << circuits[i][j] << "; ";
-        }
-        std::cout << "\n";
-    }*/
-
-    //buddha
-    /*Graph g(9);
-    g.addEdge(0,7);
-    g.addEdge(2,1);
-    g.addEdge(3,1);
-    g.addEdge(5,1);
-    g.addEdge(8,1);
-    g.addEdge(2,4);
-    g.addEdge(4,2);
-    g.addEdge(3,4);
-    g.addEdge(4,3);
-    g.addEdge(3,8);
-    g.addEdge(4,5);
-    g.addEdge(5,4);
-    g.addEdge(4,6);
-    g.addEdge(8,6);
-    std::vector< std::vector<unsigned int>> scc = g.getStronglyConnectedComponents();
-    for (unsigned int i = 0; i < scc.size(); i++){
-        std::cout << "Scc " << i << ": ";
-        for (unsigned int j = 0; j < scc[i].size(); j++){
-            std::cout << scc[i][j] << "; ";
-        }
-        std::cout << "\n";
-    }
-
-
-    std::vector< std::vector<unsigned int>> circuits =  g.getCircuits();
-    for (unsigned int i = 0; i < circuits.size(); i++){
-        std::cout << "Circuit " << i << ": ";
-        for (unsigned int j = 0; j < circuits[i].size(); j++){
-            std::cout << circuits[i][j] << "; ";
-        }
-        std::cout << "\n";
-    }*/
-
-
     #ifdef SERVER_MODE
     if (argc > 4){
-        std::string filename_smooth(argv[1]);
-        std::string filename(argv[2]);
+        bool smoothed = true;
+        std::string filename(argv[1]);
+        if (! Common::fileExists(filename)){
+            std::cerr << filename << " not found. Exiting.";
+            return -1;
+        }
+        std::string rawname, extension;
+        Common::separateExtensionFromFilename(filename, rawname, extension);
+        std::string filename_smooth = rawname + "_smooth" + extension;
+
+        //reading files
         EigenMesh original;
         original.readFromObj(filename);
         Dcel d;
-        BoxList solutions;
-        BoxList allSolutions;
-        d.loadFromObjFile(filename_smooth);
-        BoundingBox bb= d.getBoundingBox();
-        double scale = std::stod(argv[3]);
-        Engine::scaleAndRotateDcel(d, 0, scale);
-        original.scale(bb, d.getBoundingBox());
-        double kernelDistance = std::stod(argv[4]);
-        double tolerance = 0.0;
-        bool file = false;
-        bool tol = false;
-        bool decimate = true;
-        if (argc > 5){
-            tolerance = std::stod(argv[5]);
-            if (argc > 6){
-                file = std::stoi(argv[6]);
-                if (argc > 7){
-                    tol = std::stoi(argv[7]);
-                    if (argc > 8)
-                        decimate = std::stoi(argv[8]);
-                }
-            }
+        if (Common::fileExists(filename_smooth)){
+            d.loadFromObjFile(filename_smooth);
+            std::cerr << "Smooth File found.\n";
+            smoothed = false;
         }
-        Engine::optimizeAndDeleteBoxes(solutions, d, kernelDistance, false, Pointd(), tol, true, 0.000, tolerance, file, decimate, allSolutions);
-        size_t lastindex = filename_smooth.find_last_of(".");
-        std::string rawname = filename_smooth.substr(0, lastindex);
+        else {
+            std::cerr << "Smooth File not found. Using original file.\n";
+            d = original;
+        }
 
-        bool b = true;
+        //scaling meshes
+        double precision = std::stod(argv[2]);
+        BoundingBox bb= d.getBoundingBox();
+        Engine::scaleAndRotateDcel(d, 0, precision);
+        original.scale(bb, d.getBoundingBox());
 
-        std::ofstream myfile;
-        myfile.open (rawname + "0" + std::to_string((int)(kernelDistance*100)) + ".bin", std::ios::out | std::ios::binary);
-        d.serialize(myfile);
-        Serializer::serialize(b, myfile);
-        solutions.serialize(myfile);
-        Serializer::serialize(b, myfile);
-        original.serialize(myfile);
-        Serializer::serialize(scale, myfile);
-        Serializer::serialize(kernelDistance, myfile);
-        myfile.close();
+        //kernel
+        double kernelDistance = std::stod(argv[3]);
 
-        std::ofstream mysecondfile;
-        mysecondfile.open (rawname + "0" + std::to_string((int)kernelDistance*100) + "_allsolutions.bin", std::ios::out | std::ios::binary);
-        d.serialize(mysecondfile);
-        Serializer::serialize(b, mysecondfile);
-        allSolutions.serialize(mysecondfile);
-        Serializer::serialize(b, mysecondfile);
-        original.serialize(mysecondfile);
-        Serializer::serialize(scale, mysecondfile);
-        Serializer::serialize(kernelDistance, mysecondfile);
-        mysecondfile.close();
+        //creating folder
+        std::string foldername = rawname + "_" + Common::toStringWithPrecision(precision) + "_" + Common::toStringWithPrecision(kernelDistance) + "/";
+        Common::executeCommand("mkdir " + foldername);
+
+        //log
+        std::ofstream logFile;
+        logFile.open(foldername + "log.txt");
+
+        //optimal orientation
+        Engine::findOptimalOrientation(d, original);
+        d.saveOnObjFile(foldername + rawname + "r_smooth.obj");
+        original.saveOnObj(foldername + rawname + "r.obj");
+
+        //solutions
+        BoxList solutions;
+
+        //grow boxes
+        double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, false, Pointd(), true, true, 0, 0, false, true);
+
+        logFile << Common::toStringWithPrecision(timerBoxGrowing) << ": Box Growing\n";
+
+        serializeBeforeBooleans(foldername + "all.bin", d, original, solutions, precision, kernelDistance);
+
+        Engine::boxPostProcessing(solutions, d);
+        double timerMinimalCovering = Engine::deleteBoxes(solutions, d);
+        logFile << Common::toStringWithPrecision(timerMinimalCovering) << ": Minimal Covering\n";
+
+        serializeBeforeBooleans(foldername + "mc.bin", d, original, solutions, precision, kernelDistance);
+
+        double snapStep;
+        if (argc == 5)
+            snapStep = std::stod(argv[4]);
+        else
+            snapStep = 2;
+
+        //snapping
+        Engine::stupidSnapping(d, solutions, snapStep);
+
+        //new: forced snapping
+        Engine::smartSnapping(d, solutions);
+
+        //merging
+        Engine::merging(d, solutions);
+
+        //setting ids
+        solutions.sortByTrianglesCovered();
+        solutions.setIds();
+        BoxList originalSolutions = solutions;
+        std::map<unsigned int, unsigned int> splittedBoxesToOriginals;
+        std::list<unsigned int> priorityBoxes;
+        std::vector<std::pair<unsigned int, unsigned int>> userArcs;
+        HeightfieldsList he;
+        EigenMesh baseComplex;
+
+        double timerSplitting = 0;
+        double timerBooleans = 0;
+        int it = 0;
+        do {
+            //splitting and sorting
+            solutions = originalSolutions;
+            Timer tSplitting("ts");
+            Array2D<int> ordering = Splitting::getOrdering(solutions, d, splittedBoxesToOriginals, priorityBoxes, userArcs);
+            solutions.sort(ordering);
+            tSplitting.stop();
+            timerSplitting += tSplitting.delay();
+
+            logFile << Common::toStringWithPrecision(tSplitting.delay()) << ": Splitting n. " << std::to_string(it) << "\n";
+
+            //booleans
+            baseComplex = d;
+            he = HeightfieldsList();
+            Timer tBooleans("tb");
+            Engine::booleanOperations(he, baseComplex, solutions, false);
+            Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
+            Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
+            tBooleans.stop();
+            timerBooleans += tBooleans.delay();
+            logFile << Common::toStringWithPrecision(tBooleans.delay()) << ": Booleans n. " << std::to_string(it) << "\n";
+            CGALInterface::AABBTree tree(d);
+            Engine::updatePiecesNormals(tree, he);
+            Engine::colorPieces(d, he);
+
+            serializeAfterBooleans(foldername + "bools" + std::to_string(it) + ".hfd", d, original, solutions, baseComplex, he, precision, kernelDistance, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+            it++;
+        } while(false);
+
+        logFile << Common::toStringWithPrecision(timerSplitting) << ": Total time Splitting\n";
+        logFile << Common::toStringWithPrecision(timerBooleans) << ": Total time Booleans\n";
+
+        //restore hf
+        if (smoothed){
+            std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(d, he);
+            Reconstruction::reconstruction(d, mapping, original, solutions);
+
+            baseComplex = d;
+            he = HeightfieldsList();
+            Engine::booleanOperations(he, baseComplex, solutions, false);
+            Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
+            Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
+            CGALInterface::AABBTree tree(d);
+            Engine::updatePiecesNormals(tree, he);
+            Engine::colorPieces(d, he);
+        }
+        serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, precision, kernelDistance, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+        logFile.close();
     }
     else
         std::cerr << "Error! Number argument lower than 4\n";
-    /*if (argc > 3){
-        std::ofstream myfile;
-        myfile.open (argv[1], std::ios::out | std::ios::binary | std::ios::app);
-        double factor = std::stod(argv[2]);
-        double kernel = std::stod(argv[3]);
-        Serializer::serialize(factor, myfile);
-        Serializer::serialize(kernel, myfile);
-        myfile.close();
-    }*/
     #else
     #ifdef CONVERTER_MODE
     if (argc > 2){
@@ -294,3 +272,38 @@ int main(int argc, char *argv[]) {
     #endif
     return 0;
 }
+
+#ifdef SERVER_MODE
+void serializeBeforeBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, double factor, double kernel) {
+    std::ofstream binaryFile;
+    binaryFile.open (filename, std::ios::out | std::ios::binary);
+    d.serialize(binaryFile);
+    bool bb = true;
+    Serializer::serialize(bb, binaryFile);
+    solutions.serialize(binaryFile);
+    Serializer::serialize(bb, binaryFile);
+    originalMesh.serialize(binaryFile);
+    Serializer::serialize(factor, binaryFile);
+    Serializer::serialize(kernel, binaryFile);
+    binaryFile.close();
+}
+
+void serializeAfterBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, const EigenMesh& baseComplex, const HeightfieldsList& he, double factor, double kernel, const BoxList& originalSolutions, const std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, const std::list<unsigned int> &priorityBoxes) {
+    std::ofstream myfile;
+    myfile.open (filename, std::ios::out | std::ios::binary);
+    d.serialize(myfile);
+    solutions.serialize(myfile);
+    baseComplex.serialize(myfile);
+    he.serialize(myfile);
+    originalMesh.serialize(myfile);
+    Serializer::serialize(factor, myfile);
+    Serializer::serialize(kernel, myfile);
+    bool b = true;
+    Serializer::serialize(b, myfile);
+    originalSolutions.serialize(myfile);
+    Serializer::serialize(splittedBoxesToOriginals, myfile);
+    Serializer::serialize(priorityBoxes, myfile);
+    myfile.close();
+}
+
+#endif

@@ -22,6 +22,8 @@
 #define BOOL_DEBUG
 
 namespace Engine {
+    void findOptimalOrientation(Dcel& d, EigenMesh& originalMesh);
+
     Vec3 getClosestTarget(const Vec3 &n);
 
     void serializeAsEngineManager(std::ofstream &binaryfile, const Grid& g, const Dcel& d, const BoxList& bl);
@@ -61,7 +63,7 @@ namespace Engine {
     int deleteBoxesGSC(BoxList& boxList, const Dcel &d);
 
     static BoxList dummy2;
-    void optimize(BoxList &solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits = Pointd(), bool tolerance = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true);
+    double optimize(BoxList &solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits = Pointd(), bool tolerance = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true);
 
     void optimizeAndDeleteBoxes(BoxList &solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits = Pointd(), bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true, BoxList& allSolutions = dummy2);
 
@@ -69,7 +71,13 @@ namespace Engine {
 
     std::vector<Box3D> splitBoxWithMoreThanOneConnectedComponent(const Box3D& originalBox, const std::vector<std::set<const Dcel::Face*> >& connectedComponents);
 
+    void stupidSnapping(const Dcel& d, BoxList& solutions, double epsilon);
+
     bool smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const CGALInterface::AABBTree& tree);
+
+    void smartSnapping(const Dcel& d, BoxList& solutions);
+
+    void merging(const Dcel& d, BoxList& solutions);
 
     void deleteDuplicatedBoxes(BoxList &solutions);
 
@@ -96,7 +104,7 @@ namespace Engine {
 
     bool isAnHeightfield(const EigenMesh &m, const Vec3& v, bool strictly = false);
 
-    bool cleanHeightFiled(EigenMesh& m, const Vec3& target);
+    void colorPieces(const Dcel& d, HeightfieldsList& he);
 }
 
 #endif // ENGINE_H

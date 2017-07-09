@@ -304,7 +304,9 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
             b2.setMin(newBBb2.min());
             b2.setMax(newBBb2.max());
             b3.min() = b3.max() = Pointd();
+            #ifndef NDEBUG
             b2.getEigenMesh().saveOnObj("b2modified.obj");
+            #endif
         }
         b2.setSplitted(true);
         b3.setSplitted(true);
@@ -517,7 +519,7 @@ bool Splitting::checkDeleteBox(const Box3D &b, const std::set<unsigned int>& box
     return bIsEliminated;
 }
 
-void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const Dcel& d, const CGALInterface::AABBTree& tree, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes, std::set<std::pair<unsigned int, unsigned int>, cmpUnorderedStdPair<unsigned int>> &impossibleArcs) {
+void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const CGALInterface::AABBTree& tree, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes, std::set<std::pair<unsigned int, unsigned int>, cmpUnorderedStdPair<unsigned int>> &impossibleArcs) {
     int lastId = bl[0].getId();
     for (unsigned int i = 1; i < bl.getNumberBoxes(); i++){
         if (bl[i].getId() > lastId)
@@ -527,15 +529,16 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
     std::set<unsigned int> tcb2 = b2.getTrianglesCovered();
     std::set<unsigned int> tcb23 = Common::setDifference(tcb2, tcb1);
     Box3D b3;
-    splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
+    splitBox(b1, b2, b3);
+    //splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
     std::pair<unsigned int, unsigned int> impPair(b1.getId(), b2.getId());
     impossibleArcs.insert(impPair);
-    #ifdef SPLIT_DEBUG
+    #ifndef NDEBUG
     b1.getEigenMesh().saveOnObj("newb1.obj");
     b2.getEigenMesh().saveOnObj("newb2.obj");
     #endif
     if (!(b3.min() == Pointd() && b3.max() == Pointd())){ //se b3 esiste
-        #ifdef SPLIT_DEBUG
+        #ifndef NDEBUG
         b3.getEigenMesh().saveOnObj("newb3.obj");
         #endif
         g.removeEdgeIfExists(b1.getId(), b2.getId());
@@ -569,7 +572,7 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
             for (unsigned int incoming : incomingb2){
                 Box3D other = bl.find(incoming);
                 std::pair<unsigned int, unsigned int> pp(b2.getId(), incoming);
-                #ifdef SPLIT_DEBUG
+                #ifndef NDEBUG
                 b2.getEigenMesh().saveOnObj("ba.obj");
                 other.getEigenMesh().saveOnObj("bb.obj");
                 #endif
@@ -582,7 +585,7 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
             for (unsigned int outgoing : outgoingb2){
                 Box3D other = bl.find(outgoing);
                 std::pair<unsigned int, unsigned int> pp(b2.getId(), outgoing);
-                #ifdef SPLIT_DEBUG
+                #ifndef NDEBUG
                 b2.getEigenMesh().saveOnObj("ba.obj");
                 other.getEigenMesh().saveOnObj("bb.obj");
                 #endif
@@ -625,7 +628,7 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
                 std::pair<unsigned int, unsigned int> pp (b3.getId(), i);
                 if (impossibleArcs.find(pp) == impossibleArcs.end()){
                     Box3D other = bl.getBox(i);
-                    #ifdef SPLIT_DEBUG
+                    #ifndef NDEBUG
                     b3.getEigenMesh().saveOnObj("ba.obj");
                     other.getEigenMesh().saveOnObj("bb.obj");
                     #endif
@@ -661,7 +664,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
         if (bl[i].getId() > lastId)
             lastId = bl[i].getId();
     }
-    #ifdef SPLIT_DEBUG
+    #ifndef NDEBUG
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         bl.getBox(i).getEigenMesh().saveOnObj("b" + std::to_string(bl[i].getId()) + ".obj");
     }
@@ -670,7 +673,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
     std::vector<std::vector<unsigned int> > loops;
     std::set<std::pair<unsigned int, unsigned int>, cmpUnorderedStdPair<unsigned int>> impossibleArcs;
 
-    #ifdef SPLIT_DEBUG
+    #ifndef NDEBUG
     d.saveOnObjFile("bmodel.obj");
     #endif
     DirectedGraph g = getGraph(bl, tree);
@@ -698,25 +701,29 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
             for (unsigned int out : outgoing) {
                 Box3D b2 = bl.find(out);
                 std::cerr << b1.getId() << " will split " << b2.getId() << "\n";
-                splitB2(b1, b2, bl, g, d, tree, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes, impossibleArcs);
+                splitB2(b1, b2, bl, g, tree, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes, impossibleArcs);
             }
 
             /*for (unsigned int inc : incoming){
                 assert(! g.arcExists(pb, inc));
                 assert(! g.arcExists(inc, pb));
             }*/
+            #ifndef NDEBUG
             for (unsigned int out : outgoing) {
                 assert(! g.arcExists(pb, out));
                 assert(! g.arcExists(out, pb));
             }
+            #endif
 
         }
     }
 
+    #ifndef NDEBUG
     ///Detect and delete cycles on graph (modifying bl)
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         bl.getBox(i).getEigenMesh().saveOnObj("ba" + std::to_string(bl[i].getId()) + ".obj");
     }
+    #endif
 
 
     do {
@@ -741,7 +748,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
                 chooseBestSplit(b1, b2, bl, tree, boxesToEliminate);
             //now b1 will split b2 in b2+b3
 
-            #ifdef SPLIT_DEBUG
+            #ifndef NDEBUG
             b1.getEigenMesh().saveOnObj("bb1.obj");
             b2.getEigenMesh().saveOnObj("bb2.obj");
             #endif
@@ -750,7 +757,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
             ///
             ///
 
-            splitB2(b1, b2, bl, g, d, tree, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes, impossibleArcs);
+            splitB2(b1, b2, bl, g, tree, boxesToEliminate, mappingNewToOld, numberOfSplits, deletedBoxes, impossibleArcs);
         }
     }while (loops.size() > 0);
 
@@ -786,31 +793,6 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
     //works only if graph has no cycles
     loops = newGraph.getCircuits();
     assert(loops.size() == 0);
-    /*Array2D<int> ordering(bl.getNumberBoxes(), bl.getNumberBoxes(), -1); // true -> "<", false -> ">=", undefined -> "-1"
-    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
-        std::set<unsigned int> visited;
-        newGraph.visit(visited, i);
-        for (unsigned int node : visited){ // i must be > than all nodes in visited
-            ordering(node,i) = true;
-            ordering(i,node) = false;
-        }
-    }
-    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
-        for (unsigned int j = 0; j < i; j++){
-            if (ordering(i,j) == -1) {
-                ordering(i,j) = false;
-                ordering(j,i) = true;
-                for (unsigned int k = 0; k < bl.getNumberBoxes(); k++){
-                    //j now is the row
-                    if (ordering(j,k) == false){
-                        assert(ordering(i,k) == 0 || ordering(i,k) == -1);
-                        ordering(i,k) = false;
-                        ordering(k,i) = true;
-                    }
-                }
-            }
-        }
-    }*/
     lastId = bl[0].getId();
     for (unsigned int i = 1; i < bl.getNumberBoxes(); i++){
         if (bl[i].getId() > lastId)
