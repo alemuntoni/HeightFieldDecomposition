@@ -195,6 +195,8 @@ void EngineManager::deserializeBC(const std::string& filename) {
         Serializer::deserialize(splittedBoxesToOriginals, myfile);
         Serializer::deserialize(priorityBoxes, myfile);
         alreadySplitted = true;
+        for (unsigned int i = 0; i < originalSolutions.size(); i++)
+            originalSolutions[i].setId(i);
     }
     /*d->saveOnObjFile("boxes/mesh.obj");
     for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
