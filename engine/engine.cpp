@@ -577,7 +577,7 @@ int Engine::deleteBoxesNonOptimal(BoxList& boxList, const Dcel& d) {
 }
 
 
-int Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
+double Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
     #ifdef GUROBI_DEFINED
     unsigned int nBoxes = boxList.getNumberBoxes();
     unsigned int nTris = d.getNumberFaces();

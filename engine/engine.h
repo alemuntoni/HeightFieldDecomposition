@@ -58,7 +58,7 @@ namespace Engine {
 
     int deleteBoxesNonOptimal(BoxList& boxList, const Dcel &d);
 
-    int deleteBoxes(BoxList& boxList, const Dcel &d);
+    double deleteBoxes(BoxList& boxList, const Dcel &d);
 
     int deleteBoxesGSC(BoxList& boxList, const Dcel &d);
 
