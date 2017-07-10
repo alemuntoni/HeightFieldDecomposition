@@ -30,7 +30,7 @@ void serializeAfterBooleans(const std::string& filename, const Dcel& d, const Ei
 
 int main(int argc, char *argv[]) {
     #ifdef SERVER_MODE
-    if (argc > 4){
+    if (argc > 3){
         bool smoothed = true;
         std::string filename(argv[1]);
         if (! Common::fileExists(filename)){
@@ -48,11 +48,11 @@ int main(int argc, char *argv[]) {
         if (Common::fileExists(filename_smooth)){
             d.loadFromObjFile(filename_smooth);
             std::cerr << "Smooth File found.\n";
-            smoothed = false;
         }
         else {
             std::cerr << "Smooth File not found. Using original file.\n";
             d = original;
+            smoothed = false;
         }
 
         //scaling meshes
@@ -74,6 +74,8 @@ int main(int argc, char *argv[]) {
 
         //optimal orientation
         Engine::findOptimalOrientation(d, original);
+        d.updateFaceNormals();
+        d.updateVertexNormals();
         d.saveOnObjFile(foldername + rawname + "r_smooth.obj");
         original.saveOnObj(foldername + rawname + "r.obj");
 
@@ -83,13 +85,13 @@ int main(int argc, char *argv[]) {
         //grow boxes
         double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, false, Pointd(), true, true, 0, 0, false, true);
 
-        logFile << Common::toStringWithPrecision(timerBoxGrowing) << ": Box Growing\n";
+        logFile << std::setprecision(2) << timerBoxGrowing << ": Box Growing\n";
 
         serializeBeforeBooleans(foldername + "all.bin", d, original, solutions, precision, kernelDistance);
 
         Engine::boxPostProcessing(solutions, d);
         double timerMinimalCovering = Engine::deleteBoxes(solutions, d);
-        logFile << Common::toStringWithPrecision(timerMinimalCovering) << ": Minimal Covering\n";
+        logFile << std::setprecision(2) << timerMinimalCovering << ": Minimal Covering\n";
 
         serializeBeforeBooleans(foldername + "mc.bin", d, original, solutions, precision, kernelDistance);
 
@@ -130,7 +132,7 @@ int main(int argc, char *argv[]) {
             tSplitting.stop();
             timerSplitting += tSplitting.delay();
 
-            logFile << Common::toStringWithPrecision(tSplitting.delay()) << ": Splitting n. " << std::to_string(it) << "\n";
+            logFile << std::setprecision(2) << tSplitting.delay() << ": Splitting n. " << std::to_string(it) << "\n";
 
             //booleans
             baseComplex = d;
@@ -141,7 +143,7 @@ int main(int argc, char *argv[]) {
             Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
             tBooleans.stop();
             timerBooleans += tBooleans.delay();
-            logFile << Common::toStringWithPrecision(tBooleans.delay()) << ": Booleans n. " << std::to_string(it) << "\n";
+            logFile << std::setprecision(2) << tBooleans.delay() << ": Booleans n. " << std::to_string(it) << "\n";
             CGALInterface::AABBTree tree(d);
             Engine::updatePiecesNormals(tree, he);
             Engine::colorPieces(d, he);
@@ -150,8 +152,8 @@ int main(int argc, char *argv[]) {
             it++;
         } while(false);
 
-        logFile << Common::toStringWithPrecision(timerSplitting) << ": Total time Splitting\n";
-        logFile << Common::toStringWithPrecision(timerBooleans) << ": Total time Booleans\n";
+        logFile << std::setprecision(2) << timerSplitting << ": Total time Splitting\n";
+        logFile << std::setprecision(2) << timerBooleans << ": Total time Booleans\n";
 
         //restore hf
         if (smoothed){
