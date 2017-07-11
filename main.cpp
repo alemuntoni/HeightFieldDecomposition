@@ -26,10 +26,38 @@
 #ifdef SERVER_MODE
 void serializeBeforeBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, double factor, double kernel);
 void serializeAfterBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, const EigenMesh& baseComplex, const HeightfieldsList& he, double factor, double kernel, const BoxList& originalSolutions, const std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, const std::list<unsigned int> &priorityBoxes);
+void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& originalMesh, BoxList& solutions, EigenMesh& baseComplex, HeightfieldsList& he, double &factor, double &kernel, BoxList& originalSolutions, std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, std::list<unsigned int> &priorityBoxes);
 #endif
 
 int main(int argc, char *argv[]) {
     #ifdef SERVER_MODE
+    /*if (argc > 2){
+        std::string filename(argv[1]);
+        Dcel d;
+        EigenMesh original, baseComplex;
+        BoxList solutions, originalSolutions;
+        HeightfieldsList he;
+        double factor, kernel;
+        std::map<unsigned int, unsigned int> splittedBoxesToOriginals;
+        std::list<unsigned int> priorityBoxes;
+
+        deserializeAfterBooleans(filename, d, original, solutions, baseComplex, he, factor, kernel, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+        std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(d, he);
+        Reconstruction::reconstruction(d, mapping, original, solutions);
+        d.updateFaceNormals();
+        d.updateVertexNormals();
+
+        baseComplex = d;
+        he = HeightfieldsList();
+        Engine::booleanOperations(he, baseComplex, solutions, false);
+        Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
+        Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
+        CGALInterface::AABBTree tree(d);
+        Engine::updatePiecesNormals(tree, he);
+        Engine::colorPieces(d, he);
+        std::string foldername(argv[2]);
+        serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, factor, kernel, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+    }*/
     if (argc > 3){
         bool smoothed = true;
         std::string filename(argv[1]);
@@ -85,13 +113,13 @@ int main(int argc, char *argv[]) {
         //grow boxes
         double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, false, Pointd(), true, true, 0, 0, false, true);
 
-        logFile << std::setprecision(2) << timerBoxGrowing << ": Box Growing\n";
+        logFile << timerBoxGrowing << ": Box Growing\n";
 
         serializeBeforeBooleans(foldername + "all.bin", d, original, solutions, precision, kernelDistance);
 
         Engine::boxPostProcessing(solutions, d);
         double timerMinimalCovering = Engine::deleteBoxes(solutions, d);
-        logFile << std::setprecision(2) << timerMinimalCovering << ": Minimal Covering\n";
+        logFile << timerMinimalCovering << ": Minimal Covering\n";
 
         serializeBeforeBooleans(foldername + "mc.bin", d, original, solutions, precision, kernelDistance);
 
@@ -132,7 +160,7 @@ int main(int argc, char *argv[]) {
             tSplitting.stop();
             timerSplitting += tSplitting.delay();
 
-            logFile << std::setprecision(2) << tSplitting.delay() << ": Splitting n. " << std::to_string(it) << "\n";
+            logFile << tSplitting.delay() << ": Splitting n. " << std::to_string(it) << "\n";
 
             //booleans
             baseComplex = d;
@@ -143,7 +171,7 @@ int main(int argc, char *argv[]) {
             Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
             tBooleans.stop();
             timerBooleans += tBooleans.delay();
-            logFile << std::setprecision(2) << tBooleans.delay() << ": Booleans n. " << std::to_string(it) << "\n";
+            logFile << tBooleans.delay() << ": Booleans n. " << std::to_string(it) << "\n";
             CGALInterface::AABBTree tree(d);
             Engine::updatePiecesNormals(tree, he);
             Engine::colorPieces(d, he);
@@ -152,12 +180,13 @@ int main(int argc, char *argv[]) {
             it++;
         } while(false);
 
-        logFile << std::setprecision(2) << timerSplitting << ": Total time Splitting\n";
-        logFile << std::setprecision(2) << timerBooleans << ": Total time Booleans\n";
-
+        logFile << timerSplitting << ": Total time Splitting\n";
+        logFile << timerBooleans << ": Total time Booleans\n";
+        logFile.close();
         //restore hf
         if (smoothed){
-            std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(d, he);
+            Common::executeCommand("./restorehf " + foldername + "bools" + std::to_string(it-1) + ".hfd " + foldername);
+            /*std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(d, he);
             Reconstruction::reconstruction(d, mapping, original, solutions);
 
             baseComplex = d;
@@ -167,10 +196,11 @@ int main(int argc, char *argv[]) {
             Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
             CGALInterface::AABBTree tree(d);
             Engine::updatePiecesNormals(tree, he);
-            Engine::colorPieces(d, he);
+            Engine::colorPieces(d, he);*/
         }
-        serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, precision, kernelDistance, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
-        logFile.close();
+        else
+            serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, precision, kernelDistance, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+
     }
     else
         std::cerr << "Error! Number argument lower than 4\n";
@@ -306,6 +336,26 @@ void serializeAfterBooleans(const std::string& filename, const Dcel& d, const Ei
     Serializer::serialize(splittedBoxesToOriginals, myfile);
     Serializer::serialize(priorityBoxes, myfile);
     myfile.close();
+}
+
+void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& originalMesh, BoxList& solutions, EigenMesh& baseComplex, HeightfieldsList& he, double &factor, double &kernel, BoxList& originalSolutions, std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, std::list<unsigned int> &priorityBoxes){
+    std::ifstream myfile;
+    myfile.open (filename, std::ios::in | std::ios::binary);
+    d.deserialize(myfile);
+    solutions.deserialize(myfile);
+    baseComplex.deserialize(myfile);
+    he.deserialize(myfile);
+    originalMesh.deserialize(myfile);
+    Serializer::deserialize(factor, myfile);
+    Serializer::deserialize(kernel, myfile);
+    bool b;
+    if (Serializer::deserialize(b, myfile) && b == true){
+        originalSolutions.deserialize(myfile);
+        Serializer::deserialize(splittedBoxesToOriginals, myfile);
+        Serializer::deserialize(priorityBoxes, myfile);
+        for (unsigned int i = 0; i < originalSolutions.size(); i++)
+            originalSolutions[i].setId(i);
+    }
 }
 
 #endif

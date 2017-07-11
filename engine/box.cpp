@@ -392,7 +392,7 @@ bool Box3D::deserialize(std::ifstream& binaryFile) {
         int begin = binaryFile.tellg();
         std::string s;
         if (Serializer::deserialize(s, binaryFile) && s == "id"){
-            Serializer::deserialize(id, binaryFile);
+            Serializer::deserialize(tmp.id, binaryFile);
         }
         else{
             binaryFile.clear();
@@ -400,7 +400,7 @@ bool Box3D::deserialize(std::ifstream& binaryFile) {
         }
         begin = binaryFile.tellg();
         if (Serializer::deserialize(s, binaryFile) && s == "stc"){
-            Serializer::deserialize(trianglesCovered, binaryFile);
+            Serializer::deserialize(tmp.trianglesCovered, binaryFile);
         }
         else{
             binaryFile.clear();

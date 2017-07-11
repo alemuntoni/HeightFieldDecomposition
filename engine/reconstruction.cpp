@@ -126,7 +126,7 @@ void Reconstruction::differential_coordinates(const cinolib::Trimesh & m, std::v
     assert(diff_coords.empty());
     diff_coords.resize(m.num_vertices());
 
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for(int vid=0; vid<m.num_vertices(); ++vid)
     {
         double w    = 1.0 / double(m.vertex_valence(vid));
