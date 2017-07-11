@@ -385,9 +385,9 @@ bool Box3D::deserialize(std::ifstream& binaryFile) {
         tmp.max() = tmpbb.max();
 
         if (! EigenMeshAlgorithms::isABox(piece))
-            splitted = true;
+            tmp.splitted = true;
         else
-            splitted = false;
+            tmp.splitted = false;
 
         int begin = binaryFile.tellg();
         std::string s;
