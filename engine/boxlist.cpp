@@ -32,7 +32,7 @@ Box3D& BoxList::operator[](unsigned int i) {
     return boxes[i];
 }
 
-const Box3D&BoxList::operator[](unsigned int i) const {
+const Box3D& BoxList::operator[](unsigned int i) const {
     assert(i < boxes.size());
     return boxes[i];
 }

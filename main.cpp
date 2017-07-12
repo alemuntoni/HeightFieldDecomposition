@@ -31,33 +31,6 @@ void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& o
 
 int main(int argc, char *argv[]) {
     #ifdef SERVER_MODE
-    /*if (argc > 2){
-        std::string filename(argv[1]);
-        Dcel d;
-        EigenMesh original, baseComplex;
-        BoxList solutions, originalSolutions;
-        HeightfieldsList he;
-        double factor, kernel;
-        std::map<unsigned int, unsigned int> splittedBoxesToOriginals;
-        std::list<unsigned int> priorityBoxes;
-
-        deserializeAfterBooleans(filename, d, original, solutions, baseComplex, he, factor, kernel, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
-        std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(d, he);
-        Reconstruction::reconstruction(d, mapping, original, solutions);
-        d.updateFaceNormals();
-        d.updateVertexNormals();
-
-        baseComplex = d;
-        he = HeightfieldsList();
-        Engine::booleanOperations(he, baseComplex, solutions, false);
-        Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
-        Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
-        CGALInterface::AABBTree tree(d);
-        Engine::updatePiecesNormals(tree, he);
-        Engine::colorPieces(d, he);
-        std::string foldername(argv[2]);
-        serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, factor, kernel, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
-    }*/
     if (argc > 3){
         bool smoothed = true;
         std::string filename(argv[1]);
@@ -185,8 +158,8 @@ int main(int argc, char *argv[]) {
         logFile.close();
         //restore hf
         if (smoothed){
-            Common::executeCommand("./restorehf " + foldername + "bools" + std::to_string(it-1) + ".hfd " + foldername);
-            /*std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(d, he);
+            //Common::executeCommand("./restorehf " + foldername + "bools" + std::to_string(it-1) + ".hfd " + foldername);
+            std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(d, he);
             Reconstruction::reconstruction(d, mapping, original, solutions);
 
             baseComplex = d;
@@ -196,10 +169,9 @@ int main(int argc, char *argv[]) {
             Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
             CGALInterface::AABBTree tree(d);
             Engine::updatePiecesNormals(tree, he);
-            Engine::colorPieces(d, he);*/
+            Engine::colorPieces(d, he);
         }
-        else
-            serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, precision, kernelDistance, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+        serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, precision, kernelDistance, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
 
     }
     else

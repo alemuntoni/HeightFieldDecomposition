@@ -7,6 +7,12 @@ CONFIG(release, debug|release){
     #CONFIG += FINAL_RELEASE
 }
 
+PROFILER{
+    message(Profiling Configuration)
+    DEFINES+=CGAL_DISABLE_ROUNDING_MATH_CHECK=ON
+}
+
+
 CONFIG += ALL
 #CONFIG += SERVER_MODE
 #CONFIG += CONVERTER_MODE

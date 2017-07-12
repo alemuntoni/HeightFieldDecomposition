@@ -67,7 +67,7 @@ std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothe
 bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, const int hf, const int dir, const cinolib::vec3d & vid_new_pos, const BoxList &boxList)
 {
     cinolib::vec3d vertex = m.vertex(vid);
-    if (hf < 0 || ! boxList.getBox(hf).isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z()), -0.5))
+    if (hf < 0 || ! boxList[hf].isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z()), -0.5))
         return false;
     /*if (hf >= 0) {
         for (int i = 0; i < hf; i++){
@@ -126,7 +126,7 @@ void Reconstruction::differential_coordinates(const cinolib::Trimesh & m, std::v
     assert(diff_coords.empty());
     diff_coords.resize(m.num_vertices());
 
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(int vid=0; vid<m.num_vertices(); ++vid)
     {
         double w    = 1.0 / double(m.vertex_valence(vid));
@@ -153,11 +153,12 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
 
     for(int i=0; i<n_iters; ++i)
     {
-        std::cerr << "iter " << i << std::endl;
+        std::cerr << "iter " << i << std::endl;//<< "; nv: " << m_smooth.num_vertices() <<std::endl;
 
         #pragma omp parallel for
         for(int vid=0; vid<m_smooth.num_vertices(); ++vid)
         {
+            //std::cerr << vid << "\n";
             cinolib::vec3d  gauss_iter(0,0,0);
             double w = 1.0 / double(m_smooth.vertex_valence(vid));
             for(int nbr : m_smooth.adj_vtx2vtx(vid))
