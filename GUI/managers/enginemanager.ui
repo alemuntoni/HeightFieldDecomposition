@@ -853,6 +853,9 @@
                 </property>
                </widget>
               </item>
+              <item row="15" column="1">
+               <widget class="QSpinBox" name="prioritySpinBox"/>
+              </item>
               <item row="0" column="0" colspan="2">
                <widget class="Line" name="line_3">
                 <property name="orientation">
@@ -886,9 +889,6 @@
                  <string>Show All Boxes</string>
                 </property>
                </widget>
-              </item>
-              <item row="15" column="1">
-               <widget class="QSpinBox" name="prioritySpinBox"/>
               </item>
               <item row="17" column="1">
                <widget class="QPushButton" name="restoreBoxesPushButton">
@@ -942,6 +942,9 @@
                 </property>
                </widget>
               </item>
+              <item row="11" column="0">
+               <widget class="QSpinBox" name="boxASpinBox"/>
+              </item>
               <item row="2" column="0">
                <widget class="QLabel" name="label_9">
                 <property name="text">
@@ -963,15 +966,15 @@
                 </property>
                </widget>
               </item>
+              <item row="11" column="1">
+               <widget class="QSpinBox" name="boxBSpinBox"/>
+              </item>
               <item row="7" column="0">
                <widget class="QSlider" name="heightfieldsSlider">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
-              </item>
-              <item row="11" column="0">
-               <widget class="QSpinBox" name="boxASpinBox"/>
               </item>
               <item row="19" column="1">
                <widget class="QPushButton" name="stickPushButton">
@@ -994,20 +997,20 @@
                 </property>
                </widget>
               </item>
-              <item row="11" column="1">
-               <widget class="QSpinBox" name="boxBSpinBox"/>
+              <item row="14" column="0" colspan="2">
+               <widget class="QLabel" name="userArcsLabel">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="24" column="1">
+               <widget class="QSpinBox" name="deleteBlockSpinBox"/>
               </item>
               <item row="10" column="0">
                <widget class="QLabel" name="label_31">
                 <property name="text">
                  <string>Box A: </string>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="0" colspan="2">
-               <widget class="QLabel" name="userArcsLabel">
-                <property name="text">
-                 <string/>
                 </property>
                </widget>
               </item>
@@ -1017,9 +1020,6 @@
                  <string>Push User Arc</string>
                 </property>
                </widget>
-              </item>
-              <item row="24" column="1">
-               <widget class="QSpinBox" name="deleteBlockSpinBox"/>
               </item>
               <item row="13" column="1">
                <widget class="QPushButton" name="clearUserArcsPushButton">
@@ -1046,6 +1046,20 @@
                <widget class="QPushButton" name="sdfPushButton">
                 <property name="text">
                  <string>Tiny Features</string>
+                </property>
+               </widget>
+              </item>
+              <item row="26" column="0">
+               <widget class="QPushButton" name="saveShownBoxPushButton">
+                <property name="text">
+                 <string>Save Shown Box</string>
+                </property>
+               </widget>
+              </item>
+              <item row="26" column="1">
+               <widget class="QPushButton" name="saveShownBlockPushButton">
+                <property name="text">
+                 <string>Save Shown Block</string>
                 </property>
                </widget>
               </item>

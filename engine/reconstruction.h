@@ -9,6 +9,8 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-result"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wunused-variable" //Doesn't work on gcc < 6.0
 #include <cinolib/meshes/trimesh/trimesh.h>
 #pragma GCC diagnostic pop
 #endif //__GNUC__

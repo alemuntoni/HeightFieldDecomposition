@@ -37,7 +37,7 @@ const Box3D& BoxList::operator[](unsigned int i) const {
     return boxes[i];
 }
 
-Box3D BoxList::getBox(unsigned int i) const {
+const Box3D &BoxList::getBox(unsigned int i) const {
     if (i < boxes.size())
         return (boxes[i]);
     return Box3D();

@@ -105,6 +105,8 @@ namespace Engine {
     bool isAnHeightfield(const EigenMesh &m, const Vec3& v, bool strictly = false);
 
     void colorPieces(const Dcel& d, HeightfieldsList& he);
+
+    void tinyFeatureDetection(HeightfieldsList& he, double threshold);
 }
 
 #endif // ENGINE_H

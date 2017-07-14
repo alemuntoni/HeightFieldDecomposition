@@ -2,7 +2,6 @@
 #include "ui_enginemanager.h"
 #include "common.h"
 #include <cstdio>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <omp.h>
 #include "cgal/aabbtree.h"
@@ -28,8 +27,14 @@ EngineManager::EngineManager(QWidget *parent) :
     baseComplex(nullptr),
     he(nullptr),
     alreadySplitted(false){
+
     ui->setupUi(this);
     ui->iterationsSlider->setMaximum(0);
+    hdfls.addSupportedExtension("hfd", "bin");
+
+    binls.addSupportedExtension("bin");
+
+    objls.addSupportedExtension("obj");
 
     //ui->frame_2->setVisible(false);
     //ui->frame_5->setVisible(false);
@@ -501,27 +506,20 @@ void EngineManager::on_sliceComboBox_currentIndexChanged(int index) {
 }
 
 void EngineManager::on_serializePushButton_clicked() {
-    QString filename = QFileDialog::getSaveFileName(nullptr,
-                       "Serialize",
-                       ".",
-                       "BIN(*.bin)");
-    if (!filename.isEmpty()) {
+    std::string filename = binls.saveDialog();
+    if (filename != ""){
         std::ofstream myfile;
-        myfile.open (filename.toStdString(), std::ios::out | std::ios::binary);
+        myfile.open (filename, std::ios::out | std::ios::binary);
         serialize(myfile);
         myfile.close();
     }
 }
 
 void EngineManager::on_deserializePushButton_clicked() {
-    QString filename = QFileDialog::getOpenFileName(nullptr,
-                       "Deserialize",
-                       ".",
-                       "BIN(*.bin)");
-
-    if (!filename.isEmpty()) {
+    std::string filename = binls.loadDialog();
+    if (filename != ""){
         std::ifstream myfile;
-        myfile.open (filename.toStdString(), std::ios::in | std::ios::binary);
+        myfile.open (filename, std::ios::in | std::ios::binary);
         deserialize(myfile);
         myfile.close();
     }
@@ -529,10 +527,10 @@ void EngineManager::on_deserializePushButton_clicked() {
 
 void EngineManager::on_saveObjsButton_clicked() {
     if (d != nullptr && baseComplex != nullptr && he != nullptr) {
-        QString foldername = QFileDialog::getExistingDirectory(nullptr, "SaveObjs");
-        if (!foldername.isEmpty()){
+        std::string foldername = objls.directoryDialog();
+        if (foldername != ""){
             d->updateVertexNormals();
-            Engine::saveObjs(foldername, originalMesh, *d, *baseComplex, *he);
+            Engine::saveObjs(QString(foldername.c_str()), originalMesh, *d, *baseComplex, *he);
         }
     }
 }
@@ -1225,26 +1223,16 @@ void EngineManager::on_stickPushButton_clicked() {
 
 void EngineManager::on_serializeBCPushButton_clicked() {
     if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr /*&& entirePieces != nullptr*/){
-        QString filename = QFileDialog::getSaveFileName(nullptr,
-                           "Serialize BC",
-                           ".",
-                           "HFD(*.hfd);;BIN(*.bin)");
-        if (!filename.isEmpty()) {
-            serializeBC(filename.toStdString());
-        }
+        std::string fn = hdfls.saveDialog();
+        if (fn != "") serializeBC(fn);
+
     }
 
 }
 
 void EngineManager::on_deserializeBCPushButton_clicked() {
-    QString filename = QFileDialog::getOpenFileName(nullptr,
-                       "Deserialize BC",
-                       ".",
-                       "ALL(*bin *hfd);;BIN(*.bin);;HFD(*.hfd)");
-
-    if (!filename.isEmpty()) {
-        deserializeBC(filename.toStdString());
-    }
+    std::string fn = hdfls.loadDialog();
+    if (fn != "") deserializeBC(fn);
 }
 
 void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
@@ -1422,34 +1410,27 @@ void EngineManager::on_reorderBoxes_clicked() {
 }
 
 void EngineManager::on_loadOriginalPushButton_clicked() {
-    QString filename = QFileDialog::getOpenFileName(nullptr,
-                       "Open Eigen Mesh",
-                       ".",
-                       "OBJ(*.obj)");
-    if (!filename.isEmpty()) {
-        originalMesh.readFromObj(filename.toStdString());
+    std::string filename = objls.loadDialog();
+    if (filename != "") {
+        originalMesh.readFromObj(filename);
         if (! (mainWindow.contains(&originalMesh)))
-            mainWindow.pushObj(&originalMesh, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
+            mainWindow.pushObj(&originalMesh, filename.substr(filename.find_last_of("/") + 1));
         mainWindow.updateGlCanvas();
     }
 }
 
 void EngineManager::on_loadSmoothedPushButton_clicked() {
-    QString filename = QFileDialog::getOpenFileName(nullptr,
-                       "Open Dcel Mesh",
-                       ".",
-                       "OBJ(*.obj);;PLY(*.ply)");
-    if (!filename.isEmpty()) {
-        std::string s = filename.toStdString();
+    std::string filename = objls.loadDialog();
+
+    if (filename != "") {
         deleteDrawableObject(d);
         d = new DrawableDcel();
-        if (d->loadFromFile(s)){
-            std::cout << "load: " << filename.toStdString() << std::endl;
+        if (d->loadFromFile(filename)){
             d->updateVertexNormals();
             d->setWireframe(true);
             d->setPointsShading();
             d->update();
-            mainWindow.pushObj(d, filename.toStdString().substr(filename.toStdString().find_last_of("/") + 1));
+            mainWindow.pushObj(d, filename.substr(filename.find_last_of("/") + 1));
             mainWindow.updateGlCanvas();
         }
         else {
@@ -1480,8 +1461,8 @@ void EngineManager::on_taubinPushButton_clicked() {
 
 void EngineManager::on_packPushButton_clicked() {
     if (he != nullptr){
-        QString foldername = QFileDialog::getExistingDirectory(nullptr, "SaveObjs");
-        if (!foldername.isEmpty()){
+        std::string foldername = objls.directoryDialog();
+        if (foldername != ""){
             HeightfieldsList myHe = *he;
             Packing::rotateAllPieces(myHe);
             BoundingBox packSize(Pointd(), Pointd(ui->sizeXPackSpinBox->value(), ui->sizeYPackSpinBox->value(), ui->sizeZPackSpinBox->value()));
@@ -1502,17 +1483,17 @@ void EngineManager::on_packPushButton_clicked() {
             Packing::scaleAll(myHe, factor);
             std::vector< std::vector<std::pair<int, Pointd> > > tmp = Packing::pack(myHe, packSize);
             std::vector< std::vector<EigenMesh> > packs = Packing::getPacks(tmp, myHe);
-            EigenMeshAlgorithms::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
+            EigenMeshAlgorithms::makeBox(packSize).saveOnObj(foldername + "/box.obj");
             for (unsigned int i = 0; i < packs.size(); i++){
-                QString pstring = foldername + "/pack" + QString::number(i) + ".obj";
+                std::string pstring = foldername + "/pack" + std::to_string(i) + ".obj";
                 EigenMesh packMesh = packs[i][0];
-                QString bstring = foldername + "/b" + QString::number(i);
+                std::string bstring = foldername + "/b" + std::to_string(i);
                 for (unsigned int j = 0; j < packs[i].size(); j++){
-                    QString meshName = bstring + "p" + QString::number(j) + ".obj";
+                    std::string meshName = bstring + "p" + std::to_string(j) + ".obj";
                     //packs[i][j].saveOnObj(meshName.toStdString());
                     Dcel d(packs[i][j]);
                     d.updateVertexNormals();
-                    d.saveOnObjFile(meshName.toStdString());
+                    d.saveOnObjFile(meshName);
                     //Dcel d(packs[i][j]);
                     //Segmentation s(d);
                     //Dcel dd = s.getDcelFromSegmentation();
@@ -1525,7 +1506,7 @@ void EngineManager::on_packPushButton_clicked() {
                 //packMesh.saveOnObj(pstring.toStdString());
                 Dcel d(packMesh);
                 d.updateVertexNormals();
-                d.saveOnObjFile(pstring.toStdString());
+                d.saveOnObjFile(pstring);
 
                 /*BoundingBox bb = d.getBoundingBox();
                 SimpleEigenMesh plane;
@@ -1543,8 +1524,8 @@ void EngineManager::on_packPushButton_clicked() {
 
 void EngineManager::on_smartPackingPushButton_clicked() {
     if (he != nullptr){
-        QString foldername = QFileDialog::getExistingDirectory(nullptr, "SaveObjs");
-        if (!foldername.isEmpty()){
+        std::string foldername = objls.directoryDialog();
+        if (foldername != ""){
             HeightfieldsList myHe = *he;
             Packing::rotateAllPieces(myHe);
             BoundingBox packSize(Pointd(), Pointd(ui->sizeXPackSpinBox->value(), ui->sizeYPackSpinBox->value(), ui->sizeZPackSpinBox->value()));
@@ -1560,14 +1541,14 @@ void EngineManager::on_smartPackingPushButton_clicked() {
                 packs = Packing::getPacks(tmp, myHe);
                 l -= 0.1;
             } while (packs.size() > 1);
-            EigenMeshAlgorithms::makeBox(packSize).saveOnObj(QString(foldername + "/box.obj").toStdString());
+            EigenMeshAlgorithms::makeBox(packSize).saveOnObj(foldername + "/box.obj");
 
             for (unsigned int i = 0; i < packs.size(); i++){
-                QString pstring = foldername + "/pack" + QString::number(i) + ".obj";
+                std::string pstring = foldername + "/pack" + std::to_string(i) + ".obj";
                 EigenMesh packMesh = packs[i][0];
-                packs[i][0].saveOnObj(foldername.toStdString() + "/p0b0.obj");
+                packs[i][0].saveOnObj(foldername + "/p0b0.obj");
                 for (unsigned int j = 1; j < packs[i].size(); j++){
-                    packs[i][j].saveOnObj(foldername.toStdString() + "/p0b" + std::to_string(j) + ".obj");
+                    packs[i][j].saveOnObj(foldername + "/p0b" + std::to_string(j) + ".obj");
                     packMesh = EigenMesh::merge(packMesh, packs[i][j]);
                 }
                 //packMesh.saveOnObj(pstring.toStdString());
@@ -1576,7 +1557,7 @@ void EngineManager::on_smartPackingPushButton_clicked() {
                 //d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
-                d.saveOnObjFile(pstring.toStdString());
+                d.saveOnObjFile(pstring);
             }
         }
     }
@@ -1896,5 +1877,19 @@ void EngineManager::on_deleteBox2PushButton_clicked() {
     if (b2 != nullptr){
         deleteDrawableObject((b2));
         b2 = nullptr;
+    }
+}
+
+void EngineManager::on_saveShownBlockPushButton_clicked() {
+    if (he != nullptr){
+        int i = ui->heightfieldsSlider->value();
+        he->getHeightfield(i).saveOnObj("Block.obj");
+    }
+}
+
+void EngineManager::on_saveShownBoxPushButton_clicked() {
+    if (solutions != nullptr){
+        int i = ui->solutionsSlider->value();
+        (*solutions)[i].getEigenMesh().saveOnObj("Box.obj");
     }
 }

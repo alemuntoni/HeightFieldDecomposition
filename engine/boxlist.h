@@ -17,7 +17,7 @@ class BoxList : public DrawableObject, public SerializableObject{
         unsigned int size() const;
         Box3D& operator[](unsigned int i);
         const Box3D& operator[](unsigned int i) const;
-        Box3D getBox(unsigned int i) const;
+        const Box3D& getBox(unsigned int i) const;
         const Box3D& find(unsigned int id) const;
         Box3D& find(unsigned int id);
         unsigned int getIndexOf(unsigned int id) const;

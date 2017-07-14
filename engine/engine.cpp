@@ -1858,3 +1858,27 @@ void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
         }
     }
 }
+
+void Engine::tinyFeatureDetection(HeightfieldsList &he, double threshold) {
+    /*for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
+        EigenMesh m = he.getHeightfield(i);
+        Dcel d(m);
+        for (Dcel::Face* f : d.faceIterator()){
+            Vec3 mt = -(he.getTarget(i));
+            if (f->getNormal() == mt){
+                bool hasAdjacentDifferentNormal = false;
+                unsigned int numberAd = 0;
+                for (Dcel::Face* af : f->adjacentFaceIterator()){
+                    if (af->getNormal() != mt){
+                        hasAdjacentDifferentNormal = true;
+                        numberAd = 0;
+                    }
+                }
+
+
+            }
+        }
+
+    }*/
+
+}

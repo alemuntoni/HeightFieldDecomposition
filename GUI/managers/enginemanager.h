@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include <QLabel>
+#include <viewer/utilities/loadersaver.h>
 #include "dcel/gui/dcelmanager.h"
 #include "lib/grid/drawablegrid.h"
 #include "lib/grid/drawableirregulargrid.h"
@@ -212,7 +213,11 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_deleteBox2PushButton_clicked();
 
-    signals:
+        void on_saveShownBlockPushButton_clicked();
+
+        void on_saveShownBoxPushButton_clicked();
+
+signals:
         void finished();
 
     private:
@@ -237,6 +242,10 @@ class EngineManager : public QFrame, public SerializableObject {
         std::list<unsigned int> priorityBoxes;
 
         std::vector<std::pair<unsigned int, unsigned int>> userArcs;
+
+        Viewer::LoaderSaver hdfls;
+        Viewer::LoaderSaver binls;
+        Viewer::LoaderSaver objls;
 };
 
 #endif // ENGINEMANAGER_H

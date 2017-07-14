@@ -136,6 +136,8 @@ int main(int argc, char *argv[]) {
             logFile << tSplitting.delay() << ": Splitting n. " << std::to_string(it) << "\n";
 
             //booleans
+            d.updateFaceNormals();
+            d.updateVertexNormals();
             baseComplex = d;
             he = HeightfieldsList();
             Timer tBooleans("tb");
@@ -163,6 +165,8 @@ int main(int argc, char *argv[]) {
             Reconstruction::reconstruction(d, mapping, original, solutions);
 
             baseComplex = d;
+            d.updateFaceNormals();
+            d.updateVertexNormals();
             he = HeightfieldsList();
             Engine::booleanOperations(he, baseComplex, solutions, false);
             Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
