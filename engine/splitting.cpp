@@ -215,9 +215,7 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
  * @param b3
  * @return the volume of the piece of b1 cutted off by b2
  */
-double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
-    Box3D b4; // the piece of b2 cutted off by b1
-              // -> intersection between b2 and b1
+bool Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
     b3.setColor(b2.getColor());
     b3.setTarget(b2.getTarget());
     Vec3 target = b2.getTarget();
@@ -230,16 +228,14 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
         if (!(b1.max()[t] <= b2.max()[t])) {
             b3.min() = Pointd();
             b3.max() = Pointd();
-            return -1;
+            return false;
         }
         b3.min()[t] = b1.max()[t];
         b3.max()[t] = b2.max()[t];
-        b4.min()[t] = b2.min()[t];
-        b4.max()[t] = b1.max()[t];
         for (unsigned u = 0; u < 3; u++){
             if (u != t){
-                b3.min()[u] = b4.min()[u] = std::max(b1.min()[u], b2.min()[u]);
-                b3.max()[u] = b4.max()[u] = std::min(b1.max()[u], b2.max()[u]);
+                b3.min()[u] = std::max(b1.min()[u], b2.min()[u]);
+                b3.max()[u] = std::min(b1.max()[u], b2.max()[u]);
                 assert(b3.min()[u] <= b3.max()[u]);
             }
         }
@@ -249,21 +245,19 @@ double Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
         if (!(b1.min()[i] >= b2.min()[i])) {
             b3.min() = Pointd();
             b3.max() = Pointd();
-            return -1;
+            return false;
         }
         b3.min()[i] = b2.min()[i];
         b3.max()[i] = b1.min()[i];
-        b4.min()[i] = b1.min()[i];
-        b4.max()[i] = b2.max()[i];
         for (unsigned int u = 0; u < 3; u++){
             if (u != i){
-                b3.min()[u] = b4.min()[u] = std::max(b1.min()[u], b2.min()[u]);
-                b3.max()[u] = b4.max()[u] = std::min(b1.max()[u], b2.max()[u]);
+                b3.min()[u] = std::max(b1.min()[u], b2.min()[u]);
+                b3.max()[u] = std::min(b1.max()[u], b2.max()[u]);
                 assert(b3.min()[u] <= b3.max()[u]);
             }
         }
     }
-    return b4.getVolume();
+    return true;
 }
 
 void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
@@ -323,7 +317,7 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
 }
 
 
-int Splitting::minimumSplit(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree){
+int Splitting::getMinTrianglesCoveredIfBoxesSplitted(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree){
 
     Box3D b3;
     getSplits(b1, b2, b3);
@@ -336,16 +330,6 @@ int Splitting::minimumSplit(const Box3D &b1, const Box3D &b2, const CGALInterfac
     }
     int min = std::min(b3t.size(), b2t.size());
     return min;
-
-    //b4 is the piece cutted by b1 on b2, therefore oldb2 = newB2 + b3 + b4
-    /*double volumeb4 = getSplits(b1, b2, b3);
-    double volumeb2 = b2.getVolume();
-    double volumeb3 = b3.getVolume();
-    double newVolumeb2 = volumeb2 - volumeb3 - volumeb4;
-    assert (newVolumeb2 >= 0);
-    //return std::min(newVolumeb2, volumeb3);
-    double tmp = std::min(b3.getLengthX(), b3.getLengthY());
-    return std::min(tmp, b3.getLengthZ());*/
 }
 
 std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const CGALInterface::AABBTree& aabb, bool completely) {
@@ -432,12 +416,12 @@ std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vecto
             for (unsigned int i = 0; i < candidateArcs.size(); i++) {
                 std::pair<unsigned int, unsigned int> arc = candidateArcs[i];
                 if (std::find(userArcs.begin(), userArcs.end(), arc) == userArcs.end()){
-                    int tmp = minimumSplit(bl.find(arc.first), bl.find(arc.second), tree);
+                    int tmp = getMinTrianglesCoveredIfBoxesSplitted(bl.find(arc.first), bl.find(arc.second), tree);
                     if (tmp >= nTrimax){
                         nTrimax = tmp;
                         maxarc = i;
                     }
-                    tmp = minimumSplit(bl.find(arc.second), bl.find(arc.first), tree);
+                    tmp = getMinTrianglesCoveredIfBoxesSplitted(bl.find(arc.second), bl.find(arc.first), tree);
                     if (tmp >= nTrimax){
                         nTrimax = tmp;
                         maxarc = i;

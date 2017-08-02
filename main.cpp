@@ -56,13 +56,8 @@ int main(int argc, char *argv[]) {
             smoothed = false;
         }
 
-        //scaling meshes
+        //precision and kernel
         double precision = std::stod(argv[2]);
-        BoundingBox bb= d.getBoundingBox();
-        Engine::scaleAndRotateDcel(d, 0, precision);
-        original.scale(bb, d.getBoundingBox());
-
-        //kernel
         double kernelDistance = std::stod(argv[3]);
 
         //creating folder
@@ -73,8 +68,15 @@ int main(int argc, char *argv[]) {
         std::ofstream logFile;
         logFile.open(foldername + "log.txt");
 
+        //scaling meshes
+        BoundingBox bb= d.getBoundingBox();
+        Engine::scaleAndRotateDcel(d, 0, precision);
+        original.scale(bb, d.getBoundingBox());
+
+
+
         //optimal orientation
-        Engine::findOptimalOrientation(d, original);
+        //Engine::findOptimalOrientation(d, original);
         d.updateFaceNormals();
         d.updateVertexNormals();
         d.saveOnObjFile(foldername + rawname + "r_smooth.obj");

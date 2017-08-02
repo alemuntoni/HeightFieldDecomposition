@@ -12,7 +12,7 @@
 #include <eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include "engine/orientation.h"
 #include <lib/graph/bipartitegraph.h>
-#include <engine/greedysubdivision.h>
+#include <engine/tinyfeaturedetection.h>
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
@@ -304,6 +304,7 @@ void EngineManager::deserializeBC(const std::string& filename) {
     mainWindow.pushObj(baseComplex, "Base Complex");
     mainWindow.pushObj(he, "Heightfields");
     mainWindow.updateGlCanvas();
+    mainWindow.fitScene();
     ui->showAllSolutionsCheckBox->setEnabled(true);
     //he->explode(150);
     solutions->setVisibleBox(0);
@@ -531,6 +532,41 @@ void EngineManager::on_saveObjsButton_clicked() {
         if (foldername != ""){
             d->updateVertexNormals();
             Engine::saveObjs(QString(foldername.c_str()), originalMesh, *d, *baseComplex, *he);
+
+            //smart packing
+            HeightfieldsList myHe = *he;
+            Packing::rotateAllPieces(myHe);
+            BoundingBox packSize(Pointd(), Pointd(d->getBoundingBox().getLengthX(), d->getBoundingBox().getLengthX() * (3.0/4.0), d->getBoundingBox().getLengthX() * (10.0/4.0)));
+            BoundingBox limits = packSize;
+            double l = packSize.getMaxY();
+            std::vector< std::vector<EigenMesh> > packs;
+            do {
+                limits.setMaxY(l);
+                double factor;
+                Packing::getMaximum(myHe, limits, factor);
+                Packing::scaleAll(myHe, factor);
+                std::vector< std::vector<std::pair<int, Pointd> > > tmp = Packing::pack(myHe, packSize);
+                packs = Packing::getPacks(tmp, myHe);
+                l -= packSize.getMaxY() / 100;
+            } while (packs.size() > 1);
+            //EigenMeshAlgorithms::makeBox(packSize).saveOnObj(foldername + "/box.obj");
+
+            for (unsigned int i = 0; i < packs.size(); i++){
+                std::string pstring = foldername + "/pack.obj";
+                EigenMesh packMesh = packs[i][0];
+                //packs[i][0].saveOnObj(foldername + "/p0b0.obj");
+                for (unsigned int j = 1; j < packs[i].size(); j++){
+                    //packs[i][j].saveOnObj(foldername + "/p0b" + std::to_string(j) + ".obj");
+                    packMesh = EigenMesh::merge(packMesh, packs[i][j]);
+                }
+                //packMesh.saveOnObj(pstring.toStdString());
+                Dcel d(packMesh);
+                //Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+                //d.rotate(m);
+                d.updateFaceNormals();
+                d.updateVertexNormals();
+                d.saveOnObjFile(pstring);
+            }
         }
     }
 }
@@ -923,11 +959,13 @@ void EngineManager::on_showAllSolutionsCheckBox_stateChanged(int arg1) {
 }
 
 void EngineManager::on_solutionsSlider_valueChanged(int value) {
-    if (ui->solutionsSlider->isEnabled() && value >= 0){
-        solutions->setVisibleBox(value);
-        ui->setFromSolutionSpinBox->setValue(value);
-        ui->solutionNumberLabel->setText(QString::number((*solutions)[value].getId()));
-        mainWindow.updateGlCanvas();
+    if (solutions != nullptr){
+        if (ui->solutionsSlider->isEnabled() && value >= 0){
+            solutions->setVisibleBox(value);
+            ui->setFromSolutionSpinBox->setValue(value);
+            ui->solutionNumberLabel->setText(QString::number((*solutions)[value].getId()));
+            mainWindow.updateGlCanvas();
+        }
     }
 }
 
@@ -1232,7 +1270,13 @@ void EngineManager::on_serializeBCPushButton_clicked() {
 
 void EngineManager::on_deserializeBCPushButton_clicked() {
     std::string fn = hdfls.loadDialog();
-    if (fn != "") deserializeBC(fn);
+    if (fn != "") {
+        deserializeBC(fn);
+        mainWindow.setObjVisibility(d, false);
+        mainWindow.setObjVisibility(&originalMesh, false);
+        mainWindow.setObjVisibility(solutions, false);
+        mainWindow.setObjVisibility(baseComplex, false);
+    }
 }
 
 void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
@@ -1567,7 +1611,7 @@ void EngineManager::on_smartPackingPushButton_clicked() {
 void EngineManager::on_reconstructionPushButton_clicked() {
     if (d != nullptr && he != nullptr){
         std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(*d, *he);
-        Reconstruction::reconstruction(*d, mapping, originalMesh, *solutions);
+        Reconstruction::reconstruction(*d, mapping, originalMesh, *solutions, ui->internToHFCheckBox->isChecked());
         d->update();
         mainWindow.updateGlCanvas();
     }
@@ -1786,12 +1830,25 @@ void EngineManager::on_globalOptimalOrientationPushButton_clicked() {
 }
 
 void EngineManager::on_experimentButton_clicked() {
-    /*std::vector<unsigned int> triangles(d->getNumberFaces(), 0);
-    for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
-        for (unsigned int t : (*solutions)[i].getTrianglesCovered()){
-            triangles[t]++;
+    if (he != nullptr && d != nullptr){
+        /*double threshold = d->getBoundingBox().diag() / 10000;
+        #pragma omp parallel for
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            he->getHeightfield(i).removeDegenerateTriangles();
+            std::vector<unsigned int> pf = TinyFeatureDetection::sdf(he->getHeightfield(i), threshold);
+            TinyFeatureDetection::colorSDF(he->getHeightfield(i), pf);
+        }*/
+
+        double threshold = d->getAverageHalfEdgesLength()*10;
+        #pragma omp parallel for
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            if(TinyFeatureDetection::tinyFeatureVoxelization(he->getHeightfield(i), he->getTarget(i), threshold)){
+                he->getHeightfield(i).setFaceColor(Color(255,0,0));
+            }
+
         }
-    }*/
+        mainWindow.updateGlCanvas();
+    }
 
 }
 
@@ -1861,7 +1918,7 @@ void EngineManager::on_deleteBlockPushButton_clicked() {
 
 void EngineManager::on_sdfPushButton_clicked() {
     if (d != nullptr && he != nullptr){
-        ;
+        Engine::tinyFeatureDetection(*he, d->getBoundingBox().diag()/10);
     }
     mainWindow.updateGlCanvas();
 }
@@ -1891,5 +1948,20 @@ void EngineManager::on_saveShownBoxPushButton_clicked() {
     if (solutions != nullptr){
         int i = ui->solutionsSlider->value();
         (*solutions)[i].getEigenMesh().saveOnObj("Box.obj");
+    }
+}
+
+void EngineManager::on_rotatePushButton_clicked() {
+    if (he != nullptr && d != nullptr && baseComplex != nullptr){
+        Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(ui->xvSpinBox->value(),ui->yvSpinBox->value(),ui->zvSpinBox->value()), (ui->angleSpinBox->value()*M_PI)/180);
+        he->rotate(m);
+        d->rotate(m);
+        d->updateFaceNormals();
+        d->updateVertexNormals();
+        d->updateBoundingBox();
+        originalMesh.rotate(m);
+        originalMesh.updateFacesAndVerticesNormals();
+        baseComplex->rotate(m);
+        mainWindow.updateGlCanvas();
     }
 }

@@ -76,7 +76,10 @@ void Packing::scaleAll(HeightfieldsList& he, double factor) {
     }
 }
 
-std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const HeightfieldsList& he, const BoundingBox &packSize) {
+std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const HeightfieldsList& he, const BoundingBox &packSize, int distance) {
+    if (distance <= 0){
+        distance = std::min(packSize.getLengthX(), packSize.getLengthY()) / 2;
+    }
     std::vector< std::vector<std::pair<int, Pointd> > > packs;
     std::set<unsigned int> piecesToPack;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++)
@@ -93,15 +96,15 @@ std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const Heightfi
         for(int i : piecesToPack) {
 
             // random size for this content
-            int width  = he.getHeightfield(i).getBoundingBox().getLengthX()*10 + 30;
-            int height = he.getHeightfield(i).getBoundingBox().getLengthY()*10 + 30;
+            int width  = he.getHeightfield(i).getBoundingBox().getLengthX()*10 + distance;
+            int height = he.getHeightfield(i).getBoundingBox().getLengthY()*10 + distance;
 
             // whatever data you want to associate with this content
 
             int mycontent= i;
 
             // Add it
-            inputContent += BinPack2D::Content<int>(mycontent, BinPack2D::Coord(), BinPack2D::Size(width, height), false );
+            inputContent += BinPack2D::Content<int>(mycontent, BinPack2D::Coord(), BinPack2D::Size(width, height), false);
         }
 
         // Sort the input content by size... usually packs better.

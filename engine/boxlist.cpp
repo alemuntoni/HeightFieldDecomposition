@@ -38,9 +38,8 @@ const Box3D& BoxList::operator[](unsigned int i) const {
 }
 
 const Box3D &BoxList::getBox(unsigned int i) const {
-    if (i < boxes.size())
-        return (boxes[i]);
-    return Box3D();
+    assert (i < boxes.size());
+    return (boxes[i]);
 }
 
 const Box3D& BoxList::find(unsigned int id) const {
@@ -259,11 +258,21 @@ void BoxList::draw() const {
 }
 
 Pointd BoxList::sceneCenter() const {
-    return std::move(Pointd());
+    BoundingBox bb(Pointd(-1,-1,-1), Pointd(1,1,1));
+    for (unsigned int i = 0; i < boxes.size(); i++){
+        bb.min() = bb.min().min(boxes[i].min());
+        bb.max() = bb.max().max(boxes[i].max());
+    }
+    return bb.center();
 }
 
 double BoxList::sceneRadius() const {
-    return -1;
+    BoundingBox bb(Pointd(-1,-1,-1), Pointd(1,1,1));
+    for (unsigned int i = 0; i < boxes.size(); i++){
+        bb.min() = bb.min().min(boxes[i].min());
+        bb.max() = bb.max().max(boxes[i].max());
+    }
+    return bb.diag() / 2;
 }
 
 bool BoxList::isVisible() const {

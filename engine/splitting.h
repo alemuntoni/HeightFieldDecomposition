@@ -21,11 +21,11 @@ namespace Splitting {
 
     bool isDangerousIntersection(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree, bool checkMeshes = false);
 
-    double getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3);
+    bool getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3);
 
     void splitBox(const Box3D &b1, Box3D& b2, Box3D& b3, double subd = -1);
 
-    int minimumSplit(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree);
+    int getMinTrianglesCoveredIfBoxesSplitted(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree);
 
     std::set<unsigned int> getTrianglesCovered(const Box3D& b, const CGALInterface::AABBTree &aabb, bool completely = true);
 

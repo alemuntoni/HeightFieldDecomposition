@@ -971,7 +971,7 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
 
 void Engine::boxPostProcessing(BoxList& solutions, const Dcel& d) {
     CGALInterface::AABBTree tree(d);
-    for (int bi = solutions.getNumberBoxes(); bi >= 0; bi--) {
+    for (int bi = solutions.getNumberBoxes()-1; bi >= 0; bi--) {
         Box3D b = solutions.getBox(bi);
         std::list<const Dcel::Face*> list = tree.getContainedDcelFaces(b);
         std::vector<std::set<const Dcel::Face*> > connectedComponents = DcelAlgorithms::getConnectedComponents(list.begin(), list.end());
@@ -1066,7 +1066,10 @@ void Engine::stupidSnapping(const Dcel& d, BoxList& solutions, double epsilon) {
             Box3D b2 = solutions.getBox(j);
             for (unsigned int coord = 0; coord < 3; coord++) {
                 if (std::abs(b1(coord)-b2(coord)) < epsilon) {
-                    b2(coord) = b1(coord);
+                    if (b1(coord) < b2(coord))
+                        b2(coord) = b1(coord);
+                    else
+                        b1(coord) = b2(coord);
                 }
                 if (std::abs(b1(coord)-b2(coord+3)) < epsilon){
                     b2(coord+3) = b1(coord);
@@ -1075,7 +1078,10 @@ void Engine::stupidSnapping(const Dcel& d, BoxList& solutions, double epsilon) {
                     b2(coord) = b1(coord+3);
                 }
                 if (std::abs(b1(coord+3)-b2(coord+3)) < epsilon){
-                    b2(coord+3) = b1(coord+3);
+                    if (b1(coord+3) > b2(coord+3))
+                        b2(coord+3) = b1(coord+3);
+                    else
+                        b1(coord+3) = b2(coord+3);
                 }
             }
             solutions.setBox(j, b2);
@@ -1145,6 +1151,7 @@ void Engine::smartSnapping(const Dcel& d, BoxList& solutions) {
             trianglesCovered[j]++;
         }
     }
+    // priority first to dangeorus intersections
     for (unsigned int i = 0; i < solutions.getNumberBoxes()-1; i++){
         Box3D b1 = solutions.getBox(i);
         for (unsigned int j = i+1; j < solutions.getNumberBoxes(); j++){
@@ -1165,6 +1172,23 @@ void Engine::smartSnapping(const Dcel& d, BoxList& solutions) {
         }
     }
     //
+    for (unsigned int i = 0; i < solutions.getNumberBoxes()-1; i++){
+        Box3D b1 = solutions.getBox(i);
+        for (unsigned int j = i+1; j < solutions.getNumberBoxes(); j++){
+            Box3D b2 = solutions.getBox(j);
+            if (Splitting::boxesIntersect(b1,b2)){
+                // no dangerous intersection
+                    if (Engine::smartSnapping(b1, b2, trianglesCovered, tree)){
+                        //std::cerr << "Smart snapping " << j << " in " << i << "\n";
+                        solutions.setBox(j, b2);
+                    }
+                    else if (Engine::smartSnapping(b2, b1, trianglesCovered, tree)){
+                        //std::cerr << "Smart snapping " << i << " in " << j << "\n";
+                        solutions.setBox(i, b1);
+                    }
+            }
+        }
+    }
 
     solutions.generatePieces();
     solutions.calculateTrianglesCovered(tree);
@@ -1181,76 +1205,83 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
         }
     }
     for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
-        for (unsigned int j = 0; j < solutions.getNumberBoxes() && j != i; j++){
-            if (solutions[i].getTarget() == solutions[j].getTarget() &&  Splitting::boxesIntersect(solutions[i], solutions[j])){
-                //std::cerr << "Boxes " << i << " and " << j << " may be merged. \n";
+        for (unsigned int j = 0; j < solutions.getNumberBoxes(); j++){
+            std::cerr << "i: " << i << "; j : " << j << "\n";
+            if (i != j){
                 Box3D& a = solutions[i];
                 Box3D& b = solutions[j];
-                int t = indexOfNormal(solutions[i].getTarget());
-                assert(t >= 0);
-                double baseA = a.getBaseLevel(), baseB = b.getBaseLevel();
-                if (baseA <= baseB){
-                    if (baseA != baseB){
-                        if (t < 3){
-                            //x, y, z
-                            Box3D tmpa = a;
-                            tmpa.setBaseLevel(baseB);
-                            std::list<unsigned int> newTrianglesA;
-                            tree.getCompletelyContainedDcelFaces(newTrianglesA, tmpa);
-                            std::set<unsigned int> nonCoveredTrianglesA(newTrianglesA.begin(), newTrianglesA.end());
-                            nonCoveredTrianglesA = Common::setDifference(a.getTrianglesCovered(), nonCoveredTrianglesA);
-                            bool shrink = true;
-                            for (unsigned int t : nonCoveredTrianglesA){
-                                if (trianglesCovered[t] == 1)
-                                    shrink = false;
-                            }
-                            if (shrink){
+                if (solutions[i].getTarget() == solutions[j].getTarget() &&  Splitting::boxesIntersect(solutions[i], solutions[j])){
+                    std::cerr << "Boxes " << i << " and " << j << " may be merged. \n";
+                    int t = indexOfNormal(solutions[i].getTarget());
+                    assert(t >= 0);
+                    double baseA = a.getBaseLevel(), baseB = b.getBaseLevel();
+                    if (baseA <= baseB){
+                        if (baseA != baseB){
+                            if (t < 3){
+                                //x, y, z
+                                Box3D tmpa = a;
+                                tmpa.setBaseLevel(baseB);
+                                std::list<unsigned int> newTrianglesA;
+                                tree.getCompletelyContainedDcelFaces(newTrianglesA, tmpa);
+                                std::set<unsigned int> nonCoveredTrianglesA(newTrianglesA.begin(), newTrianglesA.end());
+                                nonCoveredTrianglesA = Common::setDifference(a.getTrianglesCovered(), nonCoveredTrianglesA);
+                                bool shrink = true;
                                 for (unsigned int t : nonCoveredTrianglesA){
-                                    trianglesCovered[t]--;
+                                    if (trianglesCovered[t] == 1)
+                                        shrink = false;
                                 }
-                                a.setBaseLevel(baseB);
-                                a.setTrianglesCovered(std::set<unsigned int>(newTrianglesA.begin(), newTrianglesA.end()));
-                                std::cerr << "Box " << i << " shrinked to level of Box " << j << "\n";
+                                if (shrink){
+                                    for (unsigned int t : nonCoveredTrianglesA){
+                                        trianglesCovered[t]--;
+                                    }
+                                    a.setBaseLevel(baseB);
+                                    a.setTrianglesCovered(std::set<unsigned int>(newTrianglesA.begin(), newTrianglesA.end()));
+                                    std::cerr << "Box " << i << " shrinked to level of Box " << j << "\n";
 
-                                SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
-                                a.setEigenMesh(u);
-                                a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
-                                a.setMin(u.getBoundingBox().min());
-                                a.setMax(u.getBoundingBox().max());
-                                solutions[i].setSplitted(true);
-                                solutions.removeBox(j);
-                                j--;
+                                    SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
+                                    a.setEigenMesh(u);
+                                    a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                    a.setMin(u.getBoundingBox().min());
+                                    a.setMax(u.getBoundingBox().max());
+                                    solutions[i].setSplitted(true);
+                                    solutions.removeBox(j);
+                                    if (i > j)
+                                        i--;
+                                    j--;
+                                }
                             }
-                        }
-                        else {
-                            //-x, -y, -z
-                            Box3D tmpb = b;
-                            tmpb.setBaseLevel(baseA);
-                            std::list<unsigned int> newTrianglesB;
-                            tree.getCompletelyContainedDcelFaces(newTrianglesB, tmpb);
-                            std::set<unsigned int> nonCoveredTrianglesB(newTrianglesB.begin(), newTrianglesB.end());
-                            nonCoveredTrianglesB = Common::setDifference(b.getTrianglesCovered(), nonCoveredTrianglesB);
-                            bool shrink = true;
-                            for (unsigned int t : nonCoveredTrianglesB){
-                                if (trianglesCovered[t] == 1)
-                                    shrink = false;
-                            }
-                            if (shrink){
+                            else {
+                                //-x, -y, -z
+                                Box3D tmpb = b;
+                                tmpb.setBaseLevel(baseA);
+                                std::list<unsigned int> newTrianglesB;
+                                tree.getCompletelyContainedDcelFaces(newTrianglesB, tmpb);
+                                std::set<unsigned int> nonCoveredTrianglesB(newTrianglesB.begin(), newTrianglesB.end());
+                                nonCoveredTrianglesB = Common::setDifference(b.getTrianglesCovered(), nonCoveredTrianglesB);
+                                bool shrink = true;
                                 for (unsigned int t : nonCoveredTrianglesB){
-                                    trianglesCovered[t]--;
+                                    if (trianglesCovered[t] == 1)
+                                        shrink = false;
                                 }
-                                b.setBaseLevel(baseA);
-                                b.setTrianglesCovered(std::set<unsigned int>(newTrianglesB.begin(), newTrianglesB.end()));
-                                std::cerr << "Box " << j << " shrinked to level of Box " << i << "\n";
+                                if (shrink){
+                                    for (unsigned int t : nonCoveredTrianglesB){
+                                        trianglesCovered[t]--;
+                                    }
+                                    b.setBaseLevel(baseA);
+                                    b.setTrianglesCovered(std::set<unsigned int>(newTrianglesB.begin(), newTrianglesB.end()));
+                                    std::cerr << "Box " << j << " shrinked to level of Box " << i << "\n";
 
-                                SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
-                                a.setEigenMesh(u);
-                                a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
-                                a.setMin(u.getBoundingBox().min());
-                                a.setMax(u.getBoundingBox().max());
-                                solutions[i].setSplitted(true);
-                                solutions.removeBox(j);
-                                j--;
+                                    SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
+                                    a.setEigenMesh(u);
+                                    a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                    a.setMin(u.getBoundingBox().min());
+                                    a.setMax(u.getBoundingBox().max());
+                                    solutions[i].setSplitted(true);
+                                    solutions.removeBox(j);
+                                    if (i > j)
+                                        i--;
+                                    j--;
+                                }
                             }
                         }
                     }
@@ -1483,97 +1514,6 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
 
 }
 
-/*void Engine::largeScaleFabrication(const Dcel& input, double kernelDistance, bool heightfields) {
-    Dcel scaled[ORIENTATIONS];
-    Eigen::Matrix3d m[ORIENTATIONS];
-    std::vector< std::tuple<int, Box3D, std::vector<bool> > > allVectorTriples;
-    BoxList allBoxes;
-    for (unsigned int i = 0; i < ORIENTATIONS; i++){
-        scaled[i] = input;
-        m[i] = scaleAndRotateDcel(scaled[i], i);
-    }
-    if (!heightfields){
-        Grid g[ORIENTATIONS];
-        BoxList bl[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            generateGrid(g[i], scaled[i], kernelDistance);
-            calculateInitialBoxes(bl[i],scaled[i], m[i], false);
-            expandBoxes(bl[i], g[i]);
-
-            //Salvataggio
-            std::stringstream ss;
-            ss << "Engine" << i << ".bin";
-            std::ofstream myfile;
-            myfile.open (ss.str(), std::ios::out | std::ios::binary);
-            serializeAsEngineManager(myfile, g[i], scaled[i], bl[i]);
-            myfile.close();
-        }
-
-        std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            allBoxes.insert(bl[i]);
-            createVectorTriples(vectorTriples[i], bl[i], scaled[i]);
-            allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i].begin(), vectorTriples[i].end());
-        }
-
-        deleteBoxesOld(allBoxes, allVectorTriples, input.getNumberFaces());
-
-        std::ofstream myfile;
-        myfile.open ("allSolutions.bin", std::ios::out | std::ios::binary);
-        allBoxes.serialize(myfile);
-        myfile.close();
-
-
-        myfile.open ("engineManagerAllSolutions.bin", std::ios::out | std::ios::binary);
-        serializeAsEngineManager(myfile, g[0], scaled[0], allBoxes);
-        myfile.close();
-
-
-    }
-    else {
-        Grid g[ORIENTATIONS][TARGETS];
-        BoxList bl[ORIENTATIONS][TARGETS];
-        for (unsigned int i = 0; i < ORIENTATIONS; ++i){
-            for (unsigned j = 0; j < TARGETS; ++j){
-                generateGrid(g[i][j], scaled[i], kernelDistance, true, XYZ[j]);
-                calculateInitialBoxes(bl[i][j],scaled[i], m[i], true, XYZ[j]);
-                expandBoxes(bl[i][j], g[i][j]);
-
-                //Salvataggio
-                std::stringstream ss;
-                ss << "Engine" << i << "Target" << j<<".bin";
-                std::ofstream myfile;
-                myfile.open (ss.str(), std::ios::out | std::ios::binary);
-                serializeAsEngineManager(myfile, g[i][j], scaled[i], bl[i][j]);
-                myfile.close();
-            }
-        }
-
-        std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples[ORIENTATIONS][TARGETS];
-        for (unsigned int i = 0; i < ORIENTATIONS; i++){
-            for (unsigned int j = 0; j < TARGETS; ++j){
-                allBoxes.insert(bl[i][j]);
-                createVectorTriples(vectorTriples[i][j], bl[i][j], scaled[i]);
-                allVectorTriples.insert(allVectorTriples.end(), vectorTriples[i][j].begin(), vectorTriples[i][j].end());
-            }
-        }
-
-        deleteBoxesOld(allBoxes, allVectorTriples, input.getNumberFaces());
-
-        std::ofstream myfile;
-        myfile.open ("allSolutions.bin", std::ios::out | std::ios::binary);
-        allBoxes.serialize(myfile);
-        myfile.close();
-
-
-        myfile.open ("engineManagerAllSolutions.bin", std::ios::out | std::ios::binary);
-        serializeAsEngineManager(myfile, g[0][0], scaled[0], allBoxes);
-        myfile.close();
-
-    }
-
-}*/
-
 SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d) {
     CGALInterface::AABBTree tree(d, true);
     std::set< std::pair<Pointd, Pointd> > edges;
@@ -1785,7 +1725,7 @@ void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
     CGALInterface::AABBTree tree(d);
     std::array<Color, 10> colors;
     colors[0] = Color(182, 215, 168); //
-    colors[1] = Color(159, 197, 232); //
+    colors[1] = Color(198, 178, 219); //
     colors[2] = Color(234, 153, 153); //
     colors[3] = Color(255, 229, 153); //
     colors[4] = Color(162, 196, 201); //
@@ -1859,26 +1799,64 @@ void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
     }
 }
 
+bool Engine::isTinyFeature(const EigenMesh &m, double threshold) {
+    if (m.getBoundingBox().diag() < threshold)
+        return true;
+    return false;
+}
+
 void Engine::tinyFeatureDetection(HeightfieldsList &he, double threshold) {
     /*for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         EigenMesh m = he.getHeightfield(i);
         Dcel d(m);
-        for (Dcel::Face* f : d.faceIterator()){
-            Vec3 mt = -(he.getTarget(i));
-            if (f->getNormal() == mt){
-                bool hasAdjacentDifferentNormal = false;
-                unsigned int numberAd = 0;
-                for (Dcel::Face* af : f->adjacentFaceIterator()){
-                    if (af->getNormal() != mt){
-                        hasAdjacentDifferentNormal = true;
-                        numberAd = 0;
+        Vec3 target = he.getTarget(i);
+        unsigned int idir = indexOfNormal(target);
+        idir = idir > 2 ? idir-3 : idir;
+
+        std::map<Point2Dd, std::pair<double, double> > edges;
+        std::map<Point2Dd, const Dcel::HalfEdge*> mapping;
+
+
+        for (const Dcel::HalfEdge* he : d.halfEdgeIterator()){
+            Vec3 dir (he->getToVertex()->getCoordinate() - he->getFromVertex()->getCoordinate());
+            dir.normalize();
+            if (Common::epsilonEqual(target, dir) || Common::epsilonEqual(-target, dir)){
+                Point2Dd hfcoord;
+                unsigned int j = 0;
+                for (unsigned int i = 0; i < 3; i++){
+                    if (i != idir){
+                        hfcoord[j] = he->getToVertex()->getCoordinate()[i];
+                        j++;
                     }
                 }
-
-
+                std::map<Point2Dd, std::pair<double, double> >::iterator mit = edges.find(hfcoord);
+                if (mit == edges.end()){ // does not exist on the map, we create the edge
+                    std::pair<double, double> p;
+                    p.first = std::min(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir]);
+                    p.second = std::max(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir]);
+                    edges[hfcoord] = p;
+                    mapping[hfcoord] = he;
+                }
+                else {
+                    std::pair<double, double> p = edges[hfcoord];
+                    bool mod = false;
+                    if (p.first  > std::min(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir])){
+                        p.first = std::min(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir]);
+                        mod = true;
+                    }
+                    if (p.second  < std::max(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir])){
+                        p.second = std::max(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir]);
+                        mod = true;
+                    }
+                    if (mod)
+                        edges[hfcoord] = p;
+                }
             }
         }
-
     }*/
-
+    for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
+        if (Engine::isTinyFeature(he.getHeightfield(i), threshold)){
+            he.getHeightfield(i).setFaceColor(Color(255,0,0));
+        }
+    }
 }

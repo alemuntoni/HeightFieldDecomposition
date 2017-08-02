@@ -18,11 +18,21 @@ void HeightfieldsList::draw() const {
 }
 
 Pointd HeightfieldsList::sceneCenter() const{
-    return std::move(Pointd());
+    BoundingBox bb(Pointd(-1,-1,-1), Pointd(1,1,1));
+    for (unsigned int i = 0; i < heightfields.size(); i++){
+        bb.min() = bb.min().min(heightfields[i].getBoundingBox().min());
+        bb.max() = bb.max().max(heightfields[i].getBoundingBox().max());
+    }
+    return bb.center();
 }
 
 double HeightfieldsList::sceneRadius() const {
-    return -1;
+    BoundingBox bb(Pointd(-1,-1,-1), Pointd(1,1,1));
+    for (unsigned int i = 0; i < heightfields.size(); i++){
+        bb.min() = bb.min().min(heightfields[i].getBoundingBox().min());
+        bb.max() = bb.max().max(heightfields[i].getBoundingBox().max());
+    }
+    return bb.diag() / 2;
 }
 
 bool HeightfieldsList::isVisible() const {
@@ -97,6 +107,8 @@ void HeightfieldsList::rotate(const Eigen::MatrixXd m) {
     for (unsigned int i = 0; i < heightfields.size(); i++){
         heightfields[i].rotate(m);
         heightfields[i].updateVerticesNormals();
+        targets[i].rotate(m);
+        targets[i].normalize();
     }
 }
 

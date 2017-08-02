@@ -48,7 +48,7 @@ std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothe
                     if (target == XYZ[k]){ // it happens just one time for every target
                         std::pair<int,int> p;
                         p.first = i; //heightfield
-                        p.second = k; //vertex
+                        p.second = k; //target id
                         mapping[v->getId()] = p;
                         referenced++;
                     }
@@ -64,17 +64,19 @@ std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothe
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, const int hf, const int dir, const cinolib::vec3d & vid_new_pos, const BoxList &boxList)
+bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, const int hf, const int dir, const cinolib::vec3d & vid_new_pos, const BoxList &boxList, bool internToHF)
 {
     cinolib::vec3d vertex = m.vertex(vid);
-    if (hf < 0 || ! boxList[hf].isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z()), -0.5))
+    if (hf < 0 || ! boxList[hf].isIntern(Pointd(vertex.x(), vertex.y(), vertex.z())))
         return false;
-    /*if (hf >= 0) {
-        for (int i = 0; i < hf; i++){
-            if (boxList.getBox(i).isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z())))
-                return false;
+    if (internToHF){
+        if (hf >= 0) {
+            for (int i = 0; i < hf; i++){
+                if (boxList.getBox(i).isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z())))
+                    return false;
+            }
         }
-    }*/
+    }
     for(int tid : m.adj_vtx2tri(vid))
     {
         cinolib::vec3d tri[3];
@@ -146,7 +148,8 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
                                            const cinolib::Trimesh          & m_detail,
                                            const std::vector< std::pair<int, int> > & hf_directions,
                                            const BoxList &boxList,
-                                           const int n_iters)
+                                           const int n_iters,
+                                           bool internToHF)
 {
     std::vector<cinolib::vec3d> diff_coords;
     differential_coordinates(m_detail, diff_coords);
@@ -170,7 +173,7 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
 
             // do binary search until the new pos does not violate the hf condition...
             int count = 0;
-            while(!validate_move(m_smooth, vid, hf_directions.at(vid).first, hf_directions.at(vid).second, new_pos, boxList) && ++count<5)
+            while(!validate_move(m_smooth, vid, hf_directions.at(vid).first, hf_directions.at(vid).second, new_pos, boxList, internToHF) && ++count<5)
             {
                 new_pos = 0.5 * (new_pos + m_smooth.vertex(vid));
             }
@@ -197,7 +200,7 @@ Dcel Reconstruction::taubinSmoothing(const Dcel& d, int n_iters, double lambda, 
     return d1;
 }
 
-void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std::pair<int, int>>& mapping, const EigenMesh& originalSurface, const BoxList &bl) {
+void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std::pair<int, int>>& mapping, const EigenMesh& originalSurface, const BoxList &bl, bool internToHF) {
     SimpleEigenMesh tmp(smoothedSurface);
     cinolib::logger.disable();
     cinolib::Trimesh smoothedTrimesh;
@@ -206,7 +209,7 @@ void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std
     MeshConversions::eigenMeshToTrimesh(originalTrimesh, originalSurface);
 
     //restoring
-    restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 400);
+    restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 400, internToHF);
 
     smoothedSurface = SimpleEigenMesh(smoothedTrimesh);
 }

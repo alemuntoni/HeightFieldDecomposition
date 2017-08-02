@@ -23,15 +23,15 @@ namespace Reconstruction {
     std::vector<std::pair<int, int> > getMapping(const Dcel &smoothedSurface, const HeightfieldsList &he);
 
 
-    bool validate_move(const cinolib::Trimesh & m, const int vid, const int hf, const int dir, const cinolib::vec3d & vid_new_pos, const BoxList& boxList);
+    bool validate_move(const cinolib::Trimesh & m, const int vid, const int hf, const int dir, const cinolib::vec3d & vid_new_pos, const BoxList& boxList, bool internToHF);
     void differential_coordinates(const cinolib::Trimesh & m, std::vector<cinolib::vec3d> & diff_coords);
-    void restore_high_frequencies_gauss_seidel(cinolib::Trimesh& m_smooth, const cinolib::Trimesh& m_detail, const std::vector<std::pair<int, int> >& hf_directions, const BoxList& boxList, const int n_iters);
+    void restore_high_frequencies_gauss_seidel(cinolib::Trimesh& m_smooth, const cinolib::Trimesh& m_detail, const std::vector<std::pair<int, int> >& hf_directions, const BoxList& boxList, const int n_iters, bool internToHF);
 
     Dcel taubinSmoothing(const SimpleEigenMesh &m, int n_iters = 10, double lambda = 0.89, const double mu = -0.9);
 
     Dcel taubinSmoothing(const Dcel &d, int n_iters = 10, double lambda = 0.89, const double mu = -0.9);
 
-    void reconstruction(Dcel &smoothedSurface, const std::vector<std::pair<int, int> >& mapping, const EigenMesh& originalSurface, const BoxList& bl);
+    void reconstruction(Dcel &smoothedSurface, const std::vector<std::pair<int, int> >& mapping, const EigenMesh& originalSurface, const BoxList& bl, bool internToHF = false);
 }
 
 #endif // RECONSTRUCTION_H

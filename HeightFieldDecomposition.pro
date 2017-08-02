@@ -108,9 +108,9 @@ exists($$(GUROBI_HOME)){
         lib/graph/undirectednode.h \
         lib/graph/bipartitegraphiterators.h \
         lib/graph/directedgraph.h \
-        engine/greedysubdivision.h \
         lib/csgtree/aabbcsgtree.h \
-        lib/octree/octree_node.h
+        lib/octree/octree_node.h \
+        engine/tinyfeaturedetection.h
 
 
     SOURCES += \
@@ -132,9 +132,9 @@ exists($$(GUROBI_HOME)){
         lib/dcel_segmentation/chart.cpp \
         lib/dcel_segmentation/segmentation_struct.cpp \
         engine/orientation.cpp \
-        engine/greedysubdivision.cpp \
         lib/csgtree/aabbcsgtree.cpp \
-        lib/octree/octree_node.cpp
+        lib/octree/octree_node.cpp \
+        engine/tinyfeaturedetection.cpp
 
     FORMS += \
         GUI/managers/enginemanager.ui
