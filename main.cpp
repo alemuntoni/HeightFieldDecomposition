@@ -22,6 +22,7 @@
 #include <lib/csgtree/aabbcsgtree.h>
 
 #include "engine/reconstruction.h"
+#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
 
 #ifdef SERVER_MODE
 void serializeBeforeBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, double factor, double kernel);
@@ -30,6 +31,7 @@ void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& o
 #endif
 
 int main(int argc, char *argv[]) {
+    EigenMeshAlgorithms::makeCylinder(Pointd(0,0,0), Pointd(10,0,0), 4, 40).saveOnObj("circle.obj");
     #ifdef SERVER_MODE
     if (argc > 3){
         bool smoothed = true;
@@ -61,7 +63,11 @@ int main(int argc, char *argv[]) {
         double kernelDistance = std::stod(argv[3]);
 
         //creating folder
-        std::string foldername = rawname + "_" + Common::toStringWithPrecision(precision) + "_" + Common::toStringWithPrecision(kernelDistance) + "/";
+        std::string foldername = rawname + "_";
+        if (argc == 5){
+            foldername += "noo_";
+        }
+        foldername += Common::toStringWithPrecision(precision) + "_" + Common::toStringWithPrecision(kernelDistance) + "/";
         Common::executeCommand("mkdir " + foldername);
 
         //log
@@ -76,7 +82,9 @@ int main(int argc, char *argv[]) {
 
 
         //optimal orientation
-        //Engine::findOptimalOrientation(d, original);
+        if (argc == 4){
+            Engine::findOptimalOrientation(d, original);
+        }
         d.updateFaceNormals();
         d.updateVertexNormals();
         d.saveOnObjFile(foldername + rawname + "r_smooth.obj");
@@ -250,6 +258,7 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     MainWindow gui;  // finestra principale, contiene la canvas di QGLViewer
+    mw = &gui;
 
     // Creo un window manager e lo aggiungo alla mainwindow
     WindowManager wm(&gui);
@@ -271,9 +280,33 @@ int main(int argc, char *argv[]) {
     EigenMeshManager em(&gui);
     gui.addManager(&em, "EigenMesh Manager");
 
+    if (argc == 2){
+        std::cerr << argv[1] << "\n";
+        std::string filename = argv[1];
+        std::string rawname, extension, path, fn;
+        Common::separateExtensionFromFilename(filename, rawname, extension);
+        Common::separateFilenameFromPath(filename, path, fn);
+        std::cerr << rawname << "; " << extension << "\n";
+        if (extension == ".hfd"){
+            e.deserializeBC(filename);
+            e.setHfdPath(path);
+            e.setBinPath(path);
+        }
+        else if (extension == ".bin"){
+            std::ifstream myfile;
+            myfile.open (filename, std::ios::in | std::ios::binary);
+            e.deserialize(myfile);
+            myfile.close();
+            e.setHfdPath(path);
+            e.setBinPath(path);
+        }
+    }
+
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
     gui.updateGlCanvas();
     gui.show();
+
+
 
 
 

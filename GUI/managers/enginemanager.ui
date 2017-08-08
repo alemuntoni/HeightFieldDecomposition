@@ -64,7 +64,7 @@
         <x>0</x>
         <y>0</y>
         <width>420</width>
-        <height>1173</height>
+        <height>1199</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -815,14 +815,7 @@
                 </property>
                </widget>
               </item>
-              <item row="19" column="0">
-               <widget class="QPushButton" name="markerMeshPushButton">
-                <property name="text">
-                 <string>Marker Mesh</string>
-                </property>
-               </widget>
-              </item>
-              <item row="22" column="1">
+              <item row="26" column="1">
                <widget class="QDoubleSpinBox" name="explodeSpinBox">
                 <property name="minimum">
                  <double>-1000.000000000000000</double>
@@ -835,14 +828,17 @@
                 </property>
                </widget>
               </item>
-              <item row="23" column="0">
+              <item row="27" column="0">
                <widget class="QPushButton" name="putBoxesAfterPushButton">
                 <property name="text">
                  <string>Put Boxes After</string>
                 </property>
                </widget>
               </item>
-              <item row="23" column="1">
+              <item row="15" column="1">
+               <widget class="QSpinBox" name="prioritySpinBox"/>
+              </item>
+              <item row="27" column="1">
                <widget class="QSpinBox" name="coveredTrianglesSpinBox">
                 <property name="maximum">
                  <number>100</number>
@@ -855,9 +851,6 @@
                  <string>0</string>
                 </property>
                </widget>
-              </item>
-              <item row="15" column="1">
-               <widget class="QSpinBox" name="prioritySpinBox"/>
               </item>
               <item row="0" column="0" colspan="2">
                <widget class="Line" name="line_3">
@@ -893,13 +886,6 @@
                 </property>
                </widget>
               </item>
-              <item row="17" column="1">
-               <widget class="QPushButton" name="restoreBoxesPushButton">
-                <property name="text">
-                 <string>Restore Boxes</string>
-                </property>
-               </widget>
-              </item>
               <item row="7" column="1">
                <widget class="QPushButton" name="subtractPushButton">
                 <property name="text">
@@ -931,22 +917,22 @@
                 </property>
                </widget>
               </item>
-              <item row="20" column="0">
+              <item row="11" column="0">
+               <widget class="QSpinBox" name="boxASpinBox"/>
+              </item>
+              <item row="24" column="0">
                <widget class="QPushButton" name="reconstructionPushButton">
                 <property name="text">
                  <string>Restore High Freq</string>
                 </property>
                </widget>
               </item>
-              <item row="22" column="0">
+              <item row="26" column="0">
                <widget class="QPushButton" name="explodePushButton">
                 <property name="text">
                  <string>Explode</string>
                 </property>
                </widget>
-              </item>
-              <item row="11" column="0">
-               <widget class="QSpinBox" name="boxASpinBox"/>
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="label_9">
@@ -954,6 +940,9 @@
                  <string>Solution Manager</string>
                 </property>
                </widget>
+              </item>
+              <item row="11" column="1">
+               <widget class="QSpinBox" name="boxBSpinBox"/>
               </item>
               <item row="6" column="1">
                <widget class="QCheckBox" name="drawBoxMeshCheckBox">
@@ -969,9 +958,6 @@
                 </property>
                </widget>
               </item>
-              <item row="11" column="1">
-               <widget class="QSpinBox" name="boxBSpinBox"/>
-              </item>
               <item row="7" column="0">
                <widget class="QSlider" name="heightfieldsSlider">
                 <property name="orientation">
@@ -979,14 +965,7 @@
                 </property>
                </widget>
               </item>
-              <item row="19" column="1">
-               <widget class="QPushButton" name="stickPushButton">
-                <property name="text">
-                 <string>Stick</string>
-                </property>
-               </widget>
-              </item>
-              <item row="17" column="0">
+              <item row="18" column="0">
                <widget class="QLabel" name="listLabel">
                 <property name="text">
                  <string/>
@@ -1000,15 +979,15 @@
                 </property>
                </widget>
               </item>
+              <item row="28" column="1">
+               <widget class="QSpinBox" name="deleteBlockSpinBox"/>
+              </item>
               <item row="14" column="0" colspan="2">
                <widget class="QLabel" name="userArcsLabel">
                 <property name="text">
                  <string/>
                 </property>
                </widget>
-              </item>
-              <item row="24" column="1">
-               <widget class="QSpinBox" name="deleteBlockSpinBox"/>
               </item>
               <item row="10" column="0">
                <widget class="QLabel" name="label_31">
@@ -1031,49 +1010,125 @@
                 </property>
                </widget>
               </item>
-              <item row="24" column="0">
+              <item row="28" column="0">
                <widget class="QPushButton" name="deleteBlockPushButton">
                 <property name="text">
                  <string>Delete Block</string>
                 </property>
                </widget>
               </item>
-              <item row="21" column="1">
-               <widget class="QPushButton" name="colorPiecesPushButton">
-                <property name="text">
-                 <string>Color Pieces</string>
-                </property>
-               </widget>
-              </item>
-              <item row="21" column="0">
+              <item row="25" column="0">
                <widget class="QPushButton" name="sdfPushButton">
                 <property name="text">
                  <string>Tiny Features</string>
                 </property>
                </widget>
               </item>
-              <item row="26" column="0">
+              <item row="30" column="0">
                <widget class="QPushButton" name="saveShownBoxPushButton">
                 <property name="text">
                  <string>Save Shown Box</string>
                 </property>
                </widget>
               </item>
-              <item row="26" column="1">
+              <item row="30" column="1">
                <widget class="QPushButton" name="saveShownBlockPushButton">
                 <property name="text">
                  <string>Save Shown Block</string>
                 </property>
                </widget>
               </item>
-              <item row="20" column="1">
+              <item row="24" column="1">
                <widget class="QCheckBox" name="internToHFCheckBox">
                 <property name="text">
                  <string>Intern to HF</string>
                 </property>
                </widget>
               </item>
+              <item row="9" column="0">
+               <widget class="QPushButton" name="saveCurrentBlockPushButton">
+                <property name="text">
+                 <string>Save Current Block</string>
+                </property>
+               </widget>
+              </item>
+              <item row="17" column="0">
+               <widget class="QPushButton" name="markerMeshPushButton">
+                <property name="text">
+                 <string>Marker Mesh</string>
+                </property>
+               </widget>
+              </item>
+              <item row="17" column="1">
+               <widget class="QPushButton" name="restoreBoxesPushButton">
+                <property name="text">
+                 <string>Restore Boxes</string>
+                </property>
+               </widget>
+              </item>
+              <item row="19" column="0">
+               <widget class="QPushButton" name="colorPiecesPushButton">
+                <property name="text">
+                 <string>Color Pieces</string>
+                </property>
+               </widget>
+              </item>
+              <item row="19" column="1">
+               <widget class="QPushButton" name="stickPushButton">
+                <property name="text">
+                 <string>Stick</string>
+                </property>
+               </widget>
+              </item>
+              <item row="25" column="1">
+               <widget class="QDoubleSpinBox" name="thresholdTinyFeaturesSpinBox">
+                <property name="value">
+                 <double>2.000000000000000</double>
+                </property>
+               </widget>
+              </item>
              </layout>
+             <zorder>subtractPushButton</zorder>
+             <zorder>pushPriorityBoxButton</zorder>
+             <zorder>snappingPushButton</zorder>
+             <zorder>explodeSpinBox</zorder>
+             <zorder>putBoxesAfterPushButton</zorder>
+             <zorder>prioritySpinBox</zorder>
+             <zorder>coveredTrianglesSpinBox</zorder>
+             <zorder>solutionNumberLabel</zorder>
+             <zorder>line_3</zorder>
+             <zorder>clearPriorityPushButton</zorder>
+             <zorder>solutionsSlider</zorder>
+             <zorder>showAllSolutionsCheckBox</zorder>
+             <zorder>allHeightfieldsCheckBox</zorder>
+             <zorder>label_30</zorder>
+             <zorder>snappingSpinBox</zorder>
+             <zorder>boxASpinBox</zorder>
+             <zorder>reconstructionPushButton</zorder>
+             <zorder>explodePushButton</zorder>
+             <zorder>label_9</zorder>
+             <zorder>boxBSpinBox</zorder>
+             <zorder>drawBoxMeshCheckBox</zorder>
+             <zorder>reorderBoxes</zorder>
+             <zorder>heightfieldsSlider</zorder>
+             <zorder>listLabel</zorder>
+             <zorder>label_32</zorder>
+             <zorder>deleteBlockSpinBox</zorder>
+             <zorder>userArcsLabel</zorder>
+             <zorder>label_31</zorder>
+             <zorder>pushUserArcButton</zorder>
+             <zorder>clearUserArcsPushButton</zorder>
+             <zorder>deleteBlockPushButton</zorder>
+             <zorder>sdfPushButton</zorder>
+             <zorder>saveShownBoxPushButton</zorder>
+             <zorder>saveShownBlockPushButton</zorder>
+             <zorder>internToHFCheckBox</zorder>
+             <zorder>saveCurrentBlockPushButton</zorder>
+             <zorder>markerMeshPushButton</zorder>
+             <zorder>restoreBoxesPushButton</zorder>
+             <zorder>colorPiecesPushButton</zorder>
+             <zorder>stickPushButton</zorder>
+             <zorder>thresholdTinyFeaturesSpinBox</zorder>
             </widget>
            </item>
            <item>

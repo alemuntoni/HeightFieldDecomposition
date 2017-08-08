@@ -106,9 +106,8 @@ namespace Engine {
 
     void colorPieces(const Dcel& d, HeightfieldsList& he);
 
-    bool isTinyFeature(const EigenMesh& m, double threshold);
 
-    void tinyFeatureDetection(HeightfieldsList& he, double threshold);
+    void mergePostProcessing(HeightfieldsList& he, BoxList& solutions);
 }
 
 #endif // ENGINE_H

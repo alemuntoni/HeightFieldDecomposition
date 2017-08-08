@@ -30,7 +30,7 @@ EngineManager::EngineManager(QWidget *parent) :
 
     ui->setupUi(this);
     ui->iterationsSlider->setMaximum(0);
-    hdfls.addSupportedExtension("hfd", "bin");
+    hfdls.addSupportedExtension("hfd", "bin");
 
     binls.addSupportedExtension("bin");
 
@@ -319,6 +319,19 @@ void EngineManager::deserializeBC(const std::string& filename) {
         std::string s = ui->listLabel->text().toStdString();
         ui->listLabel->setText(QString::fromStdString(s + std::to_string(i) + "; "));
     }
+
+    mainWindow.setObjVisibility(d, false);
+    mainWindow.setObjVisibility(&originalMesh, false);
+    mainWindow.setObjVisibility(solutions, false);
+    mainWindow.setObjVisibility(baseComplex, false);
+}
+
+void EngineManager::setBinPath(const std::string &path) {
+    binls.setActualPath(path);
+}
+
+void EngineManager::setHfdPath(const std::string &path) {
+    hfdls.setActualPath(path);
 }
 
 void EngineManager::serialize(std::ofstream& binaryFile) const {
@@ -519,6 +532,7 @@ void EngineManager::on_serializePushButton_clicked() {
 void EngineManager::on_deserializePushButton_clicked() {
     std::string filename = binls.loadDialog();
     if (filename != ""){
+        on_cleanAllPushButton_clicked();
         std::ifstream myfile;
         myfile.open (filename, std::ios::in | std::ios::binary);
         deserialize(myfile);
@@ -1261,7 +1275,7 @@ void EngineManager::on_stickPushButton_clicked() {
 
 void EngineManager::on_serializeBCPushButton_clicked() {
     if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr /*&& entirePieces != nullptr*/){
-        std::string fn = hdfls.saveDialog();
+        std::string fn = hfdls.saveDialog();
         if (fn != "") serializeBC(fn);
 
     }
@@ -1269,13 +1283,10 @@ void EngineManager::on_serializeBCPushButton_clicked() {
 }
 
 void EngineManager::on_deserializeBCPushButton_clicked() {
-    std::string fn = hdfls.loadDialog();
+    std::string fn = hfdls.loadDialog();
     if (fn != "") {
+        on_cleanAllPushButton_clicked();
         deserializeBC(fn);
-        mainWindow.setObjVisibility(d, false);
-        mainWindow.setObjVisibility(&originalMesh, false);
-        mainWindow.setObjVisibility(solutions, false);
-        mainWindow.setObjVisibility(baseComplex, false);
     }
 }
 
@@ -1830,23 +1841,10 @@ void EngineManager::on_globalOptimalOrientationPushButton_clicked() {
 }
 
 void EngineManager::on_experimentButton_clicked() {
-    if (he != nullptr && d != nullptr){
-        /*double threshold = d->getBoundingBox().diag() / 10000;
-        #pragma omp parallel for
-        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            he->getHeightfield(i).removeDegenerateTriangles();
-            std::vector<unsigned int> pf = TinyFeatureDetection::sdf(he->getHeightfield(i), threshold);
-            TinyFeatureDetection::colorSDF(he->getHeightfield(i), pf);
-        }*/
-
-        double threshold = d->getAverageHalfEdgesLength()*10;
-        #pragma omp parallel for
-        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            if(TinyFeatureDetection::tinyFeatureVoxelization(he->getHeightfield(i), he->getTarget(i), threshold)){
-                he->getHeightfield(i).setFaceColor(Color(255,0,0));
-            }
-
-        }
+    if (he != nullptr && solutions != nullptr){
+        Engine::mergePostProcessing(*he, *solutions);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->heightfieldsSlider->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow.updateGlCanvas();
     }
 
@@ -1918,7 +1916,29 @@ void EngineManager::on_deleteBlockPushButton_clicked() {
 
 void EngineManager::on_sdfPushButton_clicked() {
     if (d != nullptr && he != nullptr){
-        Engine::tinyFeatureDetection(*he, d->getBoundingBox().diag()/10);
+        struct op{
+                bool operator()(const std::pair<double, unsigned int>& p1, const std::pair<double, unsigned int>& p2){
+                    return p1.second < p2.second;
+                }
+        };
+        std::vector<std::pair<double, unsigned int> > tinyPieces;
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            EigenMeshAlgorithms::removeDuplicateVertices(he->getHeightfield(i));
+            double mindist;
+            if (TinyFeatureDetection::tinyFeaturePlane(he->getHeightfield(i),he->getTarget(i), d->getAverageHalfEdgesLength()*ui->thresholdTinyFeaturesSpinBox->value(), mindist)){
+                tinyPieces.push_back(std::pair<double, unsigned int>(mindist, i));
+                he->getHeightfield(i).setFaceColor(Color(255,0,0));
+            }
+        }
+        std::sort(tinyPieces.begin(), tinyPieces.end(), op());
+        priorityBoxes.clear();
+        ui->listLabel->setText("");
+        for (std::pair<double, unsigned int> p : tinyPieces){
+            unsigned int id = solutions->getBox(p.second).getId();
+            priorityBoxes.push_back(splittedBoxesToOriginals[id]);
+            std::string s = ui->listLabel->text().toStdString();
+            ui->listLabel->setText(QString::fromStdString(s + (s == "" ? "" : "; ") + std::to_string(id)));
+        }
     }
     mainWindow.updateGlCanvas();
 }
@@ -1963,5 +1983,11 @@ void EngineManager::on_rotatePushButton_clicked() {
         originalMesh.updateFacesAndVerticesNormals();
         baseComplex->rotate(m);
         mainWindow.updateGlCanvas();
+    }
+}
+
+void EngineManager::on_saveCurrentBlockPushButton_clicked() {
+    if (he != nullptr){
+        he->getHeightfield(ui->heightfieldsSlider->value()).saveOnObj("Block.obj");
     }
 }

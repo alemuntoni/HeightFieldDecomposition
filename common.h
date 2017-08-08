@@ -11,6 +11,7 @@
 #include <set>
 #include <Eigen/Core>
 #include <memory>
+#include <viewer/mainwindow.h>
 
 #define BORDER_PAY 5
 #define STD_PAY 0
@@ -43,6 +44,10 @@
 extern int WINDOW_MANAGER_ID;
 extern int DCEL_MANAGER_ID;
 extern int ENGINE_MANAGER_ID;
+
+extern MainWindow* mw;
+
+const int MAX_BFGS_ITERATIONS = 150;
 
 static const std::vector<Vec3> XYZ = {
     Vec3( 1.0f,  0.0f,  0.0f),                         //    +X : label  0

@@ -40,6 +40,9 @@ class EngineManager : public QFrame, public SerializableObject {
         void serializeBC(const std::string& filename);
         void deserializeBC(const std::string& filename);
 
+        void setBinPath(const std::string& path);
+        void setHfdPath(const std::string& path);
+
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
         bool deserialize(std::ifstream& binaryFile);
@@ -219,6 +222,8 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void on_rotatePushButton_clicked();
 
+        void on_saveCurrentBlockPushButton_clicked();
+
 signals:
         void finished();
 
@@ -245,7 +250,7 @@ signals:
 
         std::vector<std::pair<unsigned int, unsigned int>> userArcs;
 
-        Viewer::LoaderSaver hdfls;
+        Viewer::LoaderSaver hfdls;
         Viewer::LoaderSaver binls;
         Viewer::LoaderSaver objls;
 };

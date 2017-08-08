@@ -1,6 +1,7 @@
 #include "energy.h"
 
 #include "common/timer.h"
+#include "common.h"
 
 Energy::Energy() {
 }
@@ -151,7 +152,7 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
             }
             alfa *= 2;
         }
-    }while (alfa > 1e-6 && gradient.norm() > 1e-7 && nIterations < 100);
+    }while (alfa > 1e-6 && gradient.norm() > 1e-7 && nIterations < MAX_BFGS_ITERATIONS);
     b.setMin(Pointd(x(0), x(1), x(2)));
     b.setMax(Pointd(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);

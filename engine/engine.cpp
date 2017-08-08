@@ -1356,11 +1356,11 @@ void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions, 
             Box3D box = solutions.getBox(i);
             Vec3 target = he.getTarget(i);
             EigenMesh em(cc[0]);
-            em.setFaceColor(m.getColor(0));
+            em.setFaceColor(m.getFaceColor(0));
             he.setHeightfield(em, i, false);
             for (unsigned int j = 1; j < cc.size(); j++){
                 em = EigenMesh(cc[j]);
-                em.setFaceColor(m.getColor(0));
+                em.setFaceColor(m.getFaceColor(0));
                 he.insertHeightfield(em, target, i+j, false);
                 solutions.insert(box, i+j);
                 solutions[i+j].setId(lastId+1);
@@ -1514,8 +1514,129 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
 
 }
 
+std::set<unsigned int> chartExpansion(const EigenMesh &hf, unsigned int f, std::vector<bool> &seen) {
+    std::stack<unsigned int> stack;
+    std::set<unsigned int> chart;
+    Vec3 nf = hf.getFaceNormal(f);
+    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
+    stack.push(f);
+    do {
+        f = stack.top();
+        stack.pop();
+        if (!seen[f]){
+            seen[f] = true;
+            chart.insert(f);
+            for (unsigned int ia = 0; ia < 3; ia++){
+                int adj = fadj(f,ia);
+                if (adj >= 0 && hf.getFaceNormal(adj) == nf){
+                    stack.push(adj);
+                }
+            }
+        }
+
+    } while (stack.size() > 0);
+    return chart;
+}
+
+std::vector<Pointd> getPolygonFromChartMarker(const EigenMesh&hf, const CGALInterface::AABBTree& tree, const std::set<unsigned int>& chart){
+    std::vector<std::pair<unsigned int, unsigned int> > segments;
+    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
+    for (unsigned int f : chart){
+        for (unsigned int ia = 0; ia <3; ia++){
+            int adj = fadj(f,ia);
+            if (adj != -1 && chart.find(adj) == chart.end()){
+                std::pair<int, int> p = hf.getCommonVertices(f, (unsigned int)adj);
+                assert(p.first >= 0 && p.second >= 0);
+                segments.push_back(std::pair<unsigned int, unsigned int>(p.first, p.second));
+            }
+        }
+    }
+
+    std::vector<Pointd> polygon;
+    unsigned int first, actual;
+    first = segments[0].first;
+    polygon.push_back(hf.getVertex(first));
+    actual = segments[0].second;
+    do {
+        polygon.push_back(hf.getVertex(actual));
+        bool found = false;
+        for (unsigned int i = 0; i < segments.size() && !found; i++){
+            if (actual == segments[i].first){
+                actual = segments[i].second;
+                found = true;
+            }
+        }
+        assert(found);
+
+    } while (actual != first);
+
+    for (int i = polygon.size()-1; i >= 0; i--){
+        if (tree.getSquaredDistance(polygon[i]) != 0){
+            polygon.erase(polygon.begin() + i);
+        }
+    }
+
+    return polygon;
+}
+
 SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d) {
+
+    SimpleEigenMesh marked;
     CGALInterface::AABBTree tree(d, true);
+
+    for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
+        SimpleEigenMesh hf = he.getHeightfield(i);
+        EigenMeshAlgorithms::removeDuplicateVertices(hf);
+
+        std::vector<bool> seen(hf.getNumberFaces(), false);
+        std::vector< std::set<unsigned int> >charts;
+
+        for (unsigned int f = 0; f < hf.getNumberFaces(); f++) {
+            Vec3 nf = hf.getFaceNormal(f);
+            int idf = indexOfNormal(nf);
+            if (idf != -1){
+                if (!seen[f])
+                    charts.push_back(chartExpansion(hf, f, seen));
+            }
+        }
+
+        for (std::set<unsigned int> &chart: charts){
+            //polygons
+            std::vector<Pointd> pol = getPolygonFromChartMarker(hf, tree, chart);
+            marked.addVertex(pol[0]);
+            unsigned int last = marked.getNumberVertices()-1;
+            unsigned int first = last;
+            for (unsigned int i = 1; i < pol.size(); i++){
+                Pointd p1 = pol[i-1];
+                Pointd p2 = pol[i];
+                Pointd m = (p1+p2)/2;
+                if (tree.getSquaredDistance(m) < 0.5){
+                    marked.addVertex(m);
+                    marked.addVertex(p2);
+                    unsigned int mid = last+1;
+                    unsigned int actual = last+2;
+                    marked.addFace(last, actual, mid);
+                    last = actual;
+                }
+                else {
+                    marked.addVertex(p2);
+                    last++;
+                }
+            }
+            Pointd m = (pol[0] + pol[pol.size()-1]) / 2;
+            if (tree.getSquaredDistance(m) < 0.5){
+                marked.addVertex(m);
+                unsigned int mid = marked.getNumberVertices()-1;
+                marked.addFace(last, first, mid);
+            }
+
+        }
+    }
+
+    return marked;
+
+
+    /*CGALInterface::AABBTree tree(d, true);
     std::set< std::pair<Pointd, Pointd> > edges;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         const EigenMesh& mesh = he.getHeightfield(i);
@@ -1628,7 +1749,7 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
         }
         marked.addFace(v1, v2, v3);
     }
-    return marked;
+    return marked;*/
 }
 
 void Engine::saveObjs(const QString& foldername, const EigenMesh &originalMesh, const Dcel& inputMesh, const EigenMesh &baseComplex, const HeightfieldsList &he) {
@@ -1799,64 +1920,108 @@ void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
     }
 }
 
-bool Engine::isTinyFeature(const EigenMesh &m, double threshold) {
-    if (m.getBoundingBox().diag() < threshold)
-        return true;
-    return false;
-}
-
-void Engine::tinyFeatureDetection(HeightfieldsList &he, double threshold) {
-    /*for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        EigenMesh m = he.getHeightfield(i);
-        Dcel d(m);
-        Vec3 target = he.getTarget(i);
-        unsigned int idir = indexOfNormal(target);
-        idir = idir > 2 ? idir-3 : idir;
-
-        std::map<Point2Dd, std::pair<double, double> > edges;
-        std::map<Point2Dd, const Dcel::HalfEdge*> mapping;
-
-
-        for (const Dcel::HalfEdge* he : d.halfEdgeIterator()){
-            Vec3 dir (he->getToVertex()->getCoordinate() - he->getFromVertex()->getCoordinate());
-            dir.normalize();
-            if (Common::epsilonEqual(target, dir) || Common::epsilonEqual(-target, dir)){
-                Point2Dd hfcoord;
-                unsigned int j = 0;
-                for (unsigned int i = 0; i < 3; i++){
-                    if (i != idir){
-                        hfcoord[j] = he->getToVertex()->getCoordinate()[i];
-                        j++;
-                    }
-                }
-                std::map<Point2Dd, std::pair<double, double> >::iterator mit = edges.find(hfcoord);
-                if (mit == edges.end()){ // does not exist on the map, we create the edge
-                    std::pair<double, double> p;
-                    p.first = std::min(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir]);
-                    p.second = std::max(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir]);
-                    edges[hfcoord] = p;
-                    mapping[hfcoord] = he;
-                }
-                else {
-                    std::pair<double, double> p = edges[hfcoord];
-                    bool mod = false;
-                    if (p.first  > std::min(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir])){
-                        p.first = std::min(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir]);
-                        mod = true;
-                    }
-                    if (p.second  < std::max(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir])){
-                        p.second = std::max(he->getFromVertex()->getCoordinate()[idir], he->getToVertex()->getCoordinate()[idir]);
-                        mod = true;
-                    }
-                    if (mod)
-                        edges[hfcoord] = p;
-                }
+std::vector<Pointd> getPolygonFromChart(const EigenMesh&hf, const std::set<unsigned int>& chart){
+    std::vector<std::pair<unsigned int, unsigned int> > segments;
+    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
+    for (unsigned int f : chart){
+        for (unsigned int ia = 0; ia <3; ia++){
+            int adj = fadj(f,ia);
+            if (adj != -1 && chart.find(adj) == chart.end()){
+                std::pair<int, int> p = hf.getCommonVertices(f, (unsigned int)adj);
+                assert(p.first >= 0 && p.second >= 0);
+                segments.push_back(std::pair<unsigned int, unsigned int>(p.first, p.second));
             }
         }
-    }*/
+    }
+
+    std::vector<Pointd> polygon;
+    unsigned int first, actual;
+    first = segments[0].first;
+    polygon.push_back(hf.getVertex(first));
+    actual = segments[0].second;
+    do {
+        polygon.push_back(hf.getVertex(actual));
+        bool found = false;
+        for (unsigned int i = 0; i < segments.size() && !found; i++){
+            if (actual == segments[i].first){
+                actual = segments[i].second;
+                found = true;
+            }
+        }
+        assert(found);
+
+    } while (actual != first);
+
+
+    return polygon;
+}
+
+std::vector<Pointd> getBasePolygon(const EigenMesh &m, const Vec3& target){
+    std::vector<bool> seen(m.getNumberFaces(), false);
+    std::vector< std::set<unsigned int> >charts;
+
+    for (unsigned int f = 0; f < m.getNumberFaces(); f++) {
+        Vec3 nf = m.getFaceNormal(f);
+        if (nf == -target){
+            if (!seen[f])
+                    charts.push_back(chartExpansion(m, f, seen));
+        }
+    }
+
+    if (charts.size() > 1 || charts.size() == 0)
+        std::cerr << "Maybe there is a problem with the heightfield..\n";
+
+    std::vector<Pointd> polygon;
+    for (std::set<unsigned int> &chart: charts){
+
+        //polygons
+        std::vector<Pointd> p = getPolygonFromChart(m, chart);
+        polygon.insert(polygon.end(), p.begin(), p.end());
+    }
+
+    return polygon;
+
+}
+
+
+void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions){
+    //mw->enableDebugObjects();
+
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        if (Engine::isTinyFeature(he.getHeightfield(i), threshold)){
-            he.getHeightfield(i).setFaceColor(Color(255,0,0));
+        CGALInterface::AABBTree tree(he.getHeightfield(i), true);
+        for (unsigned int j = 0; j < he.getNumHeightfields(); j++){
+            if ( i != j){
+                //can I merge j with i?
+                if (he.getTarget(i) == he.getTarget(j)){
+                    //take all the points of the base of j
+                    EigenMesh m = he.getHeightfield(j);
+                    EigenMeshAlgorithms::removeDuplicateVertices(m);
+                    std::vector<Pointd> base = getBasePolygon(m, he.getTarget(j));
+
+                    //for (unsigned int i = 0; i < base.size(); i++)
+                    //    mw->addDebugLine(base[i], base[(i+1)%base.size()], 7, Color(0,0,0));
+
+                    //and check the distance between every point of the base of j and the surface of i
+                    //if all distances are 0, blocks can be merged
+                    bool same = true;
+                    for (unsigned int i = 0; i < base.size() && same; i++){
+                        double dist = tree.getSquaredDistance(base[i]);
+                        if (dist > 1e-05)
+                            same = false;
+                    }
+                    if (same && base.size() != 0){ //heightfield j can be merged to heightfield i
+                        EigenMesh un = EigenMeshAlgorithms::union_(he.getHeightfield(i), he.getHeightfield(j));
+                        un.setFaceColor(he.getHeightfield(i).getFaceColor(0));
+                        he.setHeightfield(un, i);
+                        he.removeHeightfield(j);
+                        solutions.removeBox(j);
+                        if (i > j)
+                            i--;
+                        j--;
+
+                    }
+                }
+            }
         }
     }
 }
