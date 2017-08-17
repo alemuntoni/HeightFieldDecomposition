@@ -67,12 +67,12 @@ std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothe
 bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, const int hf, const int dir, const cinolib::vec3d & vid_new_pos, const BoxList &boxList, bool internToHF)
 {
     cinolib::vec3d vertex = m.vertex(vid);
-    if (hf < 0 || ! boxList[hf].isIntern(Pointd(vertex.x(), vertex.y(), vertex.z())))
+    if (hf < 0 || ! boxList[hf].isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z()), -1))
         return false;
     if (internToHF){
         if (hf >= 0) {
             for (int i = 0; i < hf; i++){
-                if (boxList.getBox(i).isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z())))
+                if (boxList.getBox(i).isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z()), -0.1))
                     return false;
             }
         }

@@ -203,6 +203,7 @@ void EngineManager::deserializeBC(const std::string& filename) {
         for (unsigned int i = 0; i < originalSolutions.size(); i++)
             originalSolutions[i].setId(i);
     }
+    ui->solutionNumberLabel->setText(QString::fromStdString(std::to_string(he->getNumHeightfields())));
     /*d->saveOnObjFile("boxes/mesh.obj");
     for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
         solutions->getBox(i).saveOnObjFile("boxes/box" + std::to_string(i) + ".obj", solutions->getBox(i).getColor());
@@ -332,6 +333,10 @@ void EngineManager::setBinPath(const std::string &path) {
 
 void EngineManager::setHfdPath(const std::string &path) {
     hfdls.setActualPath(path);
+}
+
+void EngineManager::setObjPath(const std::string &path) {
+    objls.setActualPath(path);
 }
 
 void EngineManager::serialize(std::ofstream& binaryFile) const {
@@ -545,7 +550,7 @@ void EngineManager::on_saveObjsButton_clicked() {
         std::string foldername = objls.directoryDialog();
         if (foldername != ""){
             d->updateVertexNormals();
-            Engine::saveObjs(QString(foldername.c_str()), originalMesh, *d, *baseComplex, *he);
+            Engine::saveObjs(foldername, originalMesh, *d, *baseComplex, *he);
 
             //smart packing
             HeightfieldsList myHe = *he;
@@ -1841,8 +1846,8 @@ void EngineManager::on_globalOptimalOrientationPushButton_clicked() {
 }
 
 void EngineManager::on_experimentButton_clicked() {
-    if (he != nullptr && solutions != nullptr){
-        Engine::mergePostProcessing(*he, *solutions);
+    if (he != nullptr && solutions != nullptr && d != nullptr){
+        Engine::mergePostProcessing(*he, *solutions, *d);
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->heightfieldsSlider->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow.updateGlCanvas();
@@ -1915,7 +1920,7 @@ void EngineManager::on_deleteBlockPushButton_clicked() {
 }
 
 void EngineManager::on_sdfPushButton_clicked() {
-    if (d != nullptr && he != nullptr){
+    if (d != nullptr && he != nullptr && solutions != nullptr){
         struct op{
                 bool operator()(const std::pair<double, unsigned int>& p1, const std::pair<double, unsigned int>& p2){
                     return p1.second < p2.second;
@@ -1926,19 +1931,59 @@ void EngineManager::on_sdfPushButton_clicked() {
             EigenMeshAlgorithms::removeDuplicateVertices(he->getHeightfield(i));
             double mindist;
             if (TinyFeatureDetection::tinyFeaturePlane(he->getHeightfield(i),he->getTarget(i), d->getAverageHalfEdgesLength()*ui->thresholdTinyFeaturesSpinBox->value(), mindist)){
-                tinyPieces.push_back(std::pair<double, unsigned int>(mindist, i));
+                tinyPieces.push_back(std::pair<double, unsigned int>(mindist, solutions->getBox(i).getId()));
                 he->getHeightfield(i).setFaceColor(Color(255,0,0));
             }
         }
+
+        /*if (tinyPieces.size() > 0)
+            QMessageBox::warning(this, "Tiny Pieces", "Number tiny Pieces: " + QString::fromStdString(std::to_string(tinyPieces.size())));*/
+
+        std::cerr << "Tiny Pieces:\n";
+        for (std::pair<double, unsigned int> p :tinyPieces){
+            std::cerr << p.second << "; ";
+        }
+        std::cerr << "\n";
+
         std::sort(tinyPieces.begin(), tinyPieces.end(), op());
+
+        bool inserted = false;
+        for (unsigned int i = 0; i < tinyPieces.size() && !inserted; i++){
+            std::pair<double, unsigned int> p = tinyPieces[i];
+            std::list<unsigned int>::iterator it = std::find(priorityBoxes.begin(), priorityBoxes.end(), splittedBoxesToOriginals.at(p.second));
+            if (it == priorityBoxes.end()){
+                priorityBoxes.push_front(splittedBoxesToOriginals.at(p.second));
+                std::string s = ui->listLabel->text().toStdString();
+                ui->listLabel->setText(QString::fromStdString(std::to_string(splittedBoxesToOriginals.at(p.second)) + "; " + s));
+                inserted = true;
+            }
+        }
+        if (!inserted && tinyPieces.size() > 0)
+            QMessageBox::warning(this, "Tiny Pieces", "It is not possible to avoid Tiny Pieces on this decomposition.");
+
+        /*std::list<unsigned int> old = priorityBoxes;
+
         priorityBoxes.clear();
-        ui->listLabel->setText("");
-        for (std::pair<double, unsigned int> p : tinyPieces){
+
+        for (std::pair<double, unsigned int> p : tinyPieces) {
             unsigned int id = solutions->getBox(p.second).getId();
             priorityBoxes.push_back(splittedBoxesToOriginals[id]);
+        }
+
+        std::list<unsigned int> tmp;
+        for (unsigned int id : old) {
+            std::list<unsigned int>::iterator it = std::find(priorityBoxes.begin(), priorityBoxes.end(), id);
+            if (it == priorityBoxes.end()){
+                tmp.push_back(id);
+            }
+        }
+
+        priorityBoxes.insert(priorityBoxes.end(), tmp.begin(), tmp.end());
+        ui->listLabel->setText("");
+        for (unsigned int id : priorityBoxes){
             std::string s = ui->listLabel->text().toStdString();
             ui->listLabel->setText(QString::fromStdString(s + (s == "" ? "" : "; ") + std::to_string(id)));
-        }
+        }*/
     }
     mainWindow.updateGlCanvas();
 }
@@ -1989,5 +2034,72 @@ void EngineManager::on_rotatePushButton_clicked() {
 void EngineManager::on_saveCurrentBlockPushButton_clicked() {
     if (he != nullptr){
         he->getHeightfield(ui->heightfieldsSlider->value()).saveOnObj("Block.obj");
+    }
+}
+
+void EngineManager::on_tinyFeaturesPushButton_clicked() {
+    if (d != nullptr && he != nullptr && solutions != nullptr){
+        struct op{
+                bool operator()(const std::pair<double, unsigned int>& p1, const std::pair<double, unsigned int>& p2){
+                    return p1.second < p2.second;
+                }
+        };
+        for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+            EigenMeshAlgorithms::removeDuplicateVertices(he->getHeightfield(i));
+        }
+        priorityBoxes.clear();
+        std::vector<std::pair<double, unsigned int> > tinyPieces;
+        bool inserted = false;
+        unsigned int i = 1;
+        do {
+            tinyPieces.clear();
+            for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
+                double mindist;
+                if (TinyFeatureDetection::tinyFeaturePlane(he->getHeightfield(i),he->getTarget(i), d->getAverageHalfEdgesLength()*ui->thresholdTinyFeaturesSpinBox->value(), mindist)){
+                    tinyPieces.push_back(std::pair<double, unsigned int>(mindist, solutions->getBox(i).getId()));
+                    //he->getHeightfield(i).setFaceColor(Color(255,0,0));
+                }
+            }
+
+            std::cerr << "Tiny Pieces:\n";
+            for (std::pair<double, unsigned int> p :tinyPieces){
+                std::cerr << p.second << "; ";
+            }
+            std::cerr << "\n";
+
+            std::sort(tinyPieces.begin(), tinyPieces.end(), op());
+
+            inserted = false;
+            for (unsigned int i = 0; i < tinyPieces.size() && !inserted; i++){
+                std::pair<double, unsigned int> p = tinyPieces[i];
+                std::list<unsigned int>::iterator it = std::find(priorityBoxes.begin(), priorityBoxes.end(), splittedBoxesToOriginals.at(p.second));
+                if (it == priorityBoxes.end()){
+                    priorityBoxes.push_front(splittedBoxesToOriginals.at(p.second));
+                    std::string s = ui->listLabel->text().toStdString();
+                    ui->listLabel->setText(QString::fromStdString(std::to_string(splittedBoxesToOriginals.at(p.second)) + "; " + s));
+                    inserted = true;
+                }
+            }
+            if (!inserted && tinyPieces.size() > 0)
+                QMessageBox::warning(this, "Tiny Pieces", "It is not possible to avoid Tiny Pieces on this decomposition.");
+            else if (inserted) {
+                on_restoreBoxesPushButton_clicked();
+                on_reorderBoxes_clicked();
+                on_subtractPushButton_clicked();
+                on_colorPiecesPushButton_clicked();
+                serializeBC(hfdls.getActualPath() + "/bools" + std::to_string(i) + ".hfd");
+                i++;
+            }
+        } while (inserted);
+    }
+    mainWindow.updateGlCanvas();
+}
+
+void EngineManager::on_mergePushButton_clicked() {
+    if (he != nullptr && solutions != nullptr && d != nullptr){
+        Engine::mergePostProcessing(*he, *solutions, *d);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->heightfieldsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        mainWindow.updateGlCanvas();
     }
 }

@@ -1581,7 +1581,7 @@ std::vector<Pointd> getPolygonFromChartMarker(const EigenMesh&hf, const CGALInte
 
 SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d) {
 
-    SimpleEigenMesh marked;
+    /*SimpleEigenMesh marked;
     CGALInterface::AABBTree tree(d, true);
 
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
@@ -1633,10 +1633,10 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
         }
     }
 
-    return marked;
+    return marked;*/
 
 
-    /*CGALInterface::AABBTree tree(d, true);
+    CGALInterface::AABBTree tree(d, true);
     std::set< std::pair<Pointd, Pointd> > edges;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         const EigenMesh& mesh = he.getHeightfield(i);
@@ -1749,30 +1749,111 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
         }
         marked.addFace(v1, v2, v3);
     }
-    return marked;*/
+    return marked;
 }
 
-void Engine::saveObjs(const QString& foldername, const EigenMesh &originalMesh, const Dcel& inputMesh, const EigenMesh &baseComplex, const HeightfieldsList &he) {
-    QString originalMeshString = foldername + "/OriginalMesh.obj";
-    QString inputMeshString = foldername + "/InputMesh.obj";
-    QString baseComplexString = foldername + "/BaseComplex.obj";
-    QString heightfieldString = foldername + "/Heightfield";
-    QString markerString = foldername + "/Marker.obj";
+std::vector<Pointd> getPolygonFromChart(const EigenMesh&hf, const std::set<unsigned int>& chart){
+    std::vector<std::pair<unsigned int, unsigned int> > segments;
+    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
+    for (unsigned int f : chart){
+        for (unsigned int ia = 0; ia <3; ia++){
+            int adj = fadj(f,ia);
+            if (adj != -1 && chart.find(adj) == chart.end()){
+                std::pair<int, int> p = hf.getCommonVertices(f, (unsigned int)adj);
+                assert(p.first >= 0 && p.second >= 0);
+                segments.push_back(std::pair<unsigned int, unsigned int>(p.first, p.second));
+            }
+        }
+    }
+
+    std::vector<Pointd> polygon;
+    unsigned int first, actual;
+    first = segments[0].first;
+    polygon.push_back(hf.getVertex(first));
+    actual = segments[0].second;
+    do {
+        polygon.push_back(hf.getVertex(actual));
+        bool found = false;
+        for (unsigned int i = 0; i < segments.size() && !found; i++){
+            if (actual == segments[i].first){
+                actual = segments[i].second;
+                found = true;
+            }
+        }
+        assert(found);
+
+    } while (actual != first);
+
+
+    return polygon;
+}
+
+void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMesh, const Dcel& inputMesh, const EigenMesh &baseComplex, const HeightfieldsList &he) {
+    std::string originalMeshString = foldername + "/OriginalMesh.obj";
+    std::string inputMeshString = foldername + "/InputMesh.obj";
+    std::string baseComplexString = foldername + "/BaseComplex.obj";
+    std::string heightfieldString = foldername + "/Heightfield";
+    std::string markerString = foldername + "/Marker.obj";
+    std::string structureString = foldername + "/Structure.obj";
     //CGALInterface::AABBTree tree(inputMesh);
     if (originalMesh.getNumberVertices() > 0)
-        originalMesh.saveOnObj(originalMeshString.toStdString());
-    inputMesh.saveOnObjFile(inputMeshString.toStdString());
-    baseComplex.saveOnObj(baseComplexString.toStdString());
+        originalMesh.saveOnObj(originalMeshString);
+    inputMesh.saveOnObjFile(inputMeshString);
+    baseComplex.saveOnObj(baseComplexString);
     SimpleEigenMesh marker = getMarkerMesh(he, inputMesh);
-    marker.saveOnObj(markerString.toStdString());
+    marker.saveOnObj(markerString);
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         EigenMesh h = he.getHeightfield(i);
         Dcel d(h);
         //updatePieceNormals(tree, d);
-        std::stringstream ss;
-        ss << heightfieldString.toStdString() << i << ".obj";
-        d.saveOnObjFile(ss.str());
+        d.saveOnObjFile(heightfieldString + std::to_string(i) + ".obj");
     }
+
+    double diameter = inputMesh.getAverageHalfEdgesLength();
+    EigenMesh structure;
+    EigenMesh cbc(baseComplex);
+    EigenMeshAlgorithms::removeDuplicateVertices(cbc);
+    std::vector<bool> seen(cbc.getNumberFaces(), false);
+    std::vector< std::set<unsigned int> >charts;
+
+    for (unsigned int f = 0; f < cbc.getNumberFaces(); f++) {
+        Vec3 nf = cbc.getFaceNormal(f);
+        int idf = indexOfNormal(nf);
+        if (idf != -1){
+            if (!seen[f])
+                charts.push_back(chartExpansion(cbc, f, seen));
+        }
+    }
+
+    std::set<Pointd> spheres;
+    for (std::set<unsigned int> &chart: charts){
+        //polygons
+        std::vector<Pointd> polygon = getPolygonFromChart(cbc, chart);
+
+        for (unsigned int j = 0; j < polygon.size(); j++){
+            Vec3 n1 = polygon[(j+1)%polygon.size()]-polygon[j];
+            n1.normalize();
+            Vec3 n2 = polygon[(j+2)%polygon.size()]-polygon[(j+1)%polygon.size()];
+            n2.normalize();
+            if (Common::epsilonEqual(n1, n2)){
+                polygon.erase(polygon.begin()+((j+1)%polygon.size()));
+                j--;
+            }
+        }
+
+        for (unsigned int i = 0; i < polygon.size(); i++){
+            if (spheres.find(polygon[i]) == spheres.end()){
+                EigenMesh sphr = EigenMeshAlgorithms::makeSphere(polygon[i], diameter);
+                sphr.setFaceColor(Color(255,255,255));
+                structure = EigenMesh::merge(structure, sphr);
+                spheres.insert(polygon[i]);
+            }
+            EigenMesh cyl = EigenMeshAlgorithms::makeCylinder(polygon[i], polygon[(i+1)%polygon.size()], diameter/2);
+            cyl.setFaceColor(Color(0,0,0));
+            structure = EigenMesh::merge(structure, cyl);
+        }
+    }
+    structure.saveOnObj(structureString);
 }
 
 void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, Dcel& piece) {
@@ -1844,17 +1925,30 @@ bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
 
 void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
     CGALInterface::AABBTree tree(d);
-    std::array<Color, 10> colors;
-    colors[0] = Color(182, 215, 168); //
-    colors[1] = Color(198, 178, 219); //
-    colors[2] = Color(234, 153, 153); //
-    colors[3] = Color(255, 229, 153); //
-    colors[4] = Color(162, 196, 201); //
-    colors[5] = Color(213, 166, 189); //
-    colors[6] = Color(164, 194, 244); //
-    colors[7] = Color(221, 126, 107);//
-    colors[8] = Color(249, 203, 156);//
-    colors[9] = Color(180, 167, 214);//
+    constexpr int nColors = 9;
+    std::array<QColor, nColors> colors;
+    colors[0] = QColor(221, 126, 107); //
+    colors[1] = QColor(255, 229, 153); //
+    colors[2] = QColor(164, 194, 244); //
+    colors[3] = QColor(213, 166, 189); //
+    colors[4] = QColor(234, 153, 153); //
+    colors[5] = QColor(182, 215, 168); //
+    //colors[6] = QColor(217, 234, 211);//QColor(159, 197, 232); //
+    colors[6] = QColor(249, 203, 156);//
+    //colors[8] = QColor(207, 216, 233);//QColor(162, 196, 201);
+    colors[7] = QColor(180, 167, 214);//
+    colors[8] = QColor(162, 196, 201);
+
+    /*colors[0] = QColor(182, 215, 168); //
+    colors[1] = QColor(198, 178, 219); //
+    colors[2] = QColor(234, 153, 153); //
+    colors[3] = QColor(255, 229, 153); //
+    colors[4] = QColor(162, 196, 201); //
+    colors[5] = QColor(213, 166, 189); //
+    colors[6] = QColor(164, 194, 244); //
+    colors[7] = QColor(221, 126, 107);//
+    colors[8] = QColor(249, 203, 156);//
+    colors[9] = QColor(180, 167, 214);//*/
 
 
     std::map< const Dcel::Vertex*, int > mapping = Reconstruction::getMappingId(d, he);
@@ -1886,23 +1980,15 @@ void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
 
             Color color;
             bool finded = false;
-            unsigned int k = i %10;
+            unsigned int k = i % nColors;
             do {
                 if (adjColors.find(colors[k]) == adjColors.end()){
                     finded = true;
                     color = colors[k];
                 }
-                k = (k+1)%10;
-            } while(k != i %10 && !finded);
+                k = (k+1)%nColors;
+            } while(k != i %nColors && !finded);
 
-            //
-            /*for (unsigned int k = 0; k < 10 && !finded; k++){
-                if (adjColors.find(colors[k]) == adjColors.end()){
-                    finded = true;
-                    color = colors[k];
-                }
-            }*/
-            //
             if (finded)
                 heColors[i] = color;
             else
@@ -1918,42 +2004,6 @@ void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
             he.setHeightfield(mesh, i);
         }
     }
-}
-
-std::vector<Pointd> getPolygonFromChart(const EigenMesh&hf, const std::set<unsigned int>& chart){
-    std::vector<std::pair<unsigned int, unsigned int> > segments;
-    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
-    for (unsigned int f : chart){
-        for (unsigned int ia = 0; ia <3; ia++){
-            int adj = fadj(f,ia);
-            if (adj != -1 && chart.find(adj) == chart.end()){
-                std::pair<int, int> p = hf.getCommonVertices(f, (unsigned int)adj);
-                assert(p.first >= 0 && p.second >= 0);
-                segments.push_back(std::pair<unsigned int, unsigned int>(p.first, p.second));
-            }
-        }
-    }
-
-    std::vector<Pointd> polygon;
-    unsigned int first, actual;
-    first = segments[0].first;
-    polygon.push_back(hf.getVertex(first));
-    actual = segments[0].second;
-    do {
-        polygon.push_back(hf.getVertex(actual));
-        bool found = false;
-        for (unsigned int i = 0; i < segments.size() && !found; i++){
-            if (actual == segments[i].first){
-                actual = segments[i].second;
-                found = true;
-            }
-        }
-        assert(found);
-
-    } while (actual != first);
-
-
-    return polygon;
 }
 
 std::vector<Pointd> getBasePolygon(const EigenMesh &m, const Vec3& target){
@@ -1984,9 +2034,9 @@ std::vector<Pointd> getBasePolygon(const EigenMesh &m, const Vec3& target){
 }
 
 
-void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions){
-    //mw->enableDebugObjects();
+void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, const Dcel& d){
 
+    //first merging
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         CGALInterface::AABBTree tree(he.getHeightfield(i), true);
         for (unsigned int j = 0; j < he.getNumHeightfields(); j++){
@@ -1997,9 +2047,6 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions){
                     EigenMesh m = he.getHeightfield(j);
                     EigenMeshAlgorithms::removeDuplicateVertices(m);
                     std::vector<Pointd> base = getBasePolygon(m, he.getTarget(j));
-
-                    //for (unsigned int i = 0; i < base.size(); i++)
-                    //    mw->addDebugLine(base[i], base[(i+1)%base.size()], 7, Color(0,0,0));
 
                     //and check the distance between every point of the base of j and the surface of i
                     //if all distances are 0, blocks can be merged
@@ -2023,5 +2070,156 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions){
                 }
             }
         }
+    }
+
+    //second merging
+    CGALInterface::AABBTree tree(d);
+
+    //building adjacences
+    std::map< const Dcel::Vertex*, int > mapping = Reconstruction::getMappingId(d, he);
+    std::vector< std::set<int> > adjacences(he.getNumHeightfields());
+    for (const Dcel::Vertex* v : d.vertexIterator()){
+        if (mapping.find(v) != mapping.end()){
+            int hev = mapping[v];
+            for (const Dcel::Vertex* adj : v->adjacentVertexIterator()){
+                if (mapping.find(adj) != mapping.end()){
+                    int headj = mapping[adj];
+                    if (hev != headj){
+                        adjacences[hev].insert(headj);
+                        adjacences[headj].insert(hev);
+                    }
+                }
+            }
+        }
+    }
+
+    for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
+        bool br = false;
+        for (std::set<int>::iterator jit = adjacences[i].begin(); jit != adjacences[i].end() && !br; ++jit){
+            unsigned int j = *jit;
+            if (he.getTarget(i) == he.getTarget(j)){ //two adjacent blocks with same hf direction
+                BoundingBox bbi = he.getHeightfield(i).getBoundingBox();
+                BoundingBox bbj = he.getHeightfield(j).getBoundingBox();
+
+
+                int iohf = indexOfNormal(he.getTarget(i));
+                double basei, basej;
+                bool isPossible = true;
+                if (iohf < 3){
+                    basei = bbi.min()[iohf];
+                    basej = bbj.min()[iohf];
+                    if (basej > basei)
+                        isPossible = false;
+                }
+                else{
+                    basei = bbi.max()[iohf-3];
+                    basej = bbj.max()[iohf-3];
+                    if (basej < basei)
+                        isPossible = false;
+                }
+
+                //can j reduce to i?
+                if (isPossible){
+                    std::vector<Pointd> points;
+                    points.reserve(he.getHeightfield(j).getNumberVertices());
+                    for (unsigned int i = 0; i < he.getHeightfield(j).getNumberVertices(); i++){
+                        points.push_back(he.getHeightfield(j).getVertex(i));
+                    }
+
+                    //sort points using iohf%3
+                    struct cmp {
+                        unsigned int i;
+                        cmp(unsigned int i):i(i){}
+
+                        bool operator()(const Pointd& p1, const Pointd& p2){
+                            if (p1[i] < p2[i])
+                                return true;
+                            if (p1[i] == p2[i])
+                                return p1 < p2;
+                            return false;
+
+                        }
+                    };
+
+                    std::sort(points.begin(), points.end(), cmp(iohf%3));
+
+                    //check if look the points forward or backward according to iohf<3
+                    std::vector<Pointd> pointsToDelete;
+                    if (iohf < 3){
+                        bool less = true;
+                        for (unsigned int i = 0; i < points.size() && less; i++){
+                            if (points[i][iohf%3] < basei)
+                                pointsToDelete.push_back(points[i]);
+                            else
+                                less = false;
+                        }
+                    }
+                    else {
+                        bool less = true;
+                        for (int i = points.size()-1; i >=0  && less; i--){
+                            if (points[i][iohf%3] > basei)
+                                pointsToDelete.push_back(points[i]);
+                            else
+                                less = false;
+                        }
+                    }
+                    bool canShrink = true;
+                    for (unsigned int i = 0; i < pointsToDelete.size() && canShrink; i++){
+                        if (tree.getSquaredDistance(pointsToDelete[i]) < 1e-4)
+                            canShrink = false;
+                    }
+                    if (canShrink){
+                        //no points of j touch the surface, we can cut that piece.
+                        //he.getHeightfield(j).setFaceColor(Color(0,255,0));
+                        if (iohf < 3)
+                            bbj.max()[iohf] = basei;
+                        else
+                            bbj.min()[iohf-3] = basei;
+                        Color ci = he.getHeightfield(i).getFaceColor(0);
+                        EigenMesh res = EigenMeshAlgorithms::difference(he.getHeightfield(j), EigenMesh(EigenMeshAlgorithms::makeBox(bbj)));
+                        res = EigenMeshAlgorithms::union_(res, he.getHeightfield(i));
+                        res.setFaceColor(ci);
+
+                        he.setHeightfield(res, i);
+                        he.removeHeightfield(j);
+                        solutions.removeBox(j);
+
+                        std::set<int> tmp = adjacences[j];
+                        tmp.erase(i);
+                        if (i > j)
+                            i--;
+
+                        //update adjacences
+                        std::set<int> ntmp;
+                        for (int a : tmp){
+                            ntmp.insert((unsigned int)a > j ? a-1 : a);
+                        }
+
+                        adjacences.erase(adjacences.begin()+j);
+                        for (unsigned int k = 0; k < adjacences.size(); k++){
+                            const std::set<int>& adk = adjacences[k];
+                            std::set<int> nadk;
+                            for (int a : adk){
+                                if ((unsigned int)a > j) // j is removed, ids higher than j must be decremented
+                                    nadk.insert(a-1);
+                                else if ((unsigned int)a == j && k != i) // j is merged to i, everithing that was adjacent to j now is adjacent to i
+                                    nadk.insert(i);
+                                else if ((unsigned int)a != j)
+                                    nadk.insert(a);
+
+                            }
+                            if (k == i){
+                                nadk = Common::setUnion(nadk, ntmp);
+                            }
+                            adjacences[k] = nadk;
+                        }
+                        br = true;
+                    }
+                }
+
+            }
+        }
+        if (br)
+            i--;
     }
 }

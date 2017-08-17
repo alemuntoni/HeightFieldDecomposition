@@ -42,6 +42,7 @@ class EngineManager : public QFrame, public SerializableObject {
 
         void setBinPath(const std::string& path);
         void setHfdPath(const std::string& path);
+        void setObjPath(const std::string& path);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
@@ -223,6 +224,10 @@ class EngineManager : public QFrame, public SerializableObject {
         void on_rotatePushButton_clicked();
 
         void on_saveCurrentBlockPushButton_clicked();
+
+        void on_tinyFeaturesPushButton_clicked();
+
+        void on_mergePushButton_clicked();
 
 signals:
         void finished();

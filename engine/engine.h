@@ -100,14 +100,14 @@ namespace Engine {
 
     void updatePiecesNormals(const CGALInterface::AABBTree& tree, HeightfieldsList &he);
 
-    void saveObjs(const QString& foldername, const EigenMesh& originalMesh, const Dcel& inputMesh, const EigenMesh& baseComplex, const HeightfieldsList& he);
+    void saveObjs(const std::string &foldername, const EigenMesh& originalMesh, const Dcel& inputMesh, const EigenMesh& baseComplex, const HeightfieldsList& he);
 
     bool isAnHeightfield(const EigenMesh &m, const Vec3& v, bool strictly = false);
 
     void colorPieces(const Dcel& d, HeightfieldsList& he);
 
 
-    void mergePostProcessing(HeightfieldsList& he, BoxList& solutions);
+    void mergePostProcessing(HeightfieldsList& he, BoxList& solutions, const Dcel &d);
 }
 
 #endif // ENGINE_H

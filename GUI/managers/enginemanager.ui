@@ -64,7 +64,7 @@
         <x>0</x>
         <y>0</y>
         <width>420</width>
-        <height>1199</height>
+        <height>1238</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -815,7 +815,7 @@
                 </property>
                </widget>
               </item>
-              <item row="26" column="1">
+              <item row="27" column="1">
                <widget class="QDoubleSpinBox" name="explodeSpinBox">
                 <property name="minimum">
                  <double>-1000.000000000000000</double>
@@ -828,7 +828,7 @@
                 </property>
                </widget>
               </item>
-              <item row="27" column="0">
+              <item row="28" column="0">
                <widget class="QPushButton" name="putBoxesAfterPushButton">
                 <property name="text">
                  <string>Put Boxes After</string>
@@ -838,7 +838,7 @@
               <item row="15" column="1">
                <widget class="QSpinBox" name="prioritySpinBox"/>
               </item>
-              <item row="27" column="1">
+              <item row="28" column="1">
                <widget class="QSpinBox" name="coveredTrianglesSpinBox">
                 <property name="maximum">
                  <number>100</number>
@@ -927,7 +927,10 @@
                 </property>
                </widget>
               </item>
-              <item row="26" column="0">
+              <item row="11" column="1">
+               <widget class="QSpinBox" name="boxBSpinBox"/>
+              </item>
+              <item row="27" column="0">
                <widget class="QPushButton" name="explodePushButton">
                 <property name="text">
                  <string>Explode</string>
@@ -940,9 +943,6 @@
                  <string>Solution Manager</string>
                 </property>
                </widget>
-              </item>
-              <item row="11" column="1">
-               <widget class="QSpinBox" name="boxBSpinBox"/>
               </item>
               <item row="6" column="1">
                <widget class="QCheckBox" name="drawBoxMeshCheckBox">
@@ -965,6 +965,9 @@
                 </property>
                </widget>
               </item>
+              <item row="29" column="1">
+               <widget class="QSpinBox" name="deleteBlockSpinBox"/>
+              </item>
               <item row="18" column="0">
                <widget class="QLabel" name="listLabel">
                 <property name="text">
@@ -978,9 +981,6 @@
                  <string>Box B:</string>
                 </property>
                </widget>
-              </item>
-              <item row="28" column="1">
-               <widget class="QSpinBox" name="deleteBlockSpinBox"/>
               </item>
               <item row="14" column="0" colspan="2">
                <widget class="QLabel" name="userArcsLabel">
@@ -1010,7 +1010,7 @@
                 </property>
                </widget>
               </item>
-              <item row="28" column="0">
+              <item row="29" column="0">
                <widget class="QPushButton" name="deleteBlockPushButton">
                 <property name="text">
                  <string>Delete Block</string>
@@ -1020,18 +1020,18 @@
               <item row="25" column="0">
                <widget class="QPushButton" name="sdfPushButton">
                 <property name="text">
-                 <string>Tiny Features</string>
+                 <string>Single Tiny Feature</string>
                 </property>
                </widget>
               </item>
-              <item row="30" column="0">
+              <item row="31" column="0">
                <widget class="QPushButton" name="saveShownBoxPushButton">
                 <property name="text">
                  <string>Save Shown Box</string>
                 </property>
                </widget>
               </item>
-              <item row="30" column="1">
+              <item row="31" column="1">
                <widget class="QPushButton" name="saveShownBlockPushButton">
                 <property name="text">
                  <string>Save Shown Block</string>
@@ -1087,6 +1087,20 @@
                 </property>
                </widget>
               </item>
+              <item row="26" column="0">
+               <widget class="QPushButton" name="tinyFeaturesPushButton">
+                <property name="text">
+                 <string>All Tiny Features</string>
+                </property>
+               </widget>
+              </item>
+              <item row="18" column="1">
+               <widget class="QPushButton" name="mergePushButton">
+                <property name="text">
+                 <string>Merge</string>
+                </property>
+               </widget>
+              </item>
              </layout>
              <zorder>subtractPushButton</zorder>
              <zorder>pushPriorityBoxButton</zorder>
@@ -1129,6 +1143,8 @@
              <zorder>colorPiecesPushButton</zorder>
              <zorder>stickPushButton</zorder>
              <zorder>thresholdTinyFeaturesSpinBox</zorder>
+             <zorder>tinyFeaturesPushButton</zorder>
+             <zorder>mergePushButton</zorder>
             </widget>
            </item>
            <item>
@@ -1156,7 +1172,7 @@
                  <double>1.000000000000000</double>
                 </property>
                 <property name="singleStep">
-                 <double>0.200000000000000</double>
+                 <double>1.000000000000000</double>
                 </property>
                 <property name="value">
                  <double>1.000000000000000</double>
@@ -1186,7 +1202,7 @@
                  <double>1.000000000000000</double>
                 </property>
                 <property name="singleStep">
-                 <double>0.200000000000000</double>
+                 <double>1.000000000000000</double>
                 </property>
                </widget>
               </item>
@@ -1199,7 +1215,7 @@
                  <double>1.000000000000000</double>
                 </property>
                 <property name="singleStep">
-                 <double>0.200000000000000</double>
+                 <double>100000.000000000000000</double>
                 </property>
                </widget>
               </item>
