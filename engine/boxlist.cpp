@@ -186,6 +186,12 @@ void BoxList::calculateTrianglesCovered(const CGALInterface::AABBTree& tree) {
     }
 }
 
+void BoxList::changeBoxLimits(const BoundingBox &newLimits, unsigned int i) {
+    assert(i < boxes.size());
+    boxes[i].min() = newLimits.min();
+    boxes[i].max() = newLimits.max();
+}
+
 std::vector<Box3D>::const_iterator BoxList::begin() const {
     return boxes.begin();
 }

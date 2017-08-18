@@ -1400,7 +1400,7 @@ void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& 
 
 void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const Dcel& inputMesh) {
     CGALInterface::AABBTree aabb(inputMesh, true);
-    for (unsigned int i = he.getNumHeightfields()-1; i >= 1; i--){
+    for (int i = he.getNumHeightfields()-1; i >= 0; i--){
         BoundingBox realBoundingBox;
         bool first = true;
         for (unsigned int j = 0; j < he.getNumberVerticesHeightfield(i); j++){
@@ -1870,7 +1870,8 @@ void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, EigenMesh& 
     for (Dcel::Vertex* v : d.vertexIterator()){
         if (tree.getSquaredDistance(v->getCoordinate() < EPSILON)){
             const Dcel::Vertex* n = tree.getNearestDcelVertex(v->getCoordinate());
-            v->setNormal(n->getNormal());
+            if (n->getCoordinate().dist(v->getCoordinate()) < 3)
+                v->setNormal(n->getNormal());
         }
     }
     piece = EigenMesh(d);
@@ -2033,8 +2034,61 @@ std::vector<Pointd> getBasePolygon(const EigenMesh &m, const Vec3& target){
 
 }
 
+void bringBaseDown(EigenMesh& m, const Vec3& target, double oldbase, double newbase){
+    std::vector<Pointd> base = getBasePolygon(m, target);
+    std::vector<unsigned int> baseIndices;
+    std::set<unsigned int> baseIndicesSet;
+    std::vector<unsigned int> newBaseIndices;
+    baseIndices.resize(base.size());
+    unsigned int numberVerticesBeforeInsertion = m.getNumberVertices();
+    for (unsigned int i = 0; i < numberVerticesBeforeInsertion; i++){
+        std::vector<Pointd>::iterator it = std::find(base.begin(), base.end(), m.getVertex(i));
+        if (it != base.end()){
+            baseIndices[it - base.begin()] = i;
+            baseIndicesSet.insert(i);
+        }
+    }
+    unsigned int numberVerticesAfterInsertion = numberVerticesBeforeInsertion;
+    for (Pointd p : base){
+        m.addVertex(p);
+        newBaseIndices.push_back(numberVerticesAfterInsertion++);
+    }
 
-void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, const Dcel& d){
+    for (unsigned int f = 0; f < m.getNumberFaces(); f++){
+        if (m.getFaceNormal(f) != -target){
+            Pointi vf = m.getFace(f);
+            Pointi nvf;
+            for (unsigned int k = 0; k < 3; k++){
+                if (baseIndicesSet.find(vf[k]) != baseIndicesSet.end()){
+                    std::vector<unsigned int>::iterator it = std::find(baseIndices.begin(), baseIndices.end(), vf[k]);
+                    assert(it != baseIndices.end());
+                    nvf[k] = newBaseIndices[it - baseIndices.begin()];
+                }
+                else
+                    nvf[k] = vf[k];
+            }
+            m.setFace(f, nvf.x(), nvf.y(), nvf.z());
+        }
+    }
+
+    for (unsigned int i = 0; i < numberVerticesBeforeInsertion; i++){
+        if (m.getVertex(i)[indexOfNormal(target)%3] == oldbase){
+            Pointd p = m.getVertex(i);
+            p[indexOfNormal(target)%3] = newbase;
+            m.setVertex(i, p);
+        }
+    }
+
+    for (unsigned int i = 0; i < baseIndices.size(); i++){
+        Pointi f1(newBaseIndices[i], baseIndices[i], newBaseIndices[(i+1)%baseIndices.size()]);
+        Pointi f2(newBaseIndices[(i+1)%baseIndices.size()], baseIndices[i], baseIndices[(i+1)%baseIndices.size()]);
+        m.addFace(f1.x(), f1.z(), f1.y());
+        m.addFace(f2.x(), f2.z(), f2.y());
+    }
+}
+
+
+void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, EigenMesh& baseComplex, const Dcel& d, bool mergeDownwards){
 
     //first merging
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
@@ -2061,6 +2115,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, const
                         un.setFaceColor(he.getHeightfield(i).getFaceColor(0));
                         he.setHeightfield(un, i);
                         he.removeHeightfield(j);
+                        solutions.changeBoxLimits(un.getBoundingBox(), i);
                         solutions.removeBox(j);
                         if (i > j)
                             i--;
@@ -2104,22 +2159,23 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, const
 
                 int iohf = indexOfNormal(he.getTarget(i));
                 double basei, basej;
-                bool isPossible = true;
+                bool isPossibleReduce = true;
                 if (iohf < 3){
                     basei = bbi.min()[iohf];
                     basej = bbj.min()[iohf];
                     if (basej > basei)
-                        isPossible = false;
+                        isPossibleReduce = false;
                 }
                 else{
                     basei = bbi.max()[iohf-3];
                     basej = bbj.max()[iohf-3];
                     if (basej < basei)
-                        isPossible = false;
+                        isPossibleReduce = false;
                 }
 
                 //can j reduce to i?
-                if (isPossible){
+                bool merged = false;
+                if (isPossibleReduce){
                     std::vector<Pointd> points;
                     points.reserve(he.getHeightfield(j).getNumberVertices());
                     for (unsigned int i = 0; i < he.getHeightfield(j).getNumberVertices(); i++){
@@ -2163,12 +2219,12 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, const
                                 less = false;
                         }
                     }
-                    bool canShrink = true;
-                    for (unsigned int i = 0; i < pointsToDelete.size() && canShrink; i++){
+                    merged = true;
+                    for (unsigned int i = 0; i < pointsToDelete.size() && merged; i++){
                         if (tree.getSquaredDistance(pointsToDelete[i]) < 1e-4)
-                            canShrink = false;
+                            merged = false;
                     }
-                    if (canShrink){
+                    if (merged){
                         //no points of j touch the surface, we can cut that piece.
                         //he.getHeightfield(j).setFaceColor(Color(0,255,0));
                         if (iohf < 3)
@@ -2178,45 +2234,88 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, const
                         Color ci = he.getHeightfield(i).getFaceColor(0);
                         EigenMesh res = EigenMeshAlgorithms::difference(he.getHeightfield(j), EigenMesh(EigenMeshAlgorithms::makeBox(bbj)));
                         res = EigenMeshAlgorithms::union_(res, he.getHeightfield(i));
+                        baseComplex = EigenMeshAlgorithms::union_(baseComplex, EigenMeshAlgorithms::intersection(he.getHeightfield(j), EigenMesh(EigenMeshAlgorithms::makeBox(bbj))));
                         res.setFaceColor(ci);
 
                         he.setHeightfield(res, i);
                         he.removeHeightfield(j);
+                        solutions.changeBoxLimits(res.getBoundingBox(), i);
                         solutions.removeBox(j);
-
-                        std::set<int> tmp = adjacences[j];
-                        tmp.erase(i);
-                        if (i > j)
-                            i--;
-
-                        //update adjacences
-                        std::set<int> ntmp;
-                        for (int a : tmp){
-                            ntmp.insert((unsigned int)a > j ? a-1 : a);
-                        }
-
-                        adjacences.erase(adjacences.begin()+j);
-                        for (unsigned int k = 0; k < adjacences.size(); k++){
-                            const std::set<int>& adk = adjacences[k];
-                            std::set<int> nadk;
-                            for (int a : adk){
-                                if ((unsigned int)a > j) // j is removed, ids higher than j must be decremented
-                                    nadk.insert(a-1);
-                                else if ((unsigned int)a == j && k != i) // j is merged to i, everithing that was adjacent to j now is adjacent to i
-                                    nadk.insert(i);
-                                else if ((unsigned int)a != j)
-                                    nadk.insert(a);
-
-                            }
-                            if (k == i){
-                                nadk = Common::setUnion(nadk, ntmp);
-                            }
-                            adjacences[k] = nadk;
-                        }
-                        br = true;
                     }
                 }
+                ///
+                else if (mergeDownwards){
+                    CGALInterface::AABBTree treebc(baseComplex);
+                    CGALInterface::AABBTree treei(he.getHeightfield(i));
+                    std::set<Pointd> basePoints;
+                    for (unsigned int pj = 0; pj < he.getHeightfield(j).getNumberVertices(); pj++){
+                        if (he.getHeightfield(j).getVertex(pj)[iohf%3] == basej){
+                            basePoints.insert(he.getHeightfield(j).getVertex(pj));
+                            //mw->addDebugSphere(he.getHeightfield(j).getVertex(pj), 2, QColor(255,0,0));
+                        }
+                    }
 
+                    merged = true;
+                    for (Pointd p : basePoints){
+                        p[iohf%3] = basei;
+                        if (!(treebc.getSquaredDistance(p) == 0 || treei.getSquaredDistance(p) == 0 || treebc.isInside(p) || treei.isInside(p)))
+                            merged = false;
+                    }
+                    if (merged) {
+                        /*for (unsigned int pj = 0; pj < he.getHeightfield(j).getNumberVertices(); pj++){
+                            if (he.getHeightfield(j).getVertex(pj)[iohf%3] == basej){
+                                Pointd p = he.getHeightfield(j).getVertex(pj);
+                                p[iohf%3] = basei;
+                                he.getHeightfield(j).setVertex(pj, p);
+                            }
+                        }*/
+                        bringBaseDown(he.getHeightfield(j), he.getTarget(j), basej, basei);
+                        he.getHeightfield(j).updateBoundingBox();
+
+                        Color ci = he.getHeightfield(i).getFaceColor(0);
+                        EigenMesh res = EigenMeshAlgorithms::union_(he.getHeightfield(i), he.getHeightfield(j));
+                        baseComplex = EigenMeshAlgorithms::difference(baseComplex, he.getHeightfield(i));
+                        res.setFaceColor(ci);
+
+                        he.setHeightfield(res, i);
+                        he.removeHeightfield(j);
+                        solutions.changeBoxLimits(res.getBoundingBox(), i);
+                        solutions.removeBox(j);
+                    }
+                }
+                ///
+                if (merged){
+                    std::set<int> tmp = adjacences[j];
+                    tmp.erase(i);
+                    if (i > j)
+                        i--;
+
+                    //update adjacences
+                    std::set<int> ntmp;
+                    for (int a : tmp){
+                        ntmp.insert((unsigned int)a > j ? a-1 : a);
+                    }
+
+                    adjacences.erase(adjacences.begin()+j);
+                    for (unsigned int k = 0; k < adjacences.size(); k++){
+                        const std::set<int>& adk = adjacences[k];
+                        std::set<int> nadk;
+                        for (int a : adk){
+                            if ((unsigned int)a > j) // j is removed, ids higher than j must be decremented
+                                nadk.insert(a-1);
+                            else if ((unsigned int)a == j && k != i) // j is merged to i, everithing that was adjacent to j now is adjacent to i
+                                nadk.insert(i);
+                            else if ((unsigned int)a != j)
+                                nadk.insert(a);
+
+                        }
+                        if (k == i){
+                            nadk = Common::setUnion(nadk, ntmp);
+                        }
+                        adjacences[k] = nadk;
+                    }
+                    br = true;
+                }
             }
         }
         if (br)

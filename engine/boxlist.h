@@ -32,6 +32,7 @@ class BoxList : public DrawableObject, public SerializableObject{
         void sortByHeight();
         void generatePieces(double minimumDistance = -1);
         void calculateTrianglesCovered(const CGALInterface::AABBTree &tree);
+        void changeBoxLimits(const BoundingBox &newLimits, unsigned int i);
         std::vector<Box3D>::const_iterator begin() const;
         std::vector<Box3D>::const_iterator end() const;
         std::vector<Box3D>::iterator begin();

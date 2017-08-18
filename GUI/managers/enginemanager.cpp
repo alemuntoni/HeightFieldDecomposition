@@ -1847,7 +1847,7 @@ void EngineManager::on_globalOptimalOrientationPushButton_clicked() {
 
 void EngineManager::on_experimentButton_clicked() {
     if (he != nullptr && solutions != nullptr && d != nullptr){
-        Engine::mergePostProcessing(*he, *solutions, *d);
+        Engine::mergePostProcessing(*he, *solutions, *baseComplex, *d, ui->mergeDownwardsCheckBox->isChecked());
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->heightfieldsSlider->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow.updateGlCanvas();
@@ -2097,7 +2097,7 @@ void EngineManager::on_tinyFeaturesPushButton_clicked() {
 
 void EngineManager::on_mergePushButton_clicked() {
     if (he != nullptr && solutions != nullptr && d != nullptr){
-        Engine::mergePostProcessing(*he, *solutions, *d);
+        Engine::mergePostProcessing(*he, *solutions, *baseComplex, *d, ui->mergeDownwardsCheckBox->isChecked());
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->heightfieldsSlider->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow.updateGlCanvas();

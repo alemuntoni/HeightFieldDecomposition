@@ -107,7 +107,7 @@ namespace Engine {
     void colorPieces(const Dcel& d, HeightfieldsList& he);
 
 
-    void mergePostProcessing(HeightfieldsList& he, BoxList& solutions, const Dcel &d);
+    void mergePostProcessing(HeightfieldsList& he, BoxList& solutions, EigenMesh &baseComplex, const Dcel &d, bool mergeDownwards = false);
 }
 
 #endif // ENGINE_H
