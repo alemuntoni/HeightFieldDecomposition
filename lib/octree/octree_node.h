@@ -5,7 +5,7 @@
 #include <array>
 #include <iostream>
 
-#include <common/bounding_box.h>
+#include <cg3/geometry/bounding_box.h>
 
 class OctreeNode {
     public:

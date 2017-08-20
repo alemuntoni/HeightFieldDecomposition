@@ -1,5 +1,7 @@
 #include "drawableirregulargrid.h"
-#include "viewer/objects/objects.h"
+#include "cg3/viewer/objects/objects.h"
+
+using namespace cg3;
 
 DrawableIrregularGrid::DrawableIrregularGrid() : visible(true){
 }

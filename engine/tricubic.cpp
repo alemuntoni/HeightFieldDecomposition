@@ -1,5 +1,7 @@
 ﻿#include "tricubic.h"
 
+using namespace cg3;
+
 void TricubicInterpolator::getCoefficients(std::vector< std::array<gridreal, 64> >& coeffs, Array3D<int>& mapCoeffs, const Array3D<gridreal>& weights) {
     assert(mapCoeffs.getSizeX() == weights.getSizeX()-1);
     assert(mapCoeffs.getSizeY() == weights.getSizeY()-1);

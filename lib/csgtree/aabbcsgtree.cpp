@@ -2,6 +2,8 @@
 
 //Node
 
+using namespace cg3;
+
 CSGTreeNode::CSGTreeNode() {
 }
 

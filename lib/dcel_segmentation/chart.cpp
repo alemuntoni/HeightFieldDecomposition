@@ -1,5 +1,7 @@
 #include "chart.h"
 
+using namespace cg3;
+
 Segmentation::Chart::Chart(){
 }
 

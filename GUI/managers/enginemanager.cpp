@@ -4,15 +4,17 @@
 #include <cstdio>
 #include <QMessageBox>
 #include <omp.h>
-#include "cgal/aabbtree.h"
+#include "cg3/cgal/aabbtree.h"
 #include "engine/packing.h"
 #include "engine/reconstruction.h"
 #include <QThread>
 #include "lib/dcel_segmentation/segmentation.h"
-#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
+#include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include "engine/orientation.h"
 #include <lib/graph/bipartitegraph.h>
 #include <engine/tinyfeaturedetection.h>
+
+using namespace cg3;
 
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),

@@ -1,7 +1,9 @@
 #include "energy.h"
 
-#include "common/timer.h"
+#include "cg3/utilities/timer.h"
 #include "common.h"
+
+using namespace cg3;
 
 Energy::Energy() {
 }

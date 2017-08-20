@@ -1,6 +1,8 @@
 #include "box.h"
 #include "common.h"
-#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
+#include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
+
+using namespace cg3;
 
 Box3D::Box3D(): visible(true), splitted(false){
     rotation = Eigen::Matrix3d::Identity();

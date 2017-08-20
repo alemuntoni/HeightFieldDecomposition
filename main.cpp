@@ -3,9 +3,9 @@
  * @copyright Alessandro Muntoni 2016.
  */
 
-#include "viewer/mainwindow.h"
-#include "dcel/gui/dcelmanager.h"
-#include "viewer/managers/windowmanager.h"
+#include "cg3/viewer/mainwindow.h"
+#include "cg3/meshes/dcel/gui/dcelmanager.h"
+#include "cg3/viewer/managers/windowmanager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
 #include <QApplication>
@@ -14,14 +14,16 @@
 //#include "trimesh/gui/trimeshmanager.h"
 #include "lib/graph/directedgraph.h"
 
-#include "eigenmesh/gui/eigenmeshmanager.h"
-#include "eigenmesh/gui/booleansmanager.h"
+#include "cg3/meshes/eigenmesh/gui/eigenmeshmanager.h"
+#include "cg3/meshes/eigenmesh/gui/booleansmanager.h"
 
 #include "lib/graph/bipartitegraph.h"
 #include <typeinfo>       // operator typeid
 #include <lib/csgtree/aabbcsgtree.h>
 
 #include "engine/reconstruction.h"
+
+using namespace cg3;
 
 #if defined(SERVER_MODE) || defined(SERVER_HOME) || defined(SERVER_AFTER)
 void serializeBeforeBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, double factor, double kernel);

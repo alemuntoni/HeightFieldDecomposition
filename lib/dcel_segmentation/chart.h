@@ -2,7 +2,7 @@
 #define PATCH_H
 
 #include <set>
-#include "dcel/dcel.h"
+#include "cg3/meshes/dcel/dcel.h"
 #include "segmentation_struct.h"
 
 class Segmentation::Chart {
@@ -13,26 +13,26 @@ class Segmentation::Chart {
         float getArea() const;
         int getId() const;
         int getNumFaces() const;
-        Vec3 getNormal() const;
-        bool faceExists(const Dcel::Face* f) const;
-        const Dcel::Face* getSeed() const;
+        cg3::Vec3 getNormal() const;
+        bool faceExists(const cg3::Dcel::Face* f) const;
+        const cg3::Dcel::Face* getSeed() const;
 
-        typedef std::set<const Dcel::Face *>::iterator ConstFaceIterator;
+        typedef std::set<const cg3::Dcel::Face *>::iterator ConstFaceIterator;
 
         ConstFaceIterator faceBegin() const;
         ConstFaceIterator faceEnd() const;
 
     protected:
-        Chart(int id, const Dcel::Face *seed, std::map<const Dcel::Face *, Chart *> &s, const std::function<bool(const Dcel::Face*, const Dcel::Face*)>& f);
-        std::set<const Dcel::Face *> reflood(const Dcel::Face *seed);
-        void deleteFace(const Dcel::Face* f);
-        void addFace(const Dcel::Face* f);
+        Chart(int id, const cg3::Dcel::Face *seed, std::map<const cg3::Dcel::Face *, Chart *> &s, const std::function<bool(const cg3::Dcel::Face*, const cg3::Dcel::Face*)>& f);
+        std::set<const cg3::Dcel::Face *> reflood(const cg3::Dcel::Face *seed);
+        void deleteFace(const cg3::Dcel::Face* f);
+        void addFace(const cg3::Dcel::Face* f);
 
         int id;
-        std::set<const Dcel::Face *> faces;
-        Vec3 normal;
+        std::set<const cg3::Dcel::Face *> faces;
+        cg3::Vec3 normal;
         float area;
-        std::function<bool(const Dcel::Face*, const Dcel::Face*)> fun;
+        std::function<bool(const cg3::Dcel::Face*, const cg3::Dcel::Face*)> fun;
 };
 
 inline Segmentation::Chart::~Chart(){
@@ -50,26 +50,26 @@ inline int Segmentation::Chart::getNumFaces() const {
     return faces.size();
 }
 
-inline Vec3 Segmentation::Chart::getNormal() const {
+inline cg3::Vec3 Segmentation::Chart::getNormal() const {
     return normal;
 }
 
-inline bool Segmentation::Chart::faceExists(const Dcel::Face* f) const {
+inline bool Segmentation::Chart::faceExists(const cg3::Dcel::Face* f) const {
     if (faces.find(f) == faces.end()) return false;
     else return true;
 }
 
-inline const Dcel::Face*Segmentation::Chart::getSeed() const {
+inline const cg3::Dcel::Face*Segmentation::Chart::getSeed() const {
     assert(faces.size() > 0);
     return *(faces.begin());
 }
 
-inline void Segmentation::Chart::deleteFace(const Dcel::Face *f) {
+inline void Segmentation::Chart::deleteFace(const cg3::Dcel::Face *f) {
     area -= f->getArea();
     faces.erase(f);
 }
 
-inline void Segmentation::Chart::addFace(const Dcel::Face *f) {
+inline void Segmentation::Chart::addFace(const cg3::Dcel::Face *f) {
     area += f->getArea();
     faces.insert(f);
 }

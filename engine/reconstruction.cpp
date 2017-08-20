@@ -1,5 +1,5 @@
 #include "reconstruction.h"
-#include "cgal/aabbtree.h"
+#include "cg3/cgal/aabbtree.h"
 #include "common.h"
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -11,12 +11,14 @@
 
 #include <cinolib_interface/mesh_conversions.h>
 
+using namespace cg3;
+
 std::map< const Dcel::Vertex*,int > Reconstruction::getMappingId(const Dcel& smoothedSurface, const HeightfieldsList& he) {
     std::map< const Dcel::Vertex*,int > mapping;
     CGALInterface::AABBTree tree(smoothedSurface);
     //int referenced = 0;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        const EigenMesh m = he.getHeightfield(i);
+        const cg3::EigenMesh m = he.getHeightfield(i);
         for (unsigned int j = 0; j < m.getNumberVertices(); j++){
             const Dcel::Vertex* v = tree.getNearestDcelVertex(m.getVertex(j));
             assert(v != nullptr);
@@ -38,7 +40,7 @@ std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothe
     CGALInterface::AABBTree tree(smoothedSurface);
     int referenced = 0;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        const EigenMesh m = he.getHeightfield(i);
+        const cg3::EigenMesh m = he.getHeightfield(i);
         for (unsigned int j = 0; j < m.getNumberVertices(); j++){
             const Dcel::Vertex* v = tree.getNearestDcelVertex(m.getVertex(j));
             assert(v != nullptr);
@@ -183,7 +185,7 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
     }
 }
 
-Dcel Reconstruction::taubinSmoothing(const SimpleEigenMesh& m, int n_iters, double lambda, const double mu) {
+Dcel Reconstruction::taubinSmoothing(const cg3::SimpleEigenMesh& m, int n_iters, double lambda, const double mu) {
     cinolib::Trimesh trimesh;
     MeshConversions::eigenMeshToTrimesh(trimesh, m);
     cinolib::smooth_taubin(trimesh, cinolib::COTANGENT, std::set<int>(), n_iters, lambda, mu);
@@ -200,8 +202,8 @@ Dcel Reconstruction::taubinSmoothing(const Dcel& d, int n_iters, double lambda, 
     return d1;
 }
 
-void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std::pair<int, int>>& mapping, const EigenMesh& originalSurface, const BoxList &bl, bool internToHF) {
-    SimpleEigenMesh tmp(smoothedSurface);
+void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std::pair<int, int>>& mapping, const cg3::EigenMesh& originalSurface, const BoxList &bl, bool internToHF) {
+    cg3::SimpleEigenMesh tmp(smoothedSurface);
     cinolib::logger.disable();
     cinolib::Trimesh smoothedTrimesh;
     cinolib::Trimesh originalTrimesh;
@@ -211,5 +213,5 @@ void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std
     //restoring
     restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 400, internToHF);
 
-    smoothedSurface = SimpleEigenMesh(smoothedTrimesh);
+    smoothedSurface = cg3::SimpleEigenMesh(smoothedTrimesh);
 }

@@ -2,10 +2,10 @@
 #define BOXLIST_H
 
 #include "box.h"
-#include "common/arrays.h"
-#include "cgal/aabbtree.h"
+#include "cg3/data_structures/arrays.h"
+#include "cg3/cgal/aabbtree.h"
 
-class BoxList : public DrawableObject, public SerializableObject{
+class BoxList : public cg3::DrawableObject, public SerializableObject{
     public:
         BoxList();
         BoxList(bool cylinders);
@@ -31,8 +31,8 @@ class BoxList : public DrawableObject, public SerializableObject{
         void sortByTrianglesCovered();
         void sortByHeight();
         void generatePieces(double minimumDistance = -1);
-        void calculateTrianglesCovered(const CGALInterface::AABBTree &tree);
-        void changeBoxLimits(const BoundingBox &newLimits, unsigned int i);
+        void calculateTrianglesCovered(const cg3::CGALInterface::AABBTree &tree);
+        void changeBoxLimits(const cg3::BoundingBox &newLimits, unsigned int i);
         std::vector<Box3D>::const_iterator begin() const;
         std::vector<Box3D>::const_iterator end() const;
         std::vector<Box3D>::iterator begin();
@@ -52,7 +52,7 @@ class BoxList : public DrawableObject, public SerializableObject{
 
         // DrawableObject interface
         void draw() const;
-        Pointd sceneCenter() const;
+        cg3::Pointd sceneCenter() const;
         double sceneRadius() const;
         bool isVisible() const;
         void setVisible(bool b);
@@ -65,8 +65,8 @@ class BoxList : public DrawableObject, public SerializableObject{
         int visibleBox;
         bool cylinder;
         bool eigenMesh;
-        #ifdef VIEWER_DEFINED
-        void drawLine(const Pointd& a, const Pointd& b, const Color& c) const;
+        #ifdef CG3_VIEWER_DEFINED
+        void drawLine(const cg3::Pointd& a, const cg3::Pointd& b, const Color& c) const;
         void drawCube(const Box3D& b, const Color& c) const;
         #endif
 };

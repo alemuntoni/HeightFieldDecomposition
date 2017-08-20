@@ -2,6 +2,7 @@
 
 using namespace std;
 using namespace cinolib;
+using namespace  cg3;
 
 void Orientation::define_rotation(const cinolib::vec3d& Z_axis, cinolib::vec3d& rot_axis, double& angle) {
     vec3d Z = vec3d(0,0,1);

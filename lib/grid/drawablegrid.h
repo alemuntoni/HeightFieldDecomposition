@@ -1,16 +1,16 @@
 #ifndef DRAWABLEGRID_H
 #define DRAWABLEGRID_H
 
-#include "viewer/interfaces//drawable_object.h"
+#include "cg3/viewer/interfaces//drawable_object.h"
 #include "grid.h"
-#include "viewer/objects/objects.h"
+#include "cg3/viewer/objects/objects.h"
 
-class DrawableGrid: public Grid, public DrawableObject
+class DrawableGrid: public Grid, public cg3::DrawableObject
 {
     public:
         DrawableGrid();
         DrawableGrid(const Grid &g);
-        DrawableGrid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Pointd& gMin, const Pointd& gMax);
+        DrawableGrid(const cg3::Pointi& resolution, const Array3D<cg3::Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const cg3::Pointd& gMin, const cg3::Pointd& gMax);
         virtual ~DrawableGrid();
 
         double getKernelDistance() const;
@@ -27,12 +27,12 @@ class DrawableGrid: public Grid, public DrawableObject
 
         // DrawableObject interface
         void draw() const;
-        Pointd sceneCenter() const;
+        cg3::Pointd sceneCenter() const;
         double sceneRadius() const;
         bool isVisible() const;
         void setVisible(bool b);
 
-        void addCube(const BoundingBox &bb);
+        void addCube(const cg3::BoundingBox &bb);
         void deleteCubes();
 
         void setStepDrawGrid(double value);
@@ -41,8 +41,8 @@ class DrawableGrid: public Grid, public DrawableObject
 
     private:
 
-        void drawLine(const Pointd& a, const Pointd& b) const;
-        void drawCube(const BoundingBox& b) const;
+        void drawLine(const cg3::Pointd& a, const cg3::Pointd& b) const;
+        void drawCube(const cg3::BoundingBox& b) const;
 
         enum {
             DRAW_KERNEL, DRAW_WEIGHTS
@@ -56,7 +56,7 @@ class DrawableGrid: public Grid, public DrawableObject
         int drawMode;
         int slice;
         int sliceValue;
-        std::vector<BoundingBox> cubes;
+        std::vector<cg3::BoundingBox> cubes;
         double stepDrawGrid;
         double minSignedDistance;
 };

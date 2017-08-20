@@ -1,13 +1,13 @@
 #ifndef BOX_H
 #define BOX_H
 
-#include <viewer/interfaces/drawable_object.h>
-#include <common/bounding_box.h>
-#include <viewer/objects/objects.h>
-#include <eigenmesh/eigenmesh.h>
-#include <common/color.h>
+#include <cg3/viewer/interfaces/drawable_object.h>
+#include <cg3/geometry/bounding_box.h>
+#include <cg3/viewer/objects/objects.h>
+#include <cg3/meshes/eigenmesh/eigenmesh.h>
+#include <cg3/data_structures/color.h>
 
-class Box3D : public BoundingBox, public DrawableObject{
+class Box3D : public cg3::BoundingBox, public cg3::DrawableObject{
     public:
 
         typedef enum {
@@ -32,23 +32,23 @@ class Box3D : public BoundingBox, public DrawableObject{
         };
 
         Box3D();
-        Box3D(const Pointd &minCoord, const Pointd &maxCoord, const Pointd &c1 = Pointd(), const Pointd &c2 = Pointd(), const Pointd &c3 = Pointd(), const Color c = Color(0,0,0));
-        Box3D(const Pointd &minCoord, const Pointd &maxCoord, const Color c);
+        Box3D(const cg3::Pointd &minCoord, const cg3::Pointd &maxCoord, const cg3::Pointd &c1 = cg3::Pointd(), const cg3::Pointd &c2 = cg3::Pointd(), const cg3::Pointd &c3 = cg3::Pointd(), const Color c = Color(0,0,0));
+        Box3D(const cg3::Pointd &minCoord, const cg3::Pointd &maxCoord, const Color c);
 
         void setColor(const Color& c);
         Color getColor() const;
 
-        const Pointd& getConstraint1() const;
-        const Pointd& getConstraint2() const;
-        const Pointd& getConstraint3() const;
-        void setConstraint1(const Pointd &p);
-        void setConstraint2(const Pointd &p);
-        void setConstraint3(const Pointd &p);
+        const cg3::Pointd& getConstraint1() const;
+        const cg3::Pointd& getConstraint2() const;
+        const cg3::Pointd& getConstraint3() const;
+        void setConstraint1(const cg3::Pointd &p);
+        void setConstraint2(const cg3::Pointd &p);
+        void setConstraint3(const cg3::Pointd &p);
         void setRotationMatrix(const Eigen::Matrix3d &rot);
         const Eigen::Matrix3d& getRotationMatrix() const;
 
         double getVolume() const;
-        void getRotatedExtremes(std::vector<Pointd> &v) const;
+        void getRotatedExtremes(std::vector<cg3::Pointd> &v) const;
 
         void setW(double d);
         void setH(double d);
@@ -56,14 +56,14 @@ class Box3D : public BoundingBox, public DrawableObject{
         void moveX(double d);
         void moveY(double d);
         void moveZ(double d);
-        SimpleEigenMesh calculateEigenMesh(double minimumEdge = -1) const;
-        SimpleEigenMesh getEigenMesh() const;
-        void setEigenMesh(const SimpleEigenMesh& piece);
+        cg3::SimpleEigenMesh calculateEigenMesh(double minimumEdge = -1) const;
+        cg3::SimpleEigenMesh getEigenMesh() const;
+        void setEigenMesh(const cg3::SimpleEigenMesh& piece);
         void generateEigenMesh(double minimumEdge = -1);
 
         // DrawableObject interface
         void draw() const;
-        Pointd sceneCenter() const;
+        cg3::Pointd sceneCenter() const;
         double sceneRadius() const;
         bool isVisible() const;
         void setVisible(bool b);
@@ -72,9 +72,9 @@ class Box3D : public BoundingBox, public DrawableObject{
         void serialize(std::ofstream& binaryFile) const;
         bool deserialize(std::ifstream& binaryFile);
 
-        const Vec3& getTarget() const;
-        void setTarget(const Vec3& value);
-        Vec3 getRotatedTarget() const;
+        const cg3::Vec3& getTarget() const;
+        void setTarget(const cg3::Vec3& value);
+        cg3::Vec3 getRotatedTarget() const;
 
 
         int getId() const;
@@ -88,7 +88,7 @@ class Box3D : public BoundingBox, public DrawableObject{
         void setSplitted(bool value);
 
         static std::string typeSplitToString(const Split& s);
-        Split getSplit(const Box& other);
+        Split getSplit(const cg3::Box& other);
 
         const std::set<unsigned int>& getTrianglesCovered() const;
         void setTrianglesCovered(const std::set<unsigned int>& value);
@@ -99,17 +99,17 @@ class Box3D : public BoundingBox, public DrawableObject{
 
     protected:
         //Pointd min, max;
-        Pointd c1, c2, c3;
+        cg3::Pointd c1, c2, c3;
         Color color;
         bool visible;
-        Vec3 target;
+        cg3::Vec3 target;
         Eigen::Matrix3d rotation;
         int id;
-        SimpleEigenMesh piece;
+        cg3::SimpleEigenMesh piece;
         bool splitted;
         std::set<unsigned int> trianglesCovered;
 
-        void drawLine(const Pointd& a, const Pointd& b, const Color& c) const;
+        void drawLine(const cg3::Pointd& a, const cg3::Pointd& b, const Color& c) const;
         void drawCube() const;
 
         unsigned int getTargetIndex();
@@ -139,15 +139,15 @@ inline void Box3D::setMax(const Pointd& value) {
     max = value;
 }*/
 
-inline const Pointd& Box3D::getConstraint1() const {
+inline const cg3::Pointd& Box3D::getConstraint1() const {
     return c1;
 }
 
-inline const Pointd& Box3D::getConstraint2() const {
+inline const cg3::Pointd& Box3D::getConstraint2() const {
     return c2;
 }
 
-inline const Pointd& Box3D::getConstraint3() const {
+inline const cg3::Pointd& Box3D::getConstraint3() const {
     return c3;
 }
 

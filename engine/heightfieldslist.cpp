@@ -1,6 +1,8 @@
 #include "heightfieldslist.h"
 #include "common.h"
 
+using namespace cg3;
+
 HeightfieldsList::HeightfieldsList() : visible(true), nVisible(-1) {
 }
 
@@ -149,17 +151,17 @@ void HeightfieldsList::removeHeightfield(unsigned int i) {
     targets.erase(targets.begin()+i);
 }
 
-const EigenMesh& HeightfieldsList::getHeightfield(unsigned int i) const {
+const cg3::EigenMesh& HeightfieldsList::getHeightfield(unsigned int i) const {
     assert (i < heightfields.size());
     return heightfields[i];
 }
 
-EigenMesh& HeightfieldsList::getHeightfield(unsigned int i) {
+cg3::EigenMesh& HeightfieldsList::getHeightfield(unsigned int i) {
     assert (i < heightfields.size());
     return heightfields[i];
 }
 
-void HeightfieldsList::setHeightfield(const EigenMesh& m, unsigned int i, bool updateColor) {
+void HeightfieldsList::setHeightfield(const cg3::EigenMesh& m, unsigned int i, bool updateColor) {
     assert (i < heightfields.size());
     heightfields[i] = m;
     if (updateColor){
@@ -172,7 +174,7 @@ void HeightfieldsList::setHeightfield(const EigenMesh& m, unsigned int i, bool u
     }
 }
 
-void HeightfieldsList::insertHeightfield(const EigenMesh& m, const Vec3& target, unsigned int i, bool updateColor) {
+void HeightfieldsList::insertHeightfield(const cg3::EigenMesh& m, const Vec3& target, unsigned int i, bool updateColor) {
     assert (i < heightfields.size()+1);
     heightfields.insert(heightfields.begin() + i, m);
     targets.insert(targets.begin() + i, target);

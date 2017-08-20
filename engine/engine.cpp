@@ -1,19 +1,21 @@
 #include "engine.h"
-#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
-#include <dcel/algorithms/dcel_algorithms.h>
+#include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
+#include <cg3/meshes/dcel/algorithms/dcel_algorithms.h>
 #include "lib/dcel_segmentation/segmentation.h"
 
 #ifdef GUROBI_DEFINED
 #include <gurobi_c++.h>
 #endif
 
-#include <cgal/cgalutils.h>
+#include <cg3/cgal/cgalutils.h>
 #include <CGAL/mesh_segmentation.h>
 #include <CGAL/property_map.h>
 
 #include "splitting.h"
 #include "reconstruction.h"
 #include "orientation.h"
+
+using namespace cg3;
 
 void Engine::findOptimalOrientation(Dcel &d, EigenMesh& originalMesh) {
     Eigen::Matrix3d matr = Orientation::optimalOrientation(d);

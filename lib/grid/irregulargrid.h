@@ -1,38 +1,38 @@
 #ifndef IRREGULARGRID_H
 #define IRREGULARGRID_H
 
-#include "common/arrays.h"
-#include "common/point.h"
+#include "cg3/data_structures/arrays.h"
+#include "cg3/geometry/point.h"
 
 class IrregularGrid {
     public:
         IrregularGrid();
         IrregularGrid(unsigned int resX, unsigned int resY, unsigned int resZ);
-        void addPoint(unsigned int i, unsigned int j, unsigned int k, const Pointd& p);
+        void addPoint(unsigned int i, unsigned int j, unsigned int k, const cg3::Pointd& p);
         unsigned int getIndexI(double x) const;
         unsigned int getIndexJ(double y) const;
         unsigned int getIndexK(double z) const;
         void reset(unsigned int resX, unsigned int resY, unsigned int resZ);
-        void addPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& target);
-        Pointd getPoint(unsigned int i, unsigned int j, unsigned int k) const;
+        void addPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const cg3::Vec3& target);
+        cg3::Pointd getPoint(unsigned int i, unsigned int j, unsigned int k) const;
         int getNumberPossibleTargets(unsigned int i, unsigned int j, unsigned int k) const;
-        std::vector<Vec3> getPossibleTargets(unsigned int i, unsigned int j, unsigned int k) const;
+        std::vector<cg3::Vec3> getPossibleTargets(unsigned int i, unsigned int j, unsigned int k) const;
         double getVolumeOfBox(unsigned int i, unsigned int j, unsigned int k) const;
         unsigned int getResolutionX() const;
         unsigned int getResolutionY() const;
         unsigned int getResolutionZ() const;
-        bool boxHasPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& target) const;
+        bool boxHasPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const cg3::Vec3& target) const;
         bool isDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k) const;
-        void setDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& definitveTarget);
+        void setDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k, const cg3::Vec3& definitveTarget);
         int& flag(unsigned int i, unsigned int j, unsigned int k);
         int getFlag(unsigned int i, unsigned int j, unsigned int k) const;
 
     protected:
         unsigned int resX, resY, resZ;
-        Array3D<Pointd> points;
+        Array3D<cg3::Pointd> points;
         std::map<double, unsigned int> mapX, mapY, mapZ;
-        Array3D<std::set<Vec3> > possibleTargets;
-        Array3D<Vec3> definitiveTargets;
+        Array3D<std::set<cg3::Vec3> > possibleTargets;
+        Array3D<cg3::Vec3> definitiveTargets;
         Array3D<int> flags;
 };
 
@@ -45,11 +45,11 @@ inline IrregularGrid::IrregularGrid(unsigned int resX, unsigned int resY, unsign
     mapZ.clear();
     points.resize(resX, resY, resZ);
     possibleTargets.resize(resX-1, resY-1, resZ-1);
-    definitiveTargets.resize(resX-1, resY-1, resZ-1, Vec3());
+    definitiveTargets.resize(resX-1, resY-1, resZ-1, cg3::Vec3());
     flags.resize(resX-1, resY-1, resZ-1, 0);
 }
 
-inline void IrregularGrid::addPoint(unsigned int i, unsigned int j, unsigned int k, const Pointd& p) {
+inline void IrregularGrid::addPoint(unsigned int i, unsigned int j, unsigned int k, const cg3::Pointd& p) {
     assert(i < resX);
     assert(j < resY);
     assert(k < resZ);
@@ -80,21 +80,21 @@ inline void IrregularGrid::reset(unsigned int resX, unsigned int resY, unsigned 
     mapZ.clear();
     points.resize(resX, resY, resZ);
     possibleTargets.resize(resX-1, resY-1, resZ-1);
-    definitiveTargets.resize(resX-1, resY-1, resZ-1, Vec3());
+    definitiveTargets.resize(resX-1, resY-1, resZ-1, cg3::Vec3());
     flags.resize(resX-1, resY-1, resZ-1, 0);
     this->resX = resX;
     this->resY = resY;
     this->resZ = resZ;
 }
 
-inline void IrregularGrid::addPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& target) {
+inline void IrregularGrid::addPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const cg3::Vec3& target) {
     assert(i < resX-1);
     assert(j < resY-1);
     assert(k < resZ-1);
     possibleTargets(i,j,k).insert(target);
 }
 
-inline Pointd IrregularGrid::getPoint(unsigned int i, unsigned int j, unsigned int k) const{
+inline cg3::Pointd IrregularGrid::getPoint(unsigned int i, unsigned int j, unsigned int k) const{
     assert(i < resX);
     assert(j < resY);
     assert(k < resZ);
@@ -108,12 +108,12 @@ inline int IrregularGrid::getNumberPossibleTargets(unsigned int i, unsigned int 
     return possibleTargets(i,j,k).size();
 }
 
-inline std::vector<Vec3> IrregularGrid::getPossibleTargets(unsigned int i, unsigned int j, unsigned int k) const {
+inline std::vector<cg3::Vec3> IrregularGrid::getPossibleTargets(unsigned int i, unsigned int j, unsigned int k) const {
     assert(i < resX-1);
     assert(j < resY-1);
     assert(k < resZ-1);
-    std::vector<Vec3> tmp;
-    std::set<Vec3> tmp2 = possibleTargets(i,j,k);
+    std::vector<cg3::Vec3> tmp;
+    std::set<cg3::Vec3> tmp2 = possibleTargets(i,j,k);
     std::copy(tmp2.begin(), tmp2.end(), std::back_inserter(tmp));
     return tmp;
 }
@@ -137,11 +137,11 @@ inline unsigned int IrregularGrid::getResolutionZ() const{
     return resZ;
 }
 
-inline bool IrregularGrid::boxHasPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3& target) const {
+inline bool IrregularGrid::boxHasPossibleTarget(unsigned int i, unsigned int j, unsigned int k, const cg3::Vec3& target) const {
     assert(i < resX-1);
     assert(j < resY-1);
     assert(k < resZ-1);
-    const std::set<Vec3>& pt =  possibleTargets(i,j,k);
+    const std::set<cg3::Vec3>& pt =  possibleTargets(i,j,k);
 
     return (pt.find(target) != pt.end());
 }
@@ -151,10 +151,10 @@ inline bool IrregularGrid::isDefinitiveTarget(unsigned int i, unsigned int j, un
     assert(j < resY-1);
     assert(k < resZ-1);
 
-    return definitiveTargets(i,j,k) != Vec3();
+    return definitiveTargets(i,j,k) != cg3::Vec3();
 }
 
-inline void IrregularGrid::setDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k, const Vec3 &definitveTarget) {
+inline void IrregularGrid::setDefinitiveTarget(unsigned int i, unsigned int j, unsigned int k, const cg3::Vec3 &definitveTarget) {
     assert(i < resX-1);
     assert(j < resY-1);
     assert(k < resZ-1);

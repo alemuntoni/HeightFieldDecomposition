@@ -26,7 +26,7 @@ class Segmentation::ConstFaceIterator {
 
     public:
         ConstFaceIterator();
-        const Dcel::Face* operator *() const;
+        const cg3::Dcel::Face* operator *() const;
         ConstFaceIterator operator ++();
         ConstFaceIterator operator ++(int);
         ConstFaceIterator operator --();
@@ -36,8 +36,8 @@ class Segmentation::ConstFaceIterator {
         const Segmentation::Chart* get_patch_id() const;
 
     private:
-        std::map<const Dcel::Face*, Segmentation::Chart*>::const_iterator it;
-        ConstFaceIterator(const std::map<const Dcel::Face*, Segmentation::Chart*>::const_iterator &it);
+        std::map<const cg3::Dcel::Face*, Segmentation::Chart*>::const_iterator it;
+        ConstFaceIterator(const std::map<const cg3::Dcel::Face*, Segmentation::Chart*>::const_iterator &it);
 };
 
 /**
@@ -90,11 +90,11 @@ inline bool Segmentation::ConstChartIterator::operator !=(const ConstChartIterat
 inline Segmentation::ConstFaceIterator::ConstFaceIterator() {
 }
 
-inline Segmentation::ConstFaceIterator::ConstFaceIterator(const std::map<const Dcel::Face*, Chart*>::const_iterator &it) {
+inline Segmentation::ConstFaceIterator::ConstFaceIterator(const std::map<const cg3::Dcel::Face*, Chart*>::const_iterator &it) {
     this->it = it;
 }
 
-inline const Dcel::Face* Segmentation::ConstFaceIterator::operator *() const {
+inline const cg3::Dcel::Face* Segmentation::ConstFaceIterator::operator *() const {
     return (it->first);
 }
 

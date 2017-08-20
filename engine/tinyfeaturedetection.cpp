@@ -1,14 +1,16 @@
 #include "tinyfeaturedetection.h"
 
-#include <cgal/cgalsdf.h>
-#include <cgal/aabbtree.h>
-#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
+#include <cg3/cgal/cgalsdf.h>
+#include <cg3/cgal/aabbtree.h>
+#include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include "engine.h"
 #include <common.h>
 
+using namespace cg3;
+
 std::vector<unsigned int> TinyFeatureDetection::sdf(const EigenMesh &m, double threshold) {
     std::vector<unsigned int> problematicFaces;
-    std::vector<double> sdf = CGALInterface::SDF::getSDFMap(m);
+    std::vector<double> sdf = cg3::CGALInterface::SDF::getSDFMap(m);
     for (unsigned int i = 0; i < sdf.size(); i++){
         if (sdf[i] < threshold)
             problematicFaces.push_back(i);

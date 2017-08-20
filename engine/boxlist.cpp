@@ -1,5 +1,7 @@
 #include "boxlist.h"
-#include "eigenmesh/gui/drawableeigenmesh.h"
+#include "cg3/meshes/eigenmesh/gui/drawableeigenmesh.h"
+
+using namespace cg3;
 
 BoxList::BoxList() : visible(true), visibleBox(-1), cylinder(true), eigenMesh(false){
 }
@@ -236,7 +238,7 @@ void BoxList::visualizeEigenMeshBox(bool b) {
 }
 
 void BoxList::draw() const {
-    #ifdef VIEWER_DEFINED
+    #ifdef CG3_VIEWER_DEFINED
     if (visible){
         if (visibleBox < 0){
             if (!cylinder){
@@ -289,7 +291,7 @@ void BoxList::setVisible(bool b) {
     visible = b;
 }
 
-#ifdef VIEWER_DEFINED
+#ifdef CG3_VIEWER_DEFINED
 void BoxList::drawLine(const Pointd &a, const Pointd &b, const Color& c) const {
     glBegin(GL_LINES);
     glColor3f(c.redF(), c.greenF(), c.blueF());

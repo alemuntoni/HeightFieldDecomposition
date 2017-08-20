@@ -4,9 +4,9 @@
 #include "lib/grid/irregulargrid.h"
 #include "heightfieldslist.h"
 #include "boxlist.h"
-#include "cgal/aabbtree.h"
+#include "cg3/cgal/aabbtree.h"
 #include "lib/graph/directedgraph.h"
-#include <common/comparators.h>
+#include <cg3/utilities/comparators.h>
 
 #define SPLIT_DEBUG
 
@@ -17,29 +17,29 @@ namespace Splitting {
 
     bool boxesIntersectNS(const Box3D &b1, const Box3D &b2);
 
-    bool meshCollide(const SimpleEigenMesh &b1, const SimpleEigenMesh &b2);
+    bool meshCollide(const cg3::SimpleEigenMesh &b1, const cg3::SimpleEigenMesh &b2);
 
-    bool isDangerousIntersection(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree, bool checkMeshes = false);
+    bool isDangerousIntersection(const Box3D &b1, const Box3D &b2, const cg3::CGALInterface::AABBTree& tree, bool checkMeshes = false);
 
     bool getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3);
 
     void splitBox(const Box3D &b1, Box3D& b2, Box3D& b3, double subd = -1);
 
-    int getMinTrianglesCoveredIfBoxesSplitted(const Box3D &b1, const Box3D &b2, const CGALInterface::AABBTree& tree);
+    int getMinTrianglesCoveredIfBoxesSplitted(const Box3D &b1, const Box3D &b2, const cg3::CGALInterface::AABBTree& tree);
 
-    std::set<unsigned int> getTrianglesCovered(const Box3D& b, const CGALInterface::AABBTree &aabb, bool completely = true);
+    std::set<unsigned int> getTrianglesCovered(const Box3D& b, const cg3::CGALInterface::AABBTree &aabb, bool completely = true);
 
-    DirectedGraph getGraph(const BoxList& bl, const CGALInterface::AABBTree &tree);
+    DirectedGraph getGraph(const BoxList& bl, const cg3::CGALInterface::AABBTree &tree);
 
-    std::pair<unsigned int, unsigned int> getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList& bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs, const CGALInterface::AABBTree& tree);
+    std::pair<unsigned int, unsigned int> getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList& bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs, const cg3::CGALInterface::AABBTree& tree);
 
-    void chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const CGALInterface::AABBTree& tree, const std::set<unsigned int>& boxToEliminate);
+    void chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const cg3::CGALInterface::AABBTree& tree, const std::set<unsigned int>& boxToEliminate);
 
     bool checkDeleteBox(const Box3D &b, const std::set<unsigned int>& boxesToEliminate,  const BoxList &bl);
 
-    void splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const CGALInterface::AABBTree& tree, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes, std::set<std::pair<unsigned int, unsigned int>, cmpUnorderedStdPair<unsigned int> >& impossibleArcs);
+    void splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const cg3::CGALInterface::AABBTree& tree, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes, std::set<std::pair<unsigned int, unsigned int>, cg3::cmpUnorderedStdPair<unsigned int> >& impossibleArcs);
 
-    Array2D<int> getOrdering(BoxList& bl, const Dcel &d, std::map<unsigned int, unsigned int>& mappingNewToOld, std::list<unsigned int>& priorityBoxes, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs);
+    Array2D<int> getOrdering(BoxList& bl, const cg3::Dcel &d, std::map<unsigned int, unsigned int>& mappingNewToOld, std::list<unsigned int>& priorityBoxes, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs);
 }
 
 #endif // SPLITTING_H

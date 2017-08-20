@@ -1,6 +1,8 @@
 #include "drawablegrid.h"
 #include <omp.h>
 
+using namespace cg3;
+
 DrawableGrid::DrawableGrid() : visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2){
 }
 

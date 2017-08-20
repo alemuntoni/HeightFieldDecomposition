@@ -1,11 +1,12 @@
 #include "splitting.h"
 
 #include "common.h"
-#include "common/timer.h"
+#include "cg3/utilities/timer.h"
 #include <map>
 
-#include <eigenmesh/algorithms/eigenmesh_algorithms.h>
+#include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 
+using namespace cg3;
 
 bool Splitting::boxesIntersect(const Box3D& b1, const Box3D& b2) {
     if (b1.getMaxX() <= b2.getMinX()) return false; // a is left of b

@@ -1,5 +1,7 @@
 #include "grid.h"
 
+using namespace cg3;
+
 Grid::Grid() {
 }
 

@@ -1,6 +1,8 @@
 #include "packing.h"
 #include "lib/packing/binpack2d.h"
 
+using namespace cg3;
+
 void Packing::rotateAllPieces(HeightfieldsList& he) {
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         EigenMesh m = he.getHeightfield(i);

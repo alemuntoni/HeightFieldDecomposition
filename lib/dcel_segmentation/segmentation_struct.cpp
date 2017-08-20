@@ -2,6 +2,8 @@
 #include "segmentation_iterators.h"
 #include "common.h"
 
+using namespace cg3;
+
 Segmentation::Segmentation(const Dcel &d, const std::function<bool(const Dcel::Face*, const Dcel::Face*)>& f) {
     id = 0;
     fun = f;

@@ -3,16 +3,16 @@
 
 #include <QFrame>
 #include <QLabel>
-#include <viewer/utilities/loadersaver.h>
-#include "dcel/gui/dcelmanager.h"
+#include <cg3/viewer/utilities/loadersaver.h>
+#include "cg3/meshes/dcel/gui/dcelmanager.h"
 #include "lib/grid/drawablegrid.h"
 #include "lib/grid/drawableirregulargrid.h"
 #include "common.h"
 #include "engine/box.h"
 #include "engine/energy.h"
 #include "engine/engine.h"
-#include "common/timer.h"
-#include "eigenmesh/gui/drawableeigenmesh.h"
+#include "cg3/utilities/timer.h"
+#include "cg3/meshes/eigenmesh/gui/drawableeigenmesh.h"
 #include "engine/heightfieldslist.h"
 #include "engine/splitting.h"
 
@@ -27,15 +27,15 @@ class EngineManager : public QFrame, public SerializableObject {
     public:
         explicit EngineManager(QWidget *parent = 0);
 
-        void deleteDrawableObject(DrawableObject* d);
+        void deleteDrawableObject(cg3::DrawableObject* d);
         ~EngineManager();
 
         void updateLabel(double value, QLabel* label);
         void updateBoxValues();
         void updateColors(double angleThreshold, double areaThreshold);
-        Pointd getLimits();
+        cg3::Pointd getLimits();
 
-        void saveMSCFile(const std::string &filename, const Dcel &d, const BoxList &bl);
+        void saveMSCFile(const std::string &filename, const cg3::Dcel &d, const BoxList &bl);
 
         void serializeBC(const std::string& filename);
         void deserializeBC(const std::string& filename);
@@ -236,16 +236,16 @@ signals:
         Ui::EngineManager *ui;
         MainWindow& mainWindow; //puntatore alla mainWindow
         DrawableGrid* g;
-        DrawableDcel* d;
+        cg3::DrawableDcel* d;
         Box3D* b;
         Box3D* b2;
         BoxList* iterations;
         BoxList* solutions;
-        DrawableEigenMesh* baseComplex;
+        cg3::DrawableEigenMesh* baseComplex;
         Energy e;
         HeightfieldsList *he;
-        DrawableEigenMesh originalMesh;
-        DrawableEigenMesh markerMesh;
+        cg3::DrawableEigenMesh originalMesh;
+        cg3::DrawableEigenMesh markerMesh;
 
         BoxList originalSolutions;
         bool alreadySplitted;
@@ -255,9 +255,9 @@ signals:
 
         std::vector<std::pair<unsigned int, unsigned int>> userArcs;
 
-        Viewer::LoaderSaver hfdls;
-        Viewer::LoaderSaver binls;
-        Viewer::LoaderSaver objls;
+        cg3::Viewer::LoaderSaver hfdls;
+        cg3::Viewer::LoaderSaver binls;
+        cg3::Viewer::LoaderSaver objls;
 };
 
 #endif // ENGINEMANAGER_H

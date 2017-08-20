@@ -18,38 +18,7 @@ CONFIG += ALL
 #CONFIG += CONVERTER_MODE
 
 ALL {
-    #Add or remove all the modules you need
-    #Before pushing the project with your new module, please double check that everything works keeping uncommentend
-    #only the modules that are required by your module. Also please write here required and optional modules for your module
-
-    #Common module: contains classes and common functions used on all the other modules
-    #Optional: Eigen
-    include (common/common.pri)
-
-    #Viewer module: contains classes for a simple viewer
-    #Requires: Common module, libQGLViewer, boost
-    include (viewer/viewer.pri)
-
-    #Dcel module: contains a Double Connected-Edge List data structure
-    #Requires: Common module, boost;
-    #Optional: Cgal module, viewer module
-    include (dcel/dcel.pri)
-
-    #Cgal module: contains an interface to some functionalities of CGAL library
-    #Requires: Common module, libCgal; Optional: Dcel module
-    include (cgal/cgal.pri)
-
-    #Trimesh module: contains a Trimesh data structure
-    #Requires: Common module
-    #Optional: Viewer module
-    #include (trimesh/trimesh.pri)
-
-    #Igl module: coontaint an intergace to some functionalities of libIGL
-    #Requires: Common module, libIGL (an environment variable named LIBIGL containing the root directory of the library must be setted)
-    #Optional: Viewer module, Cgal module
-    #include (igl/igl.pri)
-
-    include (eigenmesh/eigenmesh.pri)
+    include(../CG3/cg3.pri)
 
     include(cinolib_interface/cinolib.pri)
 }

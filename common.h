@@ -6,12 +6,12 @@
 #ifndef MYCOMMON_H
 #define MYCOMMON_H
 
-#include "common/utils.h"
-#include "dcel/dcel.h"
+#include "cg3/utilities/utils.h"
+#include "cg3/meshes/dcel/dcel.h"
 #include <set>
 #include <Eigen/Core>
 #include <memory>
-#include <viewer/mainwindow.h>
+#include <cg3/viewer/mainwindow.h>
 
 #define BORDER_PAY 5
 #define STD_PAY 0
@@ -49,33 +49,33 @@ extern MainWindow* mw;
 
 const int MAX_BFGS_ITERATIONS = 150;
 
-static const std::vector<Vec3> XYZ = {
-    Vec3( 1.0f,  0.0f,  0.0f),                         //    +X : label  0
-    Vec3( 0.0f,  1.0f,  0.0f),                         //    +Y : label  1
-    Vec3( 0.0f,  0.0f,  1.0f),                         //    +Z : label  2
-    Vec3(-1.0f,  0.0f,  0.0f),                         //    -X : label  3
-    Vec3( 0.0f, -1.0f,  0.0f),                         //    -Y : label  4
-    Vec3( 0.0f,  0.0f, -1.0f),                         //    -Z : label  5
-    Vec3( ONE_ON_SQRT2,  ONE_ON_SQRT2,  0.0f),         //   +XY : label  6
-    Vec3(-ONE_ON_SQRT2,  ONE_ON_SQRT2,  0.0f),         //  -X+Y : label  7
-    Vec3(-ONE_ON_SQRT2, -ONE_ON_SQRT2,  0.0f),         //   -XY : label  8
-    Vec3( ONE_ON_SQRT2, -ONE_ON_SQRT2,  0.0f),         //  +X-Y : label  9
-    Vec3( ONE_ON_SQRT2,  0.0f,  ONE_ON_SQRT2),         //   +XZ : label 10
-    Vec3(-ONE_ON_SQRT2,  0.0f,  ONE_ON_SQRT2),         //  -X+Z : label 11
-    Vec3(-ONE_ON_SQRT2,  0.0f, -ONE_ON_SQRT2),         //   -XZ : label 12
-    Vec3( ONE_ON_SQRT2,  0.0f, -ONE_ON_SQRT2),         //  +X-Z : label 13
-    Vec3( 0.0f,  ONE_ON_SQRT2,  ONE_ON_SQRT2),         //   +YZ : label 14
-    Vec3( 0.0f, -ONE_ON_SQRT2,  ONE_ON_SQRT2),         //  -Y+Z : label 15
-    Vec3( 0.0f, -ONE_ON_SQRT2, -ONE_ON_SQRT2),         //   -YZ : label 16
-    Vec3( 0.0f,  ONE_ON_SQRT2, -ONE_ON_SQRT2),         //  +Y-Z : label 17
-    Vec3( ONE_ON_SQRT3,  ONE_ON_SQRT3,  ONE_ON_SQRT3), //  +XYZ : label 18
-    Vec3(-ONE_ON_SQRT3, -ONE_ON_SQRT3, -ONE_ON_SQRT3), //  -XYZ : label 19
-    Vec3( ONE_ON_SQRT3, -ONE_ON_SQRT3, -ONE_ON_SQRT3), // +X-YZ : label 20
-    Vec3(-ONE_ON_SQRT3,  ONE_ON_SQRT3,  ONE_ON_SQRT3), // -X+YZ : label 21
-    Vec3( ONE_ON_SQRT3,  ONE_ON_SQRT3, -ONE_ON_SQRT3), // +XY-Z : label 22
-    Vec3(-ONE_ON_SQRT3, -ONE_ON_SQRT3,  ONE_ON_SQRT3), // -XY+Z : label 23
-    Vec3( ONE_ON_SQRT3, -ONE_ON_SQRT3,  ONE_ON_SQRT3), //+X-Y+Z : label 24
-    Vec3(-ONE_ON_SQRT3,  ONE_ON_SQRT3, -ONE_ON_SQRT3)  //-X+Y-Z : label 25
+static const std::vector<cg3::Vec3> XYZ = {
+    cg3::Vec3( 1.0f,  0.0f,  0.0f),                         //    +X : label  0
+    cg3::Vec3( 0.0f,  1.0f,  0.0f),                         //    +Y : label  1
+    cg3::Vec3( 0.0f,  0.0f,  1.0f),                         //    +Z : label  2
+    cg3::Vec3(-1.0f,  0.0f,  0.0f),                         //    -X : label  3
+    cg3::Vec3( 0.0f, -1.0f,  0.0f),                         //    -Y : label  4
+    cg3::Vec3( 0.0f,  0.0f, -1.0f),                         //    -Z : label  5
+    cg3::Vec3( ONE_ON_SQRT2,  ONE_ON_SQRT2,  0.0f),         //   +XY : label  6
+    cg3::Vec3(-ONE_ON_SQRT2,  ONE_ON_SQRT2,  0.0f),         //  -X+Y : label  7
+    cg3::Vec3(-ONE_ON_SQRT2, -ONE_ON_SQRT2,  0.0f),         //   -XY : label  8
+    cg3::Vec3( ONE_ON_SQRT2, -ONE_ON_SQRT2,  0.0f),         //  +X-Y : label  9
+    cg3::Vec3( ONE_ON_SQRT2,  0.0f,  ONE_ON_SQRT2),         //   +XZ : label 10
+    cg3::Vec3(-ONE_ON_SQRT2,  0.0f,  ONE_ON_SQRT2),         //  -X+Z : label 11
+    cg3::Vec3(-ONE_ON_SQRT2,  0.0f, -ONE_ON_SQRT2),         //   -XZ : label 12
+    cg3::Vec3( ONE_ON_SQRT2,  0.0f, -ONE_ON_SQRT2),         //  +X-Z : label 13
+    cg3::Vec3( 0.0f,  ONE_ON_SQRT2,  ONE_ON_SQRT2),         //   +YZ : label 14
+    cg3::Vec3( 0.0f, -ONE_ON_SQRT2,  ONE_ON_SQRT2),         //  -Y+Z : label 15
+    cg3::Vec3( 0.0f, -ONE_ON_SQRT2, -ONE_ON_SQRT2),         //   -YZ : label 16
+    cg3::Vec3( 0.0f,  ONE_ON_SQRT2, -ONE_ON_SQRT2),         //  +Y-Z : label 17
+    cg3::Vec3( ONE_ON_SQRT3,  ONE_ON_SQRT3,  ONE_ON_SQRT3), //  +XYZ : label 18
+    cg3::Vec3(-ONE_ON_SQRT3, -ONE_ON_SQRT3, -ONE_ON_SQRT3), //  -XYZ : label 19
+    cg3::Vec3( ONE_ON_SQRT3, -ONE_ON_SQRT3, -ONE_ON_SQRT3), // +X-YZ : label 20
+    cg3::Vec3(-ONE_ON_SQRT3,  ONE_ON_SQRT3,  ONE_ON_SQRT3), // -X+YZ : label 21
+    cg3::Vec3( ONE_ON_SQRT3,  ONE_ON_SQRT3, -ONE_ON_SQRT3), // +XY-Z : label 22
+    cg3::Vec3(-ONE_ON_SQRT3, -ONE_ON_SQRT3,  ONE_ON_SQRT3), // -XY+Z : label 23
+    cg3::Vec3( ONE_ON_SQRT3, -ONE_ON_SQRT3,  ONE_ON_SQRT3), //+X-Y+Z : label 24
+    cg3::Vec3(-ONE_ON_SQRT3,  ONE_ON_SQRT3, -ONE_ON_SQRT3)  //-X+Y-Z : label 25
 };
 
 static const std::vector<Color> colors = {
@@ -107,9 +107,9 @@ static const std::vector<Color> colors = {
     Color(200, 200, 200)     //   White: label 25
 };
 
-Color colorOfNormal(const Vec3 &normal);
-Vec3 nearestNormal(const Vec3& normal);
-Color colorOfNearestNormal(const Vec3& normal);
-int indexOfNormal(const Vec3& v);
+Color colorOfNormal(const cg3::Vec3 &normal);
+cg3::Vec3 nearestNormal(const cg3::Vec3& normal);
+Color colorOfNearestNormal(const cg3::Vec3& normal);
+int indexOfNormal(const cg3::Vec3& v);
 
 #endif // MYCOMMON_H
