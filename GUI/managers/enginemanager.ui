@@ -62,7 +62,7 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-148</y>
+        <y>-189</y>
         <width>420</width>
         <height>1333</height>
        </rect>
@@ -1133,6 +1133,9 @@
                <widget class="QCheckBox" name="mergeDownwardsCheckBox">
                 <property name="text">
                  <string>Downwards</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>

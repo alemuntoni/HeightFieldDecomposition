@@ -298,9 +298,6 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
             b2.setMin(newBBb2.min());
             b2.setMax(newBBb2.max());
             b3.min() = b3.max() = Pointd();
-            #ifndef NDEBUG
-            b2.getEigenMesh().saveOnObj("b2modified.obj");
-            #endif
         }
         b2.setSplitted(true);
         b3.setSplitted(true);
@@ -517,14 +514,7 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
     //splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
     std::pair<unsigned int, unsigned int> impPair(b1.getId(), b2.getId());
     impossibleArcs.insert(impPair);
-    #ifndef NDEBUG
-    b1.getEigenMesh().saveOnObj("newb1.obj");
-    b2.getEigenMesh().saveOnObj("newb2.obj");
-    #endif
     if (!(b3.min() == Pointd() && b3.max() == Pointd())){ //se b3 esiste
-        #ifndef NDEBUG
-        b3.getEigenMesh().saveOnObj("newb3.obj");
-        #endif
         g.removeEdgeIfExists(b1.getId(), b2.getId());
         g.removeEdgeIfExists(b2.getId(), b1.getId());
         b3.setId(lastId+1);
@@ -556,10 +546,6 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
             for (unsigned int incoming : incomingb2){
                 Box3D other = bl.find(incoming);
                 std::pair<unsigned int, unsigned int> pp(b2.getId(), incoming);
-                #ifndef NDEBUG
-                b2.getEigenMesh().saveOnObj("ba.obj");
-                other.getEigenMesh().saveOnObj("bb.obj");
-                #endif
                 if (boxesIntersect(other,b2) && impossibleArcs.find(pp) == impossibleArcs.end()){
                     if (isDangerousIntersection(other, b2, tree, true)){
                         g.addEdge(incoming,b2.getId());
@@ -569,10 +555,6 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
             for (unsigned int outgoing : outgoingb2){
                 Box3D other = bl.find(outgoing);
                 std::pair<unsigned int, unsigned int> pp(b2.getId(), outgoing);
-                #ifndef NDEBUG
-                b2.getEigenMesh().saveOnObj("ba.obj");
-                other.getEigenMesh().saveOnObj("bb.obj");
-                #endif
                 if (boxesIntersect(b2, other) && impossibleArcs.find(pp) == impossibleArcs.end()){
                     if (isDangerousIntersection(b2, other, tree, true)){
                         g.addEdge(b2.getId(), outgoing);
@@ -612,10 +594,6 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
                 std::pair<unsigned int, unsigned int> pp (b3.getId(), i);
                 if (impossibleArcs.find(pp) == impossibleArcs.end()){
                     Box3D other = bl.getBox(i);
-                    #ifndef NDEBUG
-                    b3.getEigenMesh().saveOnObj("ba.obj");
-                    other.getEigenMesh().saveOnObj("bb.obj");
-                    #endif
                     if (boxesIntersect(other,b3)){
                         if (isDangerousIntersection(other, b3, tree, true)){
                             g.addEdge(i, b3.getId());
@@ -648,18 +626,10 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
         if (bl[i].getId() > lastId)
             lastId = bl[i].getId();
     }
-    #ifndef NDEBUG
-    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
-        bl.getBox(i).getEigenMesh().saveOnObj("b" + std::to_string(bl[i].getId()) + ".obj");
-    }
-    #endif
     std::set<unsigned int> boxesToEliminate; //set of boxes to eliminate after the splitting -> these boxes cannot removed from bl during the splitting
     std::vector<std::vector<unsigned int> > loops;
     std::set<std::pair<unsigned int, unsigned int>, cmpUnorderedStdPair<unsigned int>> impossibleArcs;
 
-    #ifndef NDEBUG
-    d.saveOnObjFile("bmodel.obj");
-    #endif
     DirectedGraph g = getGraph(bl, tree);
 
     for (const std::pair<unsigned int, unsigned int>& p : userArcs)
@@ -702,14 +672,7 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
         }
     }
 
-    #ifndef NDEBUG
     ///Detect and delete cycles on graph (modifying bl)
-    for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
-        bl.getBox(i).getEigenMesh().saveOnObj("ba" + std::to_string(bl[i].getId()) + ".obj");
-    }
-    #endif
-
-
     do {
         loops = g.getCircuits();
         std::cerr << "Number loops: " << loops.size() << "\n";
@@ -731,11 +694,6 @@ Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigne
             if (std::find(userArcs.begin(), userArcs.end(), std::pair<unsigned int, unsigned int>(arcToRemove.second, arcToRemove.first)) == userArcs.end())
                 chooseBestSplit(b1, b2, bl, tree, boxesToEliminate);
             //now b1 will split b2 in b2+b3
-
-            #ifndef NDEBUG
-            b1.getEigenMesh().saveOnObj("bb1.obj");
-            b2.getEigenMesh().saveOnObj("bb2.obj");
-            #endif
 
             ///
             ///

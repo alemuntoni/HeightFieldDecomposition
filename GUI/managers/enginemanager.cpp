@@ -1256,7 +1256,6 @@ void EngineManager::on_subtractPushButton_clicked() {
         }
         mainWindow.pushObj(baseComplex, "Base Complex");
         mainWindow.updateGlCanvas();
-        baseComplex->saveOnObj("BaseComplex.obj");
     }
 }
 
