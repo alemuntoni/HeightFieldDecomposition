@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <QMessageBox>
 #include <omp.h>
-#include "cg3/cgal/aabbtree.h"
+#include "cg3/cgal/aabb_tree.h"
 #include "engine/packing.h"
 #include "engine/reconstruction.h"
 #include <QThread>
@@ -13,6 +13,9 @@
 #include "engine/orientation.h"
 #include <lib/graph/bipartitegraph.h>
 #include <engine/tinyfeaturedetection.h>
+#include <cg3/geometry/transformations.h>
+#include <cg3/utilities/set.h>
+
 
 using namespace cg3;
 
@@ -131,7 +134,7 @@ Pointd EngineManager::getLimits() {
 
 void EngineManager::saveMSCFile(const std::string& filename, const Dcel& d, const BoxList& bl) {
     Array2D<int> mat(bl.getNumberBoxes(), d.getNumberFaces(), 0);
-    CGALInterface::AABBTree tree(d);
+    cgal::AABBTree tree(d);
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
         std::list<const Dcel::Face*> list = tree.getCompletelyContainedDcelFaces(bl.getBox(i));
         for (const Dcel::Face* f : list){
@@ -1137,7 +1140,7 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
         Dcel dd = *d;
         std::list<const Dcel::Face*> covered;
         if (mb == m[0]){
-            CGALInterface::AABBTree t(dd);
+            cgal::AABBTree t(dd);
             t.getContainedDcelFaces(covered, *b);
         }
         #if ORIENTATIONS > 1
@@ -1235,7 +1238,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         Engine::booleanOperations(*he, bc, *solutions, false);
         Engine::splitConnectedComponents(*he, *solutions, splittedBoxesToOriginals);
         Engine::glueInternHeightfieldsToBaseComplex(*he, *solutions, bc, *d);
-        CGALInterface::AABBTree tree(*d);
+        cgal::AABBTree tree(*d);
         Engine::updatePiecesNormals(tree, *he);
         tBooleans.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
@@ -1783,7 +1786,7 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
         for (Dcel::Face* f : d->faceIterator())
             f->setColor(Color(128,128,128));
         std::vector< std::set<const Dcel::Face*> > trianglesCovered (solutions->getNumberBoxes());
-        CGALInterface::AABBTree tree(*d);
+        cgal::AABBTree tree(*d);
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++) {
             std::list<const Dcel::Face*> ltmp = tree.getCompletelyContainedDcelFaces(solutions->getBox(i));
             std::set<const Dcel::Face*> tcbox(ltmp.begin(), ltmp.end());
@@ -1797,7 +1800,7 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
             std::set<const Dcel::Face*> lonelyTriangles = trianglesCovered[i];
             for (unsigned int j = 0; j < solutions->getNumberBoxes(); j++){
                 if (j != i){
-                    lonelyTriangles = Common::setDifference(lonelyTriangles, trianglesCovered[j]);
+                    lonelyTriangles = setDifference(lonelyTriangles, trianglesCovered[j]);
                 }
             }
             //assert(lonelyTriangles.size() > 0);
@@ -2019,7 +2022,7 @@ void EngineManager::on_saveShownBoxPushButton_clicked() {
 
 void EngineManager::on_rotatePushButton_clicked() {
     if (he != nullptr && d != nullptr && baseComplex != nullptr){
-        Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(ui->xvSpinBox->value(),ui->yvSpinBox->value(),ui->zvSpinBox->value()), (ui->angleSpinBox->value()*M_PI)/180);
+        Eigen::MatrixXd m = cg3::getRotationMatrix(Vec3(ui->xvSpinBox->value(),ui->yvSpinBox->value(),ui->zvSpinBox->value()), (ui->angleSpinBox->value()*M_PI)/180);
         he->rotate(m);
         d->rotate(m);
         d->updateFaceNormals();

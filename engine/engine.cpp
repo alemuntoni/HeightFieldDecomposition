@@ -1,13 +1,15 @@
 #include "engine.h"
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include <cg3/meshes/dcel/algorithms/dcel_algorithms.h>
+#include <cg3/geometry/transformations.h>
+#include <cg3/utilities/set.h>
 #include "lib/dcel_segmentation/segmentation.h"
 
 #ifdef GUROBI_DEFINED
 #include <gurobi_c++.h>
 #endif
 
-#include <cg3/cgal/cgalutils.h>
+#include <cg3/cgal/polyhedron.h>
 #include <CGAL/mesh_segmentation.h>
 #include <CGAL/property_map.h>
 
@@ -53,28 +55,28 @@ Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
     if (rot > 0){
         switch (rot){
             case 1:
-                Common::getRotationMatrix(Vec3(0,0,1), M_PI/4, m);
+                cg3::getRotationMatrix(Vec3(0,0,1), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 //m.transpose();
-                Common::getRotationMatrix(Vec3(0,0,-1), M_PI/4, m);
+                cg3::getRotationMatrix(Vec3(0,0,-1), M_PI/4, m);
                 break;
             case 2:
-                Common::getRotationMatrix(Vec3(0,1,0), M_PI/4, m);
+                cg3::getRotationMatrix(Vec3(0,1,0), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 //m.transpose();
-                Common::getRotationMatrix(Vec3(0,-1,0), M_PI/4, m);
+                cg3::getRotationMatrix(Vec3(0,-1,0), M_PI/4, m);
                 break;
             case 3:
-                Common::getRotationMatrix(Vec3(1,0,0), M_PI/4, m);
+                cg3::getRotationMatrix(Vec3(1,0,0), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 //m.transpose();
-                Common::getRotationMatrix(Vec3(-1,0,0), M_PI/4, m);
+                cg3::getRotationMatrix(Vec3(-1,0,0), M_PI/4, m);
                 break;
             default:
                 assert(0);
@@ -177,7 +179,7 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
         distanceField.resize(sizeX, sizeY, sizeZ);
         distanceField.setConstant(1);
     }
-    CGALInterface::AABBTree tree(m, true);
+    cgal::AABBTree tree(m, true);
     Array3D<unsigned char> isInside(sizeX, sizeY, sizeZ);
     isInside.setConstant(false);
 
@@ -227,7 +229,7 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
 
 
 
-        distances = CGALInterface::SignedDistances::getUnsignedDistances(insidePoints, tree);
+        distances = cgal::signedDistances::getUnsignedDistances(insidePoints, tree);
 
         for (unsigned int i = 0; i < sizeX; i++){
             for (unsigned int j = 0; j < sizeY; j++){
@@ -394,7 +396,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool limit, const Poin
 }
 
 void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, const BoxList& boxList, const Dcel& d) {
-    CGALInterface::AABBTree t(d);
+    cgal::AABBTree t(d);
 
 
     // creating vector of pairs
@@ -516,7 +518,7 @@ int Engine::deleteBoxesNonOptimal(BoxList& boxList, const Dcel& d) {
     Dcel scaled0(d);
     Eigen::Matrix3d m[ORIENTATIONS];
     m[0] = Eigen::Matrix3d::Identity();
-    CGALInterface::AABBTree t0(scaled0);
+    cgal::AABBTree t0(scaled0);
     #if ORIENTATIONS > 1
     getRotationMatrix(Vec3(0,0,1), 0.785398, m[1]);
     Dcel scaled1(d);
@@ -584,7 +586,7 @@ double Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
     unsigned int nBoxes = boxList.getNumberBoxes();
     unsigned int nTris = d.getNumberFaces();
     Array2D<int> B(nBoxes+1, nTris, 0);
-    CGALInterface::AABBTree aabb(d);
+    cgal::AABBTree aabb(d);
     for (unsigned int i = 0; i < nBoxes; i++){
         std::list<const Dcel::Face*> containedFaces = aabb.getCompletelyContainedDcelFaces(boxList.getBox(i));
         for (const Dcel::Face* f : containedFaces){
@@ -674,7 +676,7 @@ int Engine::deleteBoxesGSC(BoxList& boxList, const Dcel& d) {
     for (unsigned int i = 0; i < d.getNumberFaces(); i++)
         W.insert(i);
 
-    CGALInterface::AABBTree aabb(d);
+    cgal::AABBTree aabb(d);
     for (unsigned int i = 0; i < nBoxes; i++){
         std::list<const Dcel::Face*> containedFaces = aabb.getCompletelyContainedDcelFaces(boxList.getBox(i));
         std::set<int> s;
@@ -689,7 +691,7 @@ int Engine::deleteBoxesGSC(BoxList& boxList, const Dcel& d) {
         int a = -1;
         int found = -1;
         for (std::pair<int, std::set<int>> p : F){
-            std::set<int> inters = Common::setIntersection(p.second, W);
+            std::set<int> inters = setIntersection(p.second, W);
             if ((int)inters.size() > a){
                 a = inters.size();
                 found = p.first;
@@ -697,7 +699,7 @@ int Engine::deleteBoxesGSC(BoxList& boxList, const Dcel& d) {
             }
         }
         assert(a > 0 && found >= 0);
-        W = Common::setDifference(W, S);
+        W = setDifference(W, S);
         F.erase(found);
         C.push_back(found);
     }
@@ -740,9 +742,9 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
             factor/=2;
         numberFaces/=factor;
     }
-    CGALInterface::AABBTree aabb[ORIENTATIONS];
+    cgal::AABBTree aabb[ORIENTATIONS];
     for (unsigned int i = 0; i < ORIENTATIONS; i++)
-        aabb[i] = CGALInterface::AABBTree(scaled[i]);
+        aabb[i] = cgal::AABBTree(scaled[i]);
     for (unsigned int i = 0; i < ORIENTATIONS; ++i){
         bool first = true;
         if (file) {
@@ -972,7 +974,7 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
 }
 
 void Engine::boxPostProcessing(BoxList& solutions, const Dcel& d) {
-    CGALInterface::AABBTree tree(d);
+    cgal::AABBTree tree(d);
     for (int bi = solutions.getNumberBoxes()-1; bi >= 0; bi--) {
         Box3D b = solutions.getBox(bi);
         std::list<const Dcel::Face*> list = tree.getContainedDcelFaces(b);
@@ -1020,10 +1022,10 @@ std::vector<Box3D> Engine::splitBoxWithMoreThanOneConnectedComponent(const Box3D
     return splittedBoxes;
 }
 
-bool checkNewBox(const Box3D& tmp, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const CGALInterface::AABBTree& tree){
+bool checkNewBox(const Box3D& tmp, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cgal::AABBTree& tree){
     std::list<unsigned int> newTriangles;
     tree.getCompletelyContainedDcelFaces(newTriangles, tmp);
-    std::set<unsigned int> uncovered = Common::setDifference(b2.getTrianglesCovered(), std::set<unsigned int>(newTriangles.begin(), newTriangles.end()));
+    std::set<unsigned int> uncovered = setDifference(b2.getTrianglesCovered(), std::set<unsigned int>(newTriangles.begin(), newTriangles.end()));
     bool shrink = true;
     for (unsigned int t : uncovered){
         if (trianglesCovered[t] == 1)
@@ -1091,10 +1093,10 @@ void Engine::stupidSnapping(const Dcel& d, BoxList& solutions, double epsilon) {
     }
 }
 
-bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const CGALInterface::AABBTree& tree) {
+bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cgal::AABBTree& tree) {
     bool found = false;
     Box3D tmp = b2;
-    if (Common::isInBounds(b2.getMinX(), b1.getMinX(), b1.getMaxX()) && b2.getMaxX() > b1.getMaxX()){
+    if (isInBounds(b2.getMinX(), b1.getMinX(), b1.getMaxX()) && b2.getMaxX() > b1.getMaxX()){
         tmp.setMinX(b1.getMaxX());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
@@ -1102,7 +1104,7 @@ bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>
         else
             tmp = b2;
     }
-    if (Common::isInBounds(b2.getMinY(), b1.getMinY(), b1.getMaxY()) && b2.getMaxY() > b1.getMaxY()) {
+    if (isInBounds(b2.getMinY(), b1.getMinY(), b1.getMaxY()) && b2.getMaxY() > b1.getMaxY()) {
         tmp.setMinY(b1.getMaxY());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
@@ -1110,7 +1112,7 @@ bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>
         else
             tmp = b2;
     }
-    if (Common::isInBounds(b2.getMinZ(), b1.getMinZ(), b1.getMaxZ()) && b2.getMaxZ() > b1.getMaxZ()) {
+    if (isInBounds(b2.getMinZ(), b1.getMinZ(), b1.getMaxZ()) && b2.getMaxZ() > b1.getMaxZ()) {
         tmp.setMinZ(b1.getMaxZ());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
@@ -1118,7 +1120,7 @@ bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>
         else
             tmp = b2;
     }
-    if (Common::isInBounds(b2.getMaxX(), b1.getMinX(), b1.getMaxX()) && b2.getMinX() < b1.getMinX()){
+    if (isInBounds(b2.getMaxX(), b1.getMinX(), b1.getMaxX()) && b2.getMinX() < b1.getMinX()){
         tmp.setMaxX(b1.getMinX());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
@@ -1126,7 +1128,7 @@ bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>
         else
             tmp = b2;
     }
-    if (Common::isInBounds(b2.getMaxY(), b1.getMinY(), b1.getMaxY()) && b2.getMinY() < b1.getMinY()){
+    if (isInBounds(b2.getMaxY(), b1.getMinY(), b1.getMaxY()) && b2.getMinY() < b1.getMinY()){
         tmp.setMaxY(b1.getMinY());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
@@ -1134,7 +1136,7 @@ bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>
         else
             tmp = b2;
     }
-    if (Common::isInBounds(b2.getMaxZ(), b1.getMinZ(), b1.getMaxZ()) && b2.getMinZ() < b1.getMinZ()){
+    if (isInBounds(b2.getMaxZ(), b1.getMinZ(), b1.getMaxZ()) && b2.getMinZ() < b1.getMinZ()){
         tmp.setMaxZ(b1.getMinZ());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
@@ -1144,7 +1146,7 @@ bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>
 }
 
 void Engine::smartSnapping(const Dcel& d, BoxList& solutions) {
-    CGALInterface::AABBTree tree(d);
+    cgal::AABBTree tree(d);
     solutions.calculateTrianglesCovered(tree);
     std::vector<unsigned int> trianglesCovered(d.getNumberFaces(), 0);
     for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
@@ -1198,7 +1200,7 @@ void Engine::smartSnapping(const Dcel& d, BoxList& solutions) {
 }
 
 void Engine::merging(const Dcel& d, BoxList& solutions) {
-    CGALInterface::AABBTree tree(d);
+    cgal::AABBTree tree(d);
     std::vector<unsigned int> trianglesCovered(d.getNumberFaces(), 0);
     for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
         const std::set<unsigned int>& s = solutions[i].getTrianglesCovered();
@@ -1226,7 +1228,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                 std::list<unsigned int> newTrianglesA;
                                 tree.getCompletelyContainedDcelFaces(newTrianglesA, tmpa);
                                 std::set<unsigned int> nonCoveredTrianglesA(newTrianglesA.begin(), newTrianglesA.end());
-                                nonCoveredTrianglesA = Common::setDifference(a.getTrianglesCovered(), nonCoveredTrianglesA);
+                                nonCoveredTrianglesA = setDifference(a.getTrianglesCovered(), nonCoveredTrianglesA);
                                 bool shrink = true;
                                 for (unsigned int t : nonCoveredTrianglesA){
                                     if (trianglesCovered[t] == 1)
@@ -1242,7 +1244,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
 
                                     SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
                                     a.setEigenMesh(u);
-                                    a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                    a.setTrianglesCovered(setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
                                     a.setMin(u.getBoundingBox().min());
                                     a.setMax(u.getBoundingBox().max());
                                     solutions[i].setSplitted(true);
@@ -1259,7 +1261,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                 std::list<unsigned int> newTrianglesB;
                                 tree.getCompletelyContainedDcelFaces(newTrianglesB, tmpb);
                                 std::set<unsigned int> nonCoveredTrianglesB(newTrianglesB.begin(), newTrianglesB.end());
-                                nonCoveredTrianglesB = Common::setDifference(b.getTrianglesCovered(), nonCoveredTrianglesB);
+                                nonCoveredTrianglesB = setDifference(b.getTrianglesCovered(), nonCoveredTrianglesB);
                                 bool shrink = true;
                                 for (unsigned int t : nonCoveredTrianglesB){
                                     if (trianglesCovered[t] == 1)
@@ -1275,7 +1277,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
 
                                     SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
                                     a.setEigenMesh(u);
-                                    a.setTrianglesCovered(Common::setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                    a.setTrianglesCovered(setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
                                     a.setMin(u.getBoundingBox().min());
                                     a.setMax(u.getBoundingBox().max());
                                     solutions[i].setSplitted(true);
@@ -1384,12 +1386,12 @@ void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions, 
 }
 
 void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& solutions, SimpleEigenMesh& bc, const Dcel& inputMesh) {
-    CGALInterface::AABBTree aabb(inputMesh, true);
+    cgal::AABBTree aabb(inputMesh, true);
     for (int i = (int)he.getNumHeightfields()-1; i >= 0; i--){
         EigenMesh m = he.getHeightfield(i);
         bool inside = true;
         for (unsigned int j = 0; j < m.getNumberVertices() && inside; j++){
-            if (aabb.getSquaredDistance(m.getVertex(j)) < EPSILON)
+            if (aabb.getSquaredDistance(m.getVertex(j)) < CG3_EPSILON)
                 inside = false;
         }
         if (inside){
@@ -1401,13 +1403,13 @@ void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& 
 }
 
 void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const Dcel& inputMesh) {
-    CGALInterface::AABBTree aabb(inputMesh, true);
+    cgal::AABBTree aabb(inputMesh, true);
     for (int i = he.getNumHeightfields()-1; i >= 0; i--){
         BoundingBox realBoundingBox;
         bool first = true;
         for (unsigned int j = 0; j < he.getNumberVerticesHeightfield(i); j++){
             Pointd p = he.getVertexOfHeightfield(i,j);
-            if (aabb.getSquaredDistance(p) < EPSILON){
+            if (aabb.getSquaredDistance(p) < CG3_EPSILON){
                 if (first){
                     first = false;
                     realBoundingBox.min() = p;
@@ -1429,8 +1431,8 @@ void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const
         }*/
 
 
-        if (! Common::epsilonEqual(realBoundingBox.min(), he.getHeightfield(i).getBoundingBox().min()) ||
-            ! Common::epsilonEqual(realBoundingBox.max(), he.getHeightfield(i).getBoundingBox().max()) ){
+        if (! epsilonEqual(realBoundingBox.min(), he.getHeightfield(i).getBoundingBox().min()) ||
+            ! epsilonEqual(realBoundingBox.max(), he.getHeightfield(i).getBoundingBox().max()) ){
             SimpleEigenMesh box = EigenMeshAlgorithms::makeBox(realBoundingBox);
             SimpleEigenMesh oldHeightfield = he.getHeightfield(i);
             SimpleEigenMesh gluePortion = EigenMeshAlgorithms::difference(oldHeightfield, box);
@@ -1442,28 +1444,28 @@ void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const
 }
 
 void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc, BoxList& solutions, const Dcel& inputMesh) {
-    CGALInterface::AABBTree aabb(inputMesh, true);
+    cgal::AABBTree aabb(inputMesh, true);
     for (unsigned int i = solutions.getNumberBoxes()-1; i >= 1; i--){
         SimpleEigenMesh heightfield = he.getHeightfield(i);
         std::vector<Pointd> pointsOnSurface;
         for (unsigned int j = 0; j < heightfield.getNumberVertices(); j++){
             Pointd p = heightfield.getVertex(j);
-            if (aabb.getSquaredDistance(p) < EPSILON) pointsOnSurface.push_back(p);
+            if (aabb.getSquaredDistance(p) < CG3_EPSILON) pointsOnSurface.push_back(p);
         }
         Eigen::Matrix3d m = solutions.getBox(i).getRotationMatrix(), mt;
         Eigen::Matrix3d arr[4];
         arr[0] = Eigen::Matrix3d::Identity();
-        Common::getRotationMatrix(Vec3(0,0,-1), M_PI/4, arr[1]);
-        Common::getRotationMatrix(Vec3(0,-1,0), M_PI/4, arr[2]);
-        Common::getRotationMatrix(Vec3(-1,0,0), M_PI/4, arr[3]);
+        cg3::getRotationMatrix(Vec3(0,0,-1), M_PI/4, arr[1]);
+        cg3::getRotationMatrix(Vec3(0,-1,0), M_PI/4, arr[2]);
+        cg3::getRotationMatrix(Vec3(-1,0,0), M_PI/4, arr[3]);
         if (m == arr[0])
             mt = arr[0];
         else if (m == arr[1])
-            Common::getRotationMatrix(Vec3(0,0,1), M_PI/4, mt);
+            cg3::getRotationMatrix(Vec3(0,0,1), M_PI/4, mt);
         else if (m == arr[2])
-            Common::getRotationMatrix(Vec3(0,1,0), M_PI/4, mt);
+            cg3::getRotationMatrix(Vec3(0,1,0), M_PI/4, mt);
         else if (m == arr[3])
-            Common::getRotationMatrix(Vec3(1,0,0), M_PI/4, mt);
+            cg3::getRotationMatrix(Vec3(1,0,0), M_PI/4, mt);
         else assert(0);
         pointsOnSurface[0].rotate(mt);
         Pointd min = pointsOnSurface[0], max = pointsOnSurface[0];
@@ -1480,8 +1482,8 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
             b.setMinZ(min.z());
             b.setMaxY(max.y());
             b.setMaxZ(max.z());
-            b.setMinX(b.getMinX()-5*EPSILON);
-            b.setMaxX(b.getMaxX()+5*EPSILON);
+            b.setMinX(b.getMinX()-5*CG3_EPSILON);
+            b.setMaxX(b.getMaxX()+5*CG3_EPSILON);
         }
         else if (target == XYZ[1] || target == XYZ[4]) {
             b = solutions.getBox(i);
@@ -1489,8 +1491,8 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
             b.setMinZ(min.z());
             b.setMaxX(max.x());
             b.setMaxZ(max.z());
-            b.setMinY(b.getMinY()-5*EPSILON);
-            b.setMaxY(b.getMaxY()+5*EPSILON);
+            b.setMinY(b.getMinY()-5*CG3_EPSILON);
+            b.setMaxY(b.getMaxY()+5*CG3_EPSILON);
         }
         else if (target == XYZ[2] || target == XYZ[5]) {
             b = solutions.getBox(i);
@@ -1498,8 +1500,8 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
             b.setMinX(min.x());
             b.setMaxY(max.y());
             b.setMaxX(max.x());
-            b.setMinZ(b.getMinZ()-5*EPSILON);
-            b.setMaxZ(b.getMaxZ()+5*EPSILON);
+            b.setMinZ(b.getMinZ()-5*CG3_EPSILON);
+            b.setMaxZ(b.getMaxZ()+5*CG3_EPSILON);
         }
         else assert(0);
         SimpleEigenMesh inters;
@@ -1540,7 +1542,7 @@ std::set<unsigned int> chartExpansion(const EigenMesh &hf, unsigned int f, std::
     return chart;
 }
 
-std::vector<Pointd> getPolygonFromChartMarker(const EigenMesh&hf, const CGALInterface::AABBTree& tree, const std::set<unsigned int>& chart){
+std::vector<Pointd> getPolygonFromChartMarker(const EigenMesh&hf, const cgal::AABBTree& tree, const std::set<unsigned int>& chart){
     std::vector<std::pair<unsigned int, unsigned int> > segments;
     Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
     for (unsigned int f : chart){
@@ -1638,19 +1640,19 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
     return marked;*/
 
 
-    CGALInterface::AABBTree tree(d, true);
+    cgal::AABBTree tree(d, true);
     std::set< std::pair<Pointd, Pointd> > edges;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         const EigenMesh& mesh = he.getHeightfield(i);
         Eigen::MatrixXi TT = EigenMeshAlgorithms::getFaceAdjacences(mesh);
         for (unsigned int f = 0; f < mesh.getNumberFaces(); f++){
             Vec3 n1 = mesh.getFaceNormal(f);
-            if (n1.dot(he.getTarget(i))<=EPSILON){
+            if (n1.dot(he.getTarget(i))<=CG3_EPSILON){
                 for (unsigned int k = 0; k < 3; k++){
                     int adj = TT(f,k);
                     if (adj >= 0){
                         Vec3 n2 = mesh.getFaceNormal(adj);
-                        if (n2.dot(he.getTarget(i))>=-EPSILON){
+                        if (n2.dot(he.getTarget(i))>=-CG3_EPSILON){
                             Pointi f1 = mesh.getFace(f);
                             Pointi f2 = mesh.getFace(adj);
                             std::set<Pointd> allPoints;
@@ -1665,7 +1667,7 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
                             bool allNear = true;
                             bool allDist = true;
                             for (Pointd  p : allPoints){
-                                if (tree.getSquaredDistance(p) > EPSILON)
+                                if (tree.getSquaredDistance(p) > CG3_EPSILON)
                                     allNear = false;
                                 else
                                     allDist = false;
@@ -1837,7 +1839,7 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
             n1.normalize();
             Vec3 n2 = polygon[(j+2)%polygon.size()]-polygon[(j+1)%polygon.size()];
             n2.normalize();
-            if (Common::epsilonEqual(n1, n2)){
+            if (epsilonEqual(n1, n2)){
                 polygon.erase(polygon.begin()+((j+1)%polygon.size()));
                 j--;
             }
@@ -1858,19 +1860,19 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
     structure.saveOnObj(structureString);
 }
 
-void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, Dcel& piece) {
+void Engine::updatePieceNormals(const cgal::AABBTree& tree, Dcel& piece) {
     for (Dcel::Vertex* v : piece.vertexIterator()){
-        if (tree.getSquaredDistance(v->getCoordinate() < EPSILON)){
+        if (tree.getSquaredDistance(v->getCoordinate() < CG3_EPSILON)){
             const Dcel::Vertex* n = tree.getNearestDcelVertex(v->getCoordinate());
             v->setNormal(n->getNormal());
         }
     }
 }
 
-void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, EigenMesh& piece) {
+void Engine::updatePieceNormals(const cgal::AABBTree& tree, EigenMesh& piece) {
     Dcel d(piece);
     for (Dcel::Vertex* v : d.vertexIterator()){
-        if (tree.getSquaredDistance(v->getCoordinate() < EPSILON)){
+        if (tree.getSquaredDistance(v->getCoordinate() < CG3_EPSILON)){
             const Dcel::Vertex* n = tree.getNearestDcelVertex(v->getCoordinate());
             if (n->getCoordinate().dist(v->getCoordinate()) < 3)
                 v->setNormal(n->getNormal());
@@ -1879,7 +1881,7 @@ void Engine::updatePieceNormals(const CGALInterface::AABBTree& tree, EigenMesh& 
     piece = EigenMesh(d);
 }
 
-void Engine::updatePiecesNormals(const CGALInterface::AABBTree& tree, HeightfieldsList& he) {
+void Engine::updatePiecesNormals(const cgal::AABBTree& tree, HeightfieldsList& he) {
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         updatePieceNormals(tree, he.getHeightfield(i));
     }
@@ -1900,7 +1902,7 @@ bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
         assert(0);
     for (unsigned int i = 0; i < m.getNumberFaces() && heightfield; i++){
         Vec3 normal = m.getFaceNormal(i);
-        if (Common::epsilonEqual(normal, -v)){
+        if (epsilonEqual(normal, -v)){
             Pointi face = m.getFace(i);
             Pointd p0 = m.getVertex(face[0]);
             Pointd p1 = m.getVertex(face[1]);
@@ -1910,12 +1912,12 @@ bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
                 baseCoord = p0[dir];
             }
             else {
-                if (! Common::epsilonEqual(p0[dir],baseCoord))
+                if (! epsilonEqual(p0[dir],baseCoord))
                     heightfield = false;
             }
-            if (! Common::epsilonEqual(p1[dir],baseCoord))
+            if (! epsilonEqual(p1[dir],baseCoord))
                 heightfield = false;
-            if (! Common::epsilonEqual(p2[dir],baseCoord))
+            if (! epsilonEqual(p2[dir],baseCoord))
                 heightfield = false;
         }
         else if (strictly) {
@@ -1927,7 +1929,7 @@ bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
 }
 
 void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
-    CGALInterface::AABBTree tree(d);
+    cgal::AABBTree tree(d);
     constexpr int nColors = 9;
     std::array<QColor, nColors> colors;
     colors[0] = QColor(221, 126, 107); //
@@ -2094,7 +2096,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
 
     //first merging
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        CGALInterface::AABBTree tree(he.getHeightfield(i), true);
+        cgal::AABBTree tree(he.getHeightfield(i), true);
         for (unsigned int j = 0; j < he.getNumHeightfields(); j++){
             if ( i != j){
                 //can I merge j with i?
@@ -2130,7 +2132,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
     }
 
     //second merging
-    CGALInterface::AABBTree tree(d);
+    cgal::AABBTree tree(d);
 
     //building adjacences
     std::map< const Dcel::Vertex*, int > mapping = Reconstruction::getMappingId(d, he);
@@ -2247,8 +2249,8 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                 }
                 ///
                 else if (mergeDownwards){
-                    CGALInterface::AABBTree treebc(baseComplex);
-                    CGALInterface::AABBTree treei(he.getHeightfield(i));
+                    cgal::AABBTree treebc(baseComplex);
+                    cgal::AABBTree treei(he.getHeightfield(i));
                     std::set<Pointd> basePoints;
                     for (unsigned int pj = 0; pj < he.getHeightfield(j).getNumberVertices(); pj++){
                         if (he.getHeightfield(j).getVertex(pj)[iohf%3] == basej){
@@ -2312,7 +2314,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
 
                         }
                         if (k == i){
-                            nadk = Common::setUnion(nadk, ntmp);
+                            nadk = setUnion(nadk, ntmp);
                         }
                         adjacences[k] = nadk;
                     }

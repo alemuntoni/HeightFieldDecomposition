@@ -1,5 +1,6 @@
 #include "packing.h"
 #include "lib/packing/binpack2d.h"
+#include <cg3/geometry/transformations.h>
 
 using namespace cg3;
 
@@ -18,7 +19,7 @@ void Packing::rotateAllPieces(HeightfieldsList& he) {
             if (normal == -zAxis){
                 axis = Vec3(1,0,0);
             }
-            Common::getRotationMatrix(axis, angle, r);
+            cg3::getRotationMatrix(axis, angle, r);
         }
         else {
             r = Eigen::Matrix3d::Identity();
@@ -188,7 +189,7 @@ std::vector<std::vector<EigenMesh> > Packing::getPacks(std::vector<std::vector<s
                 id = (-pair.first)-1;
                 mesh = he.getHeightfield(id);
                 Eigen::Matrix3d rot;
-                Common::getRotationMatrix(Vec3(0,0,1),M_PI/2,rot);
+                cg3::getRotationMatrix(Vec3(0,0,1),M_PI/2,rot);
                 mesh.rotate(rot);
                 mesh.updateFaceNormals();
                 mesh.updateVerticesNormals();

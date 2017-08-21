@@ -90,7 +90,7 @@ void DrawableGrid::draw() const {
                             for (unsigned int j = 0; j < getResY(); ++j){
                                 for (unsigned int k = 0; k < getResZ(); ++k){
                                     if (getSignedDistance(i,j,k) < -kernelDistance){
-                                        Viewer::drawSphere(getPoint(i,j,k), 0.3, QColor(255,0,0));
+                                        viewer::drawSphere(getPoint(i,j,k), 0.3, QColor(255,0,0));
                                     }
                                 }
                             }
@@ -100,7 +100,7 @@ void DrawableGrid::draw() const {
                         for (unsigned int j = 0; j < getResY(); ++j){
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 if (getSignedDistance(sliceValue,j,k) < -kernelDistance){
-                                    Viewer::drawSphere(getPoint(sliceValue,j,k), 0.3, QColor(255,0,0));
+                                    viewer::drawSphere(getPoint(sliceValue,j,k), 0.3, QColor(255,0,0));
                                 }
                             }
                         }
@@ -109,7 +109,7 @@ void DrawableGrid::draw() const {
                         for (unsigned int i = 0; i < getResX(); ++i){
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 if (getSignedDistance(i,sliceValue,k) < -kernelDistance){
-                                    Viewer::drawSphere(getPoint(i,sliceValue,k), 0.3, QColor(255,0,0));
+                                    viewer::drawSphere(getPoint(i,sliceValue,k), 0.3, QColor(255,0,0));
                                 }
                             }
                         }
@@ -118,7 +118,7 @@ void DrawableGrid::draw() const {
                         for (unsigned int i = 0; i < getResX(); ++i){
                             for (unsigned int j = 0; j < getResY(); ++j){
                                 if (getSignedDistance(i,j,sliceValue) < -kernelDistance){
-                                    Viewer::drawSphere(getPoint(i,j,sliceValue), 0.3, QColor(255,0,0));
+                                    viewer::drawSphere(getPoint(i,j,sliceValue), 0.3, QColor(255,0,0));
                                 }
                             }
                         }
@@ -133,7 +133,7 @@ void DrawableGrid::draw() const {
                                 for (unsigned int k = 0; k < getResZ(); k+=2){
                                     double w = getWeight(i,j,k);
                                     QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                    Viewer::drawSphere(getPoint(i,j,k), 0.3, c);
+                                    viewer::drawSphere(getPoint(i,j,k), 0.3, c);
                                 }
                             }
                         }
@@ -143,7 +143,7 @@ void DrawableGrid::draw() const {
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 double w = getWeight(sliceValue,j,k);
                                 QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                Viewer::drawSphere(getPoint(sliceValue,j,k), 0.4, c);
+                                viewer::drawSphere(getPoint(sliceValue,j,k), 0.4, c);
                             }
                         }
                         xi = getPoint(sliceValue, 0, 0).x();
@@ -152,7 +152,7 @@ void DrawableGrid::draw() const {
                                 double w = getValue(Pointd(xi,yi,zi));
                                 QColor c;
                                 c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                                Viewer::drawSphere(Pointd(xi,yi,zi), 0.2, c);
+                                viewer::drawSphere(Pointd(xi,yi,zi), 0.2, c);
                             }
                         }
                         break;
@@ -161,7 +161,7 @@ void DrawableGrid::draw() const {
                             for (unsigned int k = 0; k < getResZ(); ++k){
                                 double w = getWeight(i,sliceValue,k);
                                 QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                Viewer::drawSphere(getPoint(i,sliceValue,k), 0.4, c);
+                                viewer::drawSphere(getPoint(i,sliceValue,k), 0.4, c);
                             }
                         }
                         yi = getPoint(0,sliceValue,0).y();
@@ -170,7 +170,7 @@ void DrawableGrid::draw() const {
                                 double w = getValue(Pointd(xi,yi,zi));
                                 QColor c;
                                 c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                                Viewer::drawSphere(Pointd(xi,yi,zi), 0.2, c);
+                                viewer::drawSphere(Pointd(xi,yi,zi), 0.2, c);
                             }
                         }
                         break;
@@ -179,7 +179,7 @@ void DrawableGrid::draw() const {
                             for (unsigned int j = 0; j < getResY(); ++j){
                                 double w = getWeight(i,j,sliceValue);
                                 QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                Viewer::drawSphere(getPoint(i,j,sliceValue), 0.4, c);
+                                viewer::drawSphere(getPoint(i,j,sliceValue), 0.4, c);
                             }
                         }
                         zi = getPoint(0,0,sliceValue).z();
@@ -188,7 +188,7 @@ void DrawableGrid::draw() const {
                                 double w = getValue(Pointd(xi,yi,zi));
                                 QColor c;
                                 c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                                Viewer::drawSphere(Pointd(xi,yi,zi), 0.2, c);
+                                viewer::drawSphere(Pointd(xi,yi,zi), 0.2, c);
                             }
                         }
                         break;

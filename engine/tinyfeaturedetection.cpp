@@ -1,7 +1,10 @@
 #include "tinyfeaturedetection.h"
 
-#include <cg3/cgal/cgalsdf.h>
-#include <cg3/cgal/aabbtree.h>
+#include <cg3/geometry/transformations.h>
+#include <cg3/geometry/2d/polygon2d.h>
+#include <cg3/utilities/utils.h>
+#include <cg3/cgal/sdf.h>
+#include <cg3/cgal/aabb_tree.h>
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include "engine.h"
 #include <common.h>
@@ -10,7 +13,7 @@ using namespace cg3;
 
 std::vector<unsigned int> TinyFeatureDetection::sdf(const EigenMesh &m, double threshold) {
     std::vector<unsigned int> problematicFaces;
-    std::vector<double> sdf = cg3::CGALInterface::SDF::getSDFMap(m);
+    std::vector<double> sdf = cg3::cgal::sdf::getSDFMap(m);
     for (unsigned int i = 0; i < sdf.size(); i++){
         if (sdf[i] < threshold)
             problematicFaces.push_back(i);
@@ -47,7 +50,7 @@ bool TinyFeatureDetection::tinyFeatureVoxelization(const EigenMesh &hf, const Ve
         if (target == -zAxis){
             axis = Vec3(1,0,0);
         }
-        Common::getRotationMatrix(axis, angle, r);
+        cg3::getRotationMatrix(axis, angle, r);
     }
     else {
         r = Eigen::Matrix3d::Identity();
@@ -60,7 +63,7 @@ bool TinyFeatureDetection::tinyFeatureVoxelization(const EigenMesh &hf, const Ve
     // grid generation
     Array3D<Pointd> grid = generateGrid(m, threshold/2);
 
-    CGALInterface::AABBTree tree(m);
+    cgal::AABBTree tree(m);
     Array3D<short int> isInside(grid.getSizeX(), grid.getSizeY(), grid.getSizeZ(), false);
     for (unsigned int i = 0; i < grid.getSizeX(); i++){
         for (unsigned int j = 0; j < grid.getSizeY(); j++){
@@ -221,7 +224,7 @@ bool TinyFeatureDetection::tinyFeaturePlane(const EigenMesh &hf, const Vec3 &tar
             n1.normalize();
             Vec3 n2 = polygons[i][j+2]-polygons[i][j+1];
             n2.normalize();
-            if (Common::epsilonEqual(n1, n2)){
+            if (cg3::epsilonEqual(n1, n2)){
                 polygons[i].erase(polygons[i].begin()+j+1);
                 j--;
             }
@@ -245,7 +248,7 @@ bool TinyFeatureDetection::tinyFeaturePlane(const EigenMesh &hf, const Vec3 &tar
             }
             pol2D.push_back(p2d);
         }
-        if (! Common::isCounterClockwise(pol2D)){
+        if (! cg3::isCounterClockwise(pol2D)){
             std::reverse(pol2D.begin(), pol2D.end());
         }
         polygons2D.push_back(pol2D);
@@ -258,7 +261,7 @@ bool TinyFeatureDetection::tinyFeaturePlane(const EigenMesh &hf, const Vec3 &tar
             if (indexOfNormal(polygonNormals[i]) != indexOfNormal(polygonNormals[j]) && indexOfNormal(polygonNormals[i])%3 == indexOfNormal(polygonNormals[j])%3){
                 if (std::abs(polygons[i][0][indexOfNormal(polygonNormals[i])%3] - polygons[j][0][indexOfNormal(polygonNormals[j])%3]) < threshold){
                     if (polygons[i][0][indexOfNormal(polygonNormals[i])%3] > polygons[j][0][indexOfNormal(polygonNormals[j])%3] && indexOfNormal(polygonNormals[i]) < indexOfNormal(polygonNormals[j])) {
-                        if (CGALInterface::BooleanOperations2D::doIntersect(polygons2D[i], polygons2D[j])){
+                        if (cgal::booleans2d::doIntersect(polygons2D[i], polygons2D[j])){
                             if (!isTinyFeature){
                                 mindist = std::abs(polygons[i][0][indexOfNormal(polygonNormals[i])%3] - polygons[j][0][indexOfNormal(polygonNormals[j])%3]);
                             }

@@ -18,9 +18,7 @@ CONFIG += ALL
 #CONFIG += CONVERTER_MODE
 
 ALL {
-    include(../CG3/cg3.pri)
-
-    include(cinolib_interface/cinolib.pri)
+    include(cg3lib/cg3.pri)
 }
 
 SERVER_MODE {

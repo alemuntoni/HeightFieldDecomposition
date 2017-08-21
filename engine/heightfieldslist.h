@@ -1,10 +1,10 @@
 #ifndef HEIGHTFIELDSLIST_H
 #define HEIGHTFIELDSLIST_H
 
-#include "cg3/meshes/eigenmesh/gui/drawableeigenmesh.h"
+#include "cg3/viewer/drawable_objects/drawable_eigenmesh.h"
 #include "cg3/viewer/interfaces/drawable_object.h"
 
-class HeightfieldsList : public cg3::DrawableObject, public SerializableObject{
+class HeightfieldsList : public cg3::DrawableObject, public cg3::SerializableObject{
     public:
         HeightfieldsList();
         // DrawableObject interface

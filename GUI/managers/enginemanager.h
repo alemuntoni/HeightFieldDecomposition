@@ -4,7 +4,7 @@
 #include <QFrame>
 #include <QLabel>
 #include <cg3/viewer/utilities/loadersaver.h>
-#include "cg3/meshes/dcel/gui/dcelmanager.h"
+#include "cg3/viewer/managers/dcel_manager/dcelmanager.h"
 #include "lib/grid/drawablegrid.h"
 #include "lib/grid/drawableirregulargrid.h"
 #include "common.h"
@@ -12,7 +12,7 @@
 #include "engine/energy.h"
 #include "engine/engine.h"
 #include "cg3/utilities/timer.h"
-#include "cg3/meshes/eigenmesh/gui/drawableeigenmesh.h"
+#include "cg3/viewer/drawable_objects/drawable_eigenmesh.h"
 #include "engine/heightfieldslist.h"
 #include "engine/splitting.h"
 
@@ -21,7 +21,7 @@ namespace Ui {
     class EngineManager;
 }
 
-class EngineManager : public QFrame, public SerializableObject {
+class EngineManager : public QFrame, public cg3::SerializableObject {
         Q_OBJECT
 
     public:
@@ -255,9 +255,9 @@ signals:
 
         std::vector<std::pair<unsigned int, unsigned int>> userArcs;
 
-        cg3::Viewer::LoaderSaver hfdls;
-        cg3::Viewer::LoaderSaver binls;
-        cg3::Viewer::LoaderSaver objls;
+        cg3::viewer::LoaderSaver hfdls;
+        cg3::viewer::LoaderSaver binls;
+        cg3::viewer::LoaderSaver objls;
 };
 
 #endif // ENGINEMANAGER_H

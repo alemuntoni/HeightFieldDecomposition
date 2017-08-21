@@ -11,7 +11,7 @@
 #include <cg3/meshes/dcel/dcel.h>
 #include "lib/grid/grid.h"
 #include "energy.h"
-#include <cg3/cgal/cgalinterface.h>
+#include <cg3/cgal/cgal.h>
 #include "heightfieldslist.h"
 #include "lib/grid/irregulargrid.h"
 
@@ -36,13 +36,13 @@ namespace Engine {
 
     void setTrianglesTargets(cg3::Dcel scaled[]);
 
-    void generateGridAndDistanceField(Array3D<cg3::Pointd> &grid, Array3D<gridreal> &distanceField, const cg3::SimpleEigenMesh& m, bool generateDistanceField = true, double gridUnit = 2, bool integer = true);
+    void generateGridAndDistanceField(cg3::Array3D<cg3::Pointd> &grid, cg3::Array3D<gridreal> &distanceField, const cg3::SimpleEigenMesh& m, bool generateDistanceField = true, double gridUnit = 2, bool integer = true);
 
-    void calculateGridWeights(Grid& g, const Array3D<cg3::Pointd> &grid, const Array3D<gridreal> &distanceField, const cg3::Dcel& d, double kernelDistance, bool tolerance, const cg3::Vec3 &target, std::set<const cg3::Dcel::Face*>& savedFaces);
+    void calculateGridWeights(Grid& g, const cg3::Array3D<cg3::Pointd> &grid, const cg3::Array3D<gridreal> &distanceField, const cg3::Dcel& d, double kernelDistance, bool tolerance, const cg3::Vec3 &target, std::set<const cg3::Dcel::Face*>& savedFaces);
 
     static std::set<const cg3::Dcel::Face*> dummy;
-    static Array3D<gridreal> ddf;
-    Array3D<gridreal> generateGrid(Grid &g, const cg3::Dcel &d, double kernelDistance = 6, bool tolerance = false, const cg3::Vec3& target = cg3::Vec3(), std::set<const cg3::Dcel::Face*> &savedFaces = dummy);
+    static cg3::Array3D<gridreal> ddf;
+    cg3::Array3D<gridreal> generateGrid(Grid &g, const cg3::Dcel &d, double kernelDistance = 6, bool tolerance = false, const cg3::Vec3& target = cg3::Vec3(), std::set<const cg3::Dcel::Face*> &savedFaces = dummy);
 
     void addBox(BoxList& boxList, const cg3::Vec3 target, const cg3::Dcel::Face* f, const Eigen::Matrix3d& rot);
 
@@ -73,7 +73,7 @@ namespace Engine {
 
     void stupidSnapping(const cg3::Dcel& d, BoxList& solutions, double epsilon);
 
-    bool smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cg3::CGALInterface::AABBTree& tree);
+    bool smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cg3::cgal::AABBTree& tree);
 
     void smartSnapping(const cg3::Dcel& d, BoxList& solutions);
 
@@ -95,10 +95,10 @@ namespace Engine {
 
     cg3::SimpleEigenMesh getMarkerMesh(const HeightfieldsList& he, const cg3::Dcel& d);
 
-    void updatePieceNormals(const cg3::CGALInterface::AABBTree& tree, cg3::Dcel &piece);
-    void updatePieceNormals(const cg3::CGALInterface::AABBTree& tree, cg3::EigenMesh &piece);
+    void updatePieceNormals(const cg3::cgal::AABBTree& tree, cg3::Dcel &piece);
+    void updatePieceNormals(const cg3::cgal::AABBTree& tree, cg3::EigenMesh &piece);
 
-    void updatePiecesNormals(const cg3::CGALInterface::AABBTree& tree, HeightfieldsList &he);
+    void updatePiecesNormals(const cg3::cgal::AABBTree& tree, HeightfieldsList &he);
 
     void saveObjs(const std::string &foldername, const cg3::EigenMesh& originalMesh, const cg3::Dcel& inputMesh, const cg3::EigenMesh& baseComplex, const HeightfieldsList& he);
 

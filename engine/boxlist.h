@@ -3,9 +3,9 @@
 
 #include "box.h"
 #include "cg3/data_structures/arrays.h"
-#include "cg3/cgal/aabbtree.h"
+#include "cg3/cgal/aabb_tree.h"
 
-class BoxList : public cg3::DrawableObject, public SerializableObject{
+class BoxList : public cg3::DrawableObject, public cg3::SerializableObject{
     public:
         BoxList();
         BoxList(bool cylinders);
@@ -27,11 +27,11 @@ class BoxList : public cg3::DrawableObject, public SerializableObject{
         void removeBox(unsigned int i);
         void getSubBoxLists(std::vector<BoxList> &v, int nPerBoxList);
         void setIds();
-        void sort(const Array2D<int> &ordering);
+        void sort(const cg3::Array2D<int> &ordering);
         void sortByTrianglesCovered();
         void sortByHeight();
         void generatePieces(double minimumDistance = -1);
-        void calculateTrianglesCovered(const cg3::CGALInterface::AABBTree &tree);
+        void calculateTrianglesCovered(const cg3::cgal::AABBTree &tree);
         void changeBoxLimits(const cg3::BoundingBox &newLimits, unsigned int i);
         std::vector<Box3D>::const_iterator begin() const;
         std::vector<Box3D>::const_iterator end() const;
@@ -66,8 +66,8 @@ class BoxList : public cg3::DrawableObject, public SerializableObject{
         bool cylinder;
         bool eigenMesh;
         #ifdef CG3_VIEWER_DEFINED
-        void drawLine(const cg3::Pointd& a, const cg3::Pointd& b, const Color& c) const;
-        void drawCube(const Box3D& b, const Color& c) const;
+        void drawLine(const cg3::Pointd& a, const cg3::Pointd& b, const cg3::Color& c) const;
+        void drawCube(const Box3D& b, const cg3::Color& c) const;
         #endif
 };
 

@@ -12,22 +12,22 @@ class OctreeNode {
         typedef enum  {LBD = 0, RBD, LBU, RBU, LFD, RFD, LFU, RFU, RAD} Position;
 
         OctreeNode();
-        OctreeNode(const Box &b, const OctreeNode* father = nullptr, Position pos = RAD);
+        OctreeNode(const cg3::Box &b, const OctreeNode* father = nullptr, Position pos = RAD);
         virtual ~OctreeNode();
 
-        void split(const Pointd &p);
+        void split(const cg3::Pointd &p);
 
-        OctreeNode* getContainingLeaf(const Pointd &p);
+        OctreeNode* getContainingLeaf(const cg3::Pointd &p);
         void deleteChildren(Position pos);
 
 
     private:
 
-        unsigned int getPosLeaf(const Pointd& p);
+        unsigned int getPosLeaf(const cg3::Pointd& p);
 
-        Box box;
+        cg3::Box box;
         bool splitted;
-        Pointd splitPoint;
+        cg3::Pointd splitPoint;
         std::array<OctreeNode*, 8> children;
         const OctreeNode* father;
         Position position;

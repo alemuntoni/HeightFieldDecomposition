@@ -4,8 +4,8 @@
  */
 
 #include "cg3/viewer/mainwindow.h"
-#include "cg3/meshes/dcel/gui/dcelmanager.h"
-#include "cg3/viewer/managers/windowmanager.h"
+#include "cg3/viewer/managers/dcel_manager/dcelmanager.h"
+#include "cg3/viewer/managers/window_manager/windowmanager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
 #include <QApplication>
@@ -14,8 +14,10 @@
 //#include "trimesh/gui/trimeshmanager.h"
 #include "lib/graph/directedgraph.h"
 
-#include "cg3/meshes/eigenmesh/gui/eigenmeshmanager.h"
-#include "cg3/meshes/eigenmesh/gui/booleansmanager.h"
+#include "cg3/viewer/managers/eigenmesh_manager/eigenmeshmanager.h"
+#include "cg3/viewer/managers/booleans_manager/booleansmanager.h"
+#include <cg3/utilities/string.h>
+#include <cg3/utilities/system.h>
 
 #include "lib/graph/bipartitegraph.h"
 #include <typeinfo>       // operator typeid
@@ -39,19 +41,19 @@ int main(int argc, char *argv[]) {
     if (argc > 3){
         bool smoothed = true;
         std::string filename(argv[1]);
-        if (! Common::fileExists(filename)){
+        if (! fileExists(filename)){
             std::cerr << filename << " not found. Exiting.";
             return -1;
         }
         std::string rawname, extension;
-        Common::separateExtensionFromFilename(filename, rawname, extension);
+        separateExtensionFromFilename(filename, rawname, extension);
         std::string filename_smooth = rawname + "_smooth" + extension;
 
         //reading files
         EigenMesh original;
         original.readFromObj(filename);
         Dcel d;
-        if (Common::fileExists(filename_smooth)){
+        if (fileExists(filename_smooth)){
             d.loadFromObjFile(filename_smooth);
             std::cerr << "Smooth File found.\n";
         }
@@ -72,8 +74,8 @@ int main(int argc, char *argv[]) {
             foldername += "noo_";
             optimal = false;
         }
-        foldername += Common::toStringWithPrecision(precision) + "_" + Common::toStringWithPrecision(kernelDistance) + "/";
-        Common::executeCommand("mkdir " + foldername);
+        foldername += toStringWithPrecision(precision) + "_" + toStringWithPrecision(kernelDistance) + "/";
+        executeCommand("mkdir " + foldername);
 
         //log
         std::ofstream logFile;
@@ -162,7 +164,7 @@ int main(int argc, char *argv[]) {
             tBooleans.stop();
             timerBooleans += tBooleans.delay();
             logFile << tBooleans.delay() << ": Booleans n. " << std::to_string(it) << "\n";
-            CGALInterface::AABBTree tree(d);
+            cgal::AABBTree tree(d);
             Engine::updatePiecesNormals(tree, he);
             Engine::colorPieces(d, he);
 
@@ -186,7 +188,7 @@ int main(int argc, char *argv[]) {
             Engine::booleanOperations(he, baseComplex, solutions, false);
             Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
             Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
-            CGALInterface::AABBTree tree(d);
+            cgal::AABBTree tree(d);
             Engine::updatePiecesNormals(tree, he);
             Engine::colorPieces(d, he);
         }
@@ -200,19 +202,19 @@ int main(int argc, char *argv[]) {
     if (argc > 3){
         bool smoothed = true;
         std::string filename(argv[1]);
-        if (! Common::fileExists(filename)){
+        if (! fileExists(filename)){
             std::cerr << filename << " not found. Exiting.";
             return -1;
         }
         std::string rawname, extension;
-        Common::separateExtensionFromFilename(filename, rawname, extension);
+        separateExtensionFromFilename(filename, rawname, extension);
         std::string filename_smooth = rawname + "_smooth" + extension;
 
         //reading files
         EigenMesh original;
         original.readFromObj(filename);
         Dcel d;
-        if (Common::fileExists(filename_smooth)){
+        if (fileExists(filename_smooth)){
             d.loadFromObjFile(filename_smooth);
             std::cerr << "Smooth File found.\n";
         }
@@ -233,8 +235,8 @@ int main(int argc, char *argv[]) {
             foldername += "noo_";
             optimal = false;
         }
-        foldername += Common::toStringWithPrecision(precision) + "_" + Common::toStringWithPrecision(kernelDistance) + "/";
-        Common::executeCommand("mkdir " + foldername);
+        foldername += toStringWithPrecision(precision) + "_" + toStringWithPrecision(kernelDistance) + "/";
+        executeCommand("mkdir " + foldername);
 
         //log
         std::ofstream logFile;
@@ -347,7 +349,7 @@ int main(int argc, char *argv[]) {
             tBooleans.stop();
             timerBooleans += tBooleans.delay();
             logFile << tBooleans.delay() << ": Booleans n. " << std::to_string(it) << "\n";
-            CGALInterface::AABBTree tree(d);
+            cgal::AABBTree tree(d);
             Engine::updatePiecesNormals(tree, he);
             Engine::colorPieces(d, he);
 
@@ -371,7 +373,7 @@ int main(int argc, char *argv[]) {
             Engine::booleanOperations(he, baseComplex, solutions, false);
             Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
             Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
-            CGALInterface::AABBTree tree(d);
+            cgal::AABBTree tree(d);
             Engine::updatePiecesNormals(tree, he);
             Engine::colorPieces(d, he);
         }
@@ -474,8 +476,8 @@ int main(int argc, char *argv[]) {
         std::cerr << argv[1] << "\n";
         std::string filename = argv[1];
         std::string rawname, extension, path, fn;
-        Common::separateExtensionFromFilename(filename, rawname, extension);
-        Common::separateFilenameFromPath(filename, path, fn);
+        separateExtensionFromFilename(filename, rawname, extension);
+        separateFilenameFromPath(filename, path, fn);
         std::cerr << rawname << "; " << extension << "\n";
         if (extension == ".hfd"){
             e.deserializeBC(filename);

@@ -1,5 +1,5 @@
 #include "reconstruction.h"
-#include "cg3/cgal/aabbtree.h"
+#include "cg3/cgal/aabb_tree.h"
 #include "common.h"
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -9,13 +9,13 @@
 #pragma GCC diagnostic pop
 #endif //__GNUC__
 
-#include <cinolib_interface/mesh_conversions.h>
+#include <cg3/cinolib/mesh_conversions.h>
 
 using namespace cg3;
 
 std::map< const Dcel::Vertex*,int > Reconstruction::getMappingId(const Dcel& smoothedSurface, const HeightfieldsList& he) {
     std::map< const Dcel::Vertex*,int > mapping;
-    CGALInterface::AABBTree tree(smoothedSurface);
+    cgal::AABBTree tree(smoothedSurface);
     //int referenced = 0;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         const cg3::EigenMesh m = he.getHeightfield(i);
@@ -37,7 +37,7 @@ std::map< const Dcel::Vertex*,int > Reconstruction::getMappingId(const Dcel& smo
 std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothedSurface, const HeightfieldsList& he) {
     std::vector< std::pair<int,int> > mapping;
     mapping.resize(smoothedSurface.getNumberVertices(), std::pair<int,int>(-1,-1));
-    CGALInterface::AABBTree tree(smoothedSurface);
+    cgal::AABBTree tree(smoothedSurface);
     int referenced = 0;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         const cg3::EigenMesh m = he.getHeightfield(i);

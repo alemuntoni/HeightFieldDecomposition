@@ -78,38 +78,38 @@ static const std::vector<cg3::Vec3> XYZ = {
     cg3::Vec3(-ONE_ON_SQRT3,  ONE_ON_SQRT3, -ONE_ON_SQRT3)  //-X+Y-Z : label 25
 };
 
-static const std::vector<Color> colors = {
-    Color(255, 0, 0),    //     Red: label 0
-    Color(0, 255, 0),    //   Green: label 1
-    Color(0, 0, 255),    //    Blue: label 2
-    Color(255, 0, 0),    //     Red: label 3
-    Color(0, 255, 0),    //   Green: label 4
-    Color(0, 0, 255),    //    Blue: label 5
-    Color(255, 255, 0),    //  Yellow: label 6
-    Color(255, 255, 0),    //  Yellow: label 7
-    Color(255, 255, 0),    //  Yellow: label 8
-    Color(255, 255, 0),    //  Yellow: label 9
-    Color(255, 0, 255),    // Magenta: label 10
-    Color(255, 0, 255),    // Magenta: label 11
-    Color(255, 0, 255),    // Magenta: label 12
-    Color(255, 0, 255),    // Magenta: label 13
-    Color(0, 255, 255),    //   Cyano: label 14
-    Color(0, 255, 255),    //   Cyano: label 15
-    Color(0, 255, 255),    //   Cyano: label 16
-    Color(0, 255, 255),    //   Cyano: label 17
-    Color(200, 200, 200),    //   White: label 18
-    Color(200, 200, 200),    //   White: label 19
-    Color(200, 200, 200),    //   White: label 20
-    Color(200, 200, 200),    //   White: label 21
-    Color(200, 200, 200),    //   White: label 22
-    Color(200, 200, 200),    //   White: label 23
-    Color(200, 200, 200),    //   White: label 24
-    Color(200, 200, 200)     //   White: label 25
+static const std::vector<cg3::Color> colors = {
+    cg3::Color(255, 0, 0),    //     Red: label 0
+    cg3::Color(0, 255, 0),    //   Green: label 1
+    cg3::Color(0, 0, 255),    //    Blue: label 2
+    cg3::Color(255, 0, 0),    //     Red: label 3
+    cg3::Color(0, 255, 0),    //   Green: label 4
+    cg3::Color(0, 0, 255),    //    Blue: label 5
+    cg3::Color(255, 255, 0),    //  Yellow: label 6
+    cg3::Color(255, 255, 0),    //  Yellow: label 7
+    cg3::Color(255, 255, 0),    //  Yellow: label 8
+    cg3::Color(255, 255, 0),    //  Yellow: label 9
+    cg3::Color(255, 0, 255),    // Magenta: label 10
+    cg3::Color(255, 0, 255),    // Magenta: label 11
+    cg3::Color(255, 0, 255),    // Magenta: label 12
+    cg3::Color(255, 0, 255),    // Magenta: label 13
+    cg3::Color(0, 255, 255),    //   Cyano: label 14
+    cg3::Color(0, 255, 255),    //   Cyano: label 15
+    cg3::Color(0, 255, 255),    //   Cyano: label 16
+    cg3::Color(0, 255, 255),    //   Cyano: label 17
+    cg3::Color(200, 200, 200),    //   White: label 18
+    cg3::Color(200, 200, 200),    //   White: label 19
+    cg3::Color(200, 200, 200),    //   White: label 20
+    cg3::Color(200, 200, 200),    //   White: label 21
+    cg3::Color(200, 200, 200),    //   White: label 22
+    cg3::Color(200, 200, 200),    //   White: label 23
+    cg3::Color(200, 200, 200),    //   White: label 24
+    cg3::Color(200, 200, 200)     //   White: label 25
 };
 
-Color colorOfNormal(const cg3::Vec3 &normal);
+cg3::Color colorOfNormal(const cg3::Vec3 &normal);
 cg3::Vec3 nearestNormal(const cg3::Vec3& normal);
-Color colorOfNearestNormal(const cg3::Vec3& normal);
+cg3::Color colorOfNearestNormal(const cg3::Vec3& normal);
 int indexOfNormal(const cg3::Vec3& v);
 
 #endif // MYCOMMON_H

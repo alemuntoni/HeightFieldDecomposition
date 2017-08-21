@@ -1,5 +1,7 @@
 #include "orientation.h"
 
+#include <cg3/geometry/transformations.h>
+
 using namespace std;
 using namespace cinolib;
 using namespace  cg3;
@@ -60,5 +62,5 @@ Eigen::Matrix3d Orientation::optimalOrientation(const Dcel& inputMesh, unsigned 
     best_Z.normalize();
     define_rotation(best_Z, axis, angle);
 
-    return Common::getRotationMatrix(Vec3(axis), angle);
+    return cg3::getRotationMatrix(Vec3(axis), angle);
 }

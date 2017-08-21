@@ -98,7 +98,7 @@ void HeightfieldsList::checkHeightfields() const {
     for (unsigned int i = 0; i < heightfields.size(); i++){
         const DrawableEigenMesh& m = heightfields[i];
         for (unsigned int f = 0; f < m.getNumberFaces(); f++){
-            if (m.getFaceNormal(f).dot(targets[i]) < FLIP_ANGLE-EPSILON && m.getFaceNormal(f).dot(targets[i]) > -1 + EPSILON){
+            if (m.getFaceNormal(f).dot(targets[i]) < FLIP_ANGLE-CG3_EPSILON && m.getFaceNormal(f).dot(targets[i]) > -1 + CG3_EPSILON){
                 std::cerr << "Hieghtfield: " << i << "; Triangle: " << f << "; Flip: " << m.getFaceNormal(f).dot(targets[i]) << "\n";
             }
         }
@@ -122,7 +122,7 @@ void HeightfieldsList::addHeightfield(const DrawableEigenMesh& m, const Vec3& ta
             Color c = colorOfNormal(target);
             heightfields[heightfields.size()-1].setFaceColor(c.redF(), c.greenF(), c.blueF());
             for (unsigned int i = 0; i < m.getNumberFaces(); i++){
-                if (m.getFaceNormal(i).dot(target) < FLIP_ANGLE-EPSILON)
+                if (m.getFaceNormal(i).dot(target) < FLIP_ANGLE-CG3_EPSILON)
                     heightfields[heightfields.size()-1].setFaceColor(0,0,0,i);
             }
         }
@@ -134,7 +134,7 @@ void HeightfieldsList::addHeightfield(const DrawableEigenMesh& m, const Vec3& ta
             Color c = colorOfNormal(target);
             heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
             for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-                if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
+                if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-CG3_EPSILON)
                     heightfields[i].setFaceColor(0,0,0,j);
             }
         }
@@ -168,7 +168,7 @@ void HeightfieldsList::setHeightfield(const cg3::EigenMesh& m, unsigned int i, b
         Color c = colorOfNormal(targets[i]);
         heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
         for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-            if (m.getFaceNormal(j).dot(targets[i]) < FLIP_ANGLE-EPSILON)
+            if (m.getFaceNormal(j).dot(targets[i]) < FLIP_ANGLE-CG3_EPSILON)
                 heightfields[i].setFaceColor(0,0,0,j);
         }
     }
@@ -182,7 +182,7 @@ void HeightfieldsList::insertHeightfield(const cg3::EigenMesh& m, const Vec3& ta
         Color c = colorOfNormal(target);
         heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
         for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-            if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-EPSILON)
+            if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-CG3_EPSILON)
                 heightfields[i].setFaceColor(0,0,0,j);
         }
     }

@@ -4,7 +4,7 @@
 #include <cg3/utilities/utils.h>
 #include <cinolib/meshes/trimesh/trimesh.h>
 #include <cinolib/sphere_coverage.h>
-#include <cinolib_interface/mesh_conversions.h>
+#include <cg3/cinolib/mesh_conversions.h>
 #include <cg3/meshes/dcel/dcel.h>
 
 namespace Orientation {

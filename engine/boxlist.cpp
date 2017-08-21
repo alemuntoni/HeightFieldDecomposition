@@ -1,5 +1,5 @@
 #include "boxlist.h"
-#include "cg3/meshes/eigenmesh/gui/drawableeigenmesh.h"
+#include "cg3/viewer/drawable_objects/drawable_eigenmesh.h"
 
 using namespace cg3;
 
@@ -180,7 +180,7 @@ void BoxList::generatePieces(double minimumDistance) {
     }
 }
 
-void BoxList::calculateTrianglesCovered(const CGALInterface::AABBTree& tree) {
+void BoxList::calculateTrianglesCovered(const cgal::AABBTree& tree) {
     for (unsigned int i = 0; i < boxes.size(); i++){
         std::list<unsigned int> ids;
         tree.getCompletelyContainedDcelFaces(ids, boxes[i]);

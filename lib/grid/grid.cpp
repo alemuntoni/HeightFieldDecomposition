@@ -33,7 +33,7 @@ Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, con
  * @param d
  */
 void Grid::calculateBorderWeights(const Dcel& d, bool tolerance, std::set<const Dcel::Face*>& savedFaces) {
-    CGALInterface::AABBTree aabb(d);
+    cgal::AABBTree aabb(d);
     double unit = getUnit();
     std::vector<Pointi> flipped;
     std::vector<Pointi> notFlipped;

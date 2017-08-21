@@ -371,5 +371,5 @@ Dcel::HalfEdge* Segmentation::makeBorder(Dcel& d, const Dcel::HalfEdge* firstHal
 }
 
 bool Segmentation::sameChartOperator(const Dcel::Face* f1, const Dcel::Face* f2) {
-    return Common::epsilonEqual(f1->getNormal(), f2->getNormal());
+    return epsilonEqual(f1->getNormal(), f2->getNormal());
 }

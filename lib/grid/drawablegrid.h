@@ -3,14 +3,14 @@
 
 #include "cg3/viewer/interfaces//drawable_object.h"
 #include "grid.h"
-#include "cg3/viewer/objects/objects.h"
+#include "cg3/viewer/renderable_objects/renderable_objects.h"
 
 class DrawableGrid: public Grid, public cg3::DrawableObject
 {
     public:
         DrawableGrid();
         DrawableGrid(const Grid &g);
-        DrawableGrid(const cg3::Pointi& resolution, const Array3D<cg3::Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const cg3::Pointd& gMin, const cg3::Pointd& gMax);
+        DrawableGrid(const cg3::Pointi& resolution, const cg3::Array3D<cg3::Pointd>& gridCoordinates, const cg3::Array3D<gridreal>& signedDistances, const cg3::Pointd& gMin, const cg3::Pointd& gMax);
         virtual ~DrawableGrid();
 
         double getKernelDistance() const;

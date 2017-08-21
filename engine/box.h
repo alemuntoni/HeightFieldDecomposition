@@ -3,7 +3,7 @@
 
 #include <cg3/viewer/interfaces/drawable_object.h>
 #include <cg3/geometry/bounding_box.h>
-#include <cg3/viewer/objects/objects.h>
+#include <cg3/viewer/renderable_objects/renderable_objects.h>
 #include <cg3/meshes/eigenmesh/eigenmesh.h>
 #include <cg3/data_structures/color.h>
 
@@ -32,11 +32,11 @@ class Box3D : public cg3::BoundingBox, public cg3::DrawableObject{
         };
 
         Box3D();
-        Box3D(const cg3::Pointd &minCoord, const cg3::Pointd &maxCoord, const cg3::Pointd &c1 = cg3::Pointd(), const cg3::Pointd &c2 = cg3::Pointd(), const cg3::Pointd &c3 = cg3::Pointd(), const Color c = Color(0,0,0));
-        Box3D(const cg3::Pointd &minCoord, const cg3::Pointd &maxCoord, const Color c);
+        Box3D(const cg3::Pointd &minCoord, const cg3::Pointd &maxCoord, const cg3::Pointd &c1 = cg3::Pointd(), const cg3::Pointd &c2 = cg3::Pointd(), const cg3::Pointd &c3 = cg3::Pointd(), const cg3::Color c = cg3::Color(0,0,0));
+        Box3D(const cg3::Pointd &minCoord, const cg3::Pointd &maxCoord, const cg3::Color c);
 
-        void setColor(const Color& c);
-        Color getColor() const;
+        void setColor(const cg3::Color& c);
+        cg3::Color getColor() const;
 
         const cg3::Pointd& getConstraint1() const;
         const cg3::Pointd& getConstraint2() const;
@@ -100,7 +100,7 @@ class Box3D : public cg3::BoundingBox, public cg3::DrawableObject{
     protected:
         //Pointd min, max;
         cg3::Pointd c1, c2, c3;
-        Color color;
+        cg3::Color color;
         bool visible;
         cg3::Vec3 target;
         Eigen::Matrix3d rotation;
@@ -109,17 +109,17 @@ class Box3D : public cg3::BoundingBox, public cg3::DrawableObject{
         bool splitted;
         std::set<unsigned int> trianglesCovered;
 
-        void drawLine(const cg3::Pointd& a, const cg3::Pointd& b, const Color& c) const;
+        void drawLine(const cg3::Pointd& a, const cg3::Pointd& b, const cg3::Color& c) const;
         void drawCube() const;
 
         unsigned int getTargetIndex();
 };
 
-inline void Box3D::setColor(const Color& c) {
+inline void Box3D::setColor(const cg3::Color& c) {
     color = c;
 }
 
-inline Color Box3D::getColor() const {
+inline cg3::Color Box3D::getColor() const {
     return color;
 }
 

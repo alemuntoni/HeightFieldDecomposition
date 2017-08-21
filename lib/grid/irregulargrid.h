@@ -29,11 +29,11 @@ class IrregularGrid {
 
     protected:
         unsigned int resX, resY, resZ;
-        Array3D<cg3::Pointd> points;
+        cg3::Array3D<cg3::Pointd> points;
         std::map<double, unsigned int> mapX, mapY, mapZ;
-        Array3D<std::set<cg3::Vec3> > possibleTargets;
-        Array3D<cg3::Vec3> definitiveTargets;
-        Array3D<int> flags;
+        cg3::Array3D<std::set<cg3::Vec3> > possibleTargets;
+        cg3::Array3D<cg3::Vec3> definitiveTargets;
+        cg3::Array3D<int> flags;
 };
 
 inline IrregularGrid::IrregularGrid(){

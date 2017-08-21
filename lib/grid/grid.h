@@ -7,13 +7,13 @@
 #include "engine/tricubic.h"
 #include "common.h"
 
-#include "cg3/cgal/aabbtree.h"
+#include "cg3/cgal/aabb_tree.h"
 
-class Grid : public SerializableObject{
+class Grid : public cg3::SerializableObject{
     public:
 
         Grid();
-        Grid(const cg3::Pointi& resolution, const Array3D<cg3::Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const cg3::Pointd& gMin, const cg3::Pointd& gMax);
+        Grid(const cg3::Pointi& resolution, const cg3::Array3D<cg3::Pointd>& gridCoordinates, const cg3::Array3D<gridreal>& signedDistances, const cg3::Pointd& gMin, const cg3::Pointd& gMax);
 
         unsigned int getResX() const;
         unsigned int getResY() const;
@@ -59,12 +59,12 @@ class Grid : public SerializableObject{
 
         cg3::BoundingBox bb;
         unsigned int resX, resY, resZ;
-        Array3D<gridreal> signedDistances;
-        Array3D<gridreal> weights;
+        cg3::Array3D<gridreal> signedDistances;
+        cg3::Array3D<gridreal> weights;
         //Array4D<gridreal> coeffs;
         std::vector< std::array<gridreal, 64> > coeffs;
-        Array3D<int> mapCoeffs;
-        Array3D<gridreal> fullBoxValues;
+        cg3::Array3D<int> mapCoeffs;
+        cg3::Array3D<gridreal> fullBoxValues;
         cg3::Vec3 target;
         double unit;
 

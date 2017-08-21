@@ -1,5 +1,6 @@
 #include "octree_node.h"
 
+using namespace cg3;
 
 OctreeNode::OctreeNode() : splitted(false), father(nullptr), position(RAD){
     for (unsigned int i = 0; i < children.size(); i++)

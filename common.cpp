@@ -15,7 +15,7 @@ using namespace cg3;
 
 Color colorOfNormal(const Vec3& normal) {
     for (unsigned int i = 0; i < XYZ.size(); i++)
-        if (Common::epsilonEqual(XYZ[i], normal)) return colors[i];
+        if (epsilonEqual(XYZ[i], normal)) return colors[i];
     return Color(128, 128, 128);
 }
 
