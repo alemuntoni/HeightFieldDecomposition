@@ -62,9 +62,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-189</y>
+        <y>-327</y>
         <width>420</width>
-        <height>1333</height>
+        <height>1364</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -1199,14 +1199,14 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_18">
-              <item row="4" column="0">
+              <item row="5" column="0">
                <widget class="QLabel" name="label_36">
                 <property name="text">
                  <string>Angle</string>
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
+              <item row="1" column="1">
                <widget class="QDoubleSpinBox" name="xvSpinBox">
                 <property name="minimum">
                  <double>-1.000000000000000</double>
@@ -1222,21 +1222,21 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
+              <item row="4" column="0">
                <widget class="QLabel" name="label_35">
                 <property name="text">
                  <string>Z:</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
+              <item row="3" column="0">
                <widget class="QLabel" name="label_34">
                 <property name="text">
                  <string>Y:</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
+              <item row="4" column="1">
                <widget class="QDoubleSpinBox" name="zvSpinBox">
                 <property name="minimum">
                  <double>-1.000000000000000</double>
@@ -1249,7 +1249,7 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
+              <item row="3" column="1">
                <widget class="QDoubleSpinBox" name="yvSpinBox">
                 <property name="minimum">
                  <double>-1.000000000000000</double>
@@ -1262,7 +1262,7 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="1">
+              <item row="5" column="1">
                <widget class="QDoubleSpinBox" name="angleSpinBox">
                 <property name="maximum">
                  <double>180.000000000000000</double>
@@ -1275,14 +1275,21 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="0">
+              <item row="1" column="0">
                <widget class="QLabel" name="label_33">
                 <property name="text">
                  <string>X:</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
+              <item row="0" column="0" colspan="2">
+               <widget class="QPushButton" name="finalizePushButton">
+                <property name="text">
+                 <string>Finalize</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0" colspan="2">
                <widget class="QPushButton" name="rotatePushButton">
                 <property name="text">
                  <string>Rotate</string>

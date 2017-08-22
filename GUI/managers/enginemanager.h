@@ -229,6 +229,8 @@ class EngineManager : public QFrame, public cg3::SerializableObject {
 
         void on_mergePushButton_clicked();
 
+        void on_finalizePushButton_clicked();
+
 signals:
         void finished();
 

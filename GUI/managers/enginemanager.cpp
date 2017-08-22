@@ -557,6 +557,8 @@ void EngineManager::on_saveObjsButton_clicked() {
             d->updateVertexNormals();
             Engine::saveObjs(foldername, originalMesh, *d, *baseComplex, *he);
 
+            markerMesh.saveOnObj(foldername + "/Marker.obj");
+
             //smart packing
             HeightfieldsList myHe = *he;
             Packing::rotateAllPieces(myHe);
@@ -587,8 +589,6 @@ void EngineManager::on_saveObjsButton_clicked() {
                 Dcel d(packMesh);
                 //Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
                 //d.rotate(m);
-                d.updateFaceNormals();
-                d.updateVertexNormals();
                 d.saveOnObjFile(pstring);
             }
         }
@@ -2024,6 +2024,7 @@ void EngineManager::on_rotatePushButton_clicked() {
     if (he != nullptr && d != nullptr && baseComplex != nullptr){
         Eigen::MatrixXd m = cg3::getRotationMatrix(Vec3(ui->xvSpinBox->value(),ui->yvSpinBox->value(),ui->zvSpinBox->value()), (ui->angleSpinBox->value()*M_PI)/180);
         he->rotate(m);
+        markerMesh.rotate(m);
         d->rotate(m);
         d->updateFaceNormals();
         d->updateVertexNormals();
@@ -2105,5 +2106,36 @@ void EngineManager::on_mergePushButton_clicked() {
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->heightfieldsSlider->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow.updateGlCanvas();
+    }
+}
+
+void EngineManager::on_finalizePushButton_clicked() {
+    if (he != nullptr){
+        on_markerMeshPushButton_clicked();
+        for (unsigned int h = 0; h < he->getNumHeightfields(); h++){
+            EigenMesh& m = he->getHeightfield(h);
+
+            //normals
+            for (unsigned int f = 0; f < m.getNumberFaces(); f++){
+                bool found = false;
+                for (unsigned int i = 0; i < 6 && !found; i++) {
+                    if (epsilonEqual(m.getFaceNormal(f), AXIS[i]))
+                        found = true;
+                }
+                if (found){
+                    Pointi face = m.getFace(f);
+                    m.addVertex(m.getVertex(face.x()));
+                    m.addVertex(m.getVertex(face.y()));
+                    m.addVertex(m.getVertex(face.z()));
+                    unsigned int v3 = m.getNumberVertices()-1;
+                    unsigned int v2 = v3-1;
+                    unsigned int v1 = v2-1;
+                    m.setVertexNormal(m.getFaceNormal(f), v1);
+                    m.setVertexNormal(m.getFaceNormal(f), v2);
+                    m.setVertexNormal(m.getFaceNormal(f), v3);
+                    m.setFace(f, v1, v2, v3);
+                }
+            }
+        }
     }
 }

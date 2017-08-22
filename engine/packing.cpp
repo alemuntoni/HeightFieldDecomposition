@@ -191,8 +191,6 @@ std::vector<std::vector<EigenMesh> > Packing::getPacks(std::vector<std::vector<s
                 Eigen::Matrix3d rot;
                 cg3::getRotationMatrix(Vec3(0,0,1),M_PI/2,rot);
                 mesh.rotate(rot);
-                mesh.updateFaceNormals();
-                mesh.updateVerticesNormals();
             }
             else{
                 id = pair.first-1;

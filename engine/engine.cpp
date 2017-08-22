@@ -1797,15 +1797,15 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
     std::string inputMeshString = foldername + "/InputMesh.obj";
     std::string baseComplexString = foldername + "/BaseComplex.obj";
     std::string heightfieldString = foldername + "/Heightfield";
-    std::string markerString = foldername + "/Marker.obj";
+    //std::string markerString = foldername + "/Marker.obj";
     std::string structureString = foldername + "/Structure.obj";
     //CGALInterface::AABBTree tree(inputMesh);
     if (originalMesh.getNumberVertices() > 0)
         originalMesh.saveOnObj(originalMeshString);
     inputMesh.saveOnObjFile(inputMeshString);
     baseComplex.saveOnObj(baseComplexString);
-    SimpleEigenMesh marker = getMarkerMesh(he, inputMesh);
-    marker.saveOnObj(markerString);
+    //SimpleEigenMesh marker = getMarkerMesh(he, inputMesh);
+    //marker.saveOnObj(markerString);
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         EigenMesh h = he.getHeightfield(i);
         Dcel d(h);
@@ -1813,51 +1813,54 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
         d.saveOnObjFile(heightfieldString + std::to_string(i) + ".obj");
     }
 
-    double diameter = inputMesh.getAverageHalfEdgesLength();
-    EigenMesh structure;
-    EigenMesh cbc(baseComplex);
-    EigenMeshAlgorithms::removeDuplicateVertices(cbc);
-    std::vector<bool> seen(cbc.getNumberFaces(), false);
-    std::vector< std::set<unsigned int> >charts;
+    if (baseComplex.getNumberVertices() > 0) {
 
-    for (unsigned int f = 0; f < cbc.getNumberFaces(); f++) {
-        Vec3 nf = cbc.getFaceNormal(f);
-        int idf = indexOfNormal(nf);
-        if (idf != -1){
-            if (!seen[f])
-                charts.push_back(chartExpansion(cbc, f, seen));
-        }
-    }
+        double diameter = inputMesh.getAverageHalfEdgesLength();
+        EigenMesh structure;
+        EigenMesh cbc(baseComplex);
+        EigenMeshAlgorithms::removeDuplicateVertices(cbc);
+        std::vector<bool> seen(cbc.getNumberFaces(), false);
+        std::vector< std::set<unsigned int> >charts;
 
-    std::set<Pointd> spheres;
-    for (std::set<unsigned int> &chart: charts){
-        //polygons
-        std::vector<Pointd> polygon = getPolygonFromChart(cbc, chart);
-
-        for (unsigned int j = 0; j < polygon.size(); j++){
-            Vec3 n1 = polygon[(j+1)%polygon.size()]-polygon[j];
-            n1.normalize();
-            Vec3 n2 = polygon[(j+2)%polygon.size()]-polygon[(j+1)%polygon.size()];
-            n2.normalize();
-            if (epsilonEqual(n1, n2)){
-                polygon.erase(polygon.begin()+((j+1)%polygon.size()));
-                j--;
+        for (unsigned int f = 0; f < cbc.getNumberFaces(); f++) {
+            Vec3 nf = cbc.getFaceNormal(f);
+            int idf = indexOfNormal(nf);
+            if (idf != -1){
+                if (!seen[f])
+                    charts.push_back(chartExpansion(cbc, f, seen));
             }
         }
 
-        for (unsigned int i = 0; i < polygon.size(); i++){
-            if (spheres.find(polygon[i]) == spheres.end()){
-                EigenMesh sphr = EigenMeshAlgorithms::makeSphere(polygon[i], diameter);
-                sphr.setFaceColor(Color(255,255,255));
-                structure = EigenMesh::merge(structure, sphr);
-                spheres.insert(polygon[i]);
+        std::set<Pointd> spheres;
+        for (std::set<unsigned int> &chart: charts){
+            //polygons
+            std::vector<Pointd> polygon = getPolygonFromChart(cbc, chart);
+
+            for (unsigned int j = 0; j < polygon.size(); j++){
+                Vec3 n1 = polygon[(j+1)%polygon.size()]-polygon[j];
+                n1.normalize();
+                Vec3 n2 = polygon[(j+2)%polygon.size()]-polygon[(j+1)%polygon.size()];
+                n2.normalize();
+                if (epsilonEqual(n1, n2)){
+                    polygon.erase(polygon.begin()+((j+1)%polygon.size()));
+                    j--;
+                }
             }
-            EigenMesh cyl = EigenMeshAlgorithms::makeCylinder(polygon[i], polygon[(i+1)%polygon.size()], diameter/2);
-            cyl.setFaceColor(Color(0,0,0));
-            structure = EigenMesh::merge(structure, cyl);
+
+            for (unsigned int i = 0; i < polygon.size(); i++){
+                if (spheres.find(polygon[i]) == spheres.end()){
+                    EigenMesh sphr = EigenMeshAlgorithms::makeSphere(polygon[i], diameter);
+                    sphr.setFaceColor(Color(255,255,255));
+                    structure = EigenMesh::merge(structure, sphr);
+                    spheres.insert(polygon[i]);
+                }
+                EigenMesh cyl = EigenMeshAlgorithms::makeCylinder(polygon[i], polygon[(i+1)%polygon.size()], diameter/2);
+                cyl.setFaceColor(Color(0,0,0));
+                structure = EigenMesh::merge(structure, cyl);
+            }
         }
+        structure.saveOnObj(structureString);
     }
-    structure.saveOnObj(structureString);
 }
 
 void Engine::updatePieceNormals(const cgal::AABBTree& tree, Dcel& piece) {

@@ -108,7 +108,6 @@ void HeightfieldsList::checkHeightfields() const {
 void HeightfieldsList::rotate(const Eigen::MatrixXd m) {
     for (unsigned int i = 0; i < heightfields.size(); i++){
         heightfields[i].rotate(m);
-        heightfields[i].updateVerticesNormals();
         targets[i].rotate(m);
         targets[i].normalize();
     }

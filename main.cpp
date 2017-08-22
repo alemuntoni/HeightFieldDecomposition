@@ -472,7 +472,7 @@ int main(int argc, char *argv[]) {
     EigenMeshManager em(&gui);
     gui.addManager(&em, "EigenMesh Manager");
 
-    if (argc == 2){
+    if (argc >= 2){
         std::cerr << argv[1] << "\n";
         std::string filename = argv[1];
         std::string rawname, extension, path, fn;
@@ -494,6 +494,19 @@ int main(int argc, char *argv[]) {
             e.setBinPath(path);
             e.setObjPath(path);
         }
+        /*else if (extension == ".obj"){
+            Dcel d;
+            d.loadFromObjFile(argv[1]);
+            cgal::AABBTree tree(d);
+            Dcel d2;
+            d2.loadFromObjFile(argv[2]);
+            for (Dcel::Vertex* v2 : d2.vertexIterator()){
+                const Dcel::Vertex* v = tree.getNearestDcelVertex(v2->getCoordinate());
+                v2->setNormal(v->getNormal());
+            }
+            std::cerr << "ok\n";
+            d2.saveOnObjFile(path + "/Modified.obj");
+        }*/
     }
 
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
