@@ -300,22 +300,10 @@ void TricubicInterpolator::getCoefficients(Array4D<gridreal>& coeffs, const Arra
     };
 
     static Eigen::Map<Eigen::Matrix<gridreal,64,64, Eigen::RowMajor>> C(&temp[0][0]);
-    /*for(int i=0;i<64;i++){
-        for(int j=0;j<64;j++){
-            C(i,j) = temp[i][j];
-        }
-    }*/
 
     // tutti i primi coefficienti delle tricubiche sono pari al valore del primo punto dei pesi. Questo valore dovrebbe essere uguale in tutto il doppio bordo dei pesi.
     // Dopo, tutti i coefficienti dei cubi "interni" verranno calcolati in base ai valori del grigliato
     // rimarranno invariati quindi solo i cofficienti dei cubi sul bordo, dove l'interpolante sarà una funzione costante
-    /*for (unsigned int i = 0; i < weights.getSizeX()-1; i++){
-        for (unsigned int j = 0; j < weights.getSizeY()-1; j++){
-            for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
-                coeffs(i,j,k,0) = weights(0,0,0);
-            }
-        }
-    }*/
     unsigned int i = 0;
     for (unsigned int j = 0; j < weights.getSizeY()-1; j++){
         for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
@@ -435,6 +423,7 @@ void TricubicInterpolator::getCoefficients(Array4D<gridreal>& coeffs, const Arra
         }
     }
 }
+
 
 double TricubicInterpolator::getValue(const Pointd& p, const gridreal* coeffs) {
     int ijkn =0;

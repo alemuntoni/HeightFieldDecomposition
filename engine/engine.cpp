@@ -3,6 +3,7 @@
 #include <cg3/meshes/dcel/algorithms/dcel_algorithms.h>
 #include <cg3/geometry/transformations.h>
 #include <cg3/utilities/set.h>
+#include <cg3/libigl/libigl.h>
 #include "lib/dcel_segmentation/segmentation.h"
 
 #ifdef GUROBI_DEFINED
@@ -814,7 +815,7 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
         Eigen::VectorXi faces[ORIENTATIONS];
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
             EigenMesh m(scaled[i]);
-            EigenMeshAlgorithms::decimateMesh(m, numberFaces, faces[i]);
+            libigl::decimateMesh(m, numberFaces, faces[i]);
         }
         for (unsigned int i = 0; i < ORIENTATIONS; ++i){
             for (unsigned int j = 0; j < TARGETS; ++j){
@@ -1242,7 +1243,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                     a.setTrianglesCovered(std::set<unsigned int>(newTrianglesA.begin(), newTrianglesA.end()));
                                     std::cerr << "Box " << i << " shrinked to level of Box " << j << "\n";
 
-                                    SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
+                                    SimpleEigenMesh u = libigl::union_(a.getEigenMesh(), b.getEigenMesh());
                                     a.setEigenMesh(u);
                                     a.setTrianglesCovered(setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
                                     a.setMin(u.getBoundingBox().min());
@@ -1275,7 +1276,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                     b.setTrianglesCovered(std::set<unsigned int>(newTrianglesB.begin(), newTrianglesB.end()));
                                     std::cerr << "Box " << j << " shrinked to level of Box " << i << "\n";
 
-                                    SimpleEigenMesh u = EigenMeshAlgorithms::union_(a.getEigenMesh(), b.getEigenMesh());
+                                    SimpleEigenMesh u = libigl::union_(a.getEigenMesh(), b.getEigenMesh());
                                     a.setEigenMesh(u);
                                     a.setTrianglesCovered(setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
                                     a.setMin(u.getBoundingBox().min());
@@ -1307,7 +1308,7 @@ void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
 
 void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxList &solutions, bool alternativeColors) {
     deleteDuplicatedBoxes(solutions);
-    igl::copyleft::cgal::CSGTree tree = EigenMeshAlgorithms::eigenMeshToCSGTree(bc);
+    igl::copyleft::cgal::CSGTree tree = libigl::eigenMeshToCSGTree(bc);
     Timer timer("Boolean Operations");
     he.resize(solutions.getNumberBoxes());
     const double pass = 240.0 / solutions.getNumberBoxes();
@@ -1322,8 +1323,8 @@ void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxLis
         //#ifdef BOOL_DEBUG
         //box.saveOnObj("booleans/box" + std::to_string(i) + ".obj");
         //#endif
-        EigenMeshAlgorithms::intersection(intersection, tree, box);
-        tree = EigenMeshAlgorithms::difference(tree, box);
+        libigl::intersection(intersection, tree, box);
+        tree = libigl::difference(tree, box);
         DrawableEigenMesh dimm(intersection);
         if (alternativeColors){
             dimm.setFaceColor(c.redF(), c.greenF(), c.blueF());
@@ -1334,7 +1335,7 @@ void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxLis
         std::cerr << i << ": " << solutions[i].getId() << "\n";
     }
     timer.stopAndPrint();
-    bc = EigenMeshAlgorithms::CSGTreeToEigenMesh(tree);
+    bc = libigl::CSGTreeToEigenMesh(tree);
     for (int i = he.getNumHeightfields()-1; i >= 0 ; i--) {
         if (he.getNumberVerticesHeightfield(i) == 0) {
             he.removeHeightfield(i);
@@ -1352,7 +1353,7 @@ void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions, 
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         EigenMesh m = he.getHeightfield(i);
         std::vector<SimpleEigenMesh> cc;
-        cc = EigenMeshAlgorithms::getConnectedComponents(m);
+        cc = libigl::getConnectedComponents(m);
         if (cc.size() > 1){
             ///
             std::cerr << "Split: " << solutions[i].getId() << "; Number: " << cc.size() << "\n";
@@ -1395,7 +1396,7 @@ void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& 
                 inside = false;
         }
         if (inside){
-            EigenMeshAlgorithms::union_(bc, bc, m);
+            libigl::union_(bc, bc, m);
             he.removeHeightfield(i);
             solutions.removeBox(i);
         }
@@ -1435,9 +1436,9 @@ void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const
             ! epsilonEqual(realBoundingBox.max(), he.getHeightfield(i).getBoundingBox().max()) ){
             SimpleEigenMesh box = EigenMeshAlgorithms::makeBox(realBoundingBox);
             SimpleEigenMesh oldHeightfield = he.getHeightfield(i);
-            SimpleEigenMesh gluePortion = EigenMeshAlgorithms::difference(oldHeightfield, box);
-            SimpleEigenMesh newHeightfield = EigenMeshAlgorithms::intersection(oldHeightfield, box);
-            EigenMeshAlgorithms::union_(bc, bc, gluePortion);
+            SimpleEigenMesh gluePortion = libigl::difference(oldHeightfield, box);
+            SimpleEigenMesh newHeightfield = libigl::intersection(oldHeightfield, box);
+            libigl::union_(bc, bc, gluePortion);
             he.setHeightfield(newHeightfield,i,true);
         }
     }
@@ -1509,9 +1510,9 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
         SimpleEigenMesh box;
         //solutions.setBox(i,b);
         box = b.getEigenMesh();
-        EigenMeshAlgorithms::intersection(inters, heightfield, box);
-        EigenMeshAlgorithms::difference(diff, heightfield, box);
-        EigenMeshAlgorithms::union_(bc, bc, diff);
+        libigl::intersection(inters, heightfield, box);
+        libigl::difference(diff, heightfield, box);
+        libigl::union_(bc, bc, diff);
         he.addHeightfield(DrawableEigenMesh(inters), solutions.getBox(i).getRotatedTarget(),  i);
         std::cerr << i << "\n";
     }
@@ -1522,7 +1523,7 @@ std::set<unsigned int> chartExpansion(const EigenMesh &hf, unsigned int f, std::
     std::stack<unsigned int> stack;
     std::set<unsigned int> chart;
     Vec3 nf = hf.getFaceNormal(f);
-    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
+    Eigen::MatrixXi fadj = libigl::getFaceAdjacences(hf);
     stack.push(f);
     do {
         f = stack.top();
@@ -1544,7 +1545,7 @@ std::set<unsigned int> chartExpansion(const EigenMesh &hf, unsigned int f, std::
 
 std::vector<Pointd> getPolygonFromChartMarker(const EigenMesh&hf, const cgal::AABBTree& tree, const std::set<unsigned int>& chart){
     std::vector<std::pair<unsigned int, unsigned int> > segments;
-    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
+    Eigen::MatrixXi fadj = libigl::getFaceAdjacences(hf);
     for (unsigned int f : chart){
         for (unsigned int ia = 0; ia <3; ia++){
             int adj = fadj(f,ia);
@@ -1644,7 +1645,7 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
     std::set< std::pair<Pointd, Pointd> > edges;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         const EigenMesh& mesh = he.getHeightfield(i);
-        Eigen::MatrixXi TT = EigenMeshAlgorithms::getFaceAdjacences(mesh);
+        Eigen::MatrixXi TT = libigl::getFaceAdjacences(mesh);
         for (unsigned int f = 0; f < mesh.getNumberFaces(); f++){
             Vec3 n1 = mesh.getFaceNormal(f);
             if (n1.dot(he.getTarget(i))<=CG3_EPSILON){
@@ -1758,7 +1759,7 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
 
 std::vector<Pointd> getPolygonFromChart(const EigenMesh&hf, const std::set<unsigned int>& chart){
     std::vector<std::pair<unsigned int, unsigned int> > segments;
-    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
+    Eigen::MatrixXi fadj = libigl::getFaceAdjacences(hf);
     for (unsigned int f : chart){
         for (unsigned int ia = 0; ia <3; ia++){
             int adj = fadj(f,ia);
@@ -1818,7 +1819,7 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
         double diameter = inputMesh.getAverageHalfEdgesLength();
         EigenMesh structure;
         EigenMesh cbc(baseComplex);
-        EigenMeshAlgorithms::removeDuplicateVertices(cbc);
+        libigl::removeDuplicateVertices(cbc);
         std::vector<bool> seen(cbc.getNumberFaces(), false);
         std::vector< std::set<unsigned int> >charts;
 
@@ -2106,7 +2107,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                 if (he.getTarget(i) == he.getTarget(j)){
                     //take all the points of the base of j
                     EigenMesh m = he.getHeightfield(j);
-                    EigenMeshAlgorithms::removeDuplicateVertices(m);
+                    libigl::removeDuplicateVertices(m);
                     std::vector<Pointd> base = getBasePolygon(m, he.getTarget(j));
 
                     //and check the distance between every point of the base of j and the surface of i
@@ -2118,7 +2119,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                             same = false;
                     }
                     if (same && base.size() != 0){ //heightfield j can be merged to heightfield i
-                        EigenMesh un = EigenMeshAlgorithms::union_(he.getHeightfield(i), he.getHeightfield(j));
+                        EigenMesh un = libigl::union_(he.getHeightfield(i), he.getHeightfield(j));
                         un.setFaceColor(he.getHeightfield(i).getFaceColor(0));
                         he.setHeightfield(un, i);
                         he.removeHeightfield(j);
@@ -2239,9 +2240,9 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                         else
                             bbj.min()[iohf-3] = basei;
                         Color ci = he.getHeightfield(i).getFaceColor(0);
-                        EigenMesh res = EigenMeshAlgorithms::difference(he.getHeightfield(j), EigenMesh(EigenMeshAlgorithms::makeBox(bbj)));
-                        res = EigenMeshAlgorithms::union_(res, he.getHeightfield(i));
-                        baseComplex = EigenMeshAlgorithms::union_(baseComplex, EigenMeshAlgorithms::intersection(he.getHeightfield(j), EigenMesh(EigenMeshAlgorithms::makeBox(bbj))));
+                        EigenMesh res = libigl::difference(he.getHeightfield(j), EigenMesh(EigenMeshAlgorithms::makeBox(bbj)));
+                        res = libigl::union_(res, he.getHeightfield(i));
+                        baseComplex = libigl::union_(baseComplex, libigl::intersection(he.getHeightfield(j), EigenMesh(EigenMeshAlgorithms::makeBox(bbj))));
                         res.setFaceColor(ci);
 
                         he.setHeightfield(res, i);
@@ -2280,8 +2281,8 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                         he.getHeightfield(j).updateBoundingBox();
 
                         Color ci = he.getHeightfield(i).getFaceColor(0);
-                        EigenMesh res = EigenMeshAlgorithms::union_(he.getHeightfield(i), he.getHeightfield(j));
-                        baseComplex = EigenMeshAlgorithms::difference(baseComplex, he.getHeightfield(i));
+                        EigenMesh res = libigl::union_(he.getHeightfield(i), he.getHeightfield(j));
+                        baseComplex = libigl::difference(baseComplex, he.getHeightfield(i));
                         res.setFaceColor(ci);
 
                         he.setHeightfield(res, i);

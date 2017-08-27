@@ -5,6 +5,7 @@
 #include <cg3/utilities/utils.h>
 #include <cg3/cgal/sdf.h>
 #include <cg3/cgal/aabb_tree.h>
+#include <cg3/libigl/libigl.h>
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include "engine.h"
 #include <common.h>
@@ -133,7 +134,7 @@ std::set<unsigned int> TinyFeatureDetection::chartExpansion(const EigenMesh &hf,
     std::stack<unsigned int> stack;
     std::set<unsigned int> chart;
     Vec3 nf = hf.getFaceNormal(f);
-    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
+    Eigen::MatrixXi fadj = libigl::getFaceAdjacences(hf);
     stack.push(f);
     do {
         f = stack.top();
@@ -155,7 +156,7 @@ std::set<unsigned int> TinyFeatureDetection::chartExpansion(const EigenMesh &hf,
 
 std::vector<Pointd> TinyFeatureDetection::getPolygonFromChart(const EigenMesh&hf, const std::set<unsigned int>& chart){
     std::vector<std::pair<unsigned int, unsigned int> > segments;
-    Eigen::MatrixXi fadj = EigenMeshAlgorithms::getFaceAdjacences(hf);
+    Eigen::MatrixXi fadj = libigl::getFaceAdjacences(hf);
     for (unsigned int f : chart){
         for (unsigned int ia = 0; ia <3; ia++){
             int adj = fadj(f,ia);

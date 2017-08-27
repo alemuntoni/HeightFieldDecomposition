@@ -6,6 +6,7 @@
 #include <cg3/utilities/map.h>
 
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
+#include <cg3/libigl/booleans.h>
 
 using namespace cg3;
 
@@ -151,7 +152,7 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                 }
                 else {
                     bool b = false;
-                    SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
+                    SimpleEigenMesh intersection = libigl::intersection(b1.getEigenMesh(), b2.getEigenMesh());
                     BoundingBox bb = intersection.getBoundingBox();
                     if (intersection.getNumberVertices() > 0 && !epsilonEqual(bb.getMinX(), bb.getMaxX()) && !epsilonEqual(bb.getMinY(), bb.getMaxY()) && !epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
                         b = true;
@@ -197,7 +198,7 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                 }
                 else {
                     bool b = false;
-                    SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
+                    SimpleEigenMesh intersection = libigl::intersection(b1.getEigenMesh(), b2.getEigenMesh());
                     BoundingBox bb = intersection.getBoundingBox();
                     if (intersection.getNumberVertices() > 0 && !epsilonEqual(bb.getMinX(), bb.getMaxX()) && !epsilonEqual(bb.getMinY(), bb.getMaxY()) && !epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
                         b = true;
@@ -280,11 +281,11 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
         //
         b3.generateEigenMesh(subd);
         SimpleEigenMesh oldBox = b2.getEigenMesh();
-        oldBox = EigenMeshAlgorithms::difference(oldBox, b1.getEigenMesh());
+        oldBox = libigl::difference(oldBox, b1.getEigenMesh());
         SimpleEigenMesh tmp = oldBox;
-        tmp = EigenMeshAlgorithms::intersection(tmp, b3.getEigenMesh());
+        tmp = libigl::intersection(tmp, b3.getEigenMesh());
         if (tmp.getNumberVertices() > 0){
-            oldBox = EigenMeshAlgorithms::difference(oldBox, b3tmp.getEigenMesh());
+            oldBox = libigl::difference(oldBox, b3tmp.getEigenMesh());
             b2.setEigenMesh(oldBox);
             BoundingBox newBBb2 = oldBox.getBoundingBox();
             b2.setMin(newBBb2.min());
@@ -306,7 +307,7 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
     }
     else {
         SimpleEigenMesh oldBox = b2.getEigenMesh();
-        oldBox = EigenMeshAlgorithms::difference(oldBox, b1.getEigenMesh());
+        oldBox = libigl::difference(oldBox, b1.getEigenMesh());
         b2.setEigenMesh(oldBox);
         BoundingBox newBBb2 = oldBox.getBoundingBox();
         b2.setMin(newBBb2.min());

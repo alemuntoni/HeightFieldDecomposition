@@ -15,6 +15,7 @@
 #include <engine/tinyfeaturedetection.h>
 #include <cg3/geometry/transformations.h>
 #include <cg3/utilities/set.h>
+#include <cg3/libigl/libigl.h>
 
 
 using namespace cg3;
@@ -1932,7 +1933,7 @@ void EngineManager::on_sdfPushButton_clicked() {
         };
         std::vector<std::pair<double, unsigned int> > tinyPieces;
         for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            EigenMeshAlgorithms::removeDuplicateVertices(he->getHeightfield(i));
+            libigl::removeDuplicateVertices(he->getHeightfield(i));
             double mindist;
             if (TinyFeatureDetection::tinyFeaturePlane(he->getHeightfield(i),he->getTarget(i), d->getAverageHalfEdgesLength()*ui->thresholdTinyFeaturesSpinBox->value(), mindist)){
                 tinyPieces.push_back(std::pair<double, unsigned int>(mindist, solutions->getBox(i).getId()));
@@ -2050,7 +2051,7 @@ void EngineManager::on_tinyFeaturesPushButton_clicked() {
                 }
         };
         for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
-            EigenMeshAlgorithms::removeDuplicateVertices(he->getHeightfield(i));
+            libigl::removeDuplicateVertices(he->getHeightfield(i));
         }
         priorityBoxes.clear();
         std::vector<std::pair<double, unsigned int> > tinyPieces;

@@ -4,8 +4,8 @@
  */
 
 #include "cg3/viewer/mainwindow.h"
-#include "cg3/viewer/managers/dcel_manager/dcelmanager.h"
-#include "cg3/viewer/managers/window_manager/windowmanager.h"
+#include "cg3/viewer/managers/dcel_manager/dcel_manager.h"
+#include "cg3/viewer/managers/window_manager/window_manager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
 #include <QApplication>
@@ -14,8 +14,8 @@
 //#include "trimesh/gui/trimeshmanager.h"
 #include "lib/graph/directedgraph.h"
 
-#include "cg3/viewer/managers/eigenmesh_manager/eigenmeshmanager.h"
-#include "cg3/viewer/managers/booleans_manager/booleansmanager.h"
+#include "cg3/viewer/managers/eigenmesh_manager/eigenmesh_manager.h"
+#include "cg3/viewer/managers/booleans_manager/booleans_manager.h"
 #include <cg3/utilities/string.h>
 #include <cg3/utilities/system.h>
 
@@ -512,10 +512,6 @@ int main(int argc, char *argv[]) {
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
     gui.updateGlCanvas();
     gui.show();
-
-
-
-
 
     return app.exec();
     #endif

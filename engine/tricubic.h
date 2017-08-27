@@ -2,7 +2,7 @@
 #define TRI_CUBIC_INTERPOLATOR_H
 
 #include <Eigen/Core>
-#include "cg3/data_structures//arrays.h"
+#include "cg3/data_structures/arrays.h"
 #include "cg3/geometry/point.h"
 
 typedef float gridreal;
