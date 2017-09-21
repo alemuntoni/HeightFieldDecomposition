@@ -1814,7 +1814,7 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
         d.saveOnObjFile(heightfieldString + std::to_string(i) + ".obj");
     }
 
-    if (baseComplex.getNumberVertices() > 0) {
+    /*if (baseComplex.getNumberVertices() > 0) {
 
         double diameter = inputMesh.getAverageHalfEdgesLength();
         EigenMesh structure;
@@ -1861,7 +1861,7 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
             }
         }
         structure.saveOnObj(structureString);
-    }
+    }*/
 }
 
 void Engine::updatePieceNormals(const cgal::AABBTree& tree, Dcel& piece) {

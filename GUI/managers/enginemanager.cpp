@@ -1667,6 +1667,12 @@ void EngineManager::on_snappingPushButton_clicked() {
 
         //new: forced snapping
         Engine::smartSnapping(*d, *solutions);
+        //if not smart snapping
+        /*cgal::AABBTree tree(*d);
+        solutions->calculateTrianglesCovered(tree);
+        solutions->generatePieces();
+        solutions->sortByTrianglesCovered();*/
+
 
         //merging
         Engine::merging(*d, *solutions);
