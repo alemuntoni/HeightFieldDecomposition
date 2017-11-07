@@ -3,8 +3,8 @@
 #include <cg3/geometry/transformations.h>
 #include <cg3/geometry/2d/polygon2d.h>
 #include <cg3/utilities/utils.h>
-#include <cg3/cgal/sdf.h>
-#include <cg3/cgal/aabb_tree.h>
+#include <cg3/cgal/cgal_sdf.h>
+#include <cg3/cgal/cgal_aabbtree.h>
 #include <cg3/libigl/libigl.h>
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include "engine.h"

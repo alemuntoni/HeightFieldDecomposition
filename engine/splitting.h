@@ -4,7 +4,7 @@
 #include "lib/grid/irregulargrid.h"
 #include "heightfieldslist.h"
 #include "boxlist.h"
-#include "cg3/cgal/aabb_tree.h"
+#include "cg3/cgal/cgal_aabbtree.h"
 #include "lib/graph/directedgraph.h"
 #include <cg3/utilities/comparators.h>
 

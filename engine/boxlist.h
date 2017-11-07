@@ -3,7 +3,7 @@
 
 #include "box.h"
 #include "cg3/data_structures/arrays.h"
-#include "cg3/cgal/aabb_tree.h"
+#include "cg3/cgal/cgal_aabbtree.h"
 
 class BoxList : public cg3::DrawableObject, public cg3::SerializableObject{
     public:

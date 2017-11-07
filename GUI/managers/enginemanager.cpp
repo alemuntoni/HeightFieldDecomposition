@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <QMessageBox>
 #include <omp.h>
-#include "cg3/cgal/aabb_tree.h"
+#include "cg3/cgal/cgal_aabbtree.h"
 #include "engine/packing.h"
 #include "engine/reconstruction.h"
 #include <QThread>

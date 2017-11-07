@@ -7,6 +7,7 @@
 #include "cg3/viewer/managers/dcel_manager/dcel_manager.h"
 #include "cg3/viewer/managers/window_manager/window_manager.h"
 #include "GUI/managers/enginemanager.h"
+#include "GUI/managers/fouraxischeckermanager.h"
 #include "common.h"
 #include <QApplication>
 //#include "common/comparators.h"
@@ -462,6 +463,9 @@ int main(int argc, char *argv[]) {
 
     EngineManager e(&gui);
     ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
+
+    FourAxisMillingManager fm(&gui);
+    gui.addManager(&fm, "Four Axis Milling Manager");
 
     BooleansManager bm(&gui);
     gui.addManager(&bm, "Booleans Manager");

@@ -1,5 +1,5 @@
 #include "reconstruction.h"
-#include "cg3/cgal/aabb_tree.h"
+#include "cg3/cgal/cgal_aabbtree.h"
 #include "common.h"
 #ifdef __GNUC__
 #pragma GCC diagnostic push

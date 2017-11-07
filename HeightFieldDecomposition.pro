@@ -19,6 +19,7 @@ CONFIG += ALL
 
 ALL {
     include(cg3lib/cg3.pri)
+    CONFIG += USE_LIBIGL_EIGEN
 }
 
 SERVER_MODE {
@@ -59,62 +60,76 @@ exists($$(GUROBI_HOME)){
     DEFINES += GUROBI_DEFINED
 }
 
-    HEADERS += \
-        common.h \
-        GUI/managers/enginemanager.h \
-        engine/tricubic.h \
-        engine/energy.h \
-        engine/box.h \
-        engine/boxlist.h \
-        engine/engine.h \
-        engine/heightfieldslist.h \
-        engine/packing.h \
-        engine/splitting.h \
-        engine/reconstruction.h \
-        lib/grid/grid.h \
-        lib/grid/drawablegrid.h \
-        lib/grid/drawableirregulargrid.h \
-        lib/grid/irregulargrid.h \
-        lib/packing/binpack2d.h \
-        lib/dcel_segmentation/chart.h \
-        lib/dcel_segmentation/segmentation_iterators.h \
-        lib/dcel_segmentation/segmentation_struct.h \
-        lib/dcel_segmentation/segmentation.h \
-        engine/orientation.h \
-        lib/graph/bipartitegraph.h \
-        lib/graph/undirectednode.h \
-        lib/graph/bipartitegraphiterators.h \
-        lib/graph/directedgraph.h \
-        lib/csgtree/aabbcsgtree.h \
-        lib/octree/octree_node.h \
-        engine/tinyfeaturedetection.h
+INCLUDEPATH += $$PWD/lib/multi_label_optimization
+DEPENDPATH += $$PWD/lib/multi_label_optimization
+SOURCES += \
+    lib/multi_label_optimization/GCoptimization.cpp \
+    lib/multi_label_optimization/graph.cpp \
+    lib/multi_label_optimization/LinkedBlockList.cpp \
+    lib/multi_label_optimization/maxflow.cpp
+
+HEADERS += \
+    common.h \
+    GUI/managers/enginemanager.h \
+    engine/tricubic.h \
+    engine/energy.h \
+    engine/box.h \
+    engine/boxlist.h \
+    engine/engine.h \
+    engine/heightfieldslist.h \
+    engine/packing.h \
+    engine/splitting.h \
+    engine/reconstruction.h \
+    lib/grid/grid.h \
+    lib/grid/drawablegrid.h \
+    lib/grid/drawableirregulargrid.h \
+    lib/grid/irregulargrid.h \
+    lib/packing/binpack2d.h \
+    lib/dcel_segmentation/chart.h \
+    lib/dcel_segmentation/segmentation_iterators.h \
+    lib/dcel_segmentation/segmentation_struct.h \
+    lib/dcel_segmentation/segmentation.h \
+    engine/orientation.h \
+    lib/graph/bipartitegraph.h \
+    lib/graph/undirectednode.h \
+    lib/graph/bipartitegraphiterators.h \
+    lib/graph/directedgraph.h \
+    lib/csgtree/aabbcsgtree.h \
+    lib/octree/octree_node.h \
+    engine/tinyfeaturedetection.h \
+    fouraxischecker/polylinesCheck.h \
+    GUI/managers/fouraxischeckermanager.h
 
 
-    SOURCES += \
-        main.cpp \
-        common.cpp \
-        GUI/managers/enginemanager.cpp \
-        engine/tricubic.cpp \
-        engine/energy.cpp \
-        engine/box.cpp \
-        engine/boxlist.cpp \
-        engine/engine.cpp \
-        engine/heightfieldslist.cpp \
-        engine/packing.cpp \
-        engine/splitting.cpp \
-        engine/reconstruction.cpp \
-        lib/grid/grid.cpp \
-        lib/grid/drawablegrid.cpp \
-        lib/grid/drawableirregulargrid.cpp \
-        lib/dcel_segmentation/chart.cpp \
-        lib/dcel_segmentation/segmentation_struct.cpp \
-        engine/orientation.cpp \
-        lib/csgtree/aabbcsgtree.cpp \
-        lib/octree/octree_node.cpp \
-        engine/tinyfeaturedetection.cpp
+SOURCES += \
+    main.cpp \
+    common.cpp \
+    GUI/managers/enginemanager.cpp \
+    engine/tricubic.cpp \
+    engine/energy.cpp \
+    engine/box.cpp \
+    engine/boxlist.cpp \
+    engine/engine.cpp \
+    engine/heightfieldslist.cpp \
+    engine/packing.cpp \
+    engine/splitting.cpp \
+    engine/reconstruction.cpp \
+    lib/grid/grid.cpp \
+    lib/grid/drawablegrid.cpp \
+    lib/grid/drawableirregulargrid.cpp \
+    lib/dcel_segmentation/chart.cpp \
+    lib/dcel_segmentation/segmentation_struct.cpp \
+    engine/orientation.cpp \
+    lib/csgtree/aabbcsgtree.cpp \
+    lib/octree/octree_node.cpp \
+    engine/tinyfeaturedetection.cpp \
+    fouraxischecker/polylinesCheck.cpp \
+    GUI/managers/fouraxischeckermanager.cpp \
+    lib/multi_label_optimization/example.cpp
 
-    FORMS += \
-        GUI/managers/enginemanager.ui
+FORMS += \
+    GUI/managers/enginemanager.ui \
+    GUI/managers/fouraxischeckermanager.ui
 
-    DISTFILES += \
-        README.txt
+DISTFILES += \
+    README.txt

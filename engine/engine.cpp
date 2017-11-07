@@ -10,7 +10,7 @@
 #include <gurobi_c++.h>
 #endif
 
-#include <cg3/cgal/polyhedron.h>
+#include <cg3/cgal/cgal_polyhedron.h>
 #include <CGAL/mesh_segmentation.h>
 #include <CGAL/property_map.h>
 
