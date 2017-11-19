@@ -355,34 +355,34 @@ void Box3D::setVisible(bool b) {
     visible = b;
 }
 
-void Box3D::serialize(std::ofstream& binaryFile) const {
-    BoundingBox::serialize(binaryFile);
-    c1.serialize(binaryFile);
-    c2.serialize(binaryFile);
-    c3.serialize(binaryFile);
-    Serializer::serialize(color, binaryFile);
-    target.serialize(binaryFile);
-    Serializer::serialize(rotation, binaryFile);
-    piece.serialize(binaryFile);
+void Box3D::serializeOld(std::ofstream& binaryFile) const {
+    BoundingBox::serializeOld(binaryFile);
+    c1.serializeOld(binaryFile);
+    c2.serializeOld(binaryFile);
+    c3.serializeOld(binaryFile);
+    SerializerOld::serialize(color, binaryFile);
+    target.serializeOld(binaryFile);
+    SerializerOld::serialize(rotation, binaryFile);
+    piece.serializeOld(binaryFile);
     std::string s = "id";
-    Serializer::serialize(s, binaryFile);
-    Serializer::serialize(id, binaryFile);
+    SerializerOld::serialize(s, binaryFile);
+    SerializerOld::serialize(id, binaryFile);
     s = "stc";
-    Serializer::serialize(s, binaryFile);
-    Serializer::serialize(trianglesCovered, binaryFile);
+    SerializerOld::serialize(s, binaryFile);
+    SerializerOld::serialize(trianglesCovered, binaryFile);
 }
 
-bool Box3D::deserialize(std::ifstream& binaryFile) {
+bool Box3D::deserializeOld(std::ifstream& binaryFile) {
     Box3D tmp;
     BoundingBox tmpbb;
-    if (tmpbb.deserialize(binaryFile) &&
-            tmp.c1.deserialize(binaryFile) &&
-            tmp.c2.deserialize(binaryFile) &&
-            tmp.c3.deserialize(binaryFile) &&
-            Serializer::deserialize(tmp.color, binaryFile) &&
-            tmp.target.deserialize(binaryFile) &&
-            Serializer::deserialize(tmp.rotation, binaryFile) &&
-            tmp.piece.deserialize(binaryFile)) {
+    if (tmpbb.deserializeOld(binaryFile) &&
+            tmp.c1.deserializeOld(binaryFile) &&
+            tmp.c2.deserializeOld(binaryFile) &&
+            tmp.c3.deserializeOld(binaryFile) &&
+            SerializerOld::deserialize(tmp.color, binaryFile) &&
+            tmp.target.deserializeOld(binaryFile) &&
+            SerializerOld::deserialize(tmp.rotation, binaryFile) &&
+            tmp.piece.deserializeOld(binaryFile)) {
         tmp.min() = tmpbb.min();
         tmp.max() = tmpbb.max();
 
@@ -393,16 +393,16 @@ bool Box3D::deserialize(std::ifstream& binaryFile) {
 
         int begin = binaryFile.tellg();
         std::string s;
-        if (Serializer::deserialize(s, binaryFile) && s == "id"){
-            Serializer::deserialize(tmp.id, binaryFile);
+        if (SerializerOld::deserialize(s, binaryFile) && s == "id"){
+            SerializerOld::deserialize(tmp.id, binaryFile);
         }
         else{
             binaryFile.clear();
             binaryFile.seekg(begin);
         }
         begin = binaryFile.tellg();
-        if (Serializer::deserialize(s, binaryFile) && s == "stc"){
-            Serializer::deserialize(tmp.trianglesCovered, binaryFile);
+        if (SerializerOld::deserialize(s, binaryFile) && s == "stc"){
+            SerializerOld::deserialize(tmp.trianglesCovered, binaryFile);
         }
         else{
             binaryFile.clear();
@@ -413,6 +413,16 @@ bool Box3D::deserialize(std::ifstream& binaryFile) {
     }
     else
         return false;
+}
+
+void Box3D::serialize(std::ofstream& binaryFile) const {
+    BoundingBox::serialize(binaryFile);
+    Serializer::serializeObjectAttributes("box", binaryFile, c1, c2, c3, color, visible, target, rotation, id, piece, trianglesCovered);
+}
+
+void Box3D::deserialize(std::ifstream& binaryFile) {
+    BoundingBox::deserialize(binaryFile);
+    Serializer::deserializeObjectAttributes("box", binaryFile, c1, c2, c3, color, visible, target, rotation, id, piece, trianglesCovered);
 }
 
 const Vec3& Box3D::getTarget() const {

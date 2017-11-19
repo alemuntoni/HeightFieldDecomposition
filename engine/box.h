@@ -69,8 +69,12 @@ class Box3D : public cg3::BoundingBox, public cg3::DrawableObject{
         void setVisible(bool b);
 
         // SerializableObject interface
+        void serializeOld(std::ofstream& binaryFile) const;
+        bool deserializeOld(std::ifstream& binaryFile);
+
+        // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
-        bool deserialize(std::ifstream& binaryFile);
+        void deserialize(std::ifstream& binaryFile);
 
         const cg3::Vec3& getTarget() const;
         void setTarget(const cg3::Vec3& value);

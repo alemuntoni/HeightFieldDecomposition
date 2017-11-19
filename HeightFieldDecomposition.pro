@@ -7,19 +7,16 @@ CONFIG(release, debug|release){
     CONFIG += FINAL_RELEASE
 }
 
-PROFILER{
-    message(Profiling Configuration)
-    DEFINES+=CGAL_DISABLE_ROUNDING_MATH_CHECK=ON
-}
-
+#CONFIG += c++14
 
 CONFIG += ALL
 #CONFIG += SERVER_MODE
 #CONFIG += CONVERTER_MODE
 
 ALL {
-    include(cg3lib/cg3.pri)
     CONFIG += USE_LIBIGL_EIGEN
+    #CONFIG += MULTI_LABEL_OPTIMIZATION
+    include(cg3lib/cg3.pri)
 }
 
 SERVER_MODE {
@@ -60,13 +57,17 @@ exists($$(GUROBI_HOME)){
     DEFINES += GUROBI_DEFINED
 }
 
-INCLUDEPATH += $$PWD/lib/multi_label_optimization
-DEPENDPATH += $$PWD/lib/multi_label_optimization
-SOURCES += \
-    lib/multi_label_optimization/GCoptimization.cpp \
-    lib/multi_label_optimization/graph.cpp \
-    lib/multi_label_optimization/LinkedBlockList.cpp \
-    lib/multi_label_optimization/maxflow.cpp
+
+MULTI_LABEL_OPTIMIZATION {
+    DEFINES += MULTI_LABEL_OPTIMIZATION_INCLUDED
+    INCLUDEPATH += $$PWD/lib/multi_label_optimization
+    DEPENDPATH += $$PWD/lib/multi_label_optimization
+    SOURCES += \
+        lib/multi_label_optimization/GCoptimization.cpp \
+        lib/multi_label_optimization/graph.cpp \
+        lib/multi_label_optimization/LinkedBlockList.cpp \
+        lib/multi_label_optimization/maxflow.cpp
+}
 
 HEADERS += \
     common.h \
@@ -98,7 +99,8 @@ HEADERS += \
     lib/octree/octree_node.h \
     engine/tinyfeaturedetection.h \
     fouraxischecker/polylinesCheck.h \
-    GUI/managers/fouraxischeckermanager.h
+    GUI/managers/fouraxischeckermanager.h \
+    foo.h
 
 
 SOURCES += \
@@ -125,7 +127,8 @@ SOURCES += \
     engine/tinyfeaturedetection.cpp \
     fouraxischecker/polylinesCheck.cpp \
     GUI/managers/fouraxischeckermanager.cpp \
-    lib/multi_label_optimization/example.cpp
+    lib/multi_label_optimization/example.cpp \
+    foo.cpp
 
 FORMS += \
     GUI/managers/enginemanager.ui \

@@ -197,15 +197,15 @@ void HeightfieldsList::explode(const Pointd& bc, double dist) {
     }
 }
 
-void HeightfieldsList::serialize(std::ofstream& binaryFile) const {
-    Serializer::serialize(heightfields, binaryFile);
-    Serializer::serialize(targets, binaryFile);
+void HeightfieldsList::serializeOld(std::ofstream& binaryFile) const {
+    SerializerOld::serialize(heightfields, binaryFile);
+    SerializerOld::serialize(targets, binaryFile);
 }
 
-bool HeightfieldsList::deserialize(std::ifstream& binaryFile) {
+bool HeightfieldsList::deserializeOld(std::ifstream& binaryFile) {
     std::vector<DrawableEigenMesh> tmp;
-    if (Serializer::deserialize(tmp, binaryFile) &&
-            Serializer::deserialize(targets, binaryFile)){
+    if (SerializerOld::deserialize(tmp, binaryFile) &&
+            SerializerOld::deserialize(targets, binaryFile)){
         heightfields = std::move(tmp);
         nVisible = -1;
         return true;
@@ -213,4 +213,13 @@ bool HeightfieldsList::deserialize(std::ifstream& binaryFile) {
     else
         return false;
 
+}
+
+void HeightfieldsList::serialize(std::ofstream& binaryFile) const {
+    Serializer::serializeObjectAttributes("HeightFieldList", binaryFile, heightfields, targets);
+}
+
+void HeightfieldsList::deserialize(std::ifstream& binaryFile) {
+    Serializer::deserializeObjectAttributes("HeightFieldList", binaryFile, heightfields, targets);
+    nVisible = -1;
 }

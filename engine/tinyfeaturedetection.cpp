@@ -1,7 +1,7 @@
 #include "tinyfeaturedetection.h"
 
 #include <cg3/geometry/transformations.h>
-#include <cg3/geometry/2d/polygon2d.h>
+#include <cg3/geometry/2d/utils2d.h>
 #include <cg3/utilities/utils.h>
 #include <cg3/cgal/cgal_sdf.h>
 #include <cg3/cgal/cgal_aabbtree.h>
@@ -249,7 +249,7 @@ bool TinyFeatureDetection::tinyFeaturePlane(const EigenMesh &hf, const Vec3 &tar
             }
             pol2D.push_back(p2d);
         }
-        if (! cg3::isCounterClockwise(pol2D)){
+        if (! cg3::isPolygonCounterClockwise(pol2D)){
             std::reverse(pol2D.begin(), pol2D.end());
         }
         polygons2D.push_back(pol2D);

@@ -154,28 +154,28 @@ void EngineManager::saveMSCFile(const std::string& filename, const Dcel& d, cons
     of.close();
 }
 
-void EngineManager::serializeBC(const std::string& filename) {
+void EngineManager::serializeBCOld(const std::string& filename) {
     std::ofstream myfile;
     myfile.open (filename, std::ios::out | std::ios::binary);
-    d->serialize(myfile);
-    solutions->serialize(myfile);
-    baseComplex->serialize(myfile);
-    he->serialize(myfile);
-    originalMesh.serialize(myfile);
+    d->serializeOld(myfile);
+    solutions->serializeOld(myfile);
+    baseComplex->serializeOld(myfile);
+    he->serializeOld(myfile);
+    originalMesh.serializeOld(myfile);
     //entirePieces->serialize(myfile);
     double factor = ui->factorSpinBox->value();
     double kernel = ui->distanceSpinBox->value();
-    Serializer::serialize(factor, myfile);
-    Serializer::serialize(kernel, myfile);
+    SerializerOld::serialize(factor, myfile);
+    SerializerOld::serialize(kernel, myfile);
     bool b = true;
-    Serializer::serialize(b, myfile);
-    originalSolutions.serialize(myfile);
-    Serializer::serialize(splittedBoxesToOriginals, myfile);
-    Serializer::serialize(priorityBoxes, myfile);
+    SerializerOld::serialize(b, myfile);
+    originalSolutions.serializeOld(myfile);
+    SerializerOld::serialize(splittedBoxesToOriginals, myfile);
+    SerializerOld::serialize(priorityBoxes, myfile);
     myfile.close();
 }
 
-void EngineManager::deserializeBC(const std::string& filename) {
+void EngineManager::deserializeBCOld(const std::string& filename) {
     deleteDrawableObject(d);
     deleteDrawableObject(solutions);
     deleteDrawableObject(baseComplex);
@@ -186,25 +186,25 @@ void EngineManager::deserializeBC(const std::string& filename) {
     he = new HeightfieldsList();
     std::ifstream myfile;
     myfile.open (filename, std::ios::in | std::ios::binary);
-    d->deserialize(myfile);
-    solutions->deserialize(myfile);
-    baseComplex->deserialize(myfile);
-    he->deserialize(myfile);
+    d->deserializeOld(myfile);
+    solutions->deserializeOld(myfile);
+    baseComplex->deserializeOld(myfile);
+    he->deserializeOld(myfile);
     he->checkHeightfields();
-    if (originalMesh.deserialize(myfile)){
+    if (originalMesh.deserializeOld(myfile)){
         if (originalMesh.getNumberVertices() > 0)
             mainWindow.pushObj(&originalMesh, "Original Mesh");
     }
     double factor, kernel;
-    Serializer::deserialize(factor, myfile);
-    Serializer::deserialize(kernel, myfile);
+    SerializerOld::deserialize(factor, myfile);
+    SerializerOld::deserialize(kernel, myfile);
     ui->factorSpinBox->setValue(factor);
     ui->distanceSpinBox->setValue(kernel);
     bool b;
-    if (Serializer::deserialize(b, myfile) && b == true){
-        originalSolutions.deserialize(myfile);
-        Serializer::deserialize(splittedBoxesToOriginals, myfile);
-        Serializer::deserialize(priorityBoxes, myfile);
+    if (SerializerOld::deserialize(b, myfile) && b == true){
+        originalSolutions.deserializeOld(myfile);
+        SerializerOld::deserialize(splittedBoxesToOriginals, myfile);
+        SerializerOld::deserialize(priorityBoxes, myfile);
         alreadySplitted = true;
         for (unsigned int i = 0; i < originalSolutions.size(); i++)
             originalSolutions[i].setId(i);
@@ -345,37 +345,37 @@ void EngineManager::setObjPath(const std::string &path) {
     objls.setActualPath(path);
 }
 
-void EngineManager::serialize(std::ofstream& binaryFile) const {
+void EngineManager::serializeOld(std::ofstream& binaryFile) const {
     //g->serialize(binaryFile);
-    d->serialize(binaryFile);
+    d->serializeOld(binaryFile);
     bool bb = false;
 
     bb = false;
     if (solutions!=nullptr){
         bb = true;
-        Serializer::serialize(bb, binaryFile);
-        solutions->serialize(binaryFile);
+        SerializerOld::serialize(bb, binaryFile);
+        solutions->serializeOld(binaryFile);
     }
     else
-        Serializer::serialize(bb, binaryFile);
+        SerializerOld::serialize(bb, binaryFile);
     if (originalMesh.getNumberVertices() > 0){
         bb = true;
-        Serializer::serialize(bb, binaryFile);
-        originalMesh.serialize(binaryFile);
+        SerializerOld::serialize(bb, binaryFile);
+        originalMesh.serializeOld(binaryFile);
     }
     double factor = ui->factorSpinBox->value();
     double kernel = ui->distanceSpinBox->value();
-    Serializer::serialize(factor, binaryFile);
-    Serializer::serialize(kernel, binaryFile);
+    SerializerOld::serialize(factor, binaryFile);
+    SerializerOld::serialize(kernel, binaryFile);
 }
 
-bool EngineManager::deserialize(std::ifstream& binaryFile) {
+bool EngineManager::deserializeOld(std::ifstream& binaryFile) {
     //deleteDrawableObject(g);
     deleteDrawableObject(d);
     //g = new DrawableGrid();
     d = new DrawableDcel();
     //g->deserialize(binaryFile);
-    if (! d->deserialize(binaryFile)) return false;
+    if (! d->deserializeOld(binaryFile)) return false;
     bool bb = false;
     for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit)
         (*fit)->setColor(Color(128,128,128));
@@ -391,11 +391,11 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
     //g->setDrawBorders();
     //g->setSlice(1);
 
-    if (! Serializer::deserialize(bb, binaryFile)) return false;
+    if (! SerializerOld::deserialize(bb, binaryFile)) return false;
     if (bb){
         deleteDrawableObject(solutions);
         solutions = new BoxList();
-        if (! solutions->deserialize(binaryFile)) return false;
+        if (! solutions->deserializeOld(binaryFile)) return false;
         if (solutions->getNumberBoxes() > 0){
             solutions->setVisibleBox(0);
             solutions->setCylinders(false);
@@ -409,12 +409,12 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
         else
             std::cerr << "ERROR: no boxes in binary file. ???\n";
     }
-    if (Serializer::deserialize(bb, binaryFile)){
-        originalMesh.deserialize(binaryFile);
+    if (SerializerOld::deserialize(bb, binaryFile)){
+        originalMesh.deserializeOld(binaryFile);
         mainWindow.pushObj(&originalMesh, "Original Mesh");
     }
     double kernel, factor;
-    if (Serializer::deserialize(factor, binaryFile) && Serializer::deserialize(kernel, binaryFile)){
+    if (SerializerOld::deserialize(factor, binaryFile) && SerializerOld::deserialize(kernel, binaryFile)){
         ui->factorSpinBox->setValue(factor);
         ui->distanceSpinBox->setValue(kernel);
     }
@@ -422,6 +422,31 @@ bool EngineManager::deserialize(std::ifstream& binaryFile) {
     mainWindow.updateGlCanvas();
     //saveMSCFile("prova.txt", *d, *solutions);
     return true;
+}
+
+void EngineManager::serialize(std::ofstream& binaryFile) const {
+    if (d != nullptr && solutions != nullptr){
+        double factor = ui->factorSpinBox->value();
+        double kernel = ui->distanceSpinBox->value();
+        Serializer::serializeObjectAttributes("HFDBeforeSplitting", binaryFile, *d, *solutions, originalMesh, factor, kernel);
+    }
+}
+
+void EngineManager::deserialize(std::ifstream& binaryFile) {
+    DrawableDcel tmpd;
+    BoxList tmpsol;
+    double factor, kernel;
+    try {
+        Serializer::deserializeObjectAttributes("HFDBeforeSplitting", binaryFile, tmpd, tmpsol, originalMesh, factor, kernel);
+        d = new DrawableDcel(std::move(tmpd));
+        solutions = new BoxList(std::move(tmpsol));
+        ui->factorSpinBox->setValue(factor);
+        ui->distanceSpinBox->setValue(kernel);
+    }
+    catch(std::exception& e){
+        std::cerr << "ERROR reading file.\n";
+        std::cerr << e.what() << "\n";
+    }
 }
 
 void EngineManager::on_generateGridPushButton_clicked() {
@@ -535,6 +560,7 @@ void EngineManager::on_serializePushButton_clicked() {
     if (filename != ""){
         std::ofstream myfile;
         myfile.open (filename, std::ios::out | std::ios::binary);
+        //serializeOld(myfile);
         serialize(myfile);
         myfile.close();
     }
@@ -546,7 +572,7 @@ void EngineManager::on_deserializePushButton_clicked() {
         on_cleanAllPushButton_clicked();
         std::ifstream myfile;
         myfile.open (filename, std::ios::in | std::ios::binary);
-        deserialize(myfile);
+        deserializeOld(myfile);
         myfile.close();
     }
 }
@@ -929,7 +955,7 @@ void EngineManager::on_serializeBoxPushButton_clicked() {
     if (b!=nullptr){
         std::ofstream myfile;
         myfile.open ("box.bin", std::ios::out | std::ios::binary);
-        b->serialize(myfile);
+        b->serializeOld(myfile);
         myfile.close();
     }
 }
@@ -942,7 +968,7 @@ void EngineManager::on_deserializeBoxPushButton_clicked() {
 
     std::ifstream myfile;
     myfile.open ("box.bin", std::ios::in | std::ios::binary);
-    b->deserialize(myfile);
+    b->deserializeOld(myfile);
     myfile.close();
     updateBoxValues();
     mainWindow.updateGlCanvas();
@@ -1286,7 +1312,7 @@ void EngineManager::on_stickPushButton_clicked() {
 void EngineManager::on_serializeBCPushButton_clicked() {
     if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr /*&& entirePieces != nullptr*/){
         std::string fn = hfdls.saveDialog();
-        if (fn != "") serializeBC(fn);
+        if (fn != "") serializeBCOld(fn);
 
     }
 
@@ -1296,7 +1322,7 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
     std::string fn = hfdls.loadDialog();
     if (fn != "") {
         on_cleanAllPushButton_clicked();
-        deserializeBC(fn);
+        deserializeBCOld(fn);
     }
 }
 
@@ -2099,7 +2125,7 @@ void EngineManager::on_tinyFeaturesPushButton_clicked() {
                 on_reorderBoxes_clicked();
                 on_subtractPushButton_clicked();
                 on_colorPiecesPushButton_clicked();
-                serializeBC(hfdls.getActualPath() + "/bools" + std::to_string(i) + ".hfd");
+                serializeBCOld(hfdls.getActualPath() + "/bools" + std::to_string(i) + ".hfd");
                 i++;
             }
         } while (inserted);

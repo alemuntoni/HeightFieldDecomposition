@@ -210,18 +210,26 @@ std::vector<Box3D>::iterator BoxList::end() {
     return boxes.end();
 }
 
-void BoxList::serialize(std::ofstream& binaryFile) const {
-    Serializer::serialize(boxes, binaryFile);
+void BoxList::serializeOld(std::ofstream& binaryFile) const {
+    SerializerOld::serialize(boxes, binaryFile);
 }
 
-bool BoxList::deserialize(std::ifstream& binaryFile) {
-    if (Serializer::deserialize(boxes, binaryFile)){
+bool BoxList::deserializeOld(std::ifstream& binaryFile) {
+    if (SerializerOld::deserialize(boxes, binaryFile)){
         visibleBox = 0;
         cylinder = false;
         return true;
     }
     else
         return false;
+}
+
+void BoxList::serialize(std::ofstream& binaryFile) const {
+    Serializer::serializeObjectAttributes("BoxList", binaryFile, boxes);
+}
+
+void BoxList::deserialize(std::ifstream& binaryFile) {
+    Serializer::deserializeObjectAttributes("BoxList", binaryFile, boxes);
 }
 
 void BoxList::setVisibleBox(int i) {

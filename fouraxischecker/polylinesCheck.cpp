@@ -2,6 +2,7 @@
 #include <cg3/geometry/transformations.h>
 #include <cg3/libigl/face_adjacences.h>
 
+#ifdef MULTI_LABEL_OPTIMIZATION_INCLUDED
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
@@ -9,6 +10,7 @@
 #include <GCoptimization.h>
 #pragma GCC diagnostic pop
 #endif //__GNUC__
+#endif
 
 using namespace std;
 using namespace cg3;
@@ -597,10 +599,12 @@ void PolylinesCheck::minimizeNumberPlanes(std::vector<int>& survivedPlanes, cg3:
 #endif
 }
 
+#ifdef MULTI_LABEL_OPTIMIZATION_INCLUDED
 float smoothTerm(int site_1, int site_2, int label_1, int label_2, void *extra_data) {
     if (label_1 == label_2) return 0.f;
     else return 2.f;
 }
+
 
 std::vector<int> PolylinesCheck::getAssociation(const std::vector<int> &survivedPlanes, cg3::Array2D<int> &visibility, const EigenMesh& mesh) {
     int n_triangles = mesh.getNumberFaces();
@@ -661,4 +665,4 @@ std::vector<int> PolylinesCheck::getAssociation(const std::vector<int> &survived
     }
     return segmentation;
 }
-
+#endif

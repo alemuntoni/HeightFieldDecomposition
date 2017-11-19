@@ -44,11 +44,11 @@ Vec3 Engine::getClosestTarget(const Vec3& n) {
 }
 
 void Engine::serializeAsEngineManager(std::ofstream& binaryfile, const Grid& g, const Dcel &d, const BoxList &bl) {
-    g.serialize(binaryfile);
-    d.serialize(binaryfile);
+    g.serializeOld(binaryfile);
+    d.serializeOld(binaryfile);
     bool b = true;
-    Serializer::serialize(b, binaryfile);
-    bl.serialize(binaryfile);
+    SerializerOld::serialize(b, binaryfile);
+    bl.serializeOld(binaryfile);
 }
 
 Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
@@ -777,7 +777,7 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
                     ss << "grid" << i << "_" << j << ".bin";
                     std::ofstream myfile;
                     myfile.open (ss.str(), std::ios::out | std::ios::binary);
-                    g.serialize(myfile);
+                    g.serializeOld(myfile);
                     myfile.close();
                     std::cerr << "Generated grid or " << i << " t " << j << "\n";
                 #ifdef USE_2D_ONLY
@@ -839,7 +839,7 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
                             ss << "grid" << i << "_" << j << ".bin";
                             std::ifstream myfile;
                             myfile.open (ss.str(), std::ios::in | std::ios::binary);
-                            g.deserialize(myfile);
+                            g.deserializeOld(myfile);
                             myfile.close();
                             std::cerr << "Starting boxes growth\n";
                             Timer tt("Boxes Growth");

@@ -26,6 +26,8 @@
 
 #include "engine/reconstruction.h"
 
+#include "foo.h"
+
 using namespace cg3;
 
 #if defined(SERVER_MODE) || defined(SERVER_HOME) || defined(SERVER_AFTER)
@@ -36,6 +38,7 @@ void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& o
 #endif
 
 int main(int argc, char *argv[]) {
+
     #ifdef SERVER_MODE
     //usage
     // ./HeightFieldDecomposition filename.obj precision kernel snapping orientation (t/f)
@@ -448,6 +451,26 @@ int main(int argc, char *argv[]) {
     }
     #else
 
+    /*Array2D<int> a(4,4);
+    for (unsigned int i = 0; i < 4; i++){
+        for (unsigned int j = 0; j < 4; j++)
+            a(i,j) = i;
+    }
+    std::ofstream myfile;
+    myfile.open ("provaser.ppp", std::ios::out | std::ios::binary);
+    a.serialize(myfile);
+    myfile.close();*/
+
+    /*Array2D<int> a;
+    std::ifstream myfile;
+    myfile.open ("provaser.ppp", std::ios::in | std::ios::binary);
+    a.deserialize(myfile);
+    myfile.close();
+    std::cerr << a << "\n";*/
+
+
+
+
     QApplication app(argc, argv);
 
     MainWindow gui;  // finestra principale, contiene la canvas di QGLViewer
@@ -484,7 +507,7 @@ int main(int argc, char *argv[]) {
         separateFilenameFromPath(filename, path, fn);
         std::cerr << rawname << "; " << extension << "\n";
         if (extension == ".hfd"){
-            e.deserializeBC(filename);
+            e.deserializeBCOld(filename);
             e.setHfdPath(path);
             e.setBinPath(path);
             e.setObjPath(path);
@@ -492,7 +515,7 @@ int main(int argc, char *argv[]) {
         else if (extension == ".bin"){
             std::ifstream myfile;
             myfile.open (filename, std::ios::in | std::ios::binary);
-            e.deserialize(myfile);
+            e.deserializeOld(myfile);
             myfile.close();
             e.setHfdPath(path);
             e.setBinPath(path);

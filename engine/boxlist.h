@@ -5,7 +5,7 @@
 #include "cg3/data_structures/arrays.h"
 #include "cg3/cgal/cgal_aabbtree.h"
 
-class BoxList : public cg3::DrawableObject, public cg3::SerializableObject{
+class BoxList : public cg3::DrawableObject, public cg3::SerializableObjectOld{
     public:
         BoxList();
         BoxList(bool cylinders);
@@ -39,8 +39,12 @@ class BoxList : public cg3::DrawableObject, public cg3::SerializableObject{
         std::vector<Box3D>::iterator end();
 
         // SerializableObject interface
+        void serializeOld(std::ofstream& binaryFile) const;
+        bool deserializeOld(std::ifstream& binaryFile);
+
+        // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
-        bool deserialize(std::ifstream& binaryFile);
+        void deserialize(std::ifstream& binaryFile);
 
 
 

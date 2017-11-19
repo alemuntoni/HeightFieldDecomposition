@@ -710,6 +710,7 @@ void FourAxisMillingManager::on_checkPushButton_clicked() {
     polyline.checkVisibilityAllPlanes(*meshEigen, visibility, nPlaneUser);
 
     polyline.minimizeNumberPlanes(survivedPlanes, visibility);
+    #ifdef MULTI_LABEL_OPTIMIZATION_INCLUDED
     std::vector<int> ass = polyline.getAssociation(survivedPlanes, visibility, *meshEigen);
     //to know the actual orientation: survivedPlanes[ass[f]]
     int subd = 240 / survivedPlanes.size();
@@ -721,5 +722,6 @@ void FourAxisMillingManager::on_checkPushButton_clicked() {
             c.setHsv(subd*ass[i], 255, 255);
         meshEigen->setFaceColor(c, i);
     }
+    #endif
     mainWindow->updateGlCanvas();
 }

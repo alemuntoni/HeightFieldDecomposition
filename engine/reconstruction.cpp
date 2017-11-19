@@ -4,12 +4,12 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wunused-variable" //Doesn't work on gcc < 6.0
+#pragma GCC diagnostic ignored "-Wunused" //Doesn't work on gcc < 6.0
 #include <cinolib/smoothing.h>
 #pragma GCC diagnostic pop
 #endif //__GNUC__
 
-#include <cg3/cinolib/mesh_conversions.h>
+#include <cg3/cinolib/cinolib_mesh_conversions.h>
 
 using namespace cg3;
 

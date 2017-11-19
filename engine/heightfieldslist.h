@@ -4,7 +4,7 @@
 #include "cg3/viewer/drawable_objects/drawable_eigenmesh.h"
 #include "cg3/viewer/interfaces/drawable_object.h"
 
-class HeightfieldsList : public cg3::DrawableObject, public cg3::SerializableObject{
+class HeightfieldsList : public cg3::DrawableObject, public cg3::SerializableObjectOld, cg3::SerializableObject{
     public:
         HeightfieldsList();
         // DrawableObject interface
@@ -36,8 +36,11 @@ class HeightfieldsList : public cg3::DrawableObject, public cg3::SerializableObj
         void explode(const cg3::Pointd &bc, double dist);
 
         // SerializableObject interface
+        void serializeOld(std::ofstream& binaryFile) const;
+        bool deserializeOld(std::ifstream& binaryFile);
+
         void serialize(std::ofstream& binaryFile) const;
-        bool deserialize(std::ifstream& binaryFile);
+        void deserialize(std::ifstream& binaryFile);
 
 
     private:
