@@ -308,13 +308,13 @@ void Box3D::generateEigenMesh(double minimumEdge) {
 }
 
 void Box3D::draw() const {
-    #ifdef VIEWER_DEFINED
+    #ifdef CG3_VIEWER_DEFINED
     if (visible){
         Pointd c1 = this->c1, c2 = this->c2, c3 = this->c3;
         c1.rotate(rotation);
         c2.rotate(rotation);
         c3.rotate(rotation);
-        drawCube();
+        cg3::viewer::drawBox(minCoord, maxCoord, color);
 
         /*cylinder(min, Pointd(max.x(), min.y(), min.z()), 0.05, 0.05, color);
         cylinder(Pointd(max.x(), min.y(), min.z()), Pointd(max.x(), max.y(), min.z()), 0.05, 0.05, color);
@@ -331,9 +331,9 @@ void Box3D::draw() const {
         cylinder(Pointd(max.x(), max.y(), min.z()), max, 0.05, 0.05, color);
         cylinder(Pointd(min.x(), max.y(), min.z()), Pointd(min.x(), max.y(), max.z()), 0.05, 0.05, color);*/
 
-        Viewer::drawSphere(c1, 0.15, QColor(255,0,255));
-        Viewer::drawSphere(c2, 0.15, QColor(255,0,255));
-        Viewer::drawSphere(c3, 0.15, QColor(255,0,255));
+        cg3::viewer::drawSphere(c1, 0.15, QColor(255,0,255));
+        cg3::viewer::drawSphere(c2, 0.15, QColor(255,0,255));
+        cg3::viewer::drawSphere(c3, 0.15, QColor(255,0,255));
     }
     #endif
 }

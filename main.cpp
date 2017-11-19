@@ -26,8 +26,6 @@
 
 #include "engine/reconstruction.h"
 
-#include "foo.h"
-
 using namespace cg3;
 
 #if defined(SERVER_MODE) || defined(SERVER_HOME) || defined(SERVER_AFTER)

@@ -99,9 +99,7 @@ HEADERS += \
     lib/octree/octree_node.h \
     engine/tinyfeaturedetection.h \
     fouraxischecker/polylinesCheck.h \
-    GUI/managers/fouraxischeckermanager.h \
-    foo.h
-
+    GUI/managers/fouraxischeckermanager.h
 
 SOURCES += \
     main.cpp \
@@ -127,8 +125,7 @@ SOURCES += \
     engine/tinyfeaturedetection.cpp \
     fouraxischecker/polylinesCheck.cpp \
     GUI/managers/fouraxischeckermanager.cpp \
-    lib/multi_label_optimization/example.cpp \
-    foo.cpp
+    lib/multi_label_optimization/example.cpp
 
 FORMS += \
     GUI/managers/enginemanager.ui \

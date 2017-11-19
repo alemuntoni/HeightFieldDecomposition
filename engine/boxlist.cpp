@@ -249,15 +249,8 @@ void BoxList::draw() const {
     #ifdef CG3_VIEWER_DEFINED
     if (visible){
         if (visibleBox < 0){
-            if (!cylinder){
-                for (unsigned int i = 0; i < boxes.size(); i++)
-                    boxes[i].draw();
-            }
-            else {
-                for (unsigned int i = 0; i < boxes.size(); i++){
-                    drawCube(boxes[i], boxes[i].getColor());
-                }
-            }
+            for (unsigned int i = 0; i < boxes.size(); i++)
+                boxes[i].draw();
         }
         else {
 
