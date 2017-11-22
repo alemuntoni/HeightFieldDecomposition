@@ -39,6 +39,8 @@ class EngineManager : public QFrame, public cg3::SerializableObjectOld, cg3::Ser
 
         void serializeBCOld(const std::string& filename);
         void deserializeBCOld(const std::string& filename);
+        void serializeBC(const std::string& filename);
+        void deserializeBC(const std::string& filename);
 
         void setBinPath(const std::string& path);
         void setHfdPath(const std::string& path);

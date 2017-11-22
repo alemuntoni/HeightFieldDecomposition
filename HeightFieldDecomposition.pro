@@ -11,7 +11,7 @@ CONFIG(release, debug|release){
 
 CONFIG += ALL
 #CONFIG += SERVER_MODE
-#CONFIG += CONVERTER_MODE
+CONFIG += CONVERTER_MODE
 
 ALL {
     CONFIG += USE_LIBIGL_EIGEN
@@ -66,7 +66,8 @@ MULTI_LABEL_OPTIMIZATION {
         lib/multi_label_optimization/GCoptimization.cpp \
         lib/multi_label_optimization/graph.cpp \
         lib/multi_label_optimization/LinkedBlockList.cpp \
-        lib/multi_label_optimization/maxflow.cpp
+        lib/multi_label_optimization/maxflow.cpp \
+        lib/multi_label_optimization/example.cpp
 }
 
 HEADERS += \
@@ -124,8 +125,7 @@ SOURCES += \
     lib/octree/octree_node.cpp \
     engine/tinyfeaturedetection.cpp \
     fouraxischecker/polylinesCheck.cpp \
-    GUI/managers/fouraxischeckermanager.cpp \
-    lib/multi_label_optimization/example.cpp
+    GUI/managers/fouraxischeckermanager.cpp
 
 FORMS += \
     GUI/managers/enginemanager.ui \

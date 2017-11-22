@@ -36,7 +36,6 @@ void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& o
 #endif
 
 int main(int argc, char *argv[]) {
-
     #ifdef SERVER_MODE
     //usage
     // ./HeightFieldDecomposition filename.obj precision kernel snapping orientation (t/f)
@@ -386,65 +385,66 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error! Number argument lower than 2\n";
     #else
     #ifdef CONVERTER_MODE
-    if (argc > 2){
+    if (argc > 1){
         std::string filename(argv[1]);
-        int file = std::stoi(argv[2]);
-        if (file == 0){
-            //deserialize
-            std::ifstream inputfile;
-            inputfile.open (filename, std::ios::in | std::ios::binary);
-            DrawableDcel d;
-            BoxList solutions;
-            DrawableEigenMesh originalMesh;
-            if (! d.deserialize(inputfile)) return false;
-            bool bb = false;
-            if (! Serializer::deserialize(bb, inputfile)) return false;
-            if (bb){
-                if (! solutions.deserialize(inputfile)) return false;
-            }
-            if (Serializer::deserialize(bb, inputfile)){
-                originalMesh.deserialize(inputfile);
-            }
-            inputfile.close();
-            //serialize
+        std::string tmp, ext;
+        cg3::separateExtensionFromFilename(filename, tmp, ext);
+        if (ext == ".bin"){
+            cg3::executeCommand("mkdir new/");
+            DrawableDcel tmpd;
+            BoxList tmpsol;
+            EigenMesh originalMesh;
+            double factor, kernel;
+            bool b;
+            std::ifstream infile;
+            infile.open(filename, std::ios::in | std::ios::binary);
+            tmpd.deserializeOld(infile);
+            SerializerOld::deserialize(b, infile);
+            tmpsol.deserializeOld(infile);
+            SerializerOld::deserialize(b, infile);
+            originalMesh.deserializeOld(infile);
+            SerializerOld::deserialize(factor, infile);
+            SerializerOld::deserialize(kernel, infile);
+            infile.close();
 
-            std::ofstream binaryFile;
-            binaryFile.open (filename, std::ios::out | std::ios::binary);
-            d.serialize(binaryFile);
-            bool b = true;
-            Serializer::serialize(b, binaryFile);
-            solutions.serialize(binaryFile);
-            Serializer::serialize(bb, binaryFile);
-            if (bb)
-                originalMesh.serialize(binaryFile);
-            binaryFile.close();
+            std::ofstream outfile;
+            outfile.open("new/" + filename, std::ios::out | std::ios::binary);
+            Serializer::serializeObjectAttributes("HFDBeforeSplitting", outfile, tmpd, tmpsol, originalMesh, factor, kernel);
+            outfile.close();
+
         }
-        else {
-            //deserializeBC
-            std::ifstream inputfile;
-            inputfile.open (filename, std::ios::in | std::ios::binary);
-            DrawableDcel d;
-            BoxList solutions;
-            DrawableEigenMesh baseComplex;
+        else if ( ext == ".hfd"){
+            cg3::executeCommand("mkdir new/");
+            DrawableDcel tmpd;
+            BoxList tmpsol;
+            EigenMesh originalMesh;
+            EigenMesh baseComplex;
             HeightfieldsList he;
-            DrawableEigenMesh originalMesh;
-            d.deserialize(inputfile);
-            solutions.deserialize(inputfile);
-            baseComplex.deserialize(inputfile);
-            he.deserialize(inputfile);
-            originalMesh.deserialize(inputfile);
-            inputfile.close();
+            double factor, kernel;
+            bool b;
+            std::ifstream infile;
+            infile.open(filename, std::ios::in | std::ios::binary);
+            tmpd.deserializeOld(infile);
+            tmpsol.deserializeOld(infile);
+            baseComplex.deserializeOld(infile);
+            he.deserializeOld(infile);
+            originalMesh.deserializeOld(infile);
+            SerializerOld::deserialize(factor, infile);
+            SerializerOld::deserialize(kernel, infile);
+            BoxList originalSolutions;
+            std::map<unsigned int, unsigned int> splittedBoxesToOriginals;
+            std::list<unsigned int> priorityBoxes;
+            SerializerOld::deserialize(b, infile);
+            originalSolutions.deserializeOld(infile);
+            SerializerOld::deserialize(splittedBoxesToOriginals, infile);
+            SerializerOld::deserialize(priorityBoxes, infile);
+            infile.close();
 
-            //serializeBC
-            std::ofstream binaryFile;
-            binaryFile.open (filename, std::ios::out | std::ios::binary);
-            d.serialize(binaryFile);
-            solutions.serialize(binaryFile);
-            baseComplex.serialize(binaryFile);
-            he.serialize(binaryFile);
-            originalMesh.serialize(binaryFile);
-            binaryFile.close();
-
+            std::ofstream outfile;
+            outfile.open("new/" + filename, std::ios::out | std::ios::binary);
+            Serializer::serializeObjectAttributes("HFDBeforeSplitting", outfile, tmpd, tmpsol, originalMesh, factor, kernel);
+            Serializer::serializeObjectAttributes("HFDAfterBooleans", outfile, baseComplex, he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+            outfile.close();
         }
     }
     #else
@@ -505,7 +505,7 @@ int main(int argc, char *argv[]) {
         separateFilenameFromPath(filename, path, fn);
         std::cerr << rawname << "; " << extension << "\n";
         if (extension == ".hfd"){
-            e.deserializeBCOld(filename);
+            e.deserializeBC(filename);
             e.setHfdPath(path);
             e.setBinPath(path);
             e.setObjPath(path);
@@ -513,7 +513,7 @@ int main(int argc, char *argv[]) {
         else if (extension == ".bin"){
             std::ifstream myfile;
             myfile.open (filename, std::ios::in | std::ios::binary);
-            e.deserializeOld(myfile);
+            e.deserialize(myfile);
             myfile.close();
             e.setHfdPath(path);
             e.setBinPath(path);

@@ -5,7 +5,7 @@
 #include "cg3/data_structures/arrays.h"
 #include "cg3/cgal/cgal_aabbtree.h"
 
-class BoxList : public cg3::DrawableObject, public cg3::SerializableObjectOld{
+class BoxList : public cg3::DrawableObject, cg3::SerializableObjectOld, cg3::SerializableObject{
     public:
         BoxList();
         BoxList(bool cylinders);

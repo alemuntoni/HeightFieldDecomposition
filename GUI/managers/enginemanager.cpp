@@ -333,6 +333,59 @@ void EngineManager::deserializeBCOld(const std::string& filename) {
     mainWindow.setObjVisibility(baseComplex, false);
 }
 
+void EngineManager::serializeBC(const std::string &filename) {
+    std::ofstream myfile;
+    myfile.open (filename, std::ios::out | std::ios::binary);
+
+
+    serialize(myfile);
+    Serializer::serializeObjectAttributes("HFDAfterBooleans", myfile, *baseComplex, *he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+
+    myfile.close();
+}
+
+void EngineManager::deserializeBC(const std::string &filename) {
+    std::ifstream myfile;
+    myfile.open (filename, std::ios::in | std::ios::binary);
+    cg3::DrawableEigenMesh tmpbc;
+    HeightfieldsList tmphe;
+    try {
+        deserialize(myfile);
+        Serializer::deserializeObjectAttributes("HFDAfterBooleans", myfile, tmpbc, tmphe, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+        baseComplex = new cg3::DrawableEigenMesh(tmpbc);
+        he = new HeightfieldsList(tmphe);
+        ui->solutionNumberLabel->setText(QString::fromStdString(std::to_string(he->getNumHeightfields())));
+
+        mainWindow.pushObj(baseComplex, "Base Complex");
+        mainWindow.pushObj(he, "Heightfields");
+        mainWindow.updateGlCanvas();
+        mainWindow.fitScene();
+        ui->showAllSolutionsCheckBox->setEnabled(true);
+
+        solutions->setVisibleBox(0);
+        ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
+        ui->allHeightfieldsCheckBox->setChecked(true);
+        ui->solutionsSlider->setEnabled(true);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->setFromSolutionSpinBox->setValue(0);
+        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+
+        for (unsigned int i : priorityBoxes){
+            std::string s = ui->listLabel->text().toStdString();
+            ui->listLabel->setText(QString::fromStdString(s + std::to_string(i) + "; "));
+        }
+
+        mainWindow.setObjVisibility(d, false);
+        mainWindow.setObjVisibility(&originalMesh, false);
+        mainWindow.setObjVisibility(solutions, false);
+        mainWindow.setObjVisibility(baseComplex, false);
+    }
+    catch(...) {
+        std::cout << "Error Reading file\n";
+    }
+    myfile.close();
+}
+
 void EngineManager::setBinPath(const std::string &path) {
     binls.setActualPath(path);
 }
@@ -440,6 +493,29 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
         Serializer::deserializeObjectAttributes("HFDBeforeSplitting", binaryFile, tmpd, tmpsol, originalMesh, factor, kernel);
         d = new DrawableDcel(std::move(tmpd));
         solutions = new BoxList(std::move(tmpsol));
+        ui->factorSpinBox->setValue(factor);
+        ui->distanceSpinBox->setValue(kernel);
+
+        ////
+        mainWindow.pushObj(d, "Input Mesh");
+        mainWindow.pushObj(&originalMesh, "Original Mesh");
+        mainWindow.pushObj(solutions, "Solutions");
+
+        d->setWireframe(true);
+        d->setPointsShading();
+        d->update();
+        ui->weigthsRadioButton->setChecked(true);
+        ui->sliceCheckBox->setChecked(true);
+        //sol
+        solutions->setVisibleBox(0);
+        solutions->setCylinders(false);
+        ui->showAllSolutionsCheckBox->setEnabled(true);
+        ui->solutionsSlider->setEnabled(true);
+        ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
+        ui->setFromSolutionSpinBox->setValue(0);
+        ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
+
+        //factor and kernel
         ui->factorSpinBox->setValue(factor);
         ui->distanceSpinBox->setValue(kernel);
     }
@@ -572,7 +648,8 @@ void EngineManager::on_deserializePushButton_clicked() {
         on_cleanAllPushButton_clicked();
         std::ifstream myfile;
         myfile.open (filename, std::ios::in | std::ios::binary);
-        deserializeOld(myfile);
+        //deserializeOld(myfile);
+        deserialize(myfile);
         myfile.close();
     }
 }
@@ -1312,8 +1389,9 @@ void EngineManager::on_stickPushButton_clicked() {
 void EngineManager::on_serializeBCPushButton_clicked() {
     if (baseComplex != nullptr && solutions != nullptr && d != nullptr && he != nullptr /*&& entirePieces != nullptr*/){
         std::string fn = hfdls.saveDialog();
-        if (fn != "") serializeBCOld(fn);
-
+        if (fn != "")
+            //serializeBCOld(fn);
+            serializeBC(fn);
     }
 
 }
@@ -1322,7 +1400,8 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
     std::string fn = hfdls.loadDialog();
     if (fn != "") {
         on_cleanAllPushButton_clicked();
-        deserializeBCOld(fn);
+        //deserializeBCOld(fn);
+        deserializeBC(fn);
     }
 }
 
