@@ -9,7 +9,7 @@
 
 #include "cg3/cgal/cgal_aabbtree.h"
 
-class Grid : public cg3::SerializableObjectOld, cg3::SerializableObject{
+class Grid : cg3::SerializableObject{
     public:
 
         Grid();
@@ -37,9 +37,6 @@ class Grid : public cg3::SerializableObjectOld, cg3::SerializableObject{
         void getCoefficients(const gridreal*& coeffs, const cg3::Pointd& p) const;
         double getFullBoxValue(const cg3::Pointd&p) const;
 
-        // SerializableObject interface
-        void serializeOld(std::ofstream& binaryFile) const;
-        bool deserializeOld(std::ifstream& binaryFile);
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);

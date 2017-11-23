@@ -7,6 +7,8 @@
 #include <string>
 #include <QDebug>
 
+#include "../fouraxischecker/fouraxischecker.h"
+
 #define halfC (M_PI / 180)
 
 using namespace cg3;
@@ -707,11 +709,11 @@ void FourAxisMillingManager::on_checkPushButton_clicked() {
     cg3::Array2D<int> visibility;
     std::vector<int> survivedPlanes;
     int nPlaneUser = ui->nPlane->text().toInt();
-    polyline.checkVisibilityAllPlanes(*meshEigen, visibility, nPlaneUser);
+    FourAxisChecker::checkVisibilityAllPlanes(*meshEigen, visibility, nPlaneUser);
 
-    polyline.minimizeNumberPlanes(survivedPlanes, visibility);
+    FourAxisChecker::minimizeNumberPlanes(survivedPlanes, visibility);
     #ifdef MULTI_LABEL_OPTIMIZATION_INCLUDED
-    std::vector<int> ass = polyline.getAssociation(survivedPlanes, visibility, *meshEigen);
+    std::vector<int> ass = FourAxisChecker::getAssociation(survivedPlanes, visibility, *meshEigen);
     //to know the actual orientation: survivedPlanes[ass[f]]
     int subd = 240 / survivedPlanes.size();
     for (unsigned int i = 0; i < ass.size(); i++){

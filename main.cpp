@@ -449,26 +449,6 @@ int main(int argc, char *argv[]) {
     }
     #else
 
-    /*Array2D<int> a(4,4);
-    for (unsigned int i = 0; i < 4; i++){
-        for (unsigned int j = 0; j < 4; j++)
-            a(i,j) = i;
-    }
-    std::ofstream myfile;
-    myfile.open ("provaser.ppp", std::ios::out | std::ios::binary);
-    a.serialize(myfile);
-    myfile.close();*/
-
-    /*Array2D<int> a;
-    std::ifstream myfile;
-    myfile.open ("provaser.ppp", std::ios::in | std::ios::binary);
-    a.deserialize(myfile);
-    myfile.close();
-    std::cerr << a << "\n";*/
-
-
-
-
     QApplication app(argc, argv);
 
     MainWindow gui;  // finestra principale, contiene la canvas di QGLViewer
@@ -519,19 +499,6 @@ int main(int argc, char *argv[]) {
             e.setBinPath(path);
             e.setObjPath(path);
         }
-        /*else if (extension == ".obj"){
-            Dcel d;
-            d.loadFromObjFile(argv[1]);
-            cgal::AABBTree tree(d);
-            Dcel d2;
-            d2.loadFromObjFile(argv[2]);
-            for (Dcel::Vertex* v2 : d2.vertexIterator()){
-                const Dcel::Vertex* v = tree.getNearestDcelVertex(v2->getCoordinate());
-                v2->setNormal(v->getNormal());
-            }
-            std::cerr << "ok\n";
-            d2.saveOnObjFile(path + "/Modified.obj");
-        }*/
     }
 
     gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
@@ -550,67 +517,31 @@ int main(int argc, char *argv[]) {
 void serializeBeforeBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, double factor, double kernel) {
     std::ofstream binaryFile;
     binaryFile.open (filename, std::ios::out | std::ios::binary);
-    d.serialize(binaryFile);
-    bool bb = true;
-    Serializer::serialize(bb, binaryFile);
-    solutions.serialize(binaryFile);
-    Serializer::serialize(bb, binaryFile);
-    originalMesh.serialize(binaryFile);
-    Serializer::serialize(factor, binaryFile);
-    Serializer::serialize(kernel, binaryFile);
+    Serializer::serializeObjectAttributes("HFDBeforeSplitting", binaryFile, d, solutions, originalMesh, factor, kernel);
     binaryFile.close();
 }
 
 void deserializeBeforeBooleans(const std::string& filename, Dcel& d, EigenMesh& originalMesh, BoxList& solutions, double &factor, double &kernel) {
     std::ifstream binaryFile;
     binaryFile.open (filename, std::ios::in | std::ios::binary);
-    d.deserialize(binaryFile);
-    bool bb;
-    Serializer::deserialize(bb, binaryFile);
-    solutions.deserialize(binaryFile);
-    Serializer::deserialize(bb, binaryFile);
-    originalMesh.deserialize(binaryFile);
-    Serializer::deserialize(factor, binaryFile);
-    Serializer::deserialize(kernel, binaryFile);
+    Serializer::deserializeObjectAttributes("HFDBeforeSplitting", binaryFile, d, solutions, originalMesh, factor, kernel);
     binaryFile.close();
 }
 
 void serializeAfterBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, const EigenMesh& baseComplex, const HeightfieldsList& he, double factor, double kernel, const BoxList& originalSolutions, const std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, const std::list<unsigned int> &priorityBoxes) {
     std::ofstream myfile;
     myfile.open (filename, std::ios::out | std::ios::binary);
-    d.serialize(myfile);
-    solutions.serialize(myfile);
-    baseComplex.serialize(myfile);
-    he.serialize(myfile);
-    originalMesh.serialize(myfile);
-    Serializer::serialize(factor, myfile);
-    Serializer::serialize(kernel, myfile);
-    bool b = true;
-    Serializer::serialize(b, myfile);
-    originalSolutions.serialize(myfile);
-    Serializer::serialize(splittedBoxesToOriginals, myfile);
-    Serializer::serialize(priorityBoxes, myfile);
+    Serializer::serializeObjectAttributes("HFDBeforeSplitting", myfile, d, solutions, originalMesh, factor, kernel);
+    Serializer::serializeObjectAttributes("HFDAfterBooleans", myfile, baseComplex, he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
     myfile.close();
 }
 
 void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& originalMesh, BoxList& solutions, EigenMesh& baseComplex, HeightfieldsList& he, double &factor, double &kernel, BoxList& originalSolutions, std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, std::list<unsigned int> &priorityBoxes){
     std::ifstream myfile;
     myfile.open (filename, std::ios::in | std::ios::binary);
-    d.deserialize(myfile);
-    solutions.deserialize(myfile);
-    baseComplex.deserialize(myfile);
-    he.deserialize(myfile);
-    originalMesh.deserialize(myfile);
-    Serializer::deserialize(factor, myfile);
-    Serializer::deserialize(kernel, myfile);
-    bool b;
-    if (Serializer::deserialize(b, myfile) && b == true){
-        originalSolutions.deserialize(myfile);
-        Serializer::deserialize(splittedBoxesToOriginals, myfile);
-        Serializer::deserialize(priorityBoxes, myfile);
-        for (unsigned int i = 0; i < originalSolutions.size(); i++)
-            originalSolutions[i].setId(i);
-    }
+    Serializer::deserializeObjectAttributes("HFDBeforeSplitting", myfile, d, solutions, originalMesh, factor, kernel);
+    Serializer::deserializeObjectAttributes("HFDAfterBooleans", myfile, baseComplex, he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+    myfile.close();
 }
 
 #endif

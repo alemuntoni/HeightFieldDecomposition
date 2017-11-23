@@ -154,185 +154,6 @@ void EngineManager::saveMSCFile(const std::string& filename, const Dcel& d, cons
     of.close();
 }
 
-void EngineManager::serializeBCOld(const std::string& filename) {
-    std::ofstream myfile;
-    myfile.open (filename, std::ios::out | std::ios::binary);
-    d->serializeOld(myfile);
-    solutions->serializeOld(myfile);
-    baseComplex->serializeOld(myfile);
-    he->serializeOld(myfile);
-    originalMesh.serializeOld(myfile);
-    //entirePieces->serialize(myfile);
-    double factor = ui->factorSpinBox->value();
-    double kernel = ui->distanceSpinBox->value();
-    SerializerOld::serialize(factor, myfile);
-    SerializerOld::serialize(kernel, myfile);
-    bool b = true;
-    SerializerOld::serialize(b, myfile);
-    originalSolutions.serializeOld(myfile);
-    SerializerOld::serialize(splittedBoxesToOriginals, myfile);
-    SerializerOld::serialize(priorityBoxes, myfile);
-    myfile.close();
-}
-
-void EngineManager::deserializeBCOld(const std::string& filename) {
-    deleteDrawableObject(d);
-    deleteDrawableObject(solutions);
-    deleteDrawableObject(baseComplex);
-    deleteDrawableObject(he);
-    d = new DrawableDcel();
-    solutions = new BoxList();
-    baseComplex = new DrawableEigenMesh();
-    he = new HeightfieldsList();
-    std::ifstream myfile;
-    myfile.open (filename, std::ios::in | std::ios::binary);
-    d->deserializeOld(myfile);
-    solutions->deserializeOld(myfile);
-    baseComplex->deserializeOld(myfile);
-    he->deserializeOld(myfile);
-    he->checkHeightfields();
-    if (originalMesh.deserializeOld(myfile)){
-        if (originalMesh.getNumberVertices() > 0)
-            mainWindow.pushObj(&originalMesh, "Original Mesh");
-    }
-    double factor, kernel;
-    SerializerOld::deserialize(factor, myfile);
-    SerializerOld::deserialize(kernel, myfile);
-    ui->factorSpinBox->setValue(factor);
-    ui->distanceSpinBox->setValue(kernel);
-    bool b;
-    if (SerializerOld::deserialize(b, myfile) && b == true){
-        originalSolutions.deserializeOld(myfile);
-        SerializerOld::deserialize(splittedBoxesToOriginals, myfile);
-        SerializerOld::deserialize(priorityBoxes, myfile);
-        alreadySplitted = true;
-        for (unsigned int i = 0; i < originalSolutions.size(); i++)
-            originalSolutions[i].setId(i);
-    }
-    ui->solutionNumberLabel->setText(QString::fromStdString(std::to_string(he->getNumHeightfields())));
-    /*d->saveOnObjFile("boxes/mesh.obj");
-    for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++){
-        solutions->getBox(i).saveOnObjFile("boxes/box" + std::to_string(i) + ".obj", solutions->getBox(i).getColor());
-    }*/
-    //BU
-    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(0,0,1), M_PI/2);
-    he->rotate(m);
-    d->rotate(m);
-    originalMesh.rotate(m);
-    baseComplex->rotate(m);
-
-    m = Common::getRotationMatrix(Vec3(0,1,0), M_PI);
-    he->rotate(m);
-    d->rotate(m);
-    d->updateFaceNormals();
-    d->updateVertexNormals();
-    d->updateBoundingBox();
-    originalMesh.rotate(m);
-    originalMesh.updateVertexAndFaceNormals();
-    baseComplex->rotate(m);*/
-    //
-
-    //Statue
-    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
-    he->rotate(m);
-    d->rotate(m);
-    originalMesh.rotate(m);
-    baseComplex->rotate(m);
-
-    m = Common::getRotationMatrix(Vec3(0,1,0), M_PI);
-    he->rotate(m);
-    d->rotate(m);
-    d->updateFaceNormals();
-    d->updateVertexNormals();
-    d->updateBoundingBox();
-    originalMesh.rotate(m);
-    originalMesh.updateVertexAndFaceNormals();
-    baseComplex->rotate(m);*/
-    //
-
-    //Airplane
-    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
-    he->rotate(m);
-    d->rotate(m);
-    originalMesh.rotate(m);
-    baseComplex->rotate(m);
-
-    m = Common::getRotationMatrix(Vec3(0,1,0), M_PI/2);
-    he->rotate(m);
-    d->rotate(m);
-    d->updateFaceNormals();
-    d->updateVertexNormals();
-    d->updateBoundingBox();
-    originalMesh.rotate(m);
-    originalMesh.updateVertexAndFaceNormals();
-    baseComplex->rotate(m);*/
-    //
-
-    //Batman
-    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
-    he->rotate(m);
-    d->rotate(m);
-    d->updateFaceNormals();
-    d->updateVertexNormals();
-    d->updateBoundingBox();
-    originalMesh.rotate(m);
-    originalMesh.updateVertexAndFaceNormals();
-    baseComplex->rotate(m);*/
-    //
-
-    //Fertility
-    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
-    he->rotate(m);
-    d->rotate(m);
-    d->updateFaceNormals();
-    d->updateVertexNormals();
-    d->updateBoundingBox();
-    originalMesh.rotate(m);
-    originalMesh.updateVertexAndFaceNormals();
-    baseComplex->rotate(m);*/
-
-    //Bunny
-    /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
-    he->rotate(m);
-    d->rotate(m);
-    d->updateFaceNormals();
-    d->updateVertexNormals();
-    d->updateBoundingBox();
-    originalMesh.rotate(m);
-    originalMesh.updateVertexAndFaceNormals();
-    baseComplex->rotate(m);*/
-    //
-    myfile.close();
-    d->update();
-    d->setPointsShading();
-    d->setWireframe(true);
-    mainWindow.pushObj(d, "Input Mesh");
-    mainWindow.pushObj(solutions, "Boxes");
-    mainWindow.pushObj(baseComplex, "Base Complex");
-    mainWindow.pushObj(he, "Heightfields");
-    mainWindow.updateGlCanvas();
-    mainWindow.fitScene();
-    ui->showAllSolutionsCheckBox->setEnabled(true);
-    //he->explode(150);
-    solutions->setVisibleBox(0);
-    ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
-    ui->allHeightfieldsCheckBox->setChecked(true);
-    ui->solutionsSlider->setEnabled(true);
-    ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-    ui->setFromSolutionSpinBox->setValue(0);
-    ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-
-    for (unsigned int i : priorityBoxes){
-        std::string s = ui->listLabel->text().toStdString();
-        ui->listLabel->setText(QString::fromStdString(s + std::to_string(i) + "; "));
-    }
-
-    mainWindow.setObjVisibility(d, false);
-    mainWindow.setObjVisibility(&originalMesh, false);
-    mainWindow.setObjVisibility(solutions, false);
-    mainWindow.setObjVisibility(baseComplex, false);
-}
-
 void EngineManager::serializeBC(const std::string &filename) {
     std::ofstream myfile;
     myfile.open (filename, std::ios::out | std::ios::binary);
@@ -379,9 +200,97 @@ void EngineManager::deserializeBC(const std::string &filename) {
         mainWindow.setObjVisibility(&originalMesh, false);
         mainWindow.setObjVisibility(solutions, false);
         mainWindow.setObjVisibility(baseComplex, false);
+        //BU
+        /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(0,0,1), M_PI/2);
+        he->rotate(m);
+        d->rotate(m);
+        originalMesh.rotate(m);
+        baseComplex->rotate(m);
+
+        m = Common::getRotationMatrix(Vec3(0,1,0), M_PI);
+        he->rotate(m);
+        d->rotate(m);
+        d->updateFaceNormals();
+        d->updateVertexNormals();
+        d->updateBoundingBox();
+        originalMesh.rotate(m);
+        originalMesh.updateVertexAndFaceNormals();
+        baseComplex->rotate(m);*/
+        //
+
+        //Statue
+        /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+        he->rotate(m);
+        d->rotate(m);
+        originalMesh.rotate(m);
+        baseComplex->rotate(m);
+
+        m = Common::getRotationMatrix(Vec3(0,1,0), M_PI);
+        he->rotate(m);
+        d->rotate(m);
+        d->updateFaceNormals();
+        d->updateVertexNormals();
+        d->updateBoundingBox();
+        originalMesh.rotate(m);
+        originalMesh.updateVertexAndFaceNormals();
+        baseComplex->rotate(m);*/
+        //
+
+        //Airplane
+        /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+        he->rotate(m);
+        d->rotate(m);
+        originalMesh.rotate(m);
+        baseComplex->rotate(m);
+
+        m = Common::getRotationMatrix(Vec3(0,1,0), M_PI/2);
+        he->rotate(m);
+        d->rotate(m);
+        d->updateFaceNormals();
+        d->updateVertexNormals();
+        d->updateBoundingBox();
+        originalMesh.rotate(m);
+        originalMesh.updateVertexAndFaceNormals();
+        baseComplex->rotate(m);*/
+        //
+
+        //Batman
+        /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+        he->rotate(m);
+        d->rotate(m);
+        d->updateFaceNormals();
+        d->updateVertexNormals();
+        d->updateBoundingBox();
+        originalMesh.rotate(m);
+        originalMesh.updateVertexAndFaceNormals();
+        baseComplex->rotate(m);*/
+        //
+
+        //Fertility
+        /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+        he->rotate(m);
+        d->rotate(m);
+        d->updateFaceNormals();
+        d->updateVertexNormals();
+        d->updateBoundingBox();
+        originalMesh.rotate(m);
+        originalMesh.updateVertexAndFaceNormals();
+        baseComplex->rotate(m);*/
+
+        //Bunny
+        /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
+        he->rotate(m);
+        d->rotate(m);
+        d->updateFaceNormals();
+        d->updateVertexNormals();
+        d->updateBoundingBox();
+        originalMesh.rotate(m);
+        originalMesh.updateVertexAndFaceNormals();
+        baseComplex->rotate(m);*/
+        //
     }
-    catch(...) {
-        std::cout << "Error Reading file\n";
+    catch(std::ios_base::failure& e) {
+        std::cerr << e.what();
     }
     myfile.close();
 }
@@ -396,85 +305,6 @@ void EngineManager::setHfdPath(const std::string &path) {
 
 void EngineManager::setObjPath(const std::string &path) {
     objls.setActualPath(path);
-}
-
-void EngineManager::serializeOld(std::ofstream& binaryFile) const {
-    //g->serialize(binaryFile);
-    d->serializeOld(binaryFile);
-    bool bb = false;
-
-    bb = false;
-    if (solutions!=nullptr){
-        bb = true;
-        SerializerOld::serialize(bb, binaryFile);
-        solutions->serializeOld(binaryFile);
-    }
-    else
-        SerializerOld::serialize(bb, binaryFile);
-    if (originalMesh.getNumberVertices() > 0){
-        bb = true;
-        SerializerOld::serialize(bb, binaryFile);
-        originalMesh.serializeOld(binaryFile);
-    }
-    double factor = ui->factorSpinBox->value();
-    double kernel = ui->distanceSpinBox->value();
-    SerializerOld::serialize(factor, binaryFile);
-    SerializerOld::serialize(kernel, binaryFile);
-}
-
-bool EngineManager::deserializeOld(std::ifstream& binaryFile) {
-    //deleteDrawableObject(g);
-    deleteDrawableObject(d);
-    //g = new DrawableGrid();
-    d = new DrawableDcel();
-    //g->deserialize(binaryFile);
-    if (! d->deserializeOld(binaryFile)) return false;
-    bool bb = false;
-    for (Dcel::FaceIterator fit = d->faceBegin(); fit != d->faceEnd(); ++fit)
-        (*fit)->setColor(Color(128,128,128));
-    d->setWireframe(true);
-    d->setPointsShading();
-    //updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
-    d->update();
-    mainWindow.pushObj(d, "Scaled Mesh");
-    //mainWindow.pushObj(g, "Grid");
-    //e = Energy(*g);
-    ui->weigthsRadioButton->setChecked(true);
-    ui->sliceCheckBox->setChecked(true);
-    //g->setDrawBorders();
-    //g->setSlice(1);
-
-    if (! SerializerOld::deserialize(bb, binaryFile)) return false;
-    if (bb){
-        deleteDrawableObject(solutions);
-        solutions = new BoxList();
-        if (! solutions->deserializeOld(binaryFile)) return false;
-        if (solutions->getNumberBoxes() > 0){
-            solutions->setVisibleBox(0);
-            solutions->setCylinders(false);
-            mainWindow.pushObj(solutions, "Solutions");
-            ui->showAllSolutionsCheckBox->setEnabled(true);
-            ui->solutionsSlider->setEnabled(true);
-            ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-            ui->setFromSolutionSpinBox->setValue(0);
-            ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        }
-        else
-            std::cerr << "ERROR: no boxes in binary file. ???\n";
-    }
-    if (SerializerOld::deserialize(bb, binaryFile)){
-        originalMesh.deserializeOld(binaryFile);
-        mainWindow.pushObj(&originalMesh, "Original Mesh");
-    }
-    double kernel, factor;
-    if (SerializerOld::deserialize(factor, binaryFile) && SerializerOld::deserialize(kernel, binaryFile)){
-        ui->factorSpinBox->setValue(factor);
-        ui->distanceSpinBox->setValue(kernel);
-    }
-
-    mainWindow.updateGlCanvas();
-    //saveMSCFile("prova.txt", *d, *solutions);
-    return true;
 }
 
 void EngineManager::serialize(std::ofstream& binaryFile) const {
@@ -1032,7 +862,7 @@ void EngineManager::on_serializeBoxPushButton_clicked() {
     if (b!=nullptr){
         std::ofstream myfile;
         myfile.open ("box.bin", std::ios::out | std::ios::binary);
-        b->serializeOld(myfile);
+        b->serialize(myfile);
         myfile.close();
     }
 }
@@ -1045,7 +875,7 @@ void EngineManager::on_deserializeBoxPushButton_clicked() {
 
     std::ifstream myfile;
     myfile.open ("box.bin", std::ios::in | std::ios::binary);
-    b->deserializeOld(myfile);
+    b->deserialize(myfile);
     myfile.close();
     updateBoxValues();
     mainWindow.updateGlCanvas();
@@ -2204,7 +2034,7 @@ void EngineManager::on_tinyFeaturesPushButton_clicked() {
                 on_reorderBoxes_clicked();
                 on_subtractPushButton_clicked();
                 on_colorPiecesPushButton_clicked();
-                serializeBCOld(hfdls.getActualPath() + "/bools" + std::to_string(i) + ".hfd");
+                serializeBC(hfdls.getActualPath() + "/bools" + std::to_string(i) + ".hfd");
                 i++;
             }
         } while (inserted);

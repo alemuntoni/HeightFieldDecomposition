@@ -26,8 +26,6 @@ namespace Engine {
 
     cg3::Vec3 getClosestTarget(const cg3::Vec3 &n);
 
-    void serializeAsEngineManager(std::ofstream &binaryfile, const Grid& g, const cg3::Dcel& d, const BoxList& bl);
-
     Eigen::Matrix3d rotateDcelAlreadyScaled(cg3::Dcel& d, unsigned int rot);
 
     Eigen::Matrix3d scaleAndRotateDcel(cg3::Dcel& d, unsigned int rot = 0, double factor = 1);

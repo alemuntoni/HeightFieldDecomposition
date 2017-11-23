@@ -11,7 +11,7 @@ CONFIG(release, debug|release){
 
 CONFIG += ALL
 #CONFIG += SERVER_MODE
-CONFIG += CONVERTER_MODE
+#CONFIG += CONVERTER_MODE
 
 ALL {
     CONFIG += USE_LIBIGL_EIGEN
@@ -100,7 +100,8 @@ HEADERS += \
     lib/octree/octree_node.h \
     engine/tinyfeaturedetection.h \
     fouraxischecker/polylinesCheck.h \
-    GUI/managers/fouraxischeckermanager.h
+    GUI/managers/fouraxischeckermanager.h \
+    fouraxischecker/fouraxischecker.h
 
 SOURCES += \
     main.cpp \
@@ -125,7 +126,8 @@ SOURCES += \
     lib/octree/octree_node.cpp \
     engine/tinyfeaturedetection.cpp \
     fouraxischecker/polylinesCheck.cpp \
-    GUI/managers/fouraxischeckermanager.cpp
+    GUI/managers/fouraxischeckermanager.cpp \
+    fouraxischecker/fouraxischecker.cpp
 
 FORMS += \
     GUI/managers/enginemanager.ui \

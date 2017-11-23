@@ -21,7 +21,7 @@ namespace Ui {
     class EngineManager;
 }
 
-class EngineManager : public QFrame, public cg3::SerializableObjectOld, cg3::SerializableObject {
+class EngineManager : public QFrame, cg3::SerializableObject {
         Q_OBJECT
 
     public:
@@ -37,18 +37,12 @@ class EngineManager : public QFrame, public cg3::SerializableObjectOld, cg3::Ser
 
         void saveMSCFile(const std::string &filename, const cg3::Dcel &d, const BoxList &bl);
 
-        void serializeBCOld(const std::string& filename);
-        void deserializeBCOld(const std::string& filename);
         void serializeBC(const std::string& filename);
         void deserializeBC(const std::string& filename);
 
         void setBinPath(const std::string& path);
         void setHfdPath(const std::string& path);
         void setObjPath(const std::string& path);
-
-        // SerializableObject interface
-        void serializeOld(std::ofstream& binaryFile) const;
-        bool deserializeOld(std::ifstream& binaryFile);
 
         void serialize(std::ofstream& binaryFile) const;
         void deserialize(std::ifstream& binaryFile);

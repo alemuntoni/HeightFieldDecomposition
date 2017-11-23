@@ -43,14 +43,6 @@ Vec3 Engine::getClosestTarget(const Vec3& n) {
     return XYZ[k];
 }
 
-void Engine::serializeAsEngineManager(std::ofstream& binaryfile, const Grid& g, const Dcel &d, const BoxList &bl) {
-    g.serializeOld(binaryfile);
-    d.serializeOld(binaryfile);
-    bool b = true;
-    SerializerOld::serialize(b, binaryfile);
-    bl.serializeOld(binaryfile);
-}
-
 Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
     Eigen::Matrix3d m = Eigen::Matrix3d::Identity();
     if (rot > 0){
@@ -777,7 +769,7 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
                     ss << "grid" << i << "_" << j << ".bin";
                     std::ofstream myfile;
                     myfile.open (ss.str(), std::ios::out | std::ios::binary);
-                    g.serializeOld(myfile);
+                    g.serialize(myfile);
                     myfile.close();
                     std::cerr << "Generated grid or " << i << " t " << j << "\n";
                 #ifdef USE_2D_ONLY
@@ -839,7 +831,7 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
                             ss << "grid" << i << "_" << j << ".bin";
                             std::ifstream myfile;
                             myfile.open (ss.str(), std::ios::in | std::ios::binary);
-                            g.deserializeOld(myfile);
+                            g.deserialize(myfile);
                             myfile.close();
                             std::cerr << "Starting boxes growth\n";
                             Timer tt("Boxes Growth");
@@ -1308,7 +1300,9 @@ void Engine::deleteDuplicatedBoxes(BoxList& solutions) {
 
 void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxList &solutions, bool alternativeColors) {
     deleteDuplicatedBoxes(solutions);
+    #ifdef CG3_USING_LIBIGL_CSGTREE
     igl::copyleft::cgal::CSGTree tree = libigl::eigenMeshToCSGTree(bc);
+    #endif
     Timer timer("Boolean Operations");
     he.resize(solutions.getNumberBoxes());
     const double pass = 240.0 / solutions.getNumberBoxes();
@@ -1323,8 +1317,13 @@ void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxLis
         //#ifdef BOOL_DEBUG
         //box.saveOnObj("booleans/box" + std::to_string(i) + ".obj");
         //#endif
+        #ifdef CG3_USING_LIBIGL_CSGTREE
         libigl::intersection(intersection, tree, box);
         tree = libigl::difference(tree, box);
+        #else
+        libigl::intersection(intersection, bc, box);
+        bc = libigl::difference(bc, box);
+        #endif
         DrawableEigenMesh dimm(intersection);
         if (alternativeColors){
             dimm.setFaceColor(c.redF(), c.greenF(), c.blueF());
@@ -1335,7 +1334,9 @@ void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxLis
         std::cerr << i << ": " << solutions[i].getId() << "\n";
     }
     timer.stopAndPrint();
+    #ifdef CG3_USING_LIBIGL_CSGTREE
     bc = libigl::CSGTreeToEigenMesh(tree);
+    #endif
     for (int i = he.getNumHeightfields()-1; i >= 0 ; i--) {
         if (he.getNumberVerticesHeightfield(i) == 0) {
             he.removeHeightfield(i);
