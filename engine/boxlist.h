@@ -2,7 +2,7 @@
 #define BOXLIST_H
 
 #include "box.h"
-#include "cg3/data_structures/arrays.h"
+#include "cg3/data_structures/arrays/arrays.h"
 #include "cg3/cgal/cgal_aabbtree.h"
 
 class BoxList : public cg3::DrawableObject, cg3::SerializableObject{

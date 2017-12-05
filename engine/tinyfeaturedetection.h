@@ -2,7 +2,7 @@
 #define TINYFEATUREDETECTION_H
 
 #include <cg3/meshes/eigenmesh/eigenmesh.h>
-#include <cg3/data_structures/arrays.h>
+#include <cg3/data_structures/arrays/arrays.h>
 
 namespace TinyFeatureDetection
 {

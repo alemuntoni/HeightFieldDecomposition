@@ -1,7 +1,7 @@
 #ifndef IRREGULARGRID_H
 #define IRREGULARGRID_H
 
-#include "cg3/data_structures/arrays.h"
+#include "cg3/data_structures/arrays/arrays.h"
 #include "cg3/geometry/point.h"
 
 class IrregularGrid {
@@ -45,8 +45,9 @@ inline IrregularGrid::IrregularGrid(unsigned int resX, unsigned int resY, unsign
     mapZ.clear();
     points.resize(resX, resY, resZ);
     possibleTargets.resize(resX-1, resY-1, resZ-1);
-    definitiveTargets.resize(resX-1, resY-1, resZ-1, cg3::Vec3());
-    flags.resize(resX-1, resY-1, resZ-1, 0);
+    definitiveTargets.resize(resX-1, resY-1, resZ-1);
+    definitiveTargets.fill(cg3::Vec3());
+    flags.resize(resX-1, resY-1, resZ-1);
 }
 
 inline void IrregularGrid::addPoint(unsigned int i, unsigned int j, unsigned int k, const cg3::Pointd& p) {
@@ -80,8 +81,8 @@ inline void IrregularGrid::reset(unsigned int resX, unsigned int resY, unsigned 
     mapZ.clear();
     points.resize(resX, resY, resZ);
     possibleTargets.resize(resX-1, resY-1, resZ-1);
-    definitiveTargets.resize(resX-1, resY-1, resZ-1, cg3::Vec3());
-    flags.resize(resX-1, resY-1, resZ-1, 0);
+    definitiveTargets.resize(resX-1, resY-1, resZ-1);
+    flags.resize(resX-1, resY-1, resZ-1);
     this->resX = resX;
     this->resY = resY;
     this->resZ = resZ;

@@ -26,6 +26,9 @@
 
 #include "engine/reconstruction.h"
 
+#include <unordered_set>
+#include <cg3/utilities/hash.h>
+
 using namespace cg3;
 
 #if defined(SERVER_MODE) || defined(SERVER_HOME) || defined(SERVER_AFTER)
@@ -36,6 +39,8 @@ void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& o
 #endif
 
 int main(int argc, char *argv[]) {
+
+    std::unordered_set<std::vector<Pointd> > mySet;
     #ifdef SERVER_MODE
     //usage
     // ./HeightFieldDecomposition filename.obj precision kernel snapping orientation (t/f)

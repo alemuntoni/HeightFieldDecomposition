@@ -5,7 +5,7 @@
 #include <cg3/geometry/bounding_box.h>
 #include <cg3/viewer/renderable_objects/renderable_objects.h>
 #include <cg3/meshes/eigenmesh/eigenmesh.h>
-#include <cg3/data_structures/color.h>
+#include <cg3/utilities/color.h>
 
 class Box3D : public cg3::BoundingBox, public cg3::DrawableObject{
     public:

@@ -2,7 +2,7 @@
 #define GRID_H
 
 #include "cg3/geometry/bounding_box.h"
-#include "cg3/data_structures/arrays.h"
+#include "cg3/data_structures/arrays/arrays.h"
 #include "cg3/meshes/dcel/dcel.h"
 #include "engine/tricubic.h"
 #include "common.h"

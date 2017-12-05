@@ -1,6 +1,6 @@
 #ifndef FOURAXISCHECKER_H
 #define FOURAXISCHECKER_H
-#include "cg3/core/cg3/data_structures/arrays.h"
+#include <cg3/data_structures/arrays/arrays.h>
 #include "cg3/meshes/eigenmesh/eigenmesh.h"
 
 namespace FourAxisChecker {

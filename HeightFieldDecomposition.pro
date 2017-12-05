@@ -16,6 +16,7 @@ CONFIG += ALL
 ALL {
     CONFIG += USE_LIBIGL_EIGEN
     #CONFIG += MULTI_LABEL_OPTIMIZATION
+    CONFIG += CG3_ALL
     include(cg3lib/cg3.pri)
 }
 

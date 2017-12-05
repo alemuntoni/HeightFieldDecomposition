@@ -98,7 +98,7 @@ void Grid::calculateBorderWeights(const Dcel& d, bool tolerance, std::set<const 
 void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool tolerance, std::set<const Dcel::Face*>& savedFaces) {
     assert(value >= 0 && value <= 1);
     // grid border and rest
-    weights.setConstant(BORDER_PAY);
+    weights.fill(BORDER_PAY);
     for (unsigned int i = 2; i < resX-2; i++){
         for (unsigned int j = 2; j < resY-2; j++){
             for (unsigned int k = 2; k < resZ-2; ++k){
@@ -110,7 +110,7 @@ void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool tol
     //mesh border
     calculateBorderWeights(d, tolerance, savedFaces);
 
-    double minValue = signedDistances.getMin();
+    double minValue = signedDistances.min();
     value = 1 - value;
     value *= minValue;
     value = std::abs(value);

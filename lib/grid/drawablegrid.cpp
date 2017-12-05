@@ -7,12 +7,12 @@ DrawableGrid::DrawableGrid() : visible(true), drawMode(DRAW_KERNEL), slice(NO_SL
 }
 
 DrawableGrid::DrawableGrid(const Grid& g) : Grid(g), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2){
-    minSignedDistance = signedDistances.getMin();
+    minSignedDistance = signedDistances.min();
 }
 
 DrawableGrid::DrawableGrid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
     Grid(resolution, gridCoordinates, signedDistances, gMin, gMax), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2) {
-    minSignedDistance = signedDistances.getMin();
+    minSignedDistance = signedDistances.min();
 }
 
 DrawableGrid::~DrawableGrid(){
@@ -278,5 +278,5 @@ void DrawableGrid::setStepDrawGrid(double value) {
 }
 
 void DrawableGrid::updateMinSignedDistance() {
-    minSignedDistance = signedDistances.getMin();
+    minSignedDistance = signedDistances.min();
 }

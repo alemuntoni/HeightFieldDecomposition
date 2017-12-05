@@ -170,11 +170,11 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
     grid.resize(sizeX, sizeY, sizeZ);
     if (generateDistanceField){
         distanceField.resize(sizeX, sizeY, sizeZ);
-        distanceField.setConstant(1);
+        distanceField.fill(1);
     }
     cgal::AABBTree tree(m, true);
     Array3D<unsigned char> isInside(sizeX, sizeY, sizeZ);
-    isInside.setConstant(false);
+    isInside.fill(false);
 
     int xi = nGmin(0), yi = nGmin(1), zi = nGmin(2);
     for (unsigned int i = 0; i < sizeX; ++i){

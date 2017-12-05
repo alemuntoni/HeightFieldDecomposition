@@ -5,7 +5,7 @@
 #include <cg3/viewer/managers/eigenmesh_manager/eigenmesh_manager.h>
 #include <cg3/meshes/eigenmesh/eigenmesh.h>
 #include <cg3/viewer/pickable_objects/pickable_eigenmesh.h>
-#include <cg3/data_structures/arrays.h>
+#include <cg3/data_structures/arrays/arrays.h>
 #include <Eigen/Dense>
 
 #include <CGAL/Surface_mesh.h>
