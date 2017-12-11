@@ -99,10 +99,7 @@ HEADERS += \
     lib/graph/directedgraph.h \
     lib/csgtree/aabbcsgtree.h \
     lib/octree/octree_node.h \
-    engine/tinyfeaturedetection.h \
-    fouraxischecker/polylinesCheck.h \
-    GUI/managers/fouraxischeckermanager.h \
-    fouraxischecker/fouraxischecker.h
+    engine/tinyfeaturedetection.h
 
 SOURCES += \
     main.cpp \
@@ -125,14 +122,10 @@ SOURCES += \
     engine/orientation.cpp \
     lib/csgtree/aabbcsgtree.cpp \
     lib/octree/octree_node.cpp \
-    engine/tinyfeaturedetection.cpp \
-    fouraxischecker/polylinesCheck.cpp \
-    GUI/managers/fouraxischeckermanager.cpp \
-    fouraxischecker/fouraxischecker.cpp
+    engine/tinyfeaturedetection.cpp
 
 FORMS += \
-    GUI/managers/enginemanager.ui \
-    GUI/managers/fouraxischeckermanager.ui
+    GUI/managers/enginemanager.ui
 
 DISTFILES += \
     README.txt

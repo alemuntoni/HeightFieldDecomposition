@@ -7,7 +7,6 @@
 #include "cg3/viewer/managers/dcel_manager/dcel_manager.h"
 #include "cg3/viewer/managers/window_manager/window_manager.h"
 #include "GUI/managers/enginemanager.h"
-#include "GUI/managers/fouraxischeckermanager.h"
 #include "common.h"
 #include <QApplication>
 //#include "common/comparators.h"
@@ -26,9 +25,6 @@
 
 #include "engine/reconstruction.h"
 
-#include <unordered_set>
-#include <cg3/utilities/hash.h>
-
 using namespace cg3;
 
 #if defined(SERVER_MODE) || defined(SERVER_HOME) || defined(SERVER_AFTER)
@@ -40,7 +36,6 @@ void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& o
 
 int main(int argc, char *argv[]) {
 
-    std::unordered_set<std::vector<Pointd> > mySet;
     #ifdef SERVER_MODE
     //usage
     // ./HeightFieldDecomposition filename.obj precision kernel snapping orientation (t/f)
@@ -469,9 +464,6 @@ int main(int argc, char *argv[]) {
 
     EngineManager e(&gui);
     ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
-
-    FourAxisMillingManager fm(&gui);
-    gui.addManager(&fm, "Four Axis Milling Manager");
 
     BooleansManager bm(&gui);
     gui.addManager(&bm, "Booleans Manager");

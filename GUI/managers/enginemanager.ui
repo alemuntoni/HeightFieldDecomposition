@@ -63,8 +63,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>897</width>
-        <height>2206</height>
+        <width>933</width>
+        <height>1551</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -83,7 +83,7 @@
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
