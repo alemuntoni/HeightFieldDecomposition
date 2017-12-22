@@ -22,7 +22,7 @@
 #define BOOL_DEBUG
 
 namespace Engine {
-    void findOptimalOrientation(cg3::Dcel& d, cg3::EigenMesh& originalMesh);
+    Eigen::Matrix3d findOptimalOrientation(cg3::Dcel& d, cg3::EigenMesh& originalMesh);
 
     cg3::Vec3 getClosestTarget(const cg3::Vec3 &n);
 

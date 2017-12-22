@@ -5,7 +5,6 @@
 
 #include "cg3/viewer/mainwindow.h"
 #include "cg3/viewer/managers/dcel_manager/dcel_manager.h"
-#include "cg3/viewer/managers/window_manager/window_manager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
 #include <QApplication>
@@ -82,6 +81,11 @@ int main(int argc, char *argv[]) {
         std::ofstream logFile;
         logFile.open(foldername + "log.txt");
 
+        if (smoothed)
+            logFile << "Using Smoothed Mesh.\n";
+        else
+            logFile << "No smoothing was applied.\n";
+
         //scaling meshes
         BoundingBox bb= d.getBoundingBox();
         Engine::scaleAndRotateDcel(d, 0, precision);
@@ -91,8 +95,22 @@ int main(int argc, char *argv[]) {
 
         //optimal orientation
         if (optimal){ // if optimal orientation
-            Engine::findOptimalOrientation(d, original);
+            Eigen::Matrix3d m3d = Engine::findOptimalOrientation(d, original);
+            logFile << "Using Optimal Orientation! Rotation Matrix:\n";
+            logFile << m3d << "\n";
         }
+        else {
+            logFile << "Not using Optimal Orientation.\n";
+        }
+
+        double snapStep;
+        if (argc == 5)
+            snapStep = std::stod(argv[4]);
+        else
+            snapStep = 2;
+
+        logFile << "Parameters: \n\tPrecision: " << precision << "\n\tKernel: " << kernelDistance << "\n\tSnapping: " << snapStep << "\n";
+
         d.updateFaceNormals();
         d.updateVertexNormals();
         d.saveOnObjFile(foldername + rawname + "r_smooth.obj");
@@ -114,11 +132,7 @@ int main(int argc, char *argv[]) {
 
         serializeBeforeBooleans(foldername + "mc.bin", d, original, solutions, precision, kernelDistance);
 
-        double snapStep;
-        if (argc == 5)
-            snapStep = std::stod(argv[4]);
-        else
-            snapStep = 2;
+
 
         //snapping
         Engine::stupidSnapping(d, solutions, snapStep);
@@ -453,10 +467,6 @@ int main(int argc, char *argv[]) {
 
     MainWindow gui;  // finestra principale, contiene la canvas di QGLViewer
     mw = &gui;
-
-    // Creo un window manager e lo aggiungo alla mainwindow
-    WindowManager wm(&gui);
-    WINDOW_MANAGER_ID = gui.addManager(&wm, "Window");
 
     // Creo un dcel manager e lo aggiungo alla mainwindow
     DcelManager d(&gui);

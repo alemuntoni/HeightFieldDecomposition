@@ -5,7 +5,6 @@
 
 #include "common.h"
 
-int WINDOW_MANAGER_ID;
 int DCEL_MANAGER_ID;
 int ENGINE_MANAGER_ID;
 

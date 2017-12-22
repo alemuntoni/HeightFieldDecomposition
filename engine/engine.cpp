@@ -20,7 +20,7 @@
 
 using namespace cg3;
 
-void Engine::findOptimalOrientation(Dcel &d, EigenMesh& originalMesh) {
+Eigen::Matrix3d Engine::findOptimalOrientation(Dcel &d, EigenMesh& originalMesh) {
     Eigen::Matrix3d matr = Orientation::optimalOrientation(d);
     d.rotate(matr);
     Pointd c = d.getBoundingBox().center();
@@ -29,6 +29,7 @@ void Engine::findOptimalOrientation(Dcel &d, EigenMesh& originalMesh) {
         originalMesh.rotate(matr);
         originalMesh.translate(-c);
     }
+    return matr;
 }
 
 Vec3 Engine::getClosestTarget(const Vec3& n) {

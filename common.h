@@ -41,7 +41,6 @@
 #define IS_CYANO(label) ((label >= 14) && (label < 18))
 #define IS_WHITE(label) ((label >= 18) && (label < 26))
 
-extern int WINDOW_MANAGER_ID;
 extern int DCEL_MANAGER_ID;
 extern int ENGINE_MANAGER_ID;
 
