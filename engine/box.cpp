@@ -357,12 +357,12 @@ void Box3D::setVisible(bool b) {
 
 void Box3D::serialize(std::ofstream& binaryFile) const {
     BoundingBox::serialize(binaryFile);
-    Serializer::serializeObjectAttributes("box", binaryFile, c1, c2, c3, color, visible, target, rotation, id, piece, trianglesCovered);
+    serializeObjectAttributes("box", binaryFile, c1, c2, c3, color, visible, target, rotation, id, piece, trianglesCovered);
 }
 
 void Box3D::deserialize(std::ifstream& binaryFile) {
     BoundingBox::deserialize(binaryFile);
-    Serializer::deserializeObjectAttributes("box", binaryFile, c1, c2, c3, color, visible, target, rotation, id, piece, trianglesCovered);
+    deserializeObjectAttributes("box", binaryFile, c1, c2, c3, color, visible, target, rotation, id, piece, trianglesCovered);
 }
 
 const Vec3& Box3D::getTarget() const {

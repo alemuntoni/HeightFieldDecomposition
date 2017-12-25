@@ -91,7 +91,6 @@ HEADERS += \
     lib/dcel_segmentation/segmentation_iterators.h \
     lib/dcel_segmentation/segmentation_struct.h \
     lib/dcel_segmentation/segmentation.h \
-    engine/orientation.h \
     lib/graph/bipartitegraph.h \
     lib/graph/undirectednode.h \
     lib/graph/bipartitegraphiterators.h \
@@ -118,7 +117,6 @@ SOURCES += \
     lib/grid/drawableirregulargrid.cpp \
     lib/dcel_segmentation/chart.cpp \
     lib/dcel_segmentation/segmentation_struct.cpp \
-    engine/orientation.cpp \
     lib/csgtree/aabbcsgtree.cpp \
     lib/octree/octree_node.cpp \
     engine/tinyfeaturedetection.cpp

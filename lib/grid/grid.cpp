@@ -174,13 +174,13 @@ void Grid::getMinAndMax(double& min, double& max) {
 }
 
 void Grid::serialize(std::ofstream& binaryFile) const {
-    Serializer::serializeObjectAttributes("Grid", binaryFile, bb, resX, resY, resZ,
+    serializeObjectAttributes("Grid", binaryFile, bb, resX, resY, resZ,
                                           signedDistances, weights, coeffs, mapCoeffs,
                                           fullBoxValues, target, unit);
 }
 
 void Grid::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserializeObjectAttributes("Grid", binaryFile, bb, resX, resY, resZ,
+    deserializeObjectAttributes("Grid", binaryFile, bb, resX, resY, resZ,
                                           signedDistances, weights, coeffs, mapCoeffs,
                                           fullBoxValues, target, unit);
 }

@@ -16,12 +16,12 @@
 
 #include "splitting.h"
 #include "reconstruction.h"
-#include "orientation.h"
+#include <cg3/algorithms/global_optimal_rotation_matrix.h>
 
 using namespace cg3;
 
 Eigen::Matrix3d Engine::findOptimalOrientation(Dcel &d, EigenMesh& originalMesh) {
-    Eigen::Matrix3d matr = Orientation::optimalOrientation(d);
+    Eigen::Matrix3d matr = cg3::globalOptimalRotationMatrix(d, 1000, true);
     d.rotate(matr);
     Pointd c = d.getBoundingBox().center();
     d.translate(-c);

@@ -10,7 +10,6 @@
 #include <QThread>
 #include "lib/dcel_segmentation/segmentation.h"
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
-#include "engine/orientation.h"
 #include <lib/graph/bipartitegraph.h>
 #include <engine/tinyfeaturedetection.h>
 #include <cg3/geometry/transformations.h>
@@ -160,7 +159,7 @@ void EngineManager::serializeBC(const std::string &filename) {
 
 
     serialize(myfile);
-    Serializer::serializeObjectAttributes("HFDAfterBooleans", myfile, *baseComplex, *he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+    serializeObjectAttributes("HFDAfterBooleans", myfile, *baseComplex, *he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
 
     myfile.close();
 }
@@ -172,7 +171,7 @@ void EngineManager::deserializeBC(const std::string &filename) {
     HeightfieldsList tmphe;
     try {
         deserialize(myfile);
-        Serializer::deserializeObjectAttributes("HFDAfterBooleans", myfile, tmpbc, tmphe, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+        deserializeObjectAttributes("HFDAfterBooleans", myfile, tmpbc, tmphe, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
         baseComplex = new cg3::DrawableEigenMesh(tmpbc);
         he = new HeightfieldsList(tmphe);
         ui->solutionNumberLabel->setText(QString::fromStdString(std::to_string(he->getNumHeightfields())));
@@ -311,7 +310,7 @@ void EngineManager::serialize(std::ofstream& binaryFile) const {
     if (d != nullptr && solutions != nullptr){
         double factor = ui->factorSpinBox->value();
         double kernel = ui->distanceSpinBox->value();
-        Serializer::serializeObjectAttributes("HFDBeforeSplitting", binaryFile, *d, *solutions, originalMesh, factor, kernel);
+        serializeObjectAttributes("HFDBeforeSplitting", binaryFile, *d, *solutions, originalMesh, factor, kernel);
     }
 }
 
@@ -320,7 +319,7 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
     BoxList tmpsol;
     double factor, kernel;
     try {
-        Serializer::deserializeObjectAttributes("HFDBeforeSplitting", binaryFile, tmpd, tmpsol, originalMesh, factor, kernel);
+        deserializeObjectAttributes("HFDBeforeSplitting", binaryFile, tmpd, tmpsol, originalMesh, factor, kernel);
         d = new DrawableDcel(std::move(tmpd));
         solutions = new BoxList(std::move(tmpsol));
         ui->factorSpinBox->setValue(factor);

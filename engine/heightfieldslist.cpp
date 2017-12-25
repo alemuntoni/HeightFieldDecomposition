@@ -198,10 +198,10 @@ void HeightfieldsList::explode(const Pointd& bc, double dist) {
 }
 
 void HeightfieldsList::serialize(std::ofstream& binaryFile) const {
-    Serializer::serializeObjectAttributes("HeightFieldList", binaryFile, heightfields, targets);
+    serializeObjectAttributes("HeightFieldList", binaryFile, heightfields, targets);
 }
 
 void HeightfieldsList::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserializeObjectAttributes("HeightFieldList", binaryFile, heightfields, targets);
+    deserializeObjectAttributes("HeightFieldList", binaryFile, heightfields, targets);
     nVisible = -1;
 }

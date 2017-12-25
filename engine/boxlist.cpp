@@ -211,11 +211,11 @@ std::vector<Box3D>::iterator BoxList::end() {
 }
 
 void BoxList::serialize(std::ofstream& binaryFile) const {
-    Serializer::serializeObjectAttributes("BoxList", binaryFile, boxes);
+    serializeObjectAttributes("BoxList", binaryFile, boxes);
 }
 
 void BoxList::deserialize(std::ifstream& binaryFile) {
-    Serializer::deserializeObjectAttributes("BoxList", binaryFile, boxes);
+    deserializeObjectAttributes("BoxList", binaryFile, boxes);
 }
 
 void BoxList::setVisibleBox(int i) {
