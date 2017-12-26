@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
     #ifdef SERVER_MODE
     //usage
-    // ./HeightFieldDecomposition filename.obj precision kernel snapping orientation (t/f)
+    // ./HeightFieldDecomposition filename.obj precision kernel snapping orientation (t/f) conservative (f/t)
     if (argc > 3){
         bool smoothed = true;
         std::string filename(argv[1]);
@@ -70,9 +70,14 @@ int main(int argc, char *argv[]) {
         //creating folder
         std::string foldername = rawname + "_";
         bool optimal = true;
-        if (argc == 6 && std::string(argv[5]) == "f"){ // if no optimal orientation required, there will be different foldername
+        bool conservative = false;
+        if (argc >= 6 && std::string(argv[5]) == "f"){ // if no optimal orientation required, there will be different foldername
             foldername += "noo_";
             optimal = false;
+        }
+        if (argc == 7 && std::string(argv[6]) == "t"){ // if conservative optimization required, there will be different foldername
+            foldername += "cons_";
+            conservative = true;
         }
         foldername += toStringWithPrecision(precision) + "_" + toStringWithPrecision(kernelDistance) + "/";
         executeCommand("mkdir " + foldername);
@@ -102,6 +107,12 @@ int main(int argc, char *argv[]) {
         else {
             logFile << "Not using Optimal Orientation.\n";
         }
+        if (conservative){
+            logFile << "Conservative Strategy used.\n";
+        }
+        else {
+            logFile << "Non-conservative Strategy used.\n";
+        }
 
         double snapStep;
         if (argc == 5)
@@ -119,8 +130,8 @@ int main(int argc, char *argv[]) {
         //solutions
         BoxList solutions;
 
-        //grow boxes
-        double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, false, Pointd(), true, true, 0, 0, false, true);
+        //grow boxes                              //boxes    mesh  kernel       limit  limit     toler           only  areatol  angletol  fileus  decim
+        double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, false, Pointd(), !conservative,  true, 0,       0,        false,  true);
 
         logFile << timerBoxGrowing << ": Box Growing\n";
 
@@ -524,30 +535,30 @@ int main(int argc, char *argv[]) {
 void serializeBeforeBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, double factor, double kernel) {
     std::ofstream binaryFile;
     binaryFile.open (filename, std::ios::out | std::ios::binary);
-    Serializer::serializeObjectAttributes("HFDBeforeSplitting", binaryFile, d, solutions, originalMesh, factor, kernel);
+    cg3::serializeObjectAttributes("HFDBeforeSplitting", binaryFile, d, solutions, originalMesh, factor, kernel);
     binaryFile.close();
 }
 
 void deserializeBeforeBooleans(const std::string& filename, Dcel& d, EigenMesh& originalMesh, BoxList& solutions, double &factor, double &kernel) {
     std::ifstream binaryFile;
     binaryFile.open (filename, std::ios::in | std::ios::binary);
-    Serializer::deserializeObjectAttributes("HFDBeforeSplitting", binaryFile, d, solutions, originalMesh, factor, kernel);
+    cg3::deserializeObjectAttributes("HFDBeforeSplitting", binaryFile, d, solutions, originalMesh, factor, kernel);
     binaryFile.close();
 }
 
 void serializeAfterBooleans(const std::string& filename, const Dcel& d, const EigenMesh& originalMesh, const BoxList& solutions, const EigenMesh& baseComplex, const HeightfieldsList& he, double factor, double kernel, const BoxList& originalSolutions, const std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, const std::list<unsigned int> &priorityBoxes) {
     std::ofstream myfile;
     myfile.open (filename, std::ios::out | std::ios::binary);
-    Serializer::serializeObjectAttributes("HFDBeforeSplitting", myfile, d, solutions, originalMesh, factor, kernel);
-    Serializer::serializeObjectAttributes("HFDAfterBooleans", myfile, baseComplex, he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+    cg3::serializeObjectAttributes("HFDBeforeSplitting", myfile, d, solutions, originalMesh, factor, kernel);
+    cg3::serializeObjectAttributes("HFDAfterBooleans", myfile, baseComplex, he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
     myfile.close();
 }
 
 void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& originalMesh, BoxList& solutions, EigenMesh& baseComplex, HeightfieldsList& he, double &factor, double &kernel, BoxList& originalSolutions, std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, std::list<unsigned int> &priorityBoxes){
     std::ifstream myfile;
     myfile.open (filename, std::ios::in | std::ios::binary);
-    Serializer::deserializeObjectAttributes("HFDBeforeSplitting", myfile, d, solutions, originalMesh, factor, kernel);
-    Serializer::deserializeObjectAttributes("HFDAfterBooleans", myfile, baseComplex, he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+    cg3::deserializeObjectAttributes("HFDBeforeSplitting", myfile, d, solutions, originalMesh, factor, kernel);
+    cg3::deserializeObjectAttributes("HFDAfterBooleans", myfile, baseComplex, he, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
     myfile.close();
 }
 

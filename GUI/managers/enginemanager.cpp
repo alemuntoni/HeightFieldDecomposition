@@ -995,6 +995,10 @@ void EngineManager::on_wireframeDcelCheckBox_stateChanged(int arg1) {
         he->setWireframe(arg1 == Qt::Checked);
         mainWindow.updateGlCanvas();
     }
+    if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
+        originalMesh.setWireframe(arg1 == Qt::Checked);
+        mainWindow.updateGlCanvas();
+    }
 }
 
 void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
@@ -1013,6 +1017,12 @@ void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
         if (checked){
             he->setPointShading();
+            mainWindow.updateGlCanvas();
+        }
+    }
+    if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
+        if (checked){
+            originalMesh.setPointsShading();
             mainWindow.updateGlCanvas();
         }
     }
@@ -1037,6 +1047,12 @@ void EngineManager::on_flatDcelRadioButton_toggled(bool checked) {
             mainWindow.updateGlCanvas();
         }
     }
+    if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
+        if (checked){
+            originalMesh.setFlatShading();
+            mainWindow.updateGlCanvas();
+        }
+    }
 }
 
 void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
@@ -1055,6 +1071,12 @@ void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
         if (checked){
             he->setSmoothShading();
+            mainWindow.updateGlCanvas();
+        }
+    }
+    if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
+        if (checked){
+            originalMesh.setSmoothShading();
             mainWindow.updateGlCanvas();
         }
     }

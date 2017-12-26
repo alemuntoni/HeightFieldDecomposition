@@ -63,8 +63,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>933</width>
-        <height>1551</height>
+        <width>893</width>
+        <height>2359</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -83,7 +83,7 @@
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">
@@ -514,7 +514,7 @@
                  <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_16">
-                 <item row="0" column="0">
+                 <item row="1" column="0">
                   <widget class="QRadioButton" name="inputMeshRadioButton">
                    <property name="text">
                     <string>Input Mesh</string>
@@ -524,17 +524,24 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1">
+                 <item row="2" column="0">
+                  <widget class="QRadioButton" name="baseComplexRadioButton">
+                   <property name="text">
+                    <string>Base Complex</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
                   <widget class="QRadioButton" name="heightfieldsRadioButton">
                    <property name="text">
                     <string>Heightfields</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QRadioButton" name="baseComplexRadioButton">
+                 <item row="1" column="1">
+                  <widget class="QRadioButton" name="originalMeshRadioButton">
                    <property name="text">
-                    <string>Base Complex</string>
+                    <string>Original Mesh</string>
                    </property>
                   </widget>
                  </item>
@@ -542,6 +549,7 @@
                 <zorder>baseComplexRadioButton</zorder>
                 <zorder>inputMeshRadioButton</zorder>
                 <zorder>heightfieldsRadioButton</zorder>
+                <zorder>originalMeshRadioButton</zorder>
                </widget>
               </item>
              </layout>
