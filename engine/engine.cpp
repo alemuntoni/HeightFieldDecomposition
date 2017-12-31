@@ -972,7 +972,7 @@ void Engine::boxPostProcessing(BoxList& solutions, const Dcel& d) {
     for (int bi = solutions.getNumberBoxes()-1; bi >= 0; bi--) {
         Box3D b = solutions.getBox(bi);
         std::list<const Dcel::Face*> list = tree.getContainedDcelFaces(b);
-        std::vector<std::set<const Dcel::Face*> > connectedComponents = DcelAlgorithms::getConnectedComponents(list.begin(), list.end());
+        std::vector<std::set<const Dcel::Face*> > connectedComponents = dcelAlgorithms::getConnectedComponents(list.begin(), list.end());
         if (connectedComponents.size() > 1){
             std::cerr << "Box " << bi << " has " << connectedComponents.size() << " connected components\n";
             std::vector<Box3D> tmpvect = splitBoxWithMoreThanOneConnectedComponent(b, connectedComponents);

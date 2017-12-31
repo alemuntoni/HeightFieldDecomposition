@@ -44,7 +44,7 @@
 extern int DCEL_MANAGER_ID;
 extern int ENGINE_MANAGER_ID;
 
-extern MainWindow* mw;
+extern cg3::viewer::MainWindow* mw;
 
 const int MAX_BFGS_ITERATIONS = 150;
 

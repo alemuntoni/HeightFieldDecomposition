@@ -8,7 +8,7 @@
 int DCEL_MANAGER_ID;
 int ENGINE_MANAGER_ID;
 
-MainWindow* mw;
+cg3::viewer::MainWindow* mw;
 
 using namespace cg3;
 

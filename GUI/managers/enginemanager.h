@@ -4,7 +4,7 @@
 #include <QFrame>
 #include <QLabel>
 #include <cg3/viewer/utilities/loadersaver.h>
-#include "cg3/viewer/managers/dcel_manager/dcel_manager.h"
+#include "cg3/viewer/managers/dcel_manager.h"
 #include "lib/grid/drawablegrid.h"
 #include "lib/grid/drawableirregulargrid.h"
 #include "common.h"
@@ -235,7 +235,7 @@ signals:
 
     private:
         Ui::EngineManager *ui;
-        MainWindow& mainWindow; //puntatore alla mainWindow
+        cg3::viewer::MainWindow& mainWindow; //puntatore alla mainWindow
         DrawableGrid* g;
         cg3::DrawableDcel* d;
         Box3D* b;

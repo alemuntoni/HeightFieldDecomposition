@@ -187,7 +187,7 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
 
 Dcel Reconstruction::taubinSmoothing(const cg3::SimpleEigenMesh& m, int n_iters, double lambda, const double mu) {
     cinolib::Trimesh trimesh;
-    MeshConversions::eigenMeshToTrimesh(trimesh, m);
+    cg3::eigenMeshToTrimesh(trimesh, m);
     cinolib::smooth_taubin(trimesh, cinolib::COTANGENT, std::set<int>(), n_iters, lambda, mu);
     //trimesh.save("smoothed.obj");
     Dcel d(trimesh);
@@ -196,7 +196,7 @@ Dcel Reconstruction::taubinSmoothing(const cg3::SimpleEigenMesh& m, int n_iters,
 
 Dcel Reconstruction::taubinSmoothing(const Dcel& d, int n_iters, double lambda, const double mu) {
     cinolib::Trimesh trimesh;
-    MeshConversions::dcelToTrimesh(trimesh, d);
+    cg3::dcelToTrimesh(trimesh, d);
     cinolib::smooth_taubin(trimesh, cinolib::COTANGENT, std::set<int>(), n_iters, lambda, mu);
     Dcel d1(trimesh);
     return d1;
@@ -207,8 +207,8 @@ void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std
     cinolib::logger.disable();
     cinolib::Trimesh smoothedTrimesh;
     cinolib::Trimesh originalTrimesh;
-    MeshConversions::eigenMeshToTrimesh(smoothedTrimesh, tmp);
-    MeshConversions::eigenMeshToTrimesh(originalTrimesh, originalSurface);
+    cg3::eigenMeshToTrimesh(smoothedTrimesh, tmp);
+    cg3::eigenMeshToTrimesh(originalTrimesh, originalSurface);
 
     //restoring
     restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 400, internToHF);

@@ -22,7 +22,7 @@ using namespace cg3;
 EngineManager::EngineManager(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::EngineManager),
-    mainWindow((MainWindow&)*parent),
+    mainWindow((cg3::viewer::MainWindow&)*parent),
     g(nullptr),
     d(nullptr),
     b(nullptr),

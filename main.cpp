@@ -4,7 +4,7 @@
  */
 
 #include "cg3/viewer/mainwindow.h"
-#include "cg3/viewer/managers/dcel_manager/dcel_manager.h"
+#include "cg3/viewer/managers/dcel_manager.h"
 #include "GUI/managers/enginemanager.h"
 #include "common.h"
 #include <QApplication>
@@ -13,8 +13,8 @@
 //#include "trimesh/gui/trimeshmanager.h"
 #include "lib/graph/directedgraph.h"
 
-#include "cg3/viewer/managers/eigenmesh_manager/eigenmesh_manager.h"
-#include "cg3/viewer/managers/booleans_manager/booleans_manager.h"
+#include "cg3/viewer/managers/eigenmesh_manager.h"
+#include "cg3/viewer/managers/booleans_manager.h"
 #include <cg3/utilities/string.h>
 #include <cg3/utilities/system.h>
 
@@ -34,7 +34,6 @@ void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& o
 #endif
 
 int main(int argc, char *argv[]) {
-
     #ifdef SERVER_MODE
     //usage
     // ./HeightFieldDecomposition filename.obj precision kernel snapping orientation (t/f) conservative (f/t)
@@ -476,23 +475,23 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
-    MainWindow gui;  // finestra principale, contiene la canvas di QGLViewer
+    cg3::viewer::MainWindow gui;  // finestra principale, contiene la canvas di QGLViewer
     mw = &gui;
 
     // Creo un dcel manager e lo aggiungo alla mainwindow
-    DcelManager d(&gui);
+    cg3::viewer::DcelManager d(&gui);
     DCEL_MANAGER_ID = gui.addManager(&d, "Dcel");
 
     EngineManager e(&gui);
     ENGINE_MANAGER_ID = gui.addManager(&e, "Engine");
 
-    BooleansManager bm(&gui);
+    cg3::viewer::BooleansManager bm(&gui);
     gui.addManager(&bm, "Booleans Manager");
 
     //TrimeshManager tm(&gui);
     //gui.addManager(&tm, "Trimesh Manager");
 
-    EigenMeshManager em(&gui);
+    cg3::viewer::EigenMeshManager em(&gui);
     gui.addManager(&em, "EigenMesh Manager");
 
     if (argc >= 2){
