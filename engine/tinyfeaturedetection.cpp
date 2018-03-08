@@ -3,7 +3,6 @@
 #include <cg3/geometry/transformations.h>
 #include <cg3/geometry/2d/utils2d.h>
 #include <cg3/utilities/utils.h>
-#include <cg3/cgal/cgal_sdf.h>
 #include <cg3/cgal/cgal_aabbtree.h>
 #include <cg3/libigl/libigl.h>
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
@@ -11,18 +10,6 @@
 #include <common.h>
 
 using namespace cg3;
-
-std::vector<unsigned int> TinyFeatureDetection::sdf(const EigenMesh &m, double threshold) {
-    std::vector<unsigned int> problematicFaces;
-    std::vector<double> sdf = cg3::cgal::sdf::getSDFMap(m);
-    for (unsigned int i = 0; i < sdf.size(); i++){
-        if (sdf[i] < threshold)
-            problematicFaces.push_back(i);
-    }
-    return problematicFaces;
-}
-
-
 
 void TinyFeatureDetection::colorSDF(EigenMesh &m, std::vector<unsigned int> &problematicFaces) {
     for (unsigned int& f : problematicFaces)

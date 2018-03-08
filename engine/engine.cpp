@@ -575,7 +575,7 @@ int Engine::deleteBoxesNonOptimal(BoxList& boxList, const Dcel& d) {
 }
 
 
-double Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
+bool Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
     #ifdef GUROBI_DEFINED
     unsigned int nBoxes = boxList.getNumberBoxes();
     unsigned int nTris = d.getNumberFaces();
@@ -602,7 +602,7 @@ double Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
         }
     }
     if (bb)
-        std::cerr << "Warning: Uncovered triangles.\n";
+        std::cerr << "Warning: Uncovered triangles by best boxes.\n";
 
     try {
         GRBEnv env;
@@ -625,13 +625,6 @@ double Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
         GRBLinExpr obj = 0;
         for (unsigned int i = 0; i < nBoxes; i++)
             obj += x[i];
-        /*for (unsigned int i = 0; i < nBoxes; i++){
-            for (unsigned int j = i+1; j < nBoxes; j++){
-                if (boxList[i].isIntern(boxList[j].center()) ||
-                        boxList[j].isIntern(boxList[i].center()))
-                    obj += (x[i] * x[j]);
-            }
-        }*/
         model.setObjective(obj, GRB_MINIMIZE);
         Timer tGurobi("tGurobi");
         model.optimize();
@@ -645,21 +638,109 @@ double Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
             }
         }
         std::cerr << "N survived boxes: " << nBoxes - deleted << "\n";
-        return tGurobi.delay();
+        return bb;
     }
     catch (GRBException e) {
         std::cerr << "Gurobi Exception\n" << e.getErrorCode() << " : " << e.getMessage() << std::endl;
-        return -1;
+        throw std::runtime_error("Optimization failed.");
     }
     catch (...) {
         std::cerr << "Unknown Gurobi Optimization error!" << std::endl;
-        return -1;
+        throw std::runtime_error("Optimization failed.");
     }
-    return -1;
     #else
     return deleteBoxesNonOptimal(boxList, d);
     #endif
 }
+
+bool Engine::secondMinimalCovering(BoxList& bestList, BoxList& boxList, const Dcel& d) {
+    #ifdef GUROBI_DEFINED
+    unsigned int nBoxes = boxList.getNumberBoxes();
+    unsigned int nTris = d.getNumberFaces();
+    Array2D<int> B(nBoxes+1, nTris, 0);
+    cgal::AABBTree aabb(d);
+    for (unsigned int i = 0; i < bestList.size(); i++){
+        std::list<const Dcel::Face*> containedFaces = aabb.getCompletelyContainedDcelFaces(bestList.getBox(i));
+        for (const Dcel::Face* f : containedFaces){
+            B(nBoxes,f->getId()) = 1;
+        }
+    }
+    for (unsigned int i = 0; i < nBoxes; i++){
+        std::list<const Dcel::Face*> containedFaces = aabb.getCompletelyContainedDcelFaces(boxList.getBox(i));
+        for (const Dcel::Face* f : containedFaces){
+            B(i,f->getId()) = 1;
+        }
+    }
+
+
+    //this piece of code allows to find a solution also if there are uncovered triangles.
+    //it creates a "dummy box" for every uncovered triangles
+    bool bb = false;
+    for (unsigned int j = 0; j < B.getSizeY(); j++){
+        int sum = 0;
+
+        if (B(nBoxes, j) != 1) {
+            for (unsigned int i = 0; i < B.getSizeX() && sum == 0; i++){
+                sum += B(i,j);
+            }
+            if (sum == 0){
+                bb = true;
+                B(nBoxes, j) = 1;
+            }
+        }
+    }
+    if (bb)
+        std::cerr << "WARNING: Uncovered triangles.\n";
+
+    try {
+        GRBEnv env;
+        GRBModel model(env);
+
+        //x
+        GRBVar* x = nullptr;
+        x = model.addVars(nBoxes+1, GRB_BINARY);
+
+        //constraints
+        for (unsigned int j = 0; j < nTris; j++){
+            GRBLinExpr line = 0;
+            for (unsigned int i = 0; i < B.getSizeX(); i++){
+                line += B(i,j) * x[i];
+            }
+            model.addConstr(line >= 1);
+        }
+
+        //obj
+        GRBLinExpr obj = 0;
+        for (unsigned int i = 0; i < nBoxes; i++)
+            obj += x[i];
+        model.setObjective(obj, GRB_MINIMIZE);
+        Timer tGurobi("tGurobi");
+        model.optimize();
+        tGurobi.stopAndPrint();
+
+        unsigned int deleted = 0;
+        for (int i = nBoxes-1; i >= 0; i--){
+            if (x[i].get(GRB_DoubleAttr_X) == 0){
+                boxList.removeBox(i);
+                deleted++;
+            }
+        }
+        std::cerr << "N survived boxes: " << nBoxes - deleted << "\n";
+        return bb;
+    }
+    catch (GRBException e) {
+        std::cerr << "Gurobi Exception\n" << e.getErrorCode() << " : " << e.getMessage() << std::endl;
+        throw std::runtime_error("Optimization failed.");
+    }
+    catch (...) {
+        std::cerr << "Unknown Gurobi Optimization error!" << std::endl;
+        throw std::runtime_error("Optimization failed.");
+    }
+    #else
+    return deleteBoxesNonOptimal(boxList, d);
+    #endif
+}
+
 
 int Engine::deleteBoxesGSC(BoxList& boxList, const Dcel& d) {
     unsigned int nBoxes = boxList.getNumberBoxes();
@@ -953,18 +1034,45 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
     optimize(solutions, d, kernelDistance, limit, limits, tolerance, onlyNearestTarget, areaTolerance, angleTolerance, file, decimate);
     allSolutions=solutions;
 
-    for (unsigned int i = 0; i < allSolutions.getNumberBoxes(); i++){
-        allSolutions.getBox(i).saveOnObj(std::string("boxes/before/box") + std::to_string(i) + ".obj", allSolutions.getBox(i).getColor());
-    }
+    //
+    cg3::cgal::AABBTree tree(d);
+    BoxList bestSolutions, otherSolutions;
+    for (const Box3D& b : solutions){
+        int nEdges = 0;
+        for (unsigned int i = 0; i < 6; i++){
+            BoundingBox bb = b;
+            if (i < 3){
+                bb(i+3) = bb(i) + CG3_EPSILON;
 
+            }
+            else {
+                bb(i-3) = bb(i) - CG3_EPSILON;
+            }
+            if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                nEdges++;
+        }
+        if (nEdges <= 1)
+            bestSolutions.addBox(b);
+        else
+            otherSolutions.addBox(b);
+    }
+    std::cerr << "Number of best solutions : " << bestSolutions.size();
+    std::cerr << "Number of other solutions : " << otherSolutions.size();
     Timer tGurobi("Gurobi");
-    deleteBoxes(solutions, d);
-    tGurobi.stopAndPrint();
-
-    for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
-        solutions.getBox(i).saveOnObj(std::string("boxes/after/box") + std::to_string(i) + ".obj", solutions.getBox(i).getColor());
+    bool otherAreNecessary = deleteBoxes(bestSolutions, d);
+    if (otherAreNecessary){
+        std::cerr << "Best Solutions were not necessary.\n";
+        secondMinimalCovering(bestSolutions, otherSolutions, d);
     }
-    d.saveOnObjFile("boxes/mesh.obj");
+    else {
+        std::cerr << "Best Solutions were enough!!!\n";
+    }
+    tGurobi.stopAndPrint();
+    //
+
+    /*Timer tGurobi("Gurobi");
+    deleteBoxes(solutions, d);
+    tGurobi.stopAndPrint();*/
 }
 
 void Engine::boxPostProcessing(BoxList& solutions, const Dcel& d) {

@@ -14,7 +14,7 @@ CONFIG += ALL
 #CONFIG += CONVERTER_MODE
 
 ALL {
-    CONFIG += USE_LIBIGL_EIGEN
+    #CONFIG += USE_LIBIGL_EIGEN
     CONFIG += CG3_ALL
     include(cg3lib/cg3.pri)
 }

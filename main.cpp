@@ -137,8 +137,56 @@ int main(int argc, char *argv[]) {
         serializeBeforeBooleans(foldername + "all.bin", d, original, solutions, precision, kernelDistance);
 
         Engine::boxPostProcessing(solutions, d);
-        double timerMinimalCovering = Engine::deleteBoxes(solutions, d);
-        logFile << timerMinimalCovering << ": Minimal Covering\n";
+
+        //
+        /*cg3::cgal::AABBTree tree(d);
+        BoxList bestSolutions, otherSolutions;
+        for (const Box3D& b : solutions){
+            int nEdges = 0;
+            for (unsigned int i = 0; i < 6; i++){
+                BoundingBox bb = b;
+                if (i < 3){
+                    bb(i+3) = bb(i) + CG3_EPSILON;
+                }
+                else {
+                    bb(i-3) = bb(i) - CG3_EPSILON;
+                }
+                if (tree.getNumberIntersectedPrimitives(bb) > 0)
+                    nEdges++;
+            }
+            if (nEdges <= 1)
+                bestSolutions.addBox(b);
+            else
+                otherSolutions.addBox(b);
+        }
+        solutions.clearBoxes();
+        std::cerr << "Number of best solutions : " << bestSolutions.size();
+        std::cerr << "Number of other solutions : " << otherSolutions.size();
+        Timer tGurobi("Gurobi");
+        bool otherAreNecessary = Engine::deleteBoxes(bestSolutions, d);
+        solutions = bestSolutions;
+        if (otherAreNecessary){
+            std::cerr << "Best Solutions were not necessary.\n";
+            logFile << "Best Solutions were not necessary.\n";
+            Engine::secondMinimalCovering(bestSolutions, otherSolutions, d);
+            for (const Box3D& b : otherSolutions){
+                solutions.addBox(b);
+            }
+        }
+        else {
+            std::cerr << "Best Solutions were enough!!!\n";
+            logFile << "Best Solutions were enough!!!\n";
+        }
+        tGurobi.stopAndPrint();*/
+        Timer tGurobi("Gurobi");
+        Engine::deleteBoxes(solutions, d);
+        tGurobi.stopAndPrint();
+        logFile << tGurobi.delay() << ": Minimal Covering\n";
+        //
+
+        logFile << tGurobi.delay() << ": Minimal Covering\n";
+        logFile << "Total Survived boxes: " << solutions.getNumberBoxes() << "\n";
+        std::cerr << "Total Survived boxes: " << solutions.getNumberBoxes() << "\n";
 
         serializeBeforeBooleans(foldername + "mc.bin", d, original, solutions, precision, kernelDistance);
 

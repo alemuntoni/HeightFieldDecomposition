@@ -1,13 +1,6 @@
 #include "reconstruction.h"
 #include "cg3/cgal/cgal_aabbtree.h"
 #include "common.h"
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#pragma GCC diagnostic ignored "-Wunused" //Doesn't work on gcc < 6.0
-#include <cinolib/smoothing.h>
-#pragma GCC diagnostic pop
-#endif //__GNUC__
 
 #include <cg3/cinolib/cinolib_mesh_conversions.h>
 
@@ -66,9 +59,9 @@ std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothe
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, const int hf, const int dir, const cinolib::vec3d & vid_new_pos, const BoxList &boxList, bool internToHF)
+bool Reconstruction::validate_move(const cinolib::Trimesh<> & m, const int vid, const int hf, const int dir, const cinolib::vec3d & vid_new_pos, const BoxList &boxList, bool internToHF)
 {
-    cinolib::vec3d vertex = m.vertex(vid);
+    cinolib::vec3d vertex = m.vert(vid);
     if (hf < 0 || ! boxList[hf].isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z()), -1))
         return false;
     if (internToHF){
@@ -79,13 +72,13 @@ bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, co
             }
         }
     }
-    for(int tid : m.adj_vtx2tri(vid))
+    for(int tid : m.adj_v2p(vid))
     {
         cinolib::vec3d tri[3];
         for(int offset=0; offset< 3; ++offset)
         {
-            int nbr = m.triangle_vertex_id(tid, offset);
-            tri[offset] = (vid == nbr) ? vid_new_pos : m.vertex(nbr);
+            int nbr = m.poly_vert_id(tid, offset);
+            tri[offset] = (vid == nbr) ? vid_new_pos : m.vert(nbr);
         }
         cinolib::vec3d n = triangle_normal(tri[0], tri[1], tri[2]);
 
@@ -125,20 +118,20 @@ bool Reconstruction::validate_move(const cinolib::Trimesh & m, const int vid, co
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-void Reconstruction::differential_coordinates(const cinolib::Trimesh & m, std::vector<cinolib::vec3d> & diff_coords)
+void Reconstruction::differential_coordinates(const cinolib::Trimesh<> & m, std::vector<cinolib::vec3d> & diff_coords)
 {
     assert(diff_coords.empty());
-    diff_coords.resize(m.num_vertices());
+    diff_coords.resize(m.num_verts());
 
     #pragma omp parallel for
-    for(int vid=0; vid<m.num_vertices(); ++vid)
+    for(unsigned int vid=0; vid<m.num_verts(); ++vid)
     {
-        double w    = 1.0 / double(m.vertex_valence(vid));
-        cinolib::vec3d  curr = m.vertex(vid);
+        double w    = 1.0 / double(m.vert_valence(vid));
+        cinolib::vec3d  curr = m.vert(vid);
         cinolib::vec3d  delta(0,0,0);
-        for(int nbr : m.adj_vtx2vtx(vid))
+        for(int nbr : m.adj_v2v(vid))
         {
-            delta += w * (curr - m.vertex(nbr));
+            delta += w * (curr - m.vert(nbr));
         }
         diff_coords[vid] = delta;
     }
@@ -146,8 +139,8 @@ void Reconstruction::differential_coordinates(const cinolib::Trimesh & m, std::v
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh          & m_smooth,
-                                           const cinolib::Trimesh          & m_detail,
+void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh<>          & m_smooth,
+                                           const cinolib::Trimesh<>          & m_detail,
                                            const std::vector< std::pair<int, int> > & hf_directions,
                                            const BoxList &boxList,
                                            const int n_iters,
@@ -161,14 +154,14 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
         std::cerr << "iter " << i << std::endl;//<< "; nv: " << m_smooth.num_vertices() <<std::endl;
 
         #pragma omp parallel for
-        for(int vid=0; vid<m_smooth.num_vertices(); ++vid)
+        for(unsigned int vid=0; vid<m_smooth.num_verts(); ++vid)
         {
             //std::cerr << vid << "\n";
             cinolib::vec3d  gauss_iter(0,0,0);
-            double w = 1.0 / double(m_smooth.vertex_valence(vid));
-            for(int nbr : m_smooth.adj_vtx2vtx(vid))
+            double w = 1.0 / double(m_smooth.vert_valence(vid));
+            for(int nbr : m_smooth.adj_v2v(vid))
             {
-                gauss_iter += w * m_smooth.vertex(nbr);
+                gauss_iter += w * m_smooth.vert(nbr);
             }
 
             cinolib::vec3d new_pos = diff_coords.at(vid) + gauss_iter;
@@ -177,36 +170,37 @@ void Reconstruction::restore_high_frequencies_gauss_seidel(cinolib::Trimesh     
             int count = 0;
             while(!validate_move(m_smooth, vid, hf_directions.at(vid).first, hf_directions.at(vid).second, new_pos, boxList, internToHF) && ++count<5)
             {
-                new_pos = 0.5 * (new_pos + m_smooth.vertex(vid));
+                new_pos = 0.5 * (new_pos + m_smooth.vert(vid));
             }
 
-            if (count < 5) m_smooth.set_vertex(vid, new_pos);
+            //if (count < 5) m_smooth.set_vertex(vid, new_pos);
+            if (count < 5) m_smooth.vert(vid) =  new_pos;
         }
     }
 }
 
 Dcel Reconstruction::taubinSmoothing(const cg3::SimpleEigenMesh& m, int n_iters, double lambda, const double mu) {
-    cinolib::Trimesh trimesh;
+    cinolib::Trimesh<> trimesh;
     cg3::eigenMeshToTrimesh(trimesh, m);
-    cinolib::smooth_taubin(trimesh, cinolib::COTANGENT, std::set<int>(), n_iters, lambda, mu);
+    //cinolib::smooth_taubin(trimesh, cinolib::COTANGENT, std::set<int>(), n_iters, lambda, mu);
     //trimesh.save("smoothed.obj");
     Dcel d(trimesh);
     return d;
 }
 
 Dcel Reconstruction::taubinSmoothing(const Dcel& d, int n_iters, double lambda, const double mu) {
-    cinolib::Trimesh trimesh;
+    cinolib::Trimesh<> trimesh;
     cg3::dcelToTrimesh(trimesh, d);
-    cinolib::smooth_taubin(trimesh, cinolib::COTANGENT, std::set<int>(), n_iters, lambda, mu);
+    //cinolib::smooth_taubin(trimesh, cinolib::COTANGENT, std::set<int>(), n_iters, lambda, mu);
     Dcel d1(trimesh);
     return d1;
 }
 
 void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std::pair<int, int>>& mapping, const cg3::EigenMesh& originalSurface, const BoxList &bl, bool internToHF) {
     cg3::SimpleEigenMesh tmp(smoothedSurface);
-    cinolib::logger.disable();
-    cinolib::Trimesh smoothedTrimesh;
-    cinolib::Trimesh originalTrimesh;
+    //cinolib::logger.disable();
+    cinolib::Trimesh<> smoothedTrimesh;
+    cinolib::Trimesh<> originalTrimesh;
     cg3::eigenMeshToTrimesh(smoothedTrimesh, tmp);
     cg3::eigenMeshToTrimesh(originalTrimesh, originalSurface);
 

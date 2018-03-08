@@ -56,7 +56,9 @@ namespace Engine {
 
     int deleteBoxesNonOptimal(BoxList& boxList, const cg3::Dcel &d);
 
-    double deleteBoxes(BoxList& boxList, const cg3::Dcel &d);
+    bool deleteBoxes(BoxList& boxList, const cg3::Dcel &d);
+
+    bool secondMinimalCovering(BoxList& bestList, BoxList& boxList, const cg3::Dcel &d);
 
     int deleteBoxesGSC(BoxList& boxList, const cg3::Dcel &d);
 

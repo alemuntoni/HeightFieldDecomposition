@@ -7,7 +7,6 @@
 namespace TinyFeatureDetection
 {
 
-std::vector<unsigned int> sdf(const cg3::EigenMesh& m, double threshold);
 void colorSDF(cg3::EigenMesh& m, std::vector<unsigned int>& problematicFaces);
 
 cg3::Array3D<cg3::Pointd> generateGrid(const cg3::EigenMesh &m, double threshold);

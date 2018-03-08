@@ -1,5 +1,7 @@
 #include "grid.h"
 
+//#define CUBE_CENTROID 1
+
 using namespace cg3;
 
 Grid::Grid() {
@@ -40,8 +42,14 @@ void Grid::calculateBorderWeights(const Dcel& d, bool tolerance, std::set<const 
     for (unsigned int i = 0; i < resX-1; i++){
         for (unsigned int j = 0; j < resY-1; j++){
             for (unsigned int k = 0; k < resZ-1; k++){
+                #ifdef CUBE_CENTROID
+                CG3_SUPPRESS_WARNING(tolerance);
+                Pointd bbmin = getPoint(i,j,k) - (unit/2);
+                Pointd bbmax = getPoint(i,j,k) + (unit/2);
+                #else
                 Pointd bbmin = getPoint(i,j,k);
                 Pointd bbmax(bbmin.x()+unit, bbmin.y()+unit, bbmin.z()+unit);
+                #endif
                 BoundingBox bb(bbmin, bbmax);
                 std::list<const Dcel::Face*> l;
                 aabb.getContainedDcelFaces(l, bb);
@@ -61,12 +69,22 @@ void Grid::calculateBorderWeights(const Dcel& d, bool tolerance, std::set<const 
                         ///
                     }
                     if (b){
+                        #ifdef CUBE_CENTROID
+                        weights(i,j,k) = MIN_PAY;
+                        #else
                         setWeightOnCube(i,j,k, MIN_PAY);
+                        #endif
                     }
+                    #ifdef CUBE_CENTROID
+                    else {
+                        weights(i,j,k) = MAX_PAY;
+                    }
+                    #endif
                 }
             }
         }
     }
+    #ifndef CUBE_CENTROID
     if (tolerance){
         for (unsigned int i = 0; i < flipped.size(); ++i){
             setWeightOnCube(flipped[i].x(),flipped[i].y(),flipped[i].z(), MAX_PAY);
@@ -87,6 +105,7 @@ void Grid::calculateBorderWeights(const Dcel& d, bool tolerance, std::set<const 
             setWeightOnCube(flipped[i].x(),flipped[i].y(),flipped[i].z(), MAX_PAY);
         }
     }
+    #endif
 }
 
 /**
