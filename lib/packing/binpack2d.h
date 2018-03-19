@@ -165,6 +165,7 @@ namespace BinPack2D {
 
                 if(this->w != that.w) return this->w < that.w;
                 if(this->h != that.h) return this->h < that.h;
+                return false;
             }
     };
 
@@ -202,6 +203,7 @@ namespace BinPack2D {
                 if(this->x != that.x) return this->x < that.x;
                 if(this->y != that.y) return this->y < that.y;
                 if(this->z != that.z) return this->z < that.z;
+                return false;
             }
     };
 
