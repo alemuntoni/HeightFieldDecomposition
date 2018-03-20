@@ -377,7 +377,7 @@ Vec3 Box3D::getRotatedTarget() const {
     Vec3 r = target;
     r.rotate(rotation);
     r.normalize();
-    return std::move(r);
+    return r;
 }
 
 bool Box3D::operator <(const Box3D& other) const {

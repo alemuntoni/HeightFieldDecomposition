@@ -1,7 +1,10 @@
 #include "octree_node.h"
 
 using namespace cg3;
-
+/**
+ * @brief OctreeNode::OctreeNode
+ * Creates a node which
+ */
 OctreeNode::OctreeNode() : splitted(false), father(nullptr), position(RAD){
     for (unsigned int i = 0; i < children.size(); i++)
         children[i] = nullptr;
@@ -81,6 +84,18 @@ void OctreeNode::deleteChildren(OctreeNode::Position pos) {
         delete children[pos];
         children[pos] = nullptr;
     }
+}
+
+bool OctreeNode::isRadix() const {
+    return position == RAD;
+}
+
+bool OctreeNode::isLeaf() const {
+    return splitted == false;
+}
+
+OctreeNode::Position OctreeNode::getNodePosition() const {
+    return position;
 }
 
 unsigned int OctreeNode::getPosLeaf(const Pointd& p) {

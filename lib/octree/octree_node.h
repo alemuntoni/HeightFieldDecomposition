@@ -7,8 +7,21 @@
 
 #include <cg3/geometry/bounding_box.h>
 
+/**
+ * @brief The OctreeNode class
+ *
+ * It represents a node of an Octree, defined by:
+ * - an axis aligned box;
+ * - a position of the box inside the node father;
+ * - 8 children if the node is not a leaf;
+ * - a split point that generates 8 sub-boxes if the node is not a leaf;
+ */
 class OctreeNode {
     public:
+        //L = left; R = right;
+        //B = back; F = front;
+        //D = down; U = up;
+        //RAD = radix.
         typedef enum  {LBD = 0, RBD, LBU, RBU, LFD, RFD, LFU, RFU, RAD} Position;
 
         OctreeNode();
@@ -19,7 +32,10 @@ class OctreeNode {
 
         OctreeNode* getContainingLeaf(const cg3::Pointd &p);
         void deleteChildren(Position pos);
-
+        bool isRadix() const;
+        bool isLeaf() const;
+        Position getNodePosition() const;
+        const OctreeNode* getFather() const;
 
     private:
 

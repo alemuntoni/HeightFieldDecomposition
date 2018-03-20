@@ -1465,7 +1465,7 @@ void EngineManager::on_loadSmoothedPushButton_clicked() {
 }
 
 void EngineManager::on_taubinPushButton_clicked() {
-    if (d == nullptr){
+    /*if (d == nullptr){
         d = new DrawableDcel(Reconstruction::taubinSmoothing(originalMesh, ui->nItersSpinBox->value(), ui->lambdaSpinBox->value(), ui->muSpinBox->value()));
         d->setWireframe(true);
         d->setPointsShading();
@@ -1477,7 +1477,7 @@ void EngineManager::on_taubinPushButton_clicked() {
         *d = DrawableDcel(Reconstruction::taubinSmoothing(*d, ui->nItersSpinBox->value(), ui->lambdaSpinBox->value(), ui->muSpinBox->value()));
         d->update();
         mainWindow.updateGlCanvas();
-    }
+    }*/
 }
 
 void EngineManager::on_packPushButton_clicked() {

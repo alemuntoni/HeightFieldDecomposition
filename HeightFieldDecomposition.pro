@@ -119,7 +119,8 @@ SOURCES += \
     lib/dcel_segmentation/segmentation_struct.cpp \
     lib/csgtree/aabbcsgtree.cpp \
     lib/octree/octree_node.cpp \
-    engine/tinyfeaturedetection.cpp
+    engine/tinyfeaturedetection.cpp \
+    engine/tinyfeaturedetection2.cpp
 
 FORMS += \
     GUI/managers/enginemanager.ui
