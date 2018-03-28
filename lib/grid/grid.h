@@ -7,7 +7,7 @@
 #include "engine/tricubic.h"
 #include "common.h"
 
-#include "cg3/cgal/cgal_aabbtree.h"
+#include "cg3/cgal/aabbtree.h"
 
 class Grid : cg3::SerializableObject{
     public:

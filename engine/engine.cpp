@@ -3,14 +3,18 @@
 #include <cg3/meshes/dcel/algorithms/dcel_algorithms.h>
 #include <cg3/geometry/transformations.h>
 #include <cg3/utilities/set.h>
-#include <cg3/libigl/libigl.h>
-#include "lib/dcel_segmentation/segmentation.h"
+#include <cg3/libigl/decimate.h>
+#include <cg3/libigl/booleans.h>
+#include <cg3/libigl/face_adjacences.h>
+#include <cg3/libigl/connected_components.h>
+#include <cg3/libigl/remove_duplicate_vertices.h>
 
 #ifdef GUROBI_DEFINED
 #include <gurobi_c++.h>
 #endif
 
-#include <cg3/cgal/cgal_polyhedron.h>
+#include <cg3/cgal/polyhedron.h>
+#include <cg3/cgal/signeddistances.h>
 #include <CGAL/mesh_segmentation.h>
 #include <CGAL/property_map.h>
 
@@ -223,7 +227,7 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
 
 
 
-        distances = cgal::signedDistances::getUnsignedDistances(insidePoints, tree);
+        distances = cgal::getUnsignedDistances(insidePoints, tree);
 
         for (unsigned int i = 0; i < sizeX; i++){
             for (unsigned int j = 0; j < sizeY; j++){
@@ -425,7 +429,7 @@ void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector
 }
 
 
-int Engine::deleteBoxesNonOptimal(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces){
+int Engine::minimalCoveringNonOptimal(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces){
 
     //ordering vector of triples
     struct triplesOrdering {
@@ -508,7 +512,7 @@ int Engine::deleteBoxesNonOptimal(BoxList& boxList, std::vector< std::tuple<int,
     return n-eliminate.size();
 }
 
-int Engine::deleteBoxesNonOptimal(BoxList& boxList, const Dcel& d) {
+int Engine::minimalCoveringNonOptimal(BoxList& boxList, const Dcel& d) {
     Dcel scaled0(d);
     Eigen::Matrix3d m[ORIENTATIONS];
     m[0] = Eigen::Matrix3d::Identity();
@@ -571,11 +575,11 @@ int Engine::deleteBoxesNonOptimal(BoxList& boxList, const Dcel& d) {
         vectorTriples.push_back(triple);
     }
 
-    return deleteBoxesNonOptimal(boxList, vectorTriples, d.getNumberFaces());
+    return minimalCoveringNonOptimal(boxList, vectorTriples, d.getNumberFaces());
 }
 
 
-bool Engine::deleteBoxes(BoxList& boxList, const Dcel& d) {
+bool Engine::minimalCovering(BoxList& boxList, const Dcel& d) {
     #ifdef GUROBI_DEFINED
     unsigned int nBoxes = boxList.getNumberBoxes();
     unsigned int nTris = d.getNumberFaces();
@@ -1059,7 +1063,7 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
     std::cerr << "Number of best solutions : " << bestSolutions.size();
     std::cerr << "Number of other solutions : " << otherSolutions.size();
     Timer tGurobi("Gurobi");
-    bool otherAreNecessary = deleteBoxes(bestSolutions, d);
+    bool otherAreNecessary = minimalCovering(bestSolutions, d);
     if (otherAreNecessary){
         std::cerr << "Best Solutions were not necessary.\n";
         secondMinimalCovering(bestSolutions, otherSolutions, d);

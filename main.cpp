@@ -18,9 +18,7 @@
 #include <cg3/utilities/string.h>
 #include <cg3/utilities/system.h>
 
-#include "lib/graph/bipartitegraph.h"
 #include <typeinfo>       // operator typeid
-#include <lib/csgtree/aabbcsgtree.h>
 
 #include "engine/reconstruction.h"
 
@@ -179,7 +177,7 @@ int main(int argc, char *argv[]) {
         }
         tGurobi.stopAndPrint();*/
         Timer tGurobi("Gurobi");
-        Engine::deleteBoxes(solutions, d);
+        Engine::minimalCovering(solutions, d);
         tGurobi.stopAndPrint();
         logFile << tGurobi.delay() << ": Minimal Covering\n";
         //

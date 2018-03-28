@@ -3,7 +3,7 @@
 #include <cg3/geometry/transformations.h>
 #include <cg3/geometry/2d/utils2d.h>
 #include <cg3/utilities/utils.h>
-#include <cg3/libigl/libigl.h>
+#include <cg3/libigl/face_adjacences.h>
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include "engine.h"
 #include <common.h>

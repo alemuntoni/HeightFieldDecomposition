@@ -16,6 +16,7 @@ CONFIG += ALL
 ALL {
     #CONFIG += USE_LIBIGL_EIGEN
     CONFIG += CG3_ALL
+    #CONFIG += CG3_DEVELOPMENT
     include(cg3lib/cg3.pri)
 }
 
@@ -57,19 +58,6 @@ exists($$(GUROBI_HOME)){
     DEFINES += GUROBI_DEFINED
 }
 
-
-MULTI_LABEL_OPTIMIZATION {
-    DEFINES += MULTI_LABEL_OPTIMIZATION_INCLUDED
-    INCLUDEPATH += $$PWD/lib/multi_label_optimization
-    DEPENDPATH += $$PWD/lib/multi_label_optimization
-    SOURCES += \
-        lib/multi_label_optimization/GCoptimization.cpp \
-        lib/multi_label_optimization/graph.cpp \
-        lib/multi_label_optimization/LinkedBlockList.cpp \
-        lib/multi_label_optimization/maxflow.cpp \
-        lib/multi_label_optimization/example.cpp
-}
-
 HEADERS += \
     common.h \
     GUI/managers/enginemanager.h \
@@ -83,20 +71,9 @@ HEADERS += \
     engine/splitting.h \
     engine/reconstruction.h \
     lib/grid/grid.h \
-    lib/grid/drawablegrid.h \
-    lib/grid/drawableirregulargrid.h \
-    lib/grid/irregulargrid.h \
     lib/packing/binpack2d.h \
-    lib/dcel_segmentation/chart.h \
-    lib/dcel_segmentation/segmentation_iterators.h \
-    lib/dcel_segmentation/segmentation_struct.h \
-    lib/dcel_segmentation/segmentation.h \
-    lib/graph/bipartitegraph.h \
     lib/graph/undirectednode.h \
-    lib/graph/bipartitegraphiterators.h \
     lib/graph/directedgraph.h \
-    lib/csgtree/aabbcsgtree.h \
-    lib/octree/octree_node.h \
     engine/tinyfeaturedetection.h
 
 SOURCES += \
@@ -114,11 +91,6 @@ SOURCES += \
     engine/reconstruction.cpp \
     lib/grid/grid.cpp \
     lib/grid/drawablegrid.cpp \
-    lib/grid/drawableirregulargrid.cpp \
-    lib/dcel_segmentation/chart.cpp \
-    lib/dcel_segmentation/segmentation_struct.cpp \
-    lib/csgtree/aabbcsgtree.cpp \
-    lib/octree/octree_node.cpp \
     engine/tinyfeaturedetection.cpp \
     engine/tinyfeaturedetection2.cpp
 

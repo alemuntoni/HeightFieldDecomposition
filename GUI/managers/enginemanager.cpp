@@ -4,17 +4,15 @@
 #include <cstdio>
 #include <QMessageBox>
 #include <omp.h>
-#include "cg3/cgal/cgal_aabbtree.h"
+#include "cg3/cgal/aabbtree.h"
 #include "engine/packing.h"
 #include "engine/reconstruction.h"
 #include <QThread>
-#include "lib/dcel_segmentation/segmentation.h"
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
-#include <lib/graph/bipartitegraph.h>
 #include <engine/tinyfeaturedetection.h>
 #include <cg3/geometry/transformations.h>
 #include <cg3/utilities/set.h>
-#include <cg3/libigl/libigl.h>
+#include <cg3/libigl/remove_duplicate_vertices.h>
 
 
 using namespace cg3;
@@ -1515,11 +1513,6 @@ void EngineManager::on_packPushButton_clicked() {
                     Dcel d(packs[i][j]);
                     d.updateVertexNormals();
                     d.saveOnObjFile(meshName);
-                    //Dcel d(packs[i][j]);
-                    //Segmentation s(d);
-                    //Dcel dd = s.getDcelFromSegmentation();
-                    //dd.triangulate();
-                    //dd.saveOnObjFile(meshName.toStdString());
                     if (j > 0){
                         packMesh = EigenMesh::merge(packMesh, packs[i][j]);
                     }
@@ -1659,7 +1652,7 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
 
 void EngineManager::on_deleteBoxesPushButton_clicked() {
     if (solutions != nullptr && d != nullptr){
-        Engine::deleteBoxes(*solutions, *d);
+        Engine::minimalCovering(*solutions, *d);
 
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         mainWindow.updateGlCanvas();

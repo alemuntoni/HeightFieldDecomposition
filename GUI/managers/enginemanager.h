@@ -6,7 +6,6 @@
 #include <cg3/viewer/utilities/loadersaver.h>
 #include "cg3/viewer/managers/dcel_manager.h"
 #include "lib/grid/drawablegrid.h"
-#include "lib/grid/drawableirregulargrid.h"
 #include "common.h"
 #include "engine/box.h"
 #include "engine/energy.h"

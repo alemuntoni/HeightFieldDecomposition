@@ -13,7 +13,6 @@
 #include "energy.h"
 #include <cg3/cgal/cgal.h>
 #include "heightfieldslist.h"
-#include "lib/grid/irregulargrid.h"
 
 #define ORIENTATIONS 1
 #define TARGETS 6
@@ -52,11 +51,11 @@ namespace Engine {
 
     void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<bool> > >& vectorTriples, const BoxList& boxList, const cg3::Dcel &d);
 
-    int deleteBoxesNonOptimal(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);
+    int minimalCoveringNonOptimal(BoxList& boxList, std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, unsigned int numberFaces);
 
-    int deleteBoxesNonOptimal(BoxList& boxList, const cg3::Dcel &d);
+    int minimalCoveringNonOptimal(BoxList& boxList, const cg3::Dcel &d);
 
-    bool deleteBoxes(BoxList& boxList, const cg3::Dcel &d);
+    bool minimalCovering(BoxList& boxList, const cg3::Dcel &d);
 
     bool secondMinimalCovering(BoxList& bestList, BoxList& boxList, const cg3::Dcel &d);
 

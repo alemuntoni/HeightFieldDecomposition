@@ -1,5 +1,5 @@
 #include "reconstruction.h"
-#include "cg3/cgal/cgal_aabbtree.h"
+#include "cg3/cgal/aabbtree.h"
 #include "common.h"
 
 #include <cg3/cinolib/cinolib_mesh_conversions.h>
