@@ -3,7 +3,7 @@
 
 #include <cg3/viewer/interfaces/drawable_object.h>
 #include <cg3/geometry/bounding_box.h>
-#include <cg3/viewer/renderable_objects/renderable_objects.h>
+#include <cg3/viewer/opengl_objects/opengl_objects.h>
 #include <cg3/meshes/eigenmesh/eigenmesh.h>
 #include <cg3/utilities/color.h>
 

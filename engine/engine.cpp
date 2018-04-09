@@ -36,11 +36,12 @@ Eigen::Matrix3d Engine::findOptimalOrientation(Dcel &d, EigenMesh& originalMesh)
     return matr;
 }
 
-Vec3 Engine::getClosestTarget(const Vec3& n) {
+Vec3 Engine::getClosestTarget(const Vec3& n)
+{
     double angle = n.dot(XYZ[0]);
     int k = 0;
-    for (unsigned int i = 1; i < 6; i++){
-        if (n.dot(XYZ[i]) > angle){
+    for (unsigned int i = 1; i < 6; i++) {
+        if (n.dot(XYZ[i]) > angle) {
             angle = n.dot(XYZ[i]);
             k = i;
         }
@@ -770,7 +771,7 @@ int Engine::deleteBoxesGSC(BoxList& boxList, const Dcel& d) {
         int a = -1;
         int found = -1;
         for (std::pair<int, std::set<int>> p : F){
-            std::set<int> inters = setIntersection(p.second, W);
+            std::set<int> inters = cg3::intersection(p.second, W);
             if ((int)inters.size() > a){
                 a = inters.size();
                 found = p.first;
@@ -778,7 +779,7 @@ int Engine::deleteBoxesGSC(BoxList& boxList, const Dcel& d) {
             }
         }
         assert(a > 0 && found >= 0);
-        W = setDifference(W, S);
+        W = cg3::difference(W, S);
         F.erase(found);
         C.push_back(found);
     }
@@ -1131,7 +1132,7 @@ std::vector<Box3D> Engine::splitBoxWithMoreThanOneConnectedComponent(const Box3D
 bool checkNewBox(const Box3D& tmp, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cgal::AABBTree& tree){
     std::list<unsigned int> newTriangles;
     tree.getCompletelyContainedDcelFaces(newTriangles, tmp);
-    std::set<unsigned int> uncovered = setDifference(b2.getTrianglesCovered(), std::set<unsigned int>(newTriangles.begin(), newTriangles.end()));
+    std::set<unsigned int> uncovered = cg3::difference(b2.getTrianglesCovered(), std::set<unsigned int>(newTriangles.begin(), newTriangles.end()));
     bool shrink = true;
     for (unsigned int t : uncovered){
         if (trianglesCovered[t] == 1)
@@ -1334,7 +1335,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                 std::list<unsigned int> newTrianglesA;
                                 tree.getCompletelyContainedDcelFaces(newTrianglesA, tmpa);
                                 std::set<unsigned int> nonCoveredTrianglesA(newTrianglesA.begin(), newTrianglesA.end());
-                                nonCoveredTrianglesA = setDifference(a.getTrianglesCovered(), nonCoveredTrianglesA);
+                                nonCoveredTrianglesA = cg3::difference(a.getTrianglesCovered(), nonCoveredTrianglesA);
                                 bool shrink = true;
                                 for (unsigned int t : nonCoveredTrianglesA){
                                     if (trianglesCovered[t] == 1)
@@ -1350,7 +1351,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
 
                                     SimpleEigenMesh u = libigl::union_(a.getEigenMesh(), b.getEigenMesh());
                                     a.setEigenMesh(u);
-                                    a.setTrianglesCovered(setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                    a.setTrianglesCovered(cg3::union_(a.getTrianglesCovered(), b.getTrianglesCovered()));
                                     a.setMin(u.getBoundingBox().min());
                                     a.setMax(u.getBoundingBox().max());
                                     solutions[i].setSplitted(true);
@@ -1367,7 +1368,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                 std::list<unsigned int> newTrianglesB;
                                 tree.getCompletelyContainedDcelFaces(newTrianglesB, tmpb);
                                 std::set<unsigned int> nonCoveredTrianglesB(newTrianglesB.begin(), newTrianglesB.end());
-                                nonCoveredTrianglesB = setDifference(b.getTrianglesCovered(), nonCoveredTrianglesB);
+                                nonCoveredTrianglesB = cg3::difference(b.getTrianglesCovered(), nonCoveredTrianglesB);
                                 bool shrink = true;
                                 for (unsigned int t : nonCoveredTrianglesB){
                                     if (trianglesCovered[t] == 1)
@@ -1383,7 +1384,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
 
                                     SimpleEigenMesh u = libigl::union_(a.getEigenMesh(), b.getEigenMesh());
                                     a.setEigenMesh(u);
-                                    a.setTrianglesCovered(setUnion(a.getTrianglesCovered(), b.getTrianglesCovered()));
+                                    a.setTrianglesCovered(cg3::union_(a.getTrianglesCovered(), b.getTrianglesCovered()));
                                     a.setMin(u.getBoundingBox().min());
                                     a.setMax(u.getBoundingBox().max());
                                     solutions[i].setSplitted(true);
@@ -2432,7 +2433,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
 
                         }
                         if (k == i){
-                            nadk = setUnion(nadk, ntmp);
+                            nadk = cg3::union_(nadk, ntmp);
                         }
                         adjacences[k] = nadk;
                     }

@@ -3,7 +3,7 @@
 
 #include "cg3/viewer/interfaces//drawable_object.h"
 #include "grid.h"
-#include "cg3/viewer/renderable_objects/renderable_objects.h"
+#include "cg3/viewer/opengl_objects/opengl_objects.h"
 
 class DrawableGrid: public Grid, public cg3::DrawableObject
 {

@@ -314,7 +314,7 @@ void Box3D::draw() const {
         c1.rotate(rotation);
         c2.rotate(rotation);
         c3.rotate(rotation);
-        cg3::viewer::drawBox(minCoord, maxCoord, color);
+        cg3::opengl::drawBox(minCoord, maxCoord, color);
 
         /*cylinder(min, Pointd(max.x(), min.y(), min.z()), 0.05, 0.05, color);
         cylinder(Pointd(max.x(), min.y(), min.z()), Pointd(max.x(), max.y(), min.z()), 0.05, 0.05, color);
@@ -331,9 +331,9 @@ void Box3D::draw() const {
         cylinder(Pointd(max.x(), max.y(), min.z()), max, 0.05, 0.05, color);
         cylinder(Pointd(min.x(), max.y(), min.z()), Pointd(min.x(), max.y(), max.z()), 0.05, 0.05, color);*/
 
-        cg3::viewer::drawSphere(c1, 0.15, QColor(255,0,255));
-        cg3::viewer::drawSphere(c2, 0.15, QColor(255,0,255));
-        cg3::viewer::drawSphere(c3, 0.15, QColor(255,0,255));
+        cg3::opengl::drawSphere(c1, 0.15, QColor(255,0,255));
+        cg3::opengl::drawSphere(c2, 0.15, QColor(255,0,255));
+        cg3::opengl::drawSphere(c3, 0.15, QColor(255,0,255));
     }
     #endif
 }

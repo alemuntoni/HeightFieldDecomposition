@@ -322,8 +322,8 @@ int Splitting::getMinTrianglesCoveredIfBoxesSplitted(const Box3D &b1, const Box3
     Box3D b3;
     getSplits(b1, b2, b3);
     std::set<unsigned int> b3t = getTrianglesCovered(b3, tree);
-    b3t = setIntersection(b3t, b2.getTrianglesCovered());
-    std::set<unsigned int> b2t = setDifference(setDifference(b2.getTrianglesCovered(), b1.getTrianglesCovered()), b3t);
+    b3t = intersection(b3t, b2.getTrianglesCovered());
+    std::set<unsigned int> b2t = difference(difference(b2.getTrianglesCovered(), b1.getTrianglesCovered()), b3t);
 
     if (b3t.size() == 0){
         return b2t.size();
@@ -444,7 +444,7 @@ void Splitting::chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const c
     getSplits(b2,b1,b3tmp2);
     //std::set<unsigned int> trianglesCoveredTmp2 = getTrianglesCovered(btmp2, tree, false);
     std::set<unsigned int> trianglesCoveredB3Tmp2 = getTrianglesCovered(b3tmp2, tree);
-    trianglesCoveredB3Tmp2 = setDifference(setIntersection(trianglesCoveredB3Tmp2, b1.getTrianglesCovered()), b2.getTrianglesCovered());
+    trianglesCoveredB3Tmp2 = difference(intersection(trianglesCoveredB3Tmp2, b1.getTrianglesCovered()), b2.getTrianglesCovered());
     if (trianglesCoveredB3Tmp2.size() == 0 || ((b3tmp2.min() == b3tmp2.max()) && (b3tmp2.min() == Pointd()))){
         std::swap(b1, b2);
     }
@@ -464,7 +464,7 @@ void Splitting::chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const c
         else {
             getSplits(b1,b2,bt3mp1);
             std::set<unsigned int> trianglesCoveredB3Tmp1 = getTrianglesCovered(bt3mp1, tree);
-            trianglesCoveredB3Tmp1 = setDifference(setIntersection(trianglesCoveredB3Tmp1, b2.getTrianglesCovered()), b1.getTrianglesCovered());
+            trianglesCoveredB3Tmp1 = difference(intersection(trianglesCoveredB3Tmp1, b2.getTrianglesCovered()), b1.getTrianglesCovered());
             if ((bt3mp1.min() != Pointd() || bt3mp1.max() != Pointd()) && trianglesCoveredB3Tmp1.size() != 0){
                 bool exit = false;
                 for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
@@ -511,7 +511,7 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
     }
     std::set<unsigned int> tcb1 = b1.getTrianglesCovered();
     std::set<unsigned int> tcb2 = b2.getTrianglesCovered();
-    std::set<unsigned int> tcb23 = setDifference(tcb2, tcb1);
+    std::set<unsigned int> tcb23 = difference(tcb2, tcb1);
     Box3D b3;
     splitBox(b1, b2, b3);
     //splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
@@ -522,10 +522,10 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
         g.removeEdgeIfExists(b2.getId(), b1.getId());
         b3.setId(lastId+1);
         //std::set<unsigned int> tcb3 = Common::setIntersection(getTrianglesCovered(b3, tree, false), tcb23);
-        std::set<unsigned int> tcb3 = setIntersection(getTrianglesCovered(b3, tree), tcb23);
+        std::set<unsigned int> tcb3 = intersection(getTrianglesCovered(b3, tree), tcb23);
 
         /////gestione b2:
-        b2.setTrianglesCovered(setDifference(tcb23, tcb3));
+        b2.setTrianglesCovered(difference(tcb23, tcb3));
         bl.setBox(b2.getId(), b2);
         ///
         //b1.getEigenMesh().saveOnObj("b1.obj");

@@ -100,7 +100,7 @@ void EngineManager::updateColors(double angleThreshold, double areaThreshold) {
     }
 
     d->update();
-    mainWindow.updateGlCanvas();
+    mainWindow.canvas.update();
 }
 
 Pointd EngineManager::getLimits() {
@@ -176,8 +176,8 @@ void EngineManager::deserializeBC(const std::string &filename) {
 
         mainWindow.pushObj(baseComplex, "Base Complex");
         mainWindow.pushObj(he, "Heightfields");
-        mainWindow.updateGlCanvas();
-        mainWindow.fitScene();
+        mainWindow.canvas.update();
+        mainWindow.canvas.fitScene();
         ui->showAllSolutionsCheckBox->setEnabled(true);
 
         solutions->setVisibleBox(0);
@@ -368,14 +368,14 @@ void EngineManager::on_generateGridPushButton_clicked() {
         g->setKernelDistance(ui->distanceSpinBox->value());
         e = Energy(*g);
         mainWindow.pushObj(g, "Grid");
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
 void EngineManager::on_distanceSpinBox_valueChanged(double arg1) {
     if (g!=nullptr){
         g->setKernelDistance(arg1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -386,21 +386,21 @@ void EngineManager::on_targetComboBox_currentIndexChanged(int index) {
         //std::set<const Dcel::Face*> flippedFaces, savedFaces;
         //Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
         //g->calculateBorderWeights(*d, ui->heightfieldsCheckBox->isChecked(), savedFaces);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
 void EngineManager::on_kernelRadioButton_toggled(bool checked) {
     if (checked && g!=nullptr){
         g->setDrawKernel();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
 void EngineManager::on_weigthsRadioButton_toggled(bool checked) {
     if (checked && g!=nullptr){
         g->setDrawBorders();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -413,7 +413,7 @@ void EngineManager::on_freezeKernelPushButton_clicked() {
         g->calculateWeightsAndFreezeKernel(*d, value, ui->heightfieldsCheckBox->isChecked(), savedFaces);
         e = Energy(*g);
         e.calculateFullBoxValues(*g);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 
 }
@@ -435,14 +435,14 @@ void EngineManager::on_sliceCheckBox_stateChanged(int arg1) {
             ui->sliceSlider->setEnabled(false);
             g->setSlice(0);
         }
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
 void EngineManager::on_sliceSlider_valueChanged(int value) {
     if (g!=nullptr){
         g->setSliceValue(value);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -454,7 +454,7 @@ void EngineManager::on_sliceComboBox_currentIndexChanged(int index) {
         if (index == 0) ui->sliceSlider->setMaximum(g->getResX() -1);
         if (index == 1) ui->sliceSlider->setMaximum(g->getResY() -1);
         if (index == 2) ui->sliceSlider->setMaximum(g->getResZ() -1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -530,7 +530,7 @@ void EngineManager::on_wSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setW(arg1);
         updateBoxValues();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -538,7 +538,7 @@ void EngineManager::on_hSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setH(arg1);
         updateBoxValues();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -546,7 +546,7 @@ void EngineManager::on_dSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setD(arg1);
         updateBoxValues();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -584,7 +584,7 @@ void EngineManager::on_plusXButton_clicked() {
             }
         }
 
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -621,7 +621,7 @@ void EngineManager::on_minusXButton_clicked() {
                 b->setConstraint3(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
             }
         }
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -659,7 +659,7 @@ void EngineManager::on_plusYButton_clicked() {
             }
 
         }
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -697,7 +697,7 @@ void EngineManager::on_minusYButton_clicked() {
             }
 
         }
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -735,7 +735,7 @@ void EngineManager::on_plusZButton_clicked() {
             }
 
         }
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -773,7 +773,7 @@ void EngineManager::on_minusZButton_clicked() {
             }
 
         }
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -792,7 +792,7 @@ void EngineManager::on_energyBoxPushButton_clicked() {
         updateLabel(gradient(5), ui->gmaxz);
         std::cerr << "\nGradient: \n" << gradient << "\n";
         updateLabel(energy, ui->energyLabel);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -821,7 +821,7 @@ void EngineManager::on_minimizePushButton_clicked() {
         double energy = e.energy(*b);
         updateLabel(energy, ui->energyLabel);
         updateBoxValues();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -850,7 +850,7 @@ void EngineManager::on_BFGSButton_clicked() {
         double energy = e.energy(*b);
         updateLabel(energy, ui->energyLabel);
         updateBoxValues();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -875,13 +875,13 @@ void EngineManager::on_deserializeBoxPushButton_clicked() {
     b->deserialize(myfile);
     myfile.close();
     updateBoxValues();
-    mainWindow.updateGlCanvas();
+    mainWindow.canvas.update();
 }
 
 void EngineManager::on_iterationsSlider_sliderMoved(int position) {
     if (iterations != nullptr){
         iterations->setVisibleBox(position);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -910,7 +910,7 @@ void EngineManager::on_showAllSolutionsCheckBox_stateChanged(int arg1) {
         solutions->setVisibleBox(0);
     }
     ui->solutionNumberLabel->setNum((int)solutions->getNumberBoxes());
-    mainWindow.updateGlCanvas();
+    mainWindow.canvas.update();
 }
 
 void EngineManager::on_solutionsSlider_valueChanged(int value) {
@@ -919,7 +919,7 @@ void EngineManager::on_solutionsSlider_valueChanged(int value) {
             solutions->setVisibleBox(value);
             ui->setFromSolutionSpinBox->setValue(value);
             ui->solutionNumberLabel->setText(QString::number((*solutions)[value].getId()));
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
 }
@@ -944,7 +944,7 @@ void EngineManager::on_setFromSolutionButton_clicked() {
             //solutions->getBox(value);
             //b = new Box3D(solutions->getBox(value));
             //mainWindow.pushObj(b, "Box");
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
 
     }
@@ -983,19 +983,19 @@ void EngineManager::on_setFromSolutionButton_clicked() {
 void EngineManager::on_wireframeDcelCheckBox_stateChanged(int arg1) {
     if (d!=nullptr && ui->inputMeshRadioButton->isChecked()){
         d->setWireframe(arg1 == Qt::Checked);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
     if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
         baseComplex->setWireframe(arg1 == Qt::Checked);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
         he->setWireframe(arg1 == Qt::Checked);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
     if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
         originalMesh.setWireframe(arg1 == Qt::Checked);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1003,25 +1003,25 @@ void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
     if (d!=nullptr && ui->inputMeshRadioButton->isChecked()){
         if (checked){
             d->setPointsShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
         if (checked){
             baseComplex->setPointsShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
         if (checked){
             he->setPointShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
         if (checked){
             originalMesh.setPointsShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
 }
@@ -1030,25 +1030,25 @@ void EngineManager::on_flatDcelRadioButton_toggled(bool checked) {
     if (d!=nullptr && ui->inputMeshRadioButton->isChecked()){
         if (checked){
             d->setFlatShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
         if (checked){
             baseComplex->setFlatShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
         if (checked){
             he->setFlatShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
         if (checked){
             originalMesh.setFlatShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
 }
@@ -1057,25 +1057,25 @@ void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
     if (d!=nullptr && ui->inputMeshRadioButton->isChecked()){
         if (checked){
             d->setSmoothShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     if (baseComplex!=nullptr && ui->baseComplexRadioButton->isChecked()) {
         if (checked){
             baseComplex->setSmoothShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     if (he != nullptr && ui->heightfieldsRadioButton->isChecked()){
         if (checked){
             he->setSmoothShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
         if (checked){
             originalMesh.setSmoothShading();
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
 }
@@ -1142,7 +1142,7 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
         }
         d->update();
 
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
 
     }
 }
@@ -1151,7 +1151,7 @@ void EngineManager::on_stepDrawGridSpinBox_valueChanged(double arg1) {
     if (g!=nullptr){
         if (arg1 > 0){
             g->setStepDrawGrid(arg1);
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
 }
@@ -1168,7 +1168,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         //entirePieces = new HeightfieldsList();
         mainWindow.pushObj(he, "Heightfields");
         //mainWindow.pushObj(entirePieces, "Entire Pieces");
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
         SimpleEigenMesh bc((SimpleEigenMesh)*baseComplex);
 
         /*WaitDialog* dialog = new WaitDialog("Prova", mainWindow);
@@ -1213,7 +1213,7 @@ void EngineManager::on_subtractPushButton_clicked() {
             baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
         }
         mainWindow.pushObj(baseComplex, "Base Complex");
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1232,7 +1232,7 @@ void EngineManager::on_stickPushButton_clicked() {
         }
         mainWindow.pushObj(baseComplex, "Base Complex");
     }
-    mainWindow.updateGlCanvas();
+    mainWindow.canvas.update();
 }
 
 void EngineManager::on_serializeBCPushButton_clicked() {
@@ -1265,7 +1265,7 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
         Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
         updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
         d->update();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
     if (d!=nullptr){
         deleteDrawableObject(solutions);
@@ -1287,7 +1287,7 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1296,14 +1296,14 @@ void EngineManager::on_allHeightfieldsCheckBox_stateChanged(int arg1) {
         if (he != nullptr){
             he->setVisibleHeightfield(-1);
             //if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(-1);
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
     else {
         if (he != nullptr){
             //if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(ui->heightfieldsSlider->value());
             he->setVisibleHeightfield(ui->heightfieldsSlider->value());
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
     }
 }
@@ -1313,7 +1313,7 @@ void EngineManager::on_heightfieldsSlider_valueChanged(int value) {
         ui->solutionsSlider->setValue(value);
         //if (entirePieces != nullptr) entirePieces->setVisibleHeightfield(value);
         he->setVisibleHeightfield(value);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
 
         std::cerr << "Box id: " << solutions->getBox(value).getId() << "\n";
         std::cerr << "Generated by: " << splittedBoxesToOriginals[solutions->getBox(value).getId()] << "\n";
@@ -1325,42 +1325,42 @@ void EngineManager::on_heightfieldsSlider_valueChanged(int value) {
 void EngineManager::on_minXSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setMinX(arg1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
 void EngineManager::on_minYSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setMinY(arg1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
 void EngineManager::on_minZSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setMinZ(arg1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
 void EngineManager::on_maxXSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setMaxX(arg1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
 void EngineManager::on_maxYSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setMaxY(arg1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
 void EngineManager::on_maxZSpinBox_valueChanged(double arg1) {
     if (b!=nullptr){
         b->setMaxZ(arg1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1424,7 +1424,7 @@ void EngineManager::on_reorderBoxes_clicked() {
         }
         std::cerr << "\n";
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1434,7 +1434,7 @@ void EngineManager::on_loadOriginalPushButton_clicked() {
         originalMesh.readFromObj(filename);
         if (! (mainWindow.contains(&originalMesh)))
             mainWindow.pushObj(&originalMesh, filename.substr(filename.find_last_of("/") + 1));
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1450,7 +1450,7 @@ void EngineManager::on_loadSmoothedPushButton_clicked() {
             d->setPointsShading();
             d->update();
             mainWindow.pushObj(d, filename.substr(filename.find_last_of("/") + 1));
-            mainWindow.updateGlCanvas();
+            mainWindow.canvas.update();
         }
         else {
             delete d;
@@ -1469,12 +1469,12 @@ void EngineManager::on_taubinPushButton_clicked() {
         d->setPointsShading();
         d->update();
         mainWindow.pushObj(d, "Smoothed Mesh");
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
     else {
         *d = DrawableDcel(Reconstruction::taubinSmoothing(*d, ui->nItersSpinBox->value(), ui->lambdaSpinBox->value(), ui->muSpinBox->value()));
         d->update();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }*/
 }
 
@@ -1583,7 +1583,7 @@ void EngineManager::on_reconstructionPushButton_clicked() {
         std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(*d, *he);
         Reconstruction::reconstruction(*d, mapping, originalMesh, *solutions, ui->internToHFCheckBox->isChecked());
         d->update();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1593,7 +1593,7 @@ void EngineManager::on_putBoxesAfterPushButton_clicked() {
         Box3D small = solutions->getBox(nbox);
         solutions->removeBox(nbox);
         solutions->addBox(small);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1635,7 +1635,7 @@ void EngineManager::on_snappingPushButton_clicked() {
         }
 
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 
 
@@ -1647,7 +1647,7 @@ void EngineManager::on_colorPiecesPushButton_clicked() {
         d->updateVertexNormals();
         Engine::colorPieces(*d, *he);
     }
-    mainWindow.updateGlCanvas();
+    mainWindow.canvas.update();
 }
 
 void EngineManager::on_deleteBoxesPushButton_clicked() {
@@ -1655,7 +1655,7 @@ void EngineManager::on_deleteBoxesPushButton_clicked() {
         Engine::minimalCovering(*solutions, *d);
 
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1670,7 +1670,7 @@ void EngineManager::on_pushButton_clicked() {
         Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
         updateColors(ui->toleranceSlider->value(), ui->areaToleranceSpinBox->value());
         d->update();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
     if (d!=nullptr){
         deleteDrawableObject(solutions);
@@ -1692,7 +1692,7 @@ void EngineManager::on_pushButton_clicked() {
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1717,7 +1717,7 @@ void EngineManager::on_explodePushButton_clicked() {
         double dist = ui->explodeSpinBox->value();
         Pointd bc = d->getBarycenter();
         he->explode(bc, dist);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1734,7 +1734,7 @@ void EngineManager::on_createBoxPushButton_clicked() {
     //solutions->getBox(value);
     //b = new Box3D(solutions->getBox(value));
     //mainWindow.pushObj(b, "Box");
-    mainWindow.updateGlCanvas();
+    mainWindow.canvas.update();
 }
 
 void EngineManager::on_coveredTrianglesPushButton_clicked() {
@@ -1756,7 +1756,7 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
             std::set<const Dcel::Face*> lonelyTriangles = trianglesCovered[i];
             for (unsigned int j = 0; j < solutions->getNumberBoxes(); j++){
                 if (j != i){
-                    lonelyTriangles = setDifference(lonelyTriangles, trianglesCovered[j]);
+                    lonelyTriangles = cg3::difference(lonelyTriangles, trianglesCovered[j]);
                 }
             }
             //assert(lonelyTriangles.size() > 0);
@@ -1768,7 +1768,7 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
         d->update();
         d->saveOnObjFile("boxes/MeshTriangles.obj");
 
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 
 }
@@ -1776,7 +1776,7 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
 void EngineManager::on_drawBoxMeshCheckBox_stateChanged(int arg1) {
     if (solutions!=nullptr){
         solutions->visualizeEigenMeshBox(arg1==Qt::Checked);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1800,8 +1800,8 @@ void EngineManager::on_globalOptimalOrientationPushButton_clicked() {
     if (d != nullptr){
         Engine::findOptimalOrientation(*d, originalMesh);
         d->update();
-        mainWindow.fitScene();
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.fitScene();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1810,7 +1810,7 @@ void EngineManager::on_experimentButton_clicked() {
         Engine::mergePostProcessing(*he, *solutions, *baseComplex, *d, ui->mergeDownwardsCheckBox->isChecked());
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->heightfieldsSlider->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 
 }
@@ -1828,7 +1828,7 @@ void EngineManager::on_createBox2PushButton_clicked() {
     //solutions->getBox(value);
     //b = new Box3D(solutions->getBox(value));
     //mainWindow.pushObj(b, "Box");
-    mainWindow.updateGlCanvas();
+    mainWindow.canvas.update();
 }
 
 void EngineManager::on_restoreBoxesPushButton_clicked() {
@@ -1842,8 +1842,8 @@ void EngineManager::on_restoreBoxesPushButton_clicked() {
     ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
     ui->solutionsSlider->setValue(0);
     splittedBoxesToOriginals.clear();
-    mainWindow.updateGlCanvas();
-    mainWindow.fitScene();
+    mainWindow.canvas.update();
+    mainWindow.canvas.fitScene();
 }
 
 void EngineManager::on_pushPriorityBoxButton_clicked() {
@@ -1875,7 +1875,7 @@ void EngineManager::on_deleteBlockPushButton_clicked() {
         he->removeHeightfield(index);
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->heightfieldsSlider->setMaximum(he->getNumHeightfields()-1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -1945,7 +1945,7 @@ void EngineManager::on_sdfPushButton_clicked() {
             ui->listLabel->setText(QString::fromStdString(s + (s == "" ? "" : "; ") + std::to_string(id)));
         }*/
     }
-    mainWindow.updateGlCanvas();
+    mainWindow.canvas.update();
 }
 
 void EngineManager::on_deleteBoxPushButton_clicked() {
@@ -1988,7 +1988,7 @@ void EngineManager::on_rotatePushButton_clicked() {
         originalMesh.rotate(m);
         originalMesh.updateFacesAndVerticesNormals();
         baseComplex->rotate(m);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
@@ -2053,7 +2053,7 @@ void EngineManager::on_tinyFeaturesPushButton_clicked() {
             }
         } while (inserted);
     }
-    mainWindow.updateGlCanvas();
+    mainWindow.canvas.update();
 }
 
 void EngineManager::on_mergePushButton_clicked() {
@@ -2061,7 +2061,7 @@ void EngineManager::on_mergePushButton_clicked() {
         Engine::mergePostProcessing(*he, *solutions, *baseComplex, *d, ui->mergeDownwardsCheckBox->isChecked());
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->heightfieldsSlider->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow.updateGlCanvas();
+        mainWindow.canvas.update();
     }
 }
 
