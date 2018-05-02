@@ -20,6 +20,7 @@ the input model within a user given tolerance. We demonstrate our method on a ra
 using our technique.
 
 [PDF](misc/paper.pdf)
+[Results](misc/results/)
 
 ## Source Code
 Source code is hosted on this GitHub repository. The program is built and tested on Ubuntu 18.04 system with GCC 7.3.
@@ -34,9 +35,9 @@ sudo apt-get install qt5-default
 sudo apt-get install libboost-all-dev libcgal-dev libgmp-dev libqglviewer-dev-qt5 libeigen3-dev
 ```
 
-clone libigl and create an environment variable named LIBIGL_HOME containing its directory (https://github.com/libigl/libigl/)-> eigenmesh module
+clone libigl and create an environment variable named LIBIGL_HOME containing its directory (https://github.com/libigl/libigl/)
 install gurobi and create an environment variable named GUROBI_HOME containing its directory (https://www.gurobi.com/)
-clone cinolib and create an environment variable named CINOLIB_HOME containing its directory (https://github.com/maxicino/cinolib) ->cinolib.pri
+clone cinolib and create an environment variable named CINOLIB_HOME containing its directory (https://github.com/maxicino/cinolib)
 
 ```bash
 qmake HeightFieldDecomposition.pro

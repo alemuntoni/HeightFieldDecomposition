@@ -25,6 +25,7 @@ SERVER_MODE {
     CONFIG += FINAL_RELEASE
 }
 
+#my configurations, ignore them:
 SERVER_HOME {
     DEFINES += SERVER_HOME
     CONFIG += FINAL_RELEASE
