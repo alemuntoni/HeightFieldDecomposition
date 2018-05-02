@@ -29,8 +29,6 @@ class DrawableGrid: public Grid, public cg3::DrawableObject
         void draw() const;
         cg3::Pointd sceneCenter() const;
         double sceneRadius() const;
-        bool isVisible() const;
-        void setVisible(bool b);
 
         void addCube(const cg3::BoundingBox &bb);
         void deleteCubes();
@@ -51,7 +49,6 @@ class DrawableGrid: public Grid, public cg3::DrawableObject
             NO_SLICE = 0, X_SLICE = 1, Y_SLICE = 2, Z_SLICE = 3
         };
 
-        bool visible;
         double kernelDistance;
         int drawMode;
         int slice;

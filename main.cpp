@@ -564,11 +564,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    gui.setCurrentIndexToolBox(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
+    gui.setCurrentManager(ENGINE_MANAGER_ID); // il dcel manager sarà quello visualizzato di default
     gui.canvas.update();
     gui.show();
-    gui.canvas.setAxisIsDrawn(true);
-    gui.canvas.update();
 
     return app.exec();
     #endif

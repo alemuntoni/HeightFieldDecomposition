@@ -11,8 +11,6 @@ class HeightfieldsList : public cg3::DrawableObject, cg3::SerializableObject{
         void draw() const;
         cg3::Pointd sceneCenter() const;
         double sceneRadius() const;
-        bool isVisible() const;
-        void setVisible(bool b);
         void setVisibleHeightfield(int i);
         void resize(int n);
         unsigned int getNumberVerticesHeightfield(int i) const;
@@ -42,7 +40,6 @@ class HeightfieldsList : public cg3::DrawableObject, cg3::SerializableObject{
     private:
         std::vector<cg3::DrawableEigenMesh> heightfields;
         std::vector<cg3::Vec3> targets;
-        bool visible;
         int nVisible;
 };
 

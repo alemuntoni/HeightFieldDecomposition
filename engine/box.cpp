@@ -347,14 +347,6 @@ double Box3D::sceneRadius() const {
     return diag();
 }
 
-bool Box3D::isVisible() const {
-    return visible;
-}
-
-void Box3D::setVisible(bool b) {
-    visible = b;
-}
-
 void Box3D::serialize(std::ofstream& binaryFile) const {
     BoundingBox::serialize(binaryFile);
     serializeObjectAttributes("box", binaryFile, c1, c2, c3, color, visible, target, rotation, id, piece, trianglesCovered);

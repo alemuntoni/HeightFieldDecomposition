@@ -65,8 +65,6 @@ class Box3D : public cg3::BoundingBox, public cg3::DrawableObject{
         void draw() const;
         cg3::Pointd sceneCenter() const;
         double sceneRadius() const;
-        bool isVisible() const;
-        void setVisible(bool b);
 
         // SerializableObject interface
         void serialize(std::ofstream& binaryFile) const;

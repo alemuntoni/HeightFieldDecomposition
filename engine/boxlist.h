@@ -54,14 +54,11 @@ class BoxList : public cg3::DrawableObject, cg3::SerializableObject{
         void draw() const;
         cg3::Pointd sceneCenter() const;
         double sceneRadius() const;
-        bool isVisible() const;
-        void setVisible(bool b);
 
     private:
         std::vector<Box3D> boxes;
 
         //visualization
-        bool visible;
         int visibleBox;
         bool cylinder;
         bool eigenMesh;

@@ -3,10 +3,10 @@
 
 using namespace cg3;
 
-BoxList::BoxList() : visible(true), visibleBox(-1), cylinder(true), eigenMesh(false){
+BoxList::BoxList() : visibleBox(-1), cylinder(true), eigenMesh(false){
 }
 
-BoxList::BoxList(bool cylinders) : visible(true), visibleBox(-1), cylinder(cylinders), eigenMesh(false){
+BoxList::BoxList(bool cylinders) : visibleBox(-1), cylinder(cylinders), eigenMesh(false){
 }
 
 void BoxList::addBox(const Box3D& b, int i) {
@@ -233,20 +233,18 @@ void BoxList::visualizeEigenMeshBox(bool b) {
 
 void BoxList::draw() const {
     #ifdef CG3_VIEWER_DEFINED
-    if (visible){
-        if (visibleBox < 0){
-            for (unsigned int i = 0; i < boxes.size(); i++)
-                boxes[i].draw();
-        }
-        else {
+    if (visibleBox < 0){
+        for (unsigned int i = 0; i < boxes.size(); i++)
+            boxes[i].draw();
+    }
+    else {
 
-            boxes[visibleBox].draw();
-            if (eigenMesh){
-                DrawableEigenMesh dm(boxes[visibleBox].getEigenMesh());
-                //dm.setWireframe(true);
-                //dm.setPointsShading();
-                dm.draw();
-            }
+        boxes[visibleBox].draw();
+        if (eigenMesh){
+            DrawableEigenMesh dm(boxes[visibleBox].getEigenMesh());
+            //dm.setWireframe(true);
+            //dm.setPointsShading();
+            dm.draw();
         }
     }
     #endif
@@ -268,14 +266,6 @@ double BoxList::sceneRadius() const {
         bb.max() = bb.max().max(boxes[i].max());
     }
     return bb.diag() / 2;
-}
-
-bool BoxList::isVisible() const {
-    return visible;
-}
-
-void BoxList::setVisible(bool b) {
-    visible = b;
 }
 
 #ifdef CG3_VIEWER_DEFINED

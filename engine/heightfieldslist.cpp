@@ -3,19 +3,17 @@
 
 using namespace cg3;
 
-HeightfieldsList::HeightfieldsList() : visible(true), nVisible(-1) {
+HeightfieldsList::HeightfieldsList() : nVisible(-1) {
 }
 
 void HeightfieldsList::draw() const {
-    if (visible){
-        if (nVisible < 0){
-            for (unsigned int i = 0; i < heightfields.size(); ++i){
-                heightfields[i].draw();
-            }
+    if (nVisible < 0){
+        for (unsigned int i = 0; i < heightfields.size(); ++i){
+            heightfields[i].draw();
         }
-        else {
-            heightfields[nVisible].draw();
-        }
+    }
+    else {
+        heightfields[nVisible].draw();
     }
 }
 
@@ -35,14 +33,6 @@ double HeightfieldsList::sceneRadius() const {
         bb.max() = bb.max().max(heightfields[i].getBoundingBox().max());
     }
     return bb.diag() / 2;
-}
-
-bool HeightfieldsList::isVisible() const {
-    return visible;
-}
-
-void HeightfieldsList::setVisible(bool b) {
-    visible = b;
 }
 
 void HeightfieldsList::setVisibleHeightfield(int i) {

@@ -3,15 +3,15 @@
 
 using namespace cg3;
 
-DrawableGrid::DrawableGrid() : visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2){
+DrawableGrid::DrawableGrid() : drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2){
 }
 
-DrawableGrid::DrawableGrid(const Grid& g) : Grid(g), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2){
+DrawableGrid::DrawableGrid(const Grid& g) : Grid(g), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2){
     minSignedDistance = signedDistances.min();
 }
 
 DrawableGrid::DrawableGrid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
-    Grid(resolution, gridCoordinates, signedDistances, gMin, gMax), visible(true), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2) {
+    Grid(resolution, gridCoordinates, signedDistances, gMin, gMax), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2) {
     minSignedDistance = signedDistances.min();
 }
 
@@ -80,127 +80,125 @@ double DrawableGrid::getHsvVFactor(double w) const {
 }
 
 void DrawableGrid::draw() const {
-    if (visible){
-        double xi, yi, zi;
-        switch (drawMode){
-            case DRAW_KERNEL:
-                switch (slice){
-                    case NO_SLICE:
-                        for (unsigned int i = 0; i < getResX(); ++i){
-                            for (unsigned int j = 0; j < getResY(); ++j){
-                                for (unsigned int k = 0; k < getResZ(); ++k){
-                                    if (getSignedDistance(i,j,k) < -kernelDistance){
-                                        opengl::drawSphere(getPoint(i,j,k), 0.3, QColor(255,0,0));
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case X_SLICE:
+    double xi, yi, zi;
+    switch (drawMode){
+        case DRAW_KERNEL:
+            switch (slice){
+                case NO_SLICE:
+                    for (unsigned int i = 0; i < getResX(); ++i){
                         for (unsigned int j = 0; j < getResY(); ++j){
                             for (unsigned int k = 0; k < getResZ(); ++k){
-                                if (getSignedDistance(sliceValue,j,k) < -kernelDistance){
-                                    opengl::drawSphere(getPoint(sliceValue,j,k), 0.3, QColor(255,0,0));
+                                if (getSignedDistance(i,j,k) < -kernelDistance){
+                                    opengl::drawSphere(getPoint(i,j,k), 0.3, QColor(255,0,0));
                                 }
                             }
                         }
-                        break;
-                    case Y_SLICE:
-                        for (unsigned int i = 0; i < getResX(); ++i){
-                            for (unsigned int k = 0; k < getResZ(); ++k){
-                                if (getSignedDistance(i,sliceValue,k) < -kernelDistance){
-                                    opengl::drawSphere(getPoint(i,sliceValue,k), 0.3, QColor(255,0,0));
-                                }
+                    }
+                    break;
+                case X_SLICE:
+                    for (unsigned int j = 0; j < getResY(); ++j){
+                        for (unsigned int k = 0; k < getResZ(); ++k){
+                            if (getSignedDistance(sliceValue,j,k) < -kernelDistance){
+                                opengl::drawSphere(getPoint(sliceValue,j,k), 0.3, QColor(255,0,0));
                             }
                         }
-                        break;
-                    case Z_SLICE:
-                        for (unsigned int i = 0; i < getResX(); ++i){
-                            for (unsigned int j = 0; j < getResY(); ++j){
-                                if (getSignedDistance(i,j,sliceValue) < -kernelDistance){
-                                    opengl::drawSphere(getPoint(i,j,sliceValue), 0.3, QColor(255,0,0));
-                                }
+                    }
+                    break;
+                case Y_SLICE:
+                    for (unsigned int i = 0; i < getResX(); ++i){
+                        for (unsigned int k = 0; k < getResZ(); ++k){
+                            if (getSignedDistance(i,sliceValue,k) < -kernelDistance){
+                                opengl::drawSphere(getPoint(i,sliceValue,k), 0.3, QColor(255,0,0));
                             }
                         }
-                        break;
-                }
-                break;
-            case DRAW_WEIGHTS:
-                switch (slice){
-                    case NO_SLICE:
-                        for (unsigned int i = 0; i < getResX(); i+=2){
-                            for (unsigned int j = 0; j < getResY(); j+=2){
-                                for (unsigned int k = 0; k < getResZ(); k+=2){
-                                    double w = getWeight(i,j,k);
-                                    QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                    opengl::drawSphere(getPoint(i,j,k), 0.3, c);
-                                }
-                            }
-                        }
-                        break;
-                    case X_SLICE:
+                    }
+                    break;
+                case Z_SLICE:
+                    for (unsigned int i = 0; i < getResX(); ++i){
                         for (unsigned int j = 0; j < getResY(); ++j){
-                            for (unsigned int k = 0; k < getResZ(); ++k){
-                                double w = getWeight(sliceValue,j,k);
+                            if (getSignedDistance(i,j,sliceValue) < -kernelDistance){
+                                opengl::drawSphere(getPoint(i,j,sliceValue), 0.3, QColor(255,0,0));
+                            }
+                        }
+                    }
+                    break;
+            }
+            break;
+        case DRAW_WEIGHTS:
+            switch (slice){
+                case NO_SLICE:
+                    for (unsigned int i = 0; i < getResX(); i+=2){
+                        for (unsigned int j = 0; j < getResY(); j+=2){
+                            for (unsigned int k = 0; k < getResZ(); k+=2){
+                                double w = getWeight(i,j,k);
                                 QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                opengl::drawSphere(getPoint(sliceValue,j,k), 0.4, c);
+                                opengl::drawSphere(getPoint(i,j,k), 0.3, c);
                             }
                         }
-                        xi = getPoint(sliceValue, 0, 0).x();
+                    }
+                    break;
+                case X_SLICE:
+                    for (unsigned int j = 0; j < getResY(); ++j){
+                        for (unsigned int k = 0; k < getResZ(); ++k){
+                            double w = getWeight(sliceValue,j,k);
+                            QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
+                            opengl::drawSphere(getPoint(sliceValue,j,k), 0.4, c);
+                        }
+                    }
+                    xi = getPoint(sliceValue, 0, 0).x();
+                    for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
+                        for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
+                            double w = getValue(Pointd(xi,yi,zi));
+                            QColor c;
+                            c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
+                            opengl::drawSphere(Pointd(xi,yi,zi), 0.2, c);
+                        }
+                    }
+                    break;
+                case Y_SLICE:
+                    for (unsigned int i = 0; i < getResX(); ++i){
+                        for (unsigned int k = 0; k < getResZ(); ++k){
+                            double w = getWeight(i,sliceValue,k);
+                            QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
+                            opengl::drawSphere(getPoint(i,sliceValue,k), 0.4, c);
+                        }
+                    }
+                    yi = getPoint(0,sliceValue,0).y();
+                    for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
+                        for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
+                            double w = getValue(Pointd(xi,yi,zi));
+                            QColor c;
+                            c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
+                            opengl::drawSphere(Pointd(xi,yi,zi), 0.2, c);
+                        }
+                    }
+                    break;
+                case Z_SLICE:
+                    for (unsigned int i = 0; i < getResX(); ++i){
+                        for (unsigned int j = 0; j < getResY(); ++j){
+                            double w = getWeight(i,j,sliceValue);
+                            QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
+                            opengl::drawSphere(getPoint(i,j,sliceValue), 0.4, c);
+                        }
+                    }
+                    zi = getPoint(0,0,sliceValue).z();
+                    for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
                         for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
-                            for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
-                                double w = getValue(Pointd(xi,yi,zi));
-                                QColor c;
-                                c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                                opengl::drawSphere(Pointd(xi,yi,zi), 0.2, c);
-                            }
+                            double w = getValue(Pointd(xi,yi,zi));
+                            QColor c;
+                            c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
+                            opengl::drawSphere(Pointd(xi,yi,zi), 0.2, c);
                         }
-                        break;
-                    case Y_SLICE:
-                        for (unsigned int i = 0; i < getResX(); ++i){
-                            for (unsigned int k = 0; k < getResZ(); ++k){
-                                double w = getWeight(i,sliceValue,k);
-                                QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                opengl::drawSphere(getPoint(i,sliceValue,k), 0.4, c);
-                            }
-                        }
-                        yi = getPoint(0,sliceValue,0).y();
-                        for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
-                            for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
-                                double w = getValue(Pointd(xi,yi,zi));
-                                QColor c;
-                                c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                                opengl::drawSphere(Pointd(xi,yi,zi), 0.2, c);
-                            }
-                        }
-                        break;
-                    case Z_SLICE:
-                        for (unsigned int i = 0; i < getResX(); ++i){
-                            for (unsigned int j = 0; j < getResY(); ++j){
-                                double w = getWeight(i,j,sliceValue);
-                                QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
-                                opengl::drawSphere(getPoint(i,j,sliceValue), 0.4, c);
-                            }
-                        }
-                        zi = getPoint(0,0,sliceValue).z();
-                        for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
-                            for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
-                                double w = getValue(Pointd(xi,yi,zi));
-                                QColor c;
-                                c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                                opengl::drawSphere(Pointd(xi,yi,zi), 0.2, c);
-                            }
-                        }
-                        break;
-                }
-                break;
-            default:
-                assert(0);
-        }
+                    }
+                    break;
+            }
+            break;
+        default:
+            assert(0);
+    }
 
-        for (unsigned int i = 0; i < cubes.size(); ++i){
-            drawCube(cubes[i]);
-        }
+    for (unsigned int i = 0; i < cubes.size(); ++i){
+        drawCube(cubes[i]);
     }
 }
 
@@ -210,14 +208,6 @@ Pointd DrawableGrid::sceneCenter() const {
 
 double DrawableGrid::sceneRadius() const {
    return bb.diag() / 2;
-}
-
-bool DrawableGrid::isVisible() const {
-    return visible;
-}
-
-void DrawableGrid::setVisible(bool b) {
-    visible = b;
 }
 
 void DrawableGrid::addCube(const BoundingBox& bb) {

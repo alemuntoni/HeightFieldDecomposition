@@ -46,7 +46,7 @@ EngineManager::EngineManager(QWidget *parent) :
 void EngineManager::deleteDrawableObject(DrawableObject* d) {
     if (d != nullptr) {
         //d->setVisible(false);
-        mainWindow.deleteObj(d);
+        mainWindow.deleteDrawableObject(d);
         delete d;
         d = nullptr;
     }
@@ -174,8 +174,8 @@ void EngineManager::deserializeBC(const std::string &filename) {
         he = new HeightfieldsList(tmphe);
         ui->solutionNumberLabel->setText(QString::fromStdString(std::to_string(he->getNumHeightfields())));
 
-        mainWindow.pushObj(baseComplex, "Base Complex");
-        mainWindow.pushObj(he, "Heightfields");
+        mainWindow.pushDrawableObject(baseComplex, "Base Complex");
+        mainWindow.pushDrawableObject(he, "Heightfields");
         mainWindow.canvas.update();
         mainWindow.canvas.fitScene();
         ui->showAllSolutionsCheckBox->setEnabled(true);
@@ -193,10 +193,10 @@ void EngineManager::deserializeBC(const std::string &filename) {
             ui->listLabel->setText(QString::fromStdString(s + std::to_string(i) + "; "));
         }
 
-        mainWindow.setObjVisibility(d, false);
-        mainWindow.setObjVisibility(&originalMesh, false);
-        mainWindow.setObjVisibility(solutions, false);
-        mainWindow.setObjVisibility(baseComplex, false);
+        mainWindow.setDrawableObjectVisibility(d, false);
+        mainWindow.setDrawableObjectVisibility(&originalMesh, false);
+        mainWindow.setDrawableObjectVisibility(solutions, false);
+        mainWindow.setDrawableObjectVisibility(baseComplex, false);
         //BU
         /*Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(0,0,1), M_PI/2);
         he->rotate(m);
@@ -324,9 +324,9 @@ void EngineManager::deserialize(std::ifstream& binaryFile) {
         ui->distanceSpinBox->setValue(kernel);
 
         ////
-        mainWindow.pushObj(d, "Input Mesh");
-        mainWindow.pushObj(&originalMesh, "Original Mesh");
-        mainWindow.pushObj(solutions, "Solutions");
+        mainWindow.pushDrawableObject(d, "Input Mesh");
+        mainWindow.pushDrawableObject(&originalMesh, "Original Mesh");
+        mainWindow.pushDrawableObject(solutions, "Solutions");
 
         d->setWireframe(true);
         d->setPointsShading();
@@ -367,7 +367,7 @@ void EngineManager::on_generateGridPushButton_clicked() {
         g->updateMinSignedDistance();
         g->setKernelDistance(ui->distanceSpinBox->value());
         e = Energy(*g);
-        mainWindow.pushObj(g, "Grid");
+        mainWindow.pushDrawableObject(g, "Grid");
         mainWindow.canvas.update();
     }
 }
@@ -807,7 +807,7 @@ void EngineManager::on_minimizePushButton_clicked() {
             t.stopAndPrint();
             iterations->setVisibleBox(0);
             ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
-            mainWindow.pushObj(iterations, "Iterations");
+            mainWindow.pushDrawableObject(iterations, "Iterations");
 
             double energy = e.energy(iterations->getBox(0));
             updateLabel(energy, ui->energyIterationLabel);
@@ -836,7 +836,7 @@ void EngineManager::on_BFGSButton_clicked() {
             t.stopAndPrint();
             iterations->setVisibleBox(0);
             ui->iterationsSlider->setMaximum(iterations->getNumberBoxes()-1);
-            mainWindow.pushObj(iterations, "Iterations");
+            mainWindow.pushDrawableObject(iterations, "Iterations");
 
             double energy = e.energy(iterations->getBox(0));
             updateLabel(energy, ui->energyIterationLabel);
@@ -867,7 +867,7 @@ void EngineManager::on_serializeBoxPushButton_clicked() {
 void EngineManager::on_deserializeBoxPushButton_clicked() {
     if (b == nullptr){
         b = new Box3D();
-        mainWindow.pushObj(b, "Box", false);
+        mainWindow.pushDrawableObject(b, "Box", false);
     }
 
     std::ifstream myfile;
@@ -930,7 +930,7 @@ void EngineManager::on_setFromSolutionButton_clicked() {
         if (value < solutions->getNumberBoxes()){
             if (b == nullptr){
                 b = new Box3D(solutions->getBox(value));
-                mainWindow.pushObj(b, "Box");
+                mainWindow.pushDrawableObject(b, "Box");
             }
             b->setMin(solutions->getBox(value).getMin());
             b->setMax(solutions->getBox(value).getMax());
@@ -954,7 +954,7 @@ void EngineManager::on_setFromSolutionButton_clicked() {
             const Dcel::Face* f = d->getFace(value);
             if (b == nullptr){
                 b = new Box3D(solutions->getBox(value));
-                mainWindow.pushObj(b, "Box");
+                mainWindow.pushDrawableObject(b, "Box");
             }
             Box3D box;
             box.setTarget(nearestNormal(f->getNormal()));
@@ -1161,12 +1161,12 @@ void EngineManager::on_subtractPushButton_clicked() {
         deleteDrawableObject(baseComplex);
         EigenMesh m = (Dcel)*d;
         baseComplex = new DrawableEigenMesh(m);
-        mainWindow.pushObj(baseComplex, "Base Complex");
+        mainWindow.pushDrawableObject(baseComplex, "Base Complex");
         deleteDrawableObject(he);
         //deleteDrawableObject(entirePieces);
         he = new HeightfieldsList();
         //entirePieces = new HeightfieldsList();
-        mainWindow.pushObj(he, "Heightfields");
+        mainWindow.pushDrawableObject(he, "Heightfields");
         //mainWindow.pushObj(entirePieces, "Entire Pieces");
         mainWindow.canvas.update();
         SimpleEigenMesh bc((SimpleEigenMesh)*baseComplex);
@@ -1202,7 +1202,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
         ui->setFromSolutionSpinBox->setValue(0);
         ui->setFromSolutionSpinBox->setMaximum(solutions->getNumberBoxes()-1);
-        mainWindow.deleteObj(baseComplex);
+        mainWindow.deleteDrawableObject(baseComplex);
         delete baseComplex;
         baseComplex = new DrawableEigenMesh(bc);
         baseComplex->updateFaceNormals();
@@ -1212,7 +1212,7 @@ void EngineManager::on_subtractPushButton_clicked() {
             Color c = colorOfNearestNormal(n);
             baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
         }
-        mainWindow.pushObj(baseComplex, "Base Complex");
+        mainWindow.pushDrawableObject(baseComplex, "Base Complex");
         mainWindow.canvas.update();
     }
 }
@@ -1230,7 +1230,7 @@ void EngineManager::on_stickPushButton_clicked() {
             Color c = colorOfNearestNormal(n);
             baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
         }
-        mainWindow.pushObj(baseComplex, "Base Complex");
+        mainWindow.pushDrawableObject(baseComplex, "Base Complex");
     }
     mainWindow.canvas.update();
 }
@@ -1270,7 +1270,7 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
     if (d!=nullptr){
         deleteDrawableObject(solutions);
         solutions = new BoxList();
-        mainWindow.pushObj(solutions, "Solutions");
+        mainWindow.pushDrawableObject(solutions, "Solutions");
         double kernelDistance = ui->distanceSpinBox->value();
         Timer t("Total Time Grids and Minimization Boxes");
         /// here d is already scaled!!
@@ -1386,7 +1386,7 @@ void EngineManager::on_cleanAllPushButton_clicked() {
     deleteDrawableObject(he);
     deleteDrawableObject(b2);
     if (originalMesh.getNumberVertices()>0){
-        mainWindow.deleteObj(&originalMesh);
+        mainWindow.deleteDrawableObject(&originalMesh);
         originalMesh.clear();
     }
     g = nullptr;
@@ -1432,8 +1432,8 @@ void EngineManager::on_loadOriginalPushButton_clicked() {
     std::string filename = objls.loadDialog();
     if (filename != "") {
         originalMesh.readFromObj(filename);
-        if (! (mainWindow.contains(&originalMesh)))
-            mainWindow.pushObj(&originalMesh, filename.substr(filename.find_last_of("/") + 1));
+        if (! (mainWindow.containsDrawableObject(&originalMesh)))
+            mainWindow.pushDrawableObject(&originalMesh, filename.substr(filename.find_last_of("/") + 1));
         mainWindow.canvas.update();
     }
 }
@@ -1449,7 +1449,7 @@ void EngineManager::on_loadSmoothedPushButton_clicked() {
             d->setWireframe(true);
             d->setPointsShading();
             d->update();
-            mainWindow.pushObj(d, filename.substr(filename.find_last_of("/") + 1));
+            mainWindow.pushDrawableObject(d, filename.substr(filename.find_last_of("/") + 1));
             mainWindow.canvas.update();
         }
         else {
@@ -1675,7 +1675,7 @@ void EngineManager::on_pushButton_clicked() {
     if (d!=nullptr){
         deleteDrawableObject(solutions);
         solutions = new BoxList();
-        mainWindow.pushObj(solutions, "Solutions");
+        mainWindow.pushDrawableObject(solutions, "Solutions");
         double kernelDistance = ui->distanceSpinBox->value();
         Timer t("Total Time Grids and Minimization Boxes");
         /// here d is already scaled!!
@@ -1728,7 +1728,7 @@ void EngineManager::on_createBoxPushButton_clicked() {
         b->setConstraint2(Pointd(1.5, 1.5, 1));
         b->setConstraint3(Pointd(1, 1.5, 1));
         b->setColor(Color(0,0,0));
-        mainWindow.pushObj(b, "Box");
+        mainWindow.pushDrawableObject(b, "Box");
     }
     //deleteDrawableObject(b);
     //solutions->getBox(value);
@@ -1786,7 +1786,7 @@ void EngineManager::on_markerMeshPushButton_clicked() {
         markerMesh.setPointsShading();
         markerMesh.setWireframe(true);
         markerMesh.setWireframeWidth(4);
-        mainWindow.pushObj(&markerMesh, "MarkerMesh");
+        mainWindow.pushDrawableObject(&markerMesh, "MarkerMesh");
     }
 }
 
@@ -1822,7 +1822,7 @@ void EngineManager::on_createBox2PushButton_clicked() {
         b2->setConstraint2(Pointd(1.5, 1.5, 1));
         b2->setConstraint3(Pointd(1, 1.5, 1));
         b2->setColor(Color(0,0,0));
-        mainWindow.pushObj(b2, "Box2");
+        mainWindow.pushDrawableObject(b2, "Box2");
     }
     //deleteDrawableObject(b);
     //solutions->getBox(value);
@@ -1838,7 +1838,7 @@ void EngineManager::on_restoreBoxesPushButton_clicked() {
     baseComplex = nullptr;
     he = nullptr;
     solutions = new BoxList(originalSolutions);
-    mainWindow.pushObj(solutions, "Boxes");
+    mainWindow.pushDrawableObject(solutions, "Boxes");
     ui->solutionsSlider->setMaximum(solutions->getNumberBoxes()-1);
     ui->solutionsSlider->setValue(0);
     splittedBoxesToOriginals.clear();
