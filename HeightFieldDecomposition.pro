@@ -98,4 +98,4 @@ FORMS += \
     GUI/managers/enginemanager.ui
 
 DISTFILES += \
-    README.txt
+    README.md
