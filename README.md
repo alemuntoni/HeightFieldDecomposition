@@ -3,7 +3,7 @@
 [Alessandro Muntoni](http://people.unica.it/alessandromuntoni/), [Marco Livesu](http://www.imati.cnr.it/index.php/marco-livesu), [Riccardo Scateni](http://people.unica.it/riccardoscateni/), [Alla Sheffer](https://www.cs.ubc.ca/~sheffa/), [Daniele Panozzo](http://cs.nyu.edu/~panozzo/)<br/>
 *ACM Transaction on Graphics (2018)*<br/>
 
-![alt text](https://github.com/muntonialessandro/HeightFieldDecomposition/master/misc/teaser.png)
+![alt text](misc/teaser.png)
 
 ## Abstract
 We propose a novel algorithm for decomposing general 3D geometries into a small set of overlap-free height-field blocks, volumes enclosed by a
@@ -19,7 +19,7 @@ combination of cycle elimination and topological sorting. The combined algorithm
 the input model within a user given tolerance. We demonstrate our method on a range of inputs, and showcase a number of real life models manufactured
 using our technique.
 
-[PDF](https://github.com/muntonialessandro/HeightFieldDecomposition/master/misc/paper.pdf)
+[PDF](misc/paper.pdf)
 
 ## Source Code
 Source code is hosted on this GitHub repository. The program is built and tested on Ubuntu 18.04 system with GCC 7.3.
