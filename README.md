@@ -19,8 +19,8 @@ combination of cycle elimination and topological sorting. The combined algorithm
 the input model within a user given tolerance. We demonstrate our method on a range of inputs, and showcase a number of real life models manufactured
 using our technique.
 
-[PDF](misc/paper.pdf)
-[Results](misc/results/)
+\[[Paper](misc/paper.pdf)\]
+\[[Data](misc/results/)\]
 
 ## Source Code
 Source code is hosted on this GitHub repository. The program is built and tested on Ubuntu 18.04 system with GCC 7.3.
@@ -45,7 +45,8 @@ make
 ```
 
 ## License
-GNU General Public License v3.0
+[MPL2](http://www.mozilla.org/MPL/2.0/) licensed
+([FAQ](http://www.mozilla.org/MPL/2.0/FAQ.html))
 
 
 
