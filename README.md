@@ -19,7 +19,7 @@ combination of cycle elimination and topological sorting. The combined algorithm
 the input model within a user given tolerance. We demonstrate our method on a range of inputs, and showcase a number of real life models manufactured
 using our technique.
 
-\[[Paper](misc/paper.pdf)\]ù
+\[[Paper](misc/paper.pdf)\]
 \[[Web Site](http://pers.ge.imati.cnr.it/livesu/papers/MLSSP18/MLSSP18.html)\]
 \[[Data](misc/results/)\]
 
