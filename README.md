@@ -1,6 +1,6 @@
 # Axis-Aligned Height-Field Block Decomposition of 3D Shapes
 
-[Alessandro Muntoni](http://people.unica.it/alessandromuntoni/), [Marco Livesu](http://pers.ge.imati.cnr.it/livesu/), [Riccardo Scateni](http://people.unica.it/riccardoscateni/), [Alla Sheffer](https://www.cs.ubc.ca/~sheffa/), [Daniele Panozzo](http://cs.nyu.edu/~panozzo/)<br/>
+[Alessandro Muntoni](http://vcg.isti.cnr.it/~muntoni/), [Marco Livesu](http://pers.ge.imati.cnr.it/livesu/), [Riccardo Scateni](http://people.unica.it/riccardoscateni/), [Alla Sheffer](https://www.cs.ubc.ca/~sheffa/), [Daniele Panozzo](http://cs.nyu.edu/~panozzo/)<br/>
 *ACM Transaction on Graphics (2018)*<br/>
 
 ![alt text](misc/teaser.png)
