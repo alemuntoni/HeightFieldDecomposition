@@ -9,36 +9,39 @@ CONFIG(release, debug|release){
 
 #CONFIG += c++14
 
+DESTDIR = release
+
 CONFIG += ALL
-#CONFIG += SERVER_MODE
-#CONFIG += CONVERTER_MODE
+CONFIG += SERVER_MODE
 
 ALL {
-    #CONFIG += USE_LIBIGL_EIGEN
     CONFIG += CG3_ALL
-    #CONFIG += CG3_DEVELOPMENT
     include(cg3lib/cg3.pri)
 }
 
 SERVER_MODE {
     DEFINES += SERVER_MODE
     CONFIG += FINAL_RELEASE
+    message(Server mode!)
+}
+!SERVER_MODE {
+    message(GUI mode)
 }
 
 #my configurations, ignore them:
-SERVER_HOME {
-    DEFINES += SERVER_HOME
-    CONFIG += FINAL_RELEASE
-}
+#SERVER_HOME {
+#    DEFINES += SERVER_HOME
+#    CONFIG += FINAL_RELEASE
+#}
 
-SERVER_AFTER {
-    DEFINES += SERVER_AFTER
-    CONFIG += FINAL_RELEASE
-}
+#SERVER_AFTER {
+#    DEFINES += SERVER_AFTER
+#    CONFIG += FINAL_RELEASE
+#}
 
-CONVERTER_MODE {
-    DEFINES += CONVERTER_MODE
-}
+#CONVERTER_MODE {
+#    DEFINES += CONVERTER_MODE
+#}
 
 message(Included modules: $$MODULES)
 FINAL_RELEASE {
@@ -55,7 +58,7 @@ FINAL_RELEASE {
 exists($$(GUROBI_HOME)){
     message (Gurobi)
     INCLUDEPATH += $$(GUROBI_HOME)/include
-    LIBS += -L$$(GUROBI_HOME)/lib -lgurobi_g++5.2 -lgurobi75
+    LIBS += -L$$(GUROBI_HOME)/lib -lgurobi_g++5.2 -lgurobi90
     DEFINES += GUROBI_DEFINED
 }
 

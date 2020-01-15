@@ -31,10 +31,51 @@ void serializeAfterBooleans(const std::string& filename, const Dcel& d, const Ei
 void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& originalMesh, BoxList& solutions, EigenMesh& baseComplex, HeightfieldsList& he, double &factor, double &kernel, BoxList& originalSolutions, std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, std::list<unsigned int> &priorityBoxes);
 #endif
 
+static Pointd getCustomLimits(const Dcel &m, double lx, double ly, double lz)
+{
+	Pointd limits;
+	limits.x() = m.getBoundingBox().diag() * lx;
+	limits.y() = m.getBoundingBox().diag() * ly;
+	limits.z() = m.getBoundingBox().diag() * lz;
+	return limits;
+}
+
 int main(int argc, char *argv[]) {
     #ifdef SERVER_MODE
-    //usage
-    // ./HeightFieldDecomposition filename.obj precision kernel snapping orientation (t/f) conservative (f/t)
+	/**
+	 * Implementation of the paper Axis-Aligned Height-Field Block Decomposition of 3D Shapes, TOG(2018).
+	 *
+	 * usage
+	 * ./HeightFieldDecomposition <filename>.obj precision kernel snapping orientation (t/f) conservative (f/t) lx ly lz
+	 *
+	 * To use smoothed mesh for the optimization and then reintroduce details after (Sec 4.5 of the paper, Fig. 11),
+	 * be sure that also <filename>_smooth.obj is inside the same directory of filename.obj. You can use any type of
+	 * smoothing you want to obtain filename_smooth.obj (ex: taubin smoothing).
+	 *
+	 * - precision (double > 0): controls the how fit is the grid constructed in the input mesh. precision = 1 means that the unit
+	 *   edge of the grid is the avg of the edge-length of the input mesh;
+	 *   precision = 2   -> avg_length * 0.5;
+	 *   precision = 0.5 -> avg_length * 2;
+	 *
+	 * - kernel (double [0-1]): controls the constraint of the intirior void of the decomposition. 0 means that no intirior void
+	 *   is required. The values between 0 and 1 are proportional to the farthest and nearest point from the surface.
+	 *
+	 * - snapping (double > 0): numer of grid unit to snap boxes when they have similar coordinates. default: 2
+	 *
+	 * - orientation (t/f): true if we want to execute a suboptimal orientation on the input mesh in preprocessing
+	 *   (sec 4.1 of the paper); defualt: t
+	 *
+	 * - conservative (t/f): how grid vertices in borders are set in the initial interpolation scheme. default: f
+	 *
+	 * - lx, ly, lz (double [0, 1]): maximum block sizes constraints wrt the diagonal of the bounding box. For no limit, use a value
+	 *   greater than 1.
+	 *
+	 * Example of call:
+	 *   ./HeightFieldDecomposition cube_spike.obj 1 0 2 f f 2 2 0.2
+	 *
+	 *   calling for cube_spike mesh, precision=1, no required intirior void, 2 snapping unit grids, no suboptimal orientation,
+	 *   no conservative, no constraint sizes for X and Y, height constraint (Z, default milling direction) of 0.2*bounding box diag
+	 */
     if (argc > 3){
         bool smoothed = true;
         std::string filename(argv[1]);
@@ -72,10 +113,19 @@ int main(int argc, char *argv[]) {
             foldername += "noo_";
             optimal = false;
         }
-        if (argc == 7 && std::string(argv[6]) == "t"){ // if conservative optimization required, there will be different foldername
+		if (argc >= 7 && std::string(argv[6]) == "t"){ // if conservative optimization required, there will be different foldername
             foldername += "cons_";
             conservative = true;
         }
+		double lx = 2, ly = 2, lz = 2;
+		if (argc >= 8){
+			lx = std::stod(argv[7]);
+			if (argc >= 9){
+				ly = std::stod(argv[8]);
+				if (argc >= 10)
+					lz = std::stod(argv[9]);
+			}
+		}
         foldername += toStringWithPrecision(precision) + "_" + toStringWithPrecision(kernelDistance) + "/";
         executeCommand("mkdir " + foldername);
 
@@ -128,7 +178,8 @@ int main(int argc, char *argv[]) {
         BoxList solutions;
 
         //grow boxes                              //boxes    mesh  kernel       limit  limit     toler           only  areatol  angletol  fileus  decim
-        double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, false, Pointd(), !conservative,  true, 0,       0,        false,  true);
+		//double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, false, Pointd(), !conservative,  true, 0,       0,        false,  true);
+		double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, true, getCustomLimits(d, lx, ly, lz), !conservative,  true, 0,       0,        false,  true);
 
         logFile << timerBoxGrowing << ": Box Growing\n";
 
@@ -136,46 +187,6 @@ int main(int argc, char *argv[]) {
 
         Engine::boxPostProcessing(solutions, d);
 
-        //
-        /*cg3::cgal::AABBTree tree(d);
-        BoxList bestSolutions, otherSolutions;
-        for (const Box3D& b : solutions){
-            int nEdges = 0;
-            for (unsigned int i = 0; i < 6; i++){
-                BoundingBox bb = b;
-                if (i < 3){
-                    bb(i+3) = bb(i) + CG3_EPSILON;
-                }
-                else {
-                    bb(i-3) = bb(i) - CG3_EPSILON;
-                }
-                if (tree.getNumberIntersectedPrimitives(bb) > 0)
-                    nEdges++;
-            }
-            if (nEdges <= 1)
-                bestSolutions.addBox(b);
-            else
-                otherSolutions.addBox(b);
-        }
-        solutions.clearBoxes();
-        std::cerr << "Number of best solutions : " << bestSolutions.size();
-        std::cerr << "Number of other solutions : " << otherSolutions.size();
-        Timer tGurobi("Gurobi");
-        bool otherAreNecessary = Engine::deleteBoxes(bestSolutions, d);
-        solutions = bestSolutions;
-        if (otherAreNecessary){
-            std::cerr << "Best Solutions were not necessary.\n";
-            logFile << "Best Solutions were not necessary.\n";
-            Engine::secondMinimalCovering(bestSolutions, otherSolutions, d);
-            for (const Box3D& b : otherSolutions){
-                solutions.addBox(b);
-            }
-        }
-        else {
-            std::cerr << "Best Solutions were enough!!!\n";
-            logFile << "Best Solutions were enough!!!\n";
-        }
-        tGurobi.stopAndPrint();*/
         Timer tGurobi("Gurobi");
         Engine::minimalCovering(solutions, d);
         tGurobi.stopAndPrint();
@@ -211,37 +222,32 @@ int main(int argc, char *argv[]) {
 
         double timerSplitting = 0;
         double timerBooleans = 0;
-        int it = 0;
-        do {
-            //splitting and sorting
-            solutions = originalSolutions;
-            Timer tSplitting("ts");
-            Array2D<int> ordering = Splitting::getOrdering(solutions, d, splittedBoxesToOriginals, priorityBoxes, userArcs);
-            solutions.sort(ordering);
-            tSplitting.stop();
-            timerSplitting += tSplitting.delay();
 
-            logFile << tSplitting.delay() << ": Splitting n. " << std::to_string(it) << "\n";
+		//splitting and sorting
+		solutions = originalSolutions;
+		Timer tSplitting("ts");
+		Array2D<int> ordering = Splitting::getOrdering(solutions, d, splittedBoxesToOriginals, priorityBoxes, userArcs);
+		solutions.sort(ordering);
+		tSplitting.stop();
+		timerSplitting += tSplitting.delay();
 
-            //booleans
-            d.updateFaceNormals();
-            d.updateVertexNormals();
-            baseComplex = d;
-            he = HeightfieldsList();
-            Timer tBooleans("tb");
-            Engine::booleanOperations(he, baseComplex, solutions, false);
-            Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
-            Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
-            tBooleans.stop();
-            timerBooleans += tBooleans.delay();
-            logFile << tBooleans.delay() << ": Booleans n. " << std::to_string(it) << "\n";
-            cgal::AABBTree tree(d);
-            Engine::updatePiecesNormals(tree, he);
-            Engine::colorPieces(d, he);
+		logFile << tSplitting.delay() << ": Splitting\n";
 
-            serializeAfterBooleans(foldername + "bools" + std::to_string(it) + ".hfd", d, original, solutions, baseComplex, he, precision, kernelDistance, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
-            it++;
-        } while(false);
+		//booleans
+		d.updateFaceNormals();
+		d.updateVertexNormals();
+		baseComplex = d;
+		he = HeightfieldsList();
+		Timer tBooleans("tb");
+		Engine::booleanOperations(he, baseComplex, solutions, false);
+		Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
+		Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
+		tBooleans.stop();
+		timerBooleans += tBooleans.delay();
+		logFile << tBooleans.delay() << ": Booleans \n";
+		cgal::AABBTree tree(d);
+		Engine::updatePiecesNormals(tree, he);
+		Engine::colorPieces(d, he);
 
         logFile << timerSplitting << ": Total time Splitting\n";
         logFile << timerBooleans << ": Total time Booleans\n";
@@ -264,6 +270,10 @@ int main(int argc, char *argv[]) {
             Engine::colorPieces(d, he);
         }
         serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, precision, kernelDistance, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
+
+		for(unsigned int i = 0; i < he.getNumHeightfields(); ++i){
+			he.getHeightfield(i).saveOnObj(foldername + "block" + std::to_string(i) + ".obj");
+		}
 
     }
     else
