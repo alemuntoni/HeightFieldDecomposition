@@ -3,9 +3,9 @@
 using namespace cg3;
 
 void TricubicInterpolator::getCoefficients(std::vector< std::array<gridreal, 64> >& coeffs, Array3D<int>& mapCoeffs, const Array3D<gridreal>& weights) {
-    assert(mapCoeffs.getSizeX() == weights.getSizeX()-1);
-    assert(mapCoeffs.getSizeY() == weights.getSizeY()-1);
-    assert(mapCoeffs.getSizeZ() == weights.getSizeZ()-1);
+	assert(mapCoeffs.sizeX() == weights.sizeX()-1);
+	assert(mapCoeffs.sizeY() == weights.sizeY()-1);
+	assert(mapCoeffs.sizeZ() == weights.sizeZ()-1);
     static gridreal temp[64][64] = {
         { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -93,46 +93,46 @@ void TricubicInterpolator::getCoefficients(std::vector< std::array<gridreal, 64>
     int nCoeffs = 1;
 
     unsigned int i = 0;
-    for (unsigned int j = 0; j < weights.getSizeY()-1; j++){
-        for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
+	for (unsigned int j = 0; j < weights.sizeY()-1; j++){
+		for (unsigned int k = 0; k < weights.sizeZ()-1; ++k){
             mapCoeffs(i,j,k) = 0;
         }
     }
-    i = weights.getSizeX()-2;
-    for (unsigned int j = 0; j < weights.getSizeY()-1; j++){
-        for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
+	i = weights.sizeX()-2;
+	for (unsigned int j = 0; j < weights.sizeY()-1; j++){
+		for (unsigned int k = 0; k < weights.sizeZ()-1; ++k){
             mapCoeffs(i,j,k) = 0;
         }
     }
     unsigned int j = 0;
-    for (unsigned int i = 0; i < weights.getSizeX()-1; i++){
-        for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
+	for (unsigned int i = 0; i < weights.sizeX()-1; i++){
+		for (unsigned int k = 0; k < weights.sizeZ()-1; ++k){
             mapCoeffs(i,j,k) = 0;
         }
     }
-    j = weights.getSizeY()-2;
-    for (unsigned int i = 0; i < weights.getSizeX()-1; i++){
-        for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
+	j = weights.sizeY()-2;
+	for (unsigned int i = 0; i < weights.sizeX()-1; i++){
+		for (unsigned int k = 0; k < weights.sizeZ()-1; ++k){
             mapCoeffs(i,j,k) = 0;
         }
     }
     unsigned int k = 0;
-    for (unsigned int i = 0; i < weights.getSizeX()-1; i++){
-        for (unsigned int j = 0; j < weights.getSizeY()-1; ++j){
+	for (unsigned int i = 0; i < weights.sizeX()-1; i++){
+		for (unsigned int j = 0; j < weights.sizeY()-1; ++j){
             mapCoeffs(i,j,k) = 0;
         }
     }
-    k = weights.getSizeZ()-2;
-    for (unsigned int i = 0; i < weights.getSizeX()-1; i++){
-        for (unsigned int j = 0; j < weights.getSizeY()-1; ++j){
+	k = weights.sizeZ()-2;
+	for (unsigned int i = 0; i < weights.sizeX()-1; i++){
+		for (unsigned int j = 0; j < weights.sizeY()-1; ++j){
             mapCoeffs(i,j,k) = 0;
         }
     }
 
     #pragma omp parallel for
-    for (unsigned int xi = 1; xi < weights.getSizeX() - 2; xi++){
-        for (unsigned int yi = 1; yi < weights.getSizeY() - 2; yi++){
-            for (unsigned int zi = 1; zi < weights.getSizeZ() - 2; zi++){
+	for (unsigned int xi = 1; xi < weights.sizeX() - 2; xi++){
+		for (unsigned int yi = 1; yi < weights.sizeY() - 2; yi++){
+			for (unsigned int zi = 1; zi < weights.sizeZ() - 2; zi++){
                 Eigen::Matrix<gridreal,64,1> x;
                 x <<
                         // values of f(x,y,z) at each corner.
@@ -227,9 +227,9 @@ void TricubicInterpolator::getCoefficients(std::vector< std::array<gridreal, 64>
 }
 
 void TricubicInterpolator::getCoefficients(Array4D<gridreal>& coeffs, const Array3D<gridreal>& weights) {
-    assert(coeffs.getSizeX() == weights.getSizeX()-1);
-    assert(coeffs.getSizeY() == weights.getSizeY()-1);
-    assert(coeffs.getSizeZ() == weights.getSizeZ()-1);
+	assert(coeffs.sizeX() == weights.sizeX()-1);
+	assert(coeffs.sizeY() == weights.sizeY()-1);
+	assert(coeffs.sizeZ() == weights.sizeZ()-1);
     assert(coeffs.getSizeW() == 64);
 
     static gridreal temp[64][64] = {
@@ -305,46 +305,46 @@ void TricubicInterpolator::getCoefficients(Array4D<gridreal>& coeffs, const Arra
     // Dopo, tutti i coefficienti dei cubi "interni" verranno calcolati in base ai valori del grigliato
     // rimarranno invariati quindi solo i cofficienti dei cubi sul bordo, dove l'interpolante sarà una funzione costante
     unsigned int i = 0;
-    for (unsigned int j = 0; j < weights.getSizeY()-1; j++){
-        for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
+	for (unsigned int j = 0; j < weights.sizeY()-1; j++){
+		for (unsigned int k = 0; k < weights.sizeZ()-1; ++k){
             coeffs(i,j,k,0) = weights(0,0,0);
         }
     }
-    i = weights.getSizeX()-2;
-    for (unsigned int j = 0; j < weights.getSizeY()-1; j++){
-        for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
+	i = weights.sizeX()-2;
+	for (unsigned int j = 0; j < weights.sizeY()-1; j++){
+		for (unsigned int k = 0; k < weights.sizeZ()-1; ++k){
             coeffs(i,j,k,0) = weights(0,0,0);
         }
     }
     unsigned int j = 0;
-    for (unsigned int i = 0; i < weights.getSizeX()-1; i++){
-        for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
+	for (unsigned int i = 0; i < weights.sizeX()-1; i++){
+		for (unsigned int k = 0; k < weights.sizeZ()-1; ++k){
             coeffs(i,j,k,0) = weights(0,0,0);
         }
     }
-    j = weights.getSizeY()-2;
-    for (unsigned int i = 0; i < weights.getSizeX()-1; i++){
-        for (unsigned int k = 0; k < weights.getSizeZ()-1; ++k){
+	j = weights.sizeY()-2;
+	for (unsigned int i = 0; i < weights.sizeX()-1; i++){
+		for (unsigned int k = 0; k < weights.sizeZ()-1; ++k){
             coeffs(i,j,k,0) = weights(0,0,0);
         }
     }
     unsigned int k = 0;
-    for (unsigned int i = 0; i < weights.getSizeX()-1; i++){
-        for (unsigned int j = 0; j < weights.getSizeY()-1; ++j){
+	for (unsigned int i = 0; i < weights.sizeX()-1; i++){
+		for (unsigned int j = 0; j < weights.sizeY()-1; ++j){
             coeffs(i,j,k,0) = weights(0,0,0);
         }
     }
-    k = weights.getSizeZ()-2;
-    for (unsigned int i = 0; i < weights.getSizeX()-1; i++){
-        for (unsigned int j = 0; j < weights.getSizeY()-1; ++j){
+	k = weights.sizeZ()-2;
+	for (unsigned int i = 0; i < weights.sizeX()-1; i++){
+		for (unsigned int j = 0; j < weights.sizeY()-1; ++j){
             coeffs(i,j,k,0) = weights(0,0,0);
         }
     }
 
     #pragma omp parallel for
-    for (unsigned int xi = 1; xi < weights.getSizeX() - 2; xi++){
-        for (unsigned int yi = 1; yi < weights.getSizeY() - 2; yi++){
-            for (unsigned int zi = 1; zi < weights.getSizeZ() - 2; zi++){
+	for (unsigned int xi = 1; xi < weights.sizeX() - 2; xi++){
+		for (unsigned int yi = 1; yi < weights.sizeY() - 2; yi++){
+			for (unsigned int zi = 1; zi < weights.sizeZ() - 2; zi++){
                 Eigen::Matrix<gridreal,64,1> x;
                 x <<
                         // values of f(x,y,z) at each corner.
@@ -425,7 +425,7 @@ void TricubicInterpolator::getCoefficients(Array4D<gridreal>& coeffs, const Arra
 }
 
 
-double TricubicInterpolator::getValue(const Pointd& p, const gridreal* coeffs) {
+double TricubicInterpolator::getValue(const Point3d& p, const gridreal* coeffs) {
     int ijkn =0;
     gridreal dzpow = 1;
     gridreal result = 0;

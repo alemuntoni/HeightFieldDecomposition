@@ -21,6 +21,7 @@
 #include <typeinfo>       // operator typeid
 
 #include "engine/reconstruction.h"
+#include "cg3/utilities/command_line_argument_manager.h"
 
 using namespace cg3;
 
@@ -31,12 +32,12 @@ void serializeAfterBooleans(const std::string& filename, const Dcel& d, const Ei
 void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& originalMesh, BoxList& solutions, EigenMesh& baseComplex, HeightfieldsList& he, double &factor, double &kernel, BoxList& originalSolutions, std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, std::list<unsigned int> &priorityBoxes);
 #endif
 
-static Pointd getCustomLimits(const Dcel &m, double lx, double ly, double lz)
+static Point3d getCustomLimits(const Dcel &m, double lx, double ly, double lz)
 {
-	Pointd limits;
-	limits.x() = m.getBoundingBox().diag() * lx;
-	limits.y() = m.getBoundingBox().diag() * ly;
-	limits.z() = m.getBoundingBox().diag() * lz;
+	Point3d limits;
+	limits.x() = m.boundingBox().diag() * lx;
+	limits.y() = m.boundingBox().diag() * ly;
+	limits.z() = m.boundingBox().diag() * lz;
 	return limits;
 }
 
@@ -46,238 +47,312 @@ int main(int argc, char *argv[]) {
 	 * Implementation of the paper Axis-Aligned Height-Field Block Decomposition of 3D Shapes, TOG(2018).
 	 *
 	 * usage
-	 * ./HeightFieldDecomposition <filename>.obj precision kernel snapping orientation (t/f) conservative (f/t) lx ly lz
+	 * ./HeightFieldDecomposition <filename>.obj -<option>=<value>
 	 *
-	 * To use smoothed mesh for the optimization and then reintroduce details after (Sec 4.5 of the paper, Fig. 11),
-	 * be sure that also <filename>_smooth.obj is inside the same directory of filename.obj. You can use any type of
-	 * smoothing you want to obtain filename_smooth.obj (ex: taubin smoothing).
+	 * Possible options:
 	 *
-	 * - precision (double > 0): controls the how fit is the grid constructed in the input mesh. precision = 1 means that the unit
+	 * [-s, -smooth]=<filename>: To use smoothed mesh for the optimization and then reintroduce details after
+	 * (Sec 4.5 of the paper, Fig. 11). If not set, checks if <filename>_smooth.obj is inside the same directory of filename.obj.
+	 * You can use any type of smoothing you want to obtain filename_smooth.obj (ex: taubin smoothing).
+	 *
+	 * [-p, -precision]=<value> (double > 0, default=1): controls the how fit is the grid constructed in the input mesh. precision = 1 means that the unit
 	 *   edge of the grid is the avg of the edge-length of the input mesh;
 	 *   precision = 2   -> avg_length * 0.5;
 	 *   precision = 0.5 -> avg_length * 2;
 	 *
-	 * - kernel (double [0-1]): controls the constraint of the intirior void of the decomposition. 0 means that no intirior void
+	 * [-k, -kernel]=<value> (double [0-1], default=0): controls the constraint of the intirior void of the decomposition. 0 means that no intirior void
 	 *   is required. The values between 0 and 1 are proportional to the farthest and nearest point from the surface.
 	 *
-	 * - snapping (double > 0): numer of grid unit to snap boxes when they have similar coordinates. default: 2
+	 * [-s, -snapping]=<value> (double > 0, default=2): numer of grid unit to snap boxes when they have similar coordinates.
 	 *
-	 * - orientation (t/f): true if we want to execute a suboptimal orientation on the input mesh in preprocessing
-	 *   (sec 4.1 of the paper); defualt: t
+	 * [-o, -orientat]=<value> (t/f, default=t): true if we want to execute a suboptimal orientation on the input mesh in preprocessing
+	 *   (sec 4.1 of the paper);
 	 *
-	 * - conservative (t/f): how grid vertices in borders are set in the initial interpolation scheme. default: f
+	 * [-c, -conservative]=<value> (t/f, default=f): how grid vertices in borders are set in the initial interpolation scheme.
 	 *
-	 * - lx, ly, lz (double [0, 1]): maximum block sizes constraints wrt the diagonal of the bounding box. For no limit, use a value
+	 * [-x], [-y], [-z] = <value> (double [0, 1...], default=2): maximum block sizes constraints wrt the diagonal of the bounding box. For no limit, use a value
 	 *   greater than 1.
 	 *
-	 * Example of call:
-	 *   ./HeightFieldDecomposition cube_spike.obj 1 0 2 f f 2 2 0.2
-	 *
-	 *   calling for cube_spike mesh, precision=1, no required intirior void, 2 snapping unit grids, no suboptimal orientation,
-	 *   no conservative, no constraint sizes for X and Y, height constraint (Z, default milling direction) of 0.2*bounding box diag
+	 * Example of calls:
+	 *   ./HeightFieldDecomposition cube_spike.obj
+	 *   ./HeightFieldDecomposition cube_spike.obj -s=cssmooth.obj -k=0.1 -p=1.1 -z=0.2
 	 */
-    if (argc > 3){
-        bool smoothed = true;
-        std::string filename(argv[1]);
-        if (! fileExists(filename)){
-            std::cerr << filename << " not found. Exiting.";
-            return -1;
-        }
-        std::string rawname, extension;
-        separateExtensionFromFilename(filename, rawname, extension);
-        std::string filename_smooth = rawname + "_smooth" + extension;
 
-        //reading files
-        EigenMesh original;
-        original.readFromObj(filename);
-        Dcel d;
-        if (fileExists(filename_smooth)){
-            d.loadFromObjFile(filename_smooth);
-            std::cerr << "Smooth File found.\n";
-        }
-        else {
-            std::cerr << "Smooth File not found. Using original file.\n";
-            d = original;
-            smoothed = false;
-        }
+	cg3::CommandLineArgumentManager argManager(argc, argv);
 
-        //precision and kernel
-        double precision = std::stod(argv[2]);
-        double kernelDistance = std::stod(argv[3]);
+	std::string filename = argManager[0];
+	std::string filename_smooth;
 
-        //creating folder
-        std::string foldername = rawname + "_";
-        bool optimal = true;
-        bool conservative = false;
-        if (argc >= 6 && std::string(argv[5]) == "f"){ // if no optimal orientation required, there will be different foldername
-            foldername += "noo_";
-            optimal = false;
-        }
-		if (argc >= 7 && std::string(argv[6]) == "t"){ // if conservative optimization required, there will be different foldername
-            foldername += "cons_";
-            conservative = true;
-        }
-		double lx = 2, ly = 2, lz = 2;
-		if (argc >= 8){
-			lx = std::stod(argv[7]);
-			if (argc >= 9){
-				ly = std::stod(argv[8]);
-				if (argc >= 10)
-					lz = std::stod(argv[9]);
-			}
+	//variables
+	Dcel d;
+	EigenMesh original;
+	bool smoothed = false, optimal_orientation = true, conservative = false;
+	double precision = 1, kernel = 0, snapStep = 2;
+	double lx = 2, ly = 2, lz = 2; //size constraints
+
+	/**** Argument Management */
+	//input mesh
+	if (! fileExists(filename)){
+		std::cerr << filename << " not found. Exiting.";
+		return -1;
+	}
+	original.loadFromObj(filename);
+
+	//smooth mesh
+	if (argManager.exists("smooth") && fileExists(argManager.value("smooth"))){
+		filename_smooth = argManager.value("smooth");
+		if (!fileExists(filename_smooth)){
+			std::cerr << filename_smooth << " not found. Exiting.";
+			return -1;
 		}
-        foldername += toStringWithPrecision(precision) + "_" + toStringWithPrecision(kernelDistance) + "/";
-        executeCommand("mkdir " + foldername);
+		else {
+			d.loadFromObj(filename_smooth);
+			smoothed = true;
+			std::cerr << "Using smoothed mesh.\n";
+		}
+	}
+	else {
+		std::string rawname, extension;
+		separateExtensionFromFilename(filename, rawname, extension);
+		filename_smooth = rawname + "_smooth" + extension;
+		if (fileExists(filename_smooth)){
+			d.loadFromObj(filename_smooth);
+			smoothed = true;
+			std::cerr << filename_smooth << " found!\n";
+		}
+		else{
+			d = cg3::Dcel(original);
+		}
+	}
 
-        //log
-        std::ofstream logFile;
-        logFile.open(foldername + "log.txt");
+	//precision
+	if (argManager.exists("p") || argManager.exists("precision")){
+		if (argManager.exists("p"))
+			precision = std::stod(argManager.value("p"));
+		else
+			precision = std::stod(argManager.value("precision"));
+	}
 
-        if (smoothed)
-            logFile << "Using Smoothed Mesh.\n";
-        else
-            logFile << "No smoothing was applied.\n";
+	//kernel
+	if (argManager.exists("k") || argManager.exists("kernel")){
+		if (argManager.exists("k"))
+			kernel = std::stod(argManager.value("k"));
+		else
+			kernel = std::stod(argManager.value("kernel"));
+	}
 
-        //scaling meshes
-        BoundingBox bb= d.getBoundingBox();
-        Engine::scaleAndRotateDcel(d, 0, precision);
-        original.scale(bb, d.getBoundingBox());
+	//kernel
+	if (argManager.exists("s") || argManager.exists("snap")){
+		if (argManager.exists("s"))
+			snapStep = std::stod(argManager.value("s"));
+		else
+			snapStep = std::stod(argManager.value("snap"));
+	}
 
+	//optimal orientation
+	if (argManager.exists("o") || argManager.exists("orient")){
+		if (argManager.exists("o")){
+			if (argManager.value("o") != "")
+				optimal_orientation = !(argManager.value("o") == "f");
+		}
+		else{
+			if (argManager.value("orient") != "")
+				optimal_orientation = !(argManager.value("orient") == "f");
+		}
+	}
 
+	//conservative
+	if (argManager.exists("c") || argManager.exists("conservative")){
+		if (argManager.exists("c")){
+			conservative = argManager.value("c") == "t";
+		}
+		else{
+			conservative = argManager.value("conservative") == "t";
+		}
+	}
 
-        //optimal orientation
-        if (optimal){ // if optimal orientation
-            Eigen::Matrix3d m3d = Engine::findOptimalOrientation(d, original);
-            logFile << "Using Optimal Orientation! Rotation Matrix:\n";
-            logFile << m3d << "\n";
-        }
-        else {
-            logFile << "Not using Optimal Orientation.\n";
-        }
-        if (conservative){
-            logFile << "Conservative Strategy used.\n";
-        }
-        else {
-            logFile << "Non-conservative Strategy used.\n";
-        }
+	//x
+	if (argManager.exists("x")){
+		lx = std::stod(argManager.value("x"));
+	}
 
-        double snapStep;
-        if (argc == 5)
-            snapStep = std::stod(argv[4]);
-        else
-            snapStep = 2;
+	//y
+	if (argManager.exists("y")){
+		ly = std::stod(argManager.value("y"));
+	}
 
-        logFile << "Parameters: \n\tPrecision: " << precision << "\n\tKernel: " << kernelDistance << "\n\tSnapping: " << snapStep << "\n";
-
-        d.updateFaceNormals();
-        d.updateVertexNormals();
-        d.saveOnObjFile(foldername + rawname + "r_smooth.obj");
-        original.saveOnObj(foldername + rawname + "r.obj");
-
-        //solutions
-        BoxList solutions;
-
-        //grow boxes                              //boxes    mesh  kernel       limit  limit     toler           only  areatol  angletol  fileus  decim
-		//double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, false, Pointd(), !conservative,  true, 0,       0,        false,  true);
-		double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, true, getCustomLimits(d, lx, ly, lz), !conservative,  true, 0,       0,        false,  true);
-
-        logFile << timerBoxGrowing << ": Box Growing\n";
-
-        serializeBeforeBooleans(foldername + "all.bin", d, original, solutions, precision, kernelDistance);
-
-        Engine::boxPostProcessing(solutions, d);
-
-        Timer tGurobi("Gurobi");
-        Engine::minimalCovering(solutions, d);
-        tGurobi.stopAndPrint();
-        logFile << tGurobi.delay() << ": Minimal Covering\n";
-        //
-
-        logFile << tGurobi.delay() << ": Minimal Covering\n";
-        logFile << "Total Survived boxes: " << solutions.getNumberBoxes() << "\n";
-        std::cerr << "Total Survived boxes: " << solutions.getNumberBoxes() << "\n";
-
-        serializeBeforeBooleans(foldername + "mc.bin", d, original, solutions, precision, kernelDistance);
+	//z
+	if (argManager.exists("z")){
+		lz = std::stod(argManager.value("z"));
+	}
 
 
 
-        //snapping
-        Engine::stupidSnapping(d, solutions, snapStep);
+	//actual algorithm ...
+	//setting up paths
+	std::string rawname, extension;
+	separateExtensionFromFilename(filename, rawname, extension);
+	std::string foldername = rawname + "_";
+	if (!optimal_orientation)
+		foldername += "noo_";
+	if (conservative)
+		foldername += "cons_";
 
-        //new: forced snapping
-        Engine::smartSnapping(d, solutions);
+	foldername += toStringWithPrecision(precision) + "_" + toStringWithPrecision(kernel) + "/";
+	executeCommand("mkdir " + foldername);
 
-        //merging
-        Engine::merging(d, solutions);
+	//log
+	std::ofstream logFile;
+	logFile.open(foldername + "log.txt");
 
-        //setting ids
-        solutions.sortByTrianglesCovered();
-        solutions.setIds();
-        BoxList originalSolutions = solutions;
-        std::map<unsigned int, unsigned int> splittedBoxesToOriginals;
-        std::list<unsigned int> priorityBoxes;
-        std::vector<std::pair<unsigned int, unsigned int>> userArcs;
-        HeightfieldsList he;
-        EigenMesh baseComplex;
+	if (smoothed)
+		logFile << "Using Smoothed Mesh.\n";
+	else
+		logFile << "No smoothing was applied.\n";
 
-        double timerSplitting = 0;
-        double timerBooleans = 0;
+	//optimal orientation
+	if (optimal_orientation){ // if optimal orientation
+		logFile << "Using Optimal Orientation! \n";
+	}
+	else {
+		logFile << "Not using Optimal Orientation.\n";
+	}
+	if (conservative){
+		logFile << "Conservative Strategy used.\n";
+	}
+	else {
+		logFile << "Non-conservative Strategy used.\n";
+	}
 
-		//splitting and sorting
-		solutions = originalSolutions;
-		Timer tSplitting("ts");
-		Array2D<int> ordering = Splitting::getOrdering(solutions, d, splittedBoxesToOriginals, priorityBoxes, userArcs);
-		solutions.sort(ordering);
-		tSplitting.stop();
-		timerSplitting += tSplitting.delay();
+	logFile << "Parameters: \n\tPrecision: " << precision << "\n\tKernel: " << kernel << "\n\tSnapping: " << snapStep << "\n";
 
-		logFile << tSplitting.delay() << ": Splitting\n";
+	logFile << "\tSize X limit: " << lx << "\n\tSize Y limit: " << ly << "\n\tSize Z limit: " << lz << "\n";
+	logFile.flush();
 
-		//booleans
+	//scaling meshes
+	BoundingBox3 bb= d.boundingBox();
+	Engine::scaleAndRotateDcel(d, 0, precision);
+	original.scale(bb, d.boundingBox());
+
+	//optimal orientation
+	if (optimal_orientation){ // if optimal orientation
+		Eigen::Matrix3d m3d = Engine::findOptimalOrientation(d, original);
+		logFile << "Optimal Orientation Rotation Matrix:\n";
+		logFile << m3d << "\n";
+	}
+	logFile.flush();
+
+	d.updateFaceNormals();
+	d.updateVertexNormals();
+	d.saveOnObj(foldername + rawname + "r_smooth.obj");
+	original.saveOnObj(foldername + rawname + "r.obj");
+
+	//solutions
+	BoxList solutions;
+
+	//grow boxes                              //boxes    mesh  kernel       limit  limit     toler           only  areatol  angletol  fileus  decim
+	//double timerBoxGrowing = Engine::optimize(solutions, d, kernelDistance, false, Pointd(), !conservative,  true, 0,       0,        false,  true);
+	double timerBoxGrowing = Engine::optimize(solutions, d, kernel, true, getCustomLimits(d, lx, ly, lz), !conservative,  true, 0,       0,        false,  true);
+
+	logFile << timerBoxGrowing << ": Box Growing\n";
+	logFile.flush();
+
+	serializeBeforeBooleans(foldername + "all.bin", d, original, solutions, precision, kernel);
+
+	Engine::boxPostProcessing(solutions, d);
+
+	Timer tGurobi("Gurobi");
+	Engine::minimalCovering(solutions, d);
+	tGurobi.stopAndPrint();
+	logFile << tGurobi.delay() << ": Minimal Covering\n";
+	logFile.flush();
+	//
+
+	logFile << tGurobi.delay() << ": Minimal Covering\n";
+	logFile << "Total Survived boxes: " << solutions.getNumberBoxes() << "\n";
+	logFile.flush();
+	std::cerr << "Total Survived boxes: " << solutions.getNumberBoxes() << "\n";
+
+	serializeBeforeBooleans(foldername + "mc.bin", d, original, solutions, precision, kernel);
+
+
+
+	//snapping
+	Engine::stupidSnapping(d, solutions, snapStep);
+
+	//new: forced snapping
+	Engine::smartSnapping(d, solutions);
+
+	//merging
+	Engine::merging(d, solutions);
+
+	//setting ids
+	solutions.sortByTrianglesCovered();
+	solutions.setIds();
+	BoxList originalSolutions = solutions;
+	std::map<unsigned int, unsigned int> splittedBoxesToOriginals;
+	std::list<unsigned int> priorityBoxes;
+	std::vector<std::pair<unsigned int, unsigned int>> userArcs;
+	HeightfieldsList he;
+	EigenMesh baseComplex;
+
+	double timerSplitting = 0;
+	double timerBooleans = 0;
+
+	//splitting and sorting
+	solutions = originalSolutions;
+	Timer tSplitting("ts");
+	Array2D<int> ordering = Splitting::getOrdering(solutions, d, splittedBoxesToOriginals, priorityBoxes, userArcs);
+	solutions.sort(ordering);
+	tSplitting.stop();
+	timerSplitting += tSplitting.delay();
+
+	logFile << tSplitting.delay() << ": Splitting\n";
+	logFile.flush();
+
+	//booleans
+	d.updateFaceNormals();
+	d.updateVertexNormals();
+	baseComplex = d;
+	he = HeightfieldsList();
+	Timer tBooleans("tb");
+	Engine::booleanOperations(he, baseComplex, solutions, false);
+	Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
+	Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
+	tBooleans.stop();
+	timerBooleans += tBooleans.delay();
+	logFile << tBooleans.delay() << ": Booleans \n";
+	logFile.flush();
+	cgal::AABBTree3 tree(d);
+	Engine::updatePiecesNormals(tree, he);
+	Engine::colorPieces(d, he);
+
+	logFile << timerSplitting << ": Total time Splitting\n";
+	logFile << timerBooleans << ": Total time Booleans\n";
+	logFile.close();
+	//restore hf
+	if (smoothed){
+		//Common::executeCommand("./restorehf " + foldername + "bools" + std::to_string(it-1) + ".hfd " + foldername);
+		std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(d, he);
+		Reconstruction::reconstruction(d, mapping, original, solutions);
+
+		baseComplex = d;
 		d.updateFaceNormals();
 		d.updateVertexNormals();
-		baseComplex = d;
 		he = HeightfieldsList();
-		Timer tBooleans("tb");
 		Engine::booleanOperations(he, baseComplex, solutions, false);
 		Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
 		Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
-		tBooleans.stop();
-		timerBooleans += tBooleans.delay();
-		logFile << tBooleans.delay() << ": Booleans \n";
-		cgal::AABBTree tree(d);
+		cgal::AABBTree3 tree(d);
 		Engine::updatePiecesNormals(tree, he);
 		Engine::colorPieces(d, he);
+	}
+	serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, precision, kernel, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
 
-        logFile << timerSplitting << ": Total time Splitting\n";
-        logFile << timerBooleans << ": Total time Booleans\n";
-        logFile.close();
-        //restore hf
-        if (smoothed){
-            //Common::executeCommand("./restorehf " + foldername + "bools" + std::to_string(it-1) + ".hfd " + foldername);
-            std::vector< std::pair<int,int> > mapping = Reconstruction::getMapping(d, he);
-            Reconstruction::reconstruction(d, mapping, original, solutions);
+	for(unsigned int i = 0; i < he.getNumHeightfields(); ++i){
+		he.getHeightfield(i).saveOnObj(foldername + "block" + std::to_string(i) + ".obj");
+	}
 
-            baseComplex = d;
-            d.updateFaceNormals();
-            d.updateVertexNormals();
-            he = HeightfieldsList();
-            Engine::booleanOperations(he, baseComplex, solutions, false);
-            Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
-            Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
-            cgal::AABBTree tree(d);
-            Engine::updatePiecesNormals(tree, he);
-            Engine::colorPieces(d, he);
-        }
-        serializeAfterBooleans(foldername + "final.hfd", d, original, solutions, baseComplex, he, precision, kernelDistance, originalSolutions, splittedBoxesToOriginals, priorityBoxes);
-
-		for(unsigned int i = 0; i < he.getNumHeightfields(); ++i){
-			he.getHeightfield(i).saveOnObj(foldername + "block" + std::to_string(i) + ".obj");
-		}
-
-    }
-    else
-        std::cerr << "Error! Number argument lower than 4\n";
     #else
     #ifdef SERVER_HOME
     if (argc > 3){

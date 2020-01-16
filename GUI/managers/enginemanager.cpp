@@ -4,13 +4,13 @@
 #include <cstdio>
 #include <QMessageBox>
 #include <omp.h>
-#include "cg3/cgal/aabbtree.h"
+#include "cg3/cgal/aabb_tree3.h"
 #include "engine/packing.h"
 #include "engine/reconstruction.h"
 #include <QThread>
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include <engine/tinyfeaturedetection.h>
-#include <cg3/geometry/transformations.h>
+#include <cg3/geometry/transformations3.h>
 #include <cg3/utilities/set.h>
 #include <cg3/libigl/remove_duplicate_vertices.h>
 
@@ -73,29 +73,29 @@ void EngineManager::updateLabel(double value, QLabel* label) {
 
 void EngineManager::updateBoxValues() {
     if (b != nullptr){
-        ui->minXSpinBox->setValue(b->getMinX());
-        ui->minYSpinBox->setValue(b->getMinY());
-        ui->minZSpinBox->setValue(b->getMinZ());
-        ui->maxXSpinBox->setValue(b->getMaxX());
-        ui->maxYSpinBox->setValue(b->getMaxY());
-        ui->maxZSpinBox->setValue(b->getMaxZ());
-        ui->wSpinBox->setValue(b->getMaxX() - b->getMinX());
-        ui->hSpinBox->setValue(b->getMaxY() - b->getMinY());
-        ui->dSpinBox->setValue(b->getMaxZ() - b->getMinZ());
+		ui->minXSpinBox->setValue(b->minX());
+		ui->minYSpinBox->setValue(b->minY());
+		ui->minZSpinBox->setValue(b->minZ());
+		ui->maxXSpinBox->setValue(b->maxX());
+		ui->maxYSpinBox->setValue(b->maxY());
+		ui->maxZSpinBox->setValue(b->maxZ());
+		ui->wSpinBox->setValue(b->maxX() - b->minX());
+		ui->hSpinBox->setValue(b->maxY() - b->minY());
+		ui->dSpinBox->setValue(b->maxZ() - b->minZ());
     }
 }
 
 void EngineManager::updateColors(double angleThreshold, double areaThreshold) {
-    d->setColor(Color(128,128,128));
+	d->setFaceColors(Color(128,128,128));
     std::set<const Dcel::Face*> flippedFaces, savedFaces;
     Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], angleThreshold/100, areaThreshold);
 
     for (const Dcel::Face* cf : flippedFaces){
-        Dcel::Face* f = d->getFace(cf->getId());
+		Dcel::Face* f = d->face(cf->id());
         f->setColor(Color(255,0,0));
     }
     for (const Dcel::Face* cf : savedFaces){
-        Dcel::Face* f = d->getFace(cf->getId());
+		Dcel::Face* f = d->face(cf->id());
         f->setColor(Color(0,0,255));
     }
 
@@ -103,12 +103,12 @@ void EngineManager::updateColors(double angleThreshold, double areaThreshold) {
     mainWindow.canvas.update();
 }
 
-Pointd EngineManager::getLimits() {
+Point3d EngineManager::getLimits() {
     assert(d!=nullptr);
-    BoundingBox bb = d->getBoundingBox();
-    double lx = bb.getLengthX();
-    double ly = bb.getLengthY();
-    double lz = bb.getLengthZ();
+	BoundingBox3 bb = d->boundingBox();
+	double lx = bb.lengthX();
+	double ly = bb.lengthY();
+	double lz = bb.lengthZ();
     double min = lx;
     if (lx <= ly && lx <= lz){
         min = lx;
@@ -123,7 +123,7 @@ Pointd EngineManager::getLimits() {
     double limitRealX = ui->xLimitSpinBox->value();
     double limitRealY = ui->xLimitSpinBox->value();
     double limitRealZ = ui->zLimitSpinBox->value();
-    Pointd limits;
+	Point3d limits;
     limits.x() = (limitRealX * min) / minreal;
     limits.y() = (limitRealY * min) / minreal;
     limits.z() = (limitRealZ * min) / minreal;
@@ -131,19 +131,19 @@ Pointd EngineManager::getLimits() {
 }
 
 void EngineManager::saveMSCFile(const std::string& filename, const Dcel& d, const BoxList& bl) {
-    Array2D<int> mat(bl.getNumberBoxes(), d.getNumberFaces(), 0);
-    cgal::AABBTree tree(d);
+	Array2D<int> mat(bl.getNumberBoxes(), d.numberFaces(), 0);
+	cgal::AABBTree3 tree(d);
     for (unsigned int i = 0; i < bl.getNumberBoxes(); i++){
-        std::list<const Dcel::Face*> list = tree.getCompletelyContainedDcelFaces(bl.getBox(i));
+		std::list<const Dcel::Face*> list = tree.completelyContainedDcelFaces(bl.getBox(i));
         for (const Dcel::Face* f : list){
-            mat(i,f->getId()) = 1;
+			mat(i,f->id()) = 1;
         }
     }
     std::ofstream of;
     of.open(filename);
-    of << mat.getSizeX() << " " << mat.getSizeY() << "\n";
-    for (unsigned int i = 0; i < mat.getSizeX(); i++){
-        for (unsigned int j =0; j < mat.getSizeY(); j++){
+	of << mat.sizeX() << " " << mat.sizeY() << "\n";
+	for (unsigned int i = 0; i < mat.sizeX(); i++){
+		for (unsigned int j =0; j < mat.sizeY(); j++){
             of << mat(i,j) << " ";
         }
         of << "x\n";
@@ -356,9 +356,9 @@ void EngineManager::on_generateGridPushButton_clicked() {
     if (d != nullptr){
         deleteDrawableObject(g);
         g = new DrawableGrid();
-        BoundingBox bb= d->getBoundingBox();
+		BoundingBox3 bb= d->boundingBox();
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
-        originalMesh.scale(bb, d->getBoundingBox());
+		originalMesh.scale(bb, d->boundingBox());
         std::set<const Dcel::Face*> flippedFaces, savedFaces;
         Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
         Engine::generateGrid(*g, *d, ui->distanceSpinBox->value(), ui->heightfieldsCheckBox->isChecked(), XYZ[ui->targetComboBox->currentIndex()], savedFaces);
@@ -493,18 +493,18 @@ void EngineManager::on_saveObjsButton_clicked() {
             //smart packing
             HeightfieldsList myHe = *he;
             Packing::rotateAllPieces(myHe);
-            BoundingBox packSize(Pointd(), Pointd(d->getBoundingBox().getLengthX(), d->getBoundingBox().getLengthX() * (3.0/4.0), d->getBoundingBox().getLengthX() * (10.0/4.0)));
-            BoundingBox limits = packSize;
-            double l = packSize.getMaxY();
+			BoundingBox3 packSize(Point3d(), Point3d(d->boundingBox().lengthX(), d->boundingBox().lengthX() * (3.0/4.0), d->boundingBox().lengthX() * (10.0/4.0)));
+			BoundingBox3 limits = packSize;
+			double l = packSize.maxY();
             std::vector< std::vector<EigenMesh> > packs;
             do {
                 limits.setMaxY(l);
                 double factor;
                 Packing::getMaximum(myHe, limits, factor);
                 Packing::scaleAll(myHe, factor);
-                std::vector< std::vector<std::pair<int, Pointd> > > tmp = Packing::pack(myHe, packSize);
+				std::vector< std::vector<std::pair<int, Point3d> > > tmp = Packing::pack(myHe, packSize);
                 packs = Packing::getPacks(tmp, myHe);
-                l -= packSize.getMaxY() / 100;
+				l -= packSize.maxY() / 100;
             } while (packs.size() > 1);
             //EigenMeshAlgorithms::makeBox(packSize).saveOnObj(foldername + "/box.obj");
 
@@ -520,7 +520,7 @@ void EngineManager::on_saveObjsButton_clicked() {
                 Dcel d(packMesh);
                 //Eigen::MatrixXd m = Common::getRotationMatrix(Vec3(-1,0,0), M_PI/2);
                 //d.rotate(m);
-                d.saveOnObjFile(pstring);
+				d.saveOnObj(pstring);
             }
         }
     }
@@ -560,27 +560,27 @@ void EngineManager::on_plusXButton_clicked() {
             b2->moveX(ui->stepSpinBox->value());
         }
         else {
-            Pointd c;
+			Point3d c;
             if (ui->c1RadioButton->isChecked()){
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint1(Point3d(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
             }
             if (ui->c2RadioButton->isChecked()){
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint2(Point3d(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
             }
             if (ui->c3RadioButton->isChecked()){
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint3(Point3d(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
             }
             if (ui->allRadioButton->isChecked()){
                 b->moveX(ui->stepSpinBox->value());
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint1(Point3d(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint2(Point3d(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint3(Point3d(c.x()+ui->stepSpinBox->value(), c.y(), c.z()));
             }
         }
 
@@ -598,27 +598,27 @@ void EngineManager::on_minusXButton_clicked() {
             b2->moveX(- ui->stepSpinBox->value());
         }
         else {
-            Pointd c;
+			Point3d c;
             if (ui->c1RadioButton->isChecked()){
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint1(Point3d(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
             }
             if (ui->c2RadioButton->isChecked()){
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint2(Point3d(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
             }
             if (ui->c3RadioButton->isChecked()){
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint3(Point3d(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
             }
             if (ui->allRadioButton->isChecked()){
                 b->moveX(- ui->stepSpinBox->value());
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint1(Point3d(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint2(Point3d(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
+				b->setConstraint3(Point3d(c.x()-ui->stepSpinBox->value(), c.y(), c.z()));
             }
         }
         mainWindow.canvas.update();
@@ -635,27 +635,27 @@ void EngineManager::on_plusYButton_clicked() {
             b2->moveY(ui->stepSpinBox->value());
         }
         else {
-            Pointd c;
+			Point3d c;
             if (ui->c1RadioButton->isChecked()){
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+				b->setConstraint1(Point3d(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
             }
             if (ui->c2RadioButton->isChecked()){
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+				b->setConstraint2(Point3d(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
             }
             if (ui->c3RadioButton->isChecked()){
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+				b->setConstraint3(Point3d(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
             }
             if (ui->allRadioButton->isChecked()){
                 b->moveY(ui->stepSpinBox->value());
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+				b->setConstraint1(Point3d(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+				b->setConstraint2(Point3d(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
+				b->setConstraint3(Point3d(c.x(), c.y()+ui->stepSpinBox->value(), c.z()));
             }
 
         }
@@ -673,27 +673,27 @@ void EngineManager::on_minusYButton_clicked() {
             b2->moveY(- ui->stepSpinBox->value());
         }
         else {
-            Pointd c;
+			Point3d c;
             if (ui->c1RadioButton->isChecked()){
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+				b->setConstraint1(Point3d(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
             }
             if (ui->c2RadioButton->isChecked()){
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+				b->setConstraint2(Point3d(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
             }
             if (ui->c3RadioButton->isChecked()){
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+				b->setConstraint3(Point3d(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
             }
             if (ui->allRadioButton->isChecked()){
                 b->moveY(- ui->stepSpinBox->value());
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+				b->setConstraint1(Point3d(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+				b->setConstraint2(Point3d(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
+				b->setConstraint3(Point3d(c.x(), c.y()-ui->stepSpinBox->value(), c.z()));
             }
 
         }
@@ -711,27 +711,27 @@ void EngineManager::on_plusZButton_clicked() {
             b2->moveZ(ui->stepSpinBox->value());
         }
         else {
-            Pointd c;
+			Point3d c;
             if (ui->c1RadioButton->isChecked()){
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+				b->setConstraint1(Point3d(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
             }
             if (ui->c2RadioButton->isChecked()){
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+				b->setConstraint2(Point3d(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
             }
             if (ui->c3RadioButton->isChecked()){
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+				b->setConstraint3(Point3d(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
             }
             if (ui->allRadioButton->isChecked()){
                 b->moveZ(ui->stepSpinBox->value());
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+				b->setConstraint1(Point3d(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+				b->setConstraint2(Point3d(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
+				b->setConstraint3(Point3d(c.x(), c.y(), c.z()+ui->stepSpinBox->value()));
             }
 
         }
@@ -749,27 +749,27 @@ void EngineManager::on_minusZButton_clicked() {
             b2->moveZ(- ui->stepSpinBox->value());
         }
         else {
-            Pointd c;
+			Point3d c;
             if (ui->c1RadioButton->isChecked()){
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+				b->setConstraint1(Point3d(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
             }
             if (ui->c2RadioButton->isChecked()){
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+				b->setConstraint2(Point3d(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
             }
             if (ui->c3RadioButton->isChecked()){
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+				b->setConstraint3(Point3d(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
             }
             if (ui->allRadioButton->isChecked()){
                 b->moveZ(- ui->stepSpinBox->value());
                 c = b->getConstraint1();
-                b->setConstraint1(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+				b->setConstraint1(Point3d(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
                 c = b->getConstraint2();
-                b->setConstraint2(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+				b->setConstraint2(Point3d(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
                 c = b->getConstraint3();
-                b->setConstraint3(Pointd(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
+				b->setConstraint3(Point3d(c.x(), c.y(), c.z()-ui->stepSpinBox->value()));
             }
 
         }
@@ -782,7 +782,7 @@ void EngineManager::on_energyBoxPushButton_clicked() {
         double energy = e.energy(*b);
         Eigen::VectorXd gradient(6);
         Eigen::VectorXd solution(6);
-        solution << b->getMinX(), b->getMinY(), b->getMinZ(), b->getMaxX(), b->getMaxY(), b->getMaxZ();
+		solution << b->minX(), b->minY(), b->minZ(), b->maxX(), b->maxY(), b->maxZ();
         e.gradientEnergy(gradient, solution, b->getConstraint1(), b->getConstraint2(), b->getConstraint3());
         updateLabel(gradient(0), ui->gminx);
         updateLabel(gradient(1), ui->gminy);
@@ -890,7 +890,7 @@ void EngineManager::on_energyIterationsButton_clicked() {
         Box3D b = iterations->getBox(ui->iterationsSlider->value());
         double energy = e.energy(b);
         Eigen::VectorXd gradient(6);
-        e.gradientTricubicInterpolationEnergy(gradient, b.getMin(), b.getMax());
+		e.gradientTricubicInterpolationEnergy(gradient, b.min(), b.max());
         std::cerr << "Gradient: \n" << gradient << "\n";
         updateLabel(energy, ui->energyIterationLabel);
     }
@@ -932,8 +932,8 @@ void EngineManager::on_setFromSolutionButton_clicked() {
                 b = new Box3D(solutions->getBox(value));
                 mainWindow.pushDrawableObject(b, "Box");
             }
-            b->setMin(solutions->getBox(value).getMin());
-            b->setMax(solutions->getBox(value).getMax());
+			b->setMin(solutions->getBox(value).min());
+			b->setMax(solutions->getBox(value).max());
             b->setConstraint1(solutions->getBox(value).getConstraint1());
             b->setConstraint2(solutions->getBox(value).getConstraint2());
             b->setConstraint3(solutions->getBox(value).getConstraint3());
@@ -950,28 +950,28 @@ void EngineManager::on_setFromSolutionButton_clicked() {
     }
     else if (d != nullptr) {
         unsigned int value = ui->setFromSolutionSpinBox->value();
-        if (value < d->getNumberFaces()) {
-            const Dcel::Face* f = d->getFace(value);
+		if (value < d->numberFaces()) {
+			const Dcel::Face* f = d->face(value);
             if (b == nullptr){
                 b = new Box3D(solutions->getBox(value));
                 mainWindow.pushDrawableObject(b, "Box");
             }
             Box3D box;
-            box.setTarget(nearestNormal(f->getNormal()));
-            Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
-            Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
-            Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
-            Pointd bmin = p1;
+			box.setTarget(nearestNormal(f->normal()));
+			Point3d p1 = f->outerHalfEdge()->fromVertex()->coordinate();
+			Point3d p2 = f->outerHalfEdge()->toVertex()->coordinate();
+			Point3d p3 = f->outerHalfEdge()->next()->toVertex()->coordinate();
+			Point3d bmin = p1;
             bmin = bmin.min(p2);
             bmin = bmin.min(p3);
             bmin = bmin - 1;
-            Pointd bmax = p1;
+			Point3d bmax = p1;
             bmax = bmax.max(p2);
             bmax = bmax.max(p3);
             bmax = bmax + 1;
             box.setMin(bmin);
             box.setMax(bmax);
-            box.setColor(colorOfNearestNormal(f->getNormal()));
+			box.setColor(colorOfNearestNormal(f->normal()));
             box.setConstraint1(p1);
             box.setConstraint2(p2);
             box.setConstraint3(p3);
@@ -993,7 +993,7 @@ void EngineManager::on_wireframeDcelCheckBox_stateChanged(int arg1) {
         he->setWireframe(arg1 == Qt::Checked);
         mainWindow.canvas.update();
     }
-    if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
+	if (originalMesh.numberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
         originalMesh.setWireframe(arg1 == Qt::Checked);
         mainWindow.canvas.update();
     }
@@ -1018,7 +1018,7 @@ void EngineManager::on_pointsDcelRadioButton_toggled(bool checked) {
             mainWindow.canvas.update();
         }
     }
-    if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
+	if (originalMesh.numberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
         if (checked){
             originalMesh.setPointsShading();
             mainWindow.canvas.update();
@@ -1045,7 +1045,7 @@ void EngineManager::on_flatDcelRadioButton_toggled(bool checked) {
             mainWindow.canvas.update();
         }
     }
-    if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
+	if (originalMesh.numberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
         if (checked){
             originalMesh.setFlatShading();
             mainWindow.canvas.update();
@@ -1072,7 +1072,7 @@ void EngineManager::on_smoothDcelRadioButton_toggled(bool checked) {
             mainWindow.canvas.update();
         }
     }
-    if (originalMesh.getNumberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
+	if (originalMesh.numberVertices() > 0 && ui->originalMeshRadioButton->isChecked()){
         if (checked){
             originalMesh.setSmoothShading();
             mainWindow.canvas.update();
@@ -1093,8 +1093,8 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
         Dcel dd = *d;
         std::list<const Dcel::Face*> covered;
         if (mb == m[0]){
-            cgal::AABBTree t(dd);
-            t.getContainedDcelFaces(covered, *b);
+			cgal::AABBTree3 t(dd);
+			t.containedDcelFaces(covered, *b);
         }
         #if ORIENTATIONS > 1
         else if (mb == m[1]){
@@ -1126,7 +1126,7 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
         std::list<const Dcel::Face*>::iterator i = covered.begin();
         while (i != covered.end()) {
             const Dcel::Face* f = *i;
-            Pointd p1 = f->getVertex1()->getCoordinate(), p2 = f->getVertex2()->getCoordinate(), p3 = f->getVertex3()->getCoordinate();
+			Point3d p1 = f->vertex1()->coordinate(), p2 = f->vertex2()->coordinate(), p3 = f->vertex3()->coordinate();
 
             if (!b->isIntern(p1) || !b->isIntern(p2) || !b->isIntern(p3)) {
                 i =covered.erase(i);
@@ -1137,7 +1137,7 @@ void EngineManager::on_trianglesCoveredPushButton_clicked() {
 
         for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
             const Dcel::Face* cf = *it;
-            Dcel::Face* f = d->getFace(cf->getId());
+			Dcel::Face* f = d->face(cf->id());
             f->setColor(Color(0,0,255));
         }
         d->update();
@@ -1191,7 +1191,7 @@ void EngineManager::on_subtractPushButton_clicked() {
         Engine::booleanOperations(*he, bc, *solutions, false);
         Engine::splitConnectedComponents(*he, *solutions, splittedBoxesToOriginals);
         Engine::glueInternHeightfieldsToBaseComplex(*he, *solutions, bc, *d);
-        cgal::AABBTree tree(*d);
+		cgal::AABBTree3 tree(*d);
         Engine::updatePiecesNormals(tree, *he);
         tBooleans.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
@@ -1206,8 +1206,8 @@ void EngineManager::on_subtractPushButton_clicked() {
         delete baseComplex;
         baseComplex = new DrawableEigenMesh(bc);
         baseComplex->updateFaceNormals();
-        for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
-            Vec3 n = baseComplex->getFaceNormal(i);
+		for (unsigned int i = 0; i < baseComplex->numberFaces(); ++i){
+			Vec3d n = baseComplex->faceNormal(i);
             n.normalize();
             Color c = colorOfNearestNormal(n);
             baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
@@ -1224,8 +1224,8 @@ void EngineManager::on_stickPushButton_clicked() {
         deleteDrawableObject(baseComplex);
         baseComplex = new DrawableEigenMesh(bc);
         baseComplex->updateFaceNormals();
-        for (unsigned int i = 0; i < baseComplex->getNumberFaces(); ++i){
-            Vec3 n = baseComplex->getFaceNormal(i);
+		for (unsigned int i = 0; i < baseComplex->numberFaces(); ++i){
+			Vec3d n = baseComplex->faceNormal(i);
             n.normalize();
             Color c = colorOfNearestNormal(n);
             baseComplex->setFaceColor(c.redF(), c.greenF(), c.blueF(), i);
@@ -1256,10 +1256,10 @@ void EngineManager::on_deserializeBCPushButton_clicked() {
 
 void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
     if (g == nullptr && d!= nullptr) {
-        BoundingBox bb = d->getBoundingBox();
+		BoundingBox3 bb = d->boundingBox();
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
-        if (originalMesh.getNumberVertices() > 0){
-            originalMesh.scale(bb, d->getBoundingBox());
+		if (originalMesh.numberVertices() > 0){
+			originalMesh.scale(bb, d->boundingBox());
         }
         std::set<const Dcel::Face*> flippedFaces, savedFaces;
         Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
@@ -1278,7 +1278,7 @@ void EngineManager::on_createAndMinimizeAllPushButton_clicked() {
             Engine::optimizeAndDeleteBoxes(*solutions, *d, kernelDistance, true, getLimits(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
         }
         else {
-            Engine::optimizeAndDeleteBoxes(*solutions, *d, kernelDistance, false, Pointd(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
+			Engine::optimizeAndDeleteBoxes(*solutions, *d, kernelDistance, false, Point3d(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
         }
         t.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
@@ -1385,7 +1385,7 @@ void EngineManager::on_cleanAllPushButton_clicked() {
     deleteDrawableObject(baseComplex);
     deleteDrawableObject(he);
     deleteDrawableObject(b2);
-    if (originalMesh.getNumberVertices()>0){
+	if (originalMesh.numberVertices()>0){
         mainWindow.deleteDrawableObject(&originalMesh);
         originalMesh.clear();
     }
@@ -1431,7 +1431,7 @@ void EngineManager::on_reorderBoxes_clicked() {
 void EngineManager::on_loadOriginalPushButton_clicked() {
     std::string filename = objls.loadDialog();
     if (filename != "") {
-        originalMesh.readFromObj(filename);
+		originalMesh.loadFromObj(filename);
         if (! (mainWindow.containsDrawableObject(&originalMesh)))
             mainWindow.pushDrawableObject(&originalMesh, filename.substr(filename.find_last_of("/") + 1));
         mainWindow.canvas.update();
@@ -1484,8 +1484,8 @@ void EngineManager::on_packPushButton_clicked() {
         if (foldername != ""){
             HeightfieldsList myHe = *he;
             Packing::rotateAllPieces(myHe);
-            BoundingBox packSize(Pointd(), Pointd(ui->sizeXPackSpinBox->value(), ui->sizeYPackSpinBox->value(), ui->sizeZPackSpinBox->value()));
-            BoundingBox limits = packSize;
+			BoundingBox3 packSize(Point3d(), Point3d(ui->sizeXPackSpinBox->value(), ui->sizeYPackSpinBox->value(), ui->sizeZPackSpinBox->value()));
+			BoundingBox3 limits = packSize;
             switch(ui->limitComboBox->currentIndex()){
                 case 1:
                     limits.setMaxX(ui->limitValueSpinBox->value());
@@ -1500,7 +1500,7 @@ void EngineManager::on_packPushButton_clicked() {
             double factor;
             Packing::getMaximum(myHe, limits, factor);
             Packing::scaleAll(myHe, factor);
-            std::vector< std::vector<std::pair<int, Pointd> > > tmp = Packing::pack(myHe, packSize);
+			std::vector< std::vector<std::pair<int, Point3d> > > tmp = Packing::pack(myHe, packSize);
             std::vector< std::vector<EigenMesh> > packs = Packing::getPacks(tmp, myHe);
             EigenMeshAlgorithms::makeBox(packSize).saveOnObj(foldername + "/box.obj");
             for (unsigned int i = 0; i < packs.size(); i++){
@@ -1512,7 +1512,7 @@ void EngineManager::on_packPushButton_clicked() {
                     //packs[i][j].saveOnObj(meshName.toStdString());
                     Dcel d(packs[i][j]);
                     d.updateVertexNormals();
-                    d.saveOnObjFile(meshName);
+					d.saveOnObj(meshName);
                     if (j > 0){
                         packMesh = EigenMesh::merge(packMesh, packs[i][j]);
                     }
@@ -1520,7 +1520,7 @@ void EngineManager::on_packPushButton_clicked() {
                 //packMesh.saveOnObj(pstring.toStdString());
                 Dcel d(packMesh);
                 d.updateVertexNormals();
-                d.saveOnObjFile(pstring);
+				d.saveOnObj(pstring);
 
                 /*BoundingBox bb = d.getBoundingBox();
                 SimpleEigenMesh plane;
@@ -1542,16 +1542,16 @@ void EngineManager::on_smartPackingPushButton_clicked() {
         if (foldername != ""){
             HeightfieldsList myHe = *he;
             Packing::rotateAllPieces(myHe);
-            BoundingBox packSize(Pointd(), Pointd(ui->sizeXPackSpinBox->value(), ui->sizeYPackSpinBox->value(), ui->sizeZPackSpinBox->value()));
-            BoundingBox limits = packSize;
-            double l = packSize.getMaxY();
+			BoundingBox3 packSize(Point3d(), Point3d(ui->sizeXPackSpinBox->value(), ui->sizeYPackSpinBox->value(), ui->sizeZPackSpinBox->value()));
+			BoundingBox3 limits = packSize;
+			double l = packSize.maxY();
             std::vector< std::vector<EigenMesh> > packs;
             do {
                 limits.setMaxY(l);
                 double factor;
                 Packing::getMaximum(myHe, limits, factor);
                 Packing::scaleAll(myHe, factor);
-                std::vector< std::vector<std::pair<int, Pointd> > > tmp = Packing::pack(myHe, packSize);
+				std::vector< std::vector<std::pair<int, Point3d> > > tmp = Packing::pack(myHe, packSize);
                 packs = Packing::getPacks(tmp, myHe);
                 l -= 0.1;
             } while (packs.size() > 1);
@@ -1571,7 +1571,7 @@ void EngineManager::on_smartPackingPushButton_clicked() {
                 //d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
-                d.saveOnObjFile(pstring);
+				d.saveOnObj(pstring);
             }
         }
     }
@@ -1661,10 +1661,10 @@ void EngineManager::on_deleteBoxesPushButton_clicked() {
 
 void EngineManager::on_pushButton_clicked() {
     if (g == nullptr && d!= nullptr) {
-        BoundingBox bb = d->getBoundingBox();
+		BoundingBox3 bb = d->boundingBox();
         Engine::scaleAndRotateDcel(*d, 0, ui->factorSpinBox->value());
-        if (originalMesh.getNumberVertices() > 0){
-            originalMesh.scale(bb, d->getBoundingBox());
+		if (originalMesh.numberVertices() > 0){
+			originalMesh.scale(bb, d->boundingBox());
         }
         std::set<const Dcel::Face*> flippedFaces, savedFaces;
         Engine::getFlippedFaces(flippedFaces, savedFaces, *d, XYZ[ui->targetComboBox->currentIndex()], (double)ui->toleranceSlider->value()/100, ui->areaToleranceSpinBox->value());
@@ -1683,7 +1683,7 @@ void EngineManager::on_pushButton_clicked() {
             Engine::optimize(*solutions, *d, kernelDistance, true, getLimits(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
         }
         else {
-            Engine::optimize(*solutions, *d, kernelDistance, false, Pointd(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
+			Engine::optimize(*solutions, *d, kernelDistance, false, Point3d(), ui->heightfieldsCheckBox->isChecked(), ui->onlyNearestTargetCheckBox->isChecked(), ui->areaToleranceSpinBox->value(), (double)ui->toleranceSlider->value()/100, ui->useFileCheckBox->isChecked());
         }
         t.stopAndPrint();
         ui->showAllSolutionsCheckBox->setEnabled(true);
@@ -1715,7 +1715,7 @@ void EngineManager::on_limitsConstraintCheckBox_stateChanged(int arg1) {
 void EngineManager::on_explodePushButton_clicked() {
     if (d != nullptr && he != nullptr){
         double dist = ui->explodeSpinBox->value();
-        Pointd bc = d->getBarycenter();
+		Point3d bc = d->barycenter();
         he->explode(bc, dist);
         mainWindow.canvas.update();
     }
@@ -1723,10 +1723,10 @@ void EngineManager::on_explodePushButton_clicked() {
 
 void EngineManager::on_createBoxPushButton_clicked() {
     if (b == nullptr){
-        b = new Box3D(Pointd(0,0,0), Pointd(3,3,3));
-        b->setConstraint1(Pointd(1, 1.5, 1.5));
-        b->setConstraint2(Pointd(1.5, 1.5, 1));
-        b->setConstraint3(Pointd(1, 1.5, 1));
+		b = new Box3D(Point3d(0,0,0), Point3d(3,3,3));
+		b->setConstraint1(Point3d(1, 1.5, 1.5));
+		b->setConstraint2(Point3d(1.5, 1.5, 1));
+		b->setConstraint3(Point3d(1, 1.5, 1));
         b->setColor(Color(0,0,0));
         mainWindow.pushDrawableObject(b, "Box");
     }
@@ -1742,9 +1742,9 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
         for (Dcel::Face* f : d->faceIterator())
             f->setColor(Color(128,128,128));
         std::vector< std::set<const Dcel::Face*> > trianglesCovered (solutions->getNumberBoxes());
-        cgal::AABBTree tree(*d);
+		cgal::AABBTree3 tree(*d);
         for (unsigned int i = 0; i < solutions->getNumberBoxes(); i++) {
-            std::list<const Dcel::Face*> ltmp = tree.getCompletelyContainedDcelFaces(solutions->getBox(i));
+			std::list<const Dcel::Face*> ltmp = tree.completelyContainedDcelFaces(solutions->getBox(i));
             std::set<const Dcel::Face*> tcbox(ltmp.begin(), ltmp.end());
             trianglesCovered[i] = tcbox;
         }
@@ -1761,12 +1761,12 @@ void EngineManager::on_coveredTrianglesPushButton_clicked() {
             }
             //assert(lonelyTriangles.size() > 0);
             for (const Dcel::Face* f : lonelyTriangles){
-                d->getFace(f->getId())->setColor(c);
+				d->face(f->id())->setColor(c);
             }
             h+=step;
         }
         d->update();
-        d->saveOnObjFile("boxes/MeshTriangles.obj");
+		d->saveOnObj("boxes/MeshTriangles.obj");
 
         mainWindow.canvas.update();
     }
@@ -1817,10 +1817,10 @@ void EngineManager::on_experimentButton_clicked() {
 
 void EngineManager::on_createBox2PushButton_clicked() {
     if (b2 == nullptr){
-        b2 = new Box3D(Pointd(0,0,0), Pointd(3,3,3));
-        b2->setConstraint1(Pointd(1, 1.5, 1.5));
-        b2->setConstraint2(Pointd(1.5, 1.5, 1));
-        b2->setConstraint3(Pointd(1, 1.5, 1));
+		b2 = new Box3D(Point3d(0,0,0), Point3d(3,3,3));
+		b2->setConstraint1(Point3d(1, 1.5, 1.5));
+		b2->setConstraint2(Point3d(1.5, 1.5, 1));
+		b2->setConstraint3(Point3d(1, 1.5, 1));
         b2->setColor(Color(0,0,0));
         mainWindow.pushDrawableObject(b2, "Box2");
     }
@@ -1890,7 +1890,7 @@ void EngineManager::on_sdfPushButton_clicked() {
         for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
             libigl::removeDuplicateVertices(he->getHeightfield(i));
             double mindist;
-            if (TinyFeatureDetection::tinyFeaturePlane(he->getHeightfield(i),he->getTarget(i), d->getAverageHalfEdgesLength()*ui->thresholdTinyFeaturesSpinBox->value(), mindist)){
+			if (TinyFeatureDetection::tinyFeaturePlane(he->getHeightfield(i),he->getTarget(i), d->averageHalfEdgesLength()*ui->thresholdTinyFeaturesSpinBox->value(), mindist)){
                 tinyPieces.push_back(std::pair<double, unsigned int>(mindist, solutions->getBox(i).getId()));
                 he->getHeightfield(i).setFaceColor(Color(255,0,0));
             }
@@ -1978,7 +1978,7 @@ void EngineManager::on_saveShownBoxPushButton_clicked() {
 
 void EngineManager::on_rotatePushButton_clicked() {
     if (he != nullptr && d != nullptr && baseComplex != nullptr){
-        Eigen::MatrixXd m = cg3::getRotationMatrix(Vec3(ui->xvSpinBox->value(),ui->yvSpinBox->value(),ui->zvSpinBox->value()), (ui->angleSpinBox->value()*M_PI)/180);
+		Eigen::MatrixXd m = cg3::rotationMatrix(Vec3d(ui->xvSpinBox->value(),ui->yvSpinBox->value(),ui->zvSpinBox->value()), (ui->angleSpinBox->value()*M_PI)/180);
         he->rotate(m);
         markerMesh.rotate(m);
         d->rotate(m);
@@ -2016,7 +2016,7 @@ void EngineManager::on_tinyFeaturesPushButton_clicked() {
             tinyPieces.clear();
             for (unsigned int i = 0; i < he->getNumHeightfields(); i++){
                 double mindist;
-                if (TinyFeatureDetection::tinyFeaturePlane(he->getHeightfield(i),he->getTarget(i), d->getAverageHalfEdgesLength()*ui->thresholdTinyFeaturesSpinBox->value(), mindist)){
+				if (TinyFeatureDetection::tinyFeaturePlane(he->getHeightfield(i),he->getTarget(i), d->averageHalfEdgesLength()*ui->thresholdTinyFeaturesSpinBox->value(), mindist)){
                     tinyPieces.push_back(std::pair<double, unsigned int>(mindist, solutions->getBox(i).getId()));
                     //he->getHeightfield(i).setFaceColor(Color(255,0,0));
                 }
@@ -2048,7 +2048,7 @@ void EngineManager::on_tinyFeaturesPushButton_clicked() {
                 on_reorderBoxes_clicked();
                 on_subtractPushButton_clicked();
                 on_colorPiecesPushButton_clicked();
-                serializeBC(hfdls.getActualPath() + "/bools" + std::to_string(i) + ".hfd");
+				serializeBC(hfdls.actualPath() + "/bools" + std::to_string(i) + ".hfd");
                 i++;
             }
         } while (inserted);
@@ -2072,23 +2072,23 @@ void EngineManager::on_finalizePushButton_clicked() {
             EigenMesh& m = he->getHeightfield(h);
 
             //normals
-            for (unsigned int f = 0; f < m.getNumberFaces(); f++){
+			for (unsigned int f = 0; f < m.numberFaces(); f++){
                 bool found = false;
                 for (unsigned int i = 0; i < 6 && !found; i++) {
-                    if (epsilonEqual(m.getFaceNormal(f), AXIS[i]))
+					if (epsilonEqual(m.faceNormal(f), AXIS[i]))
                         found = true;
                 }
                 if (found){
-                    Pointi face = m.getFace(f);
-                    m.addVertex(m.getVertex(face.x()));
-                    m.addVertex(m.getVertex(face.y()));
-                    m.addVertex(m.getVertex(face.z()));
-                    unsigned int v3 = m.getNumberVertices()-1;
+					Point3i face = m.face(f);
+					m.addVertex(m.vertex(face.x()));
+					m.addVertex(m.vertex(face.y()));
+					m.addVertex(m.vertex(face.z()));
+					unsigned int v3 = m.numberVertices()-1;
                     unsigned int v2 = v3-1;
                     unsigned int v1 = v2-1;
-                    m.setVertexNormal(m.getFaceNormal(f), v1);
-                    m.setVertexNormal(m.getFaceNormal(f), v2);
-                    m.setVertexNormal(m.getFaceNormal(f), v3);
+					m.setVertexNormal(m.faceNormal(f), v1);
+					m.setVertexNormal(m.faceNormal(f), v2);
+					m.setVertexNormal(m.faceNormal(f), v3);
                     m.setFace(f, v1, v2, v3);
                 }
             }

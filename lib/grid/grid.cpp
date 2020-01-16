@@ -7,7 +7,7 @@ using namespace cg3;
 Grid::Grid() {
 }
 
-Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
+Grid::Grid(const Point3i& resolution, const Array3D<Point3d>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Point3d& gMin, const Point3d& gMax) :
     signedDistances(signedDistances), target(0,0,0) {
     unit = gridCoordinates(1,0,0).x() - gridCoordinates(0,0,0).x();
     bb.setMin(gMin);
@@ -35,30 +35,30 @@ Grid::Grid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, con
  * @param d
  */
 void Grid::calculateBorderWeights(const Dcel& d, bool tolerance, std::set<const Dcel::Face*>& savedFaces) {
-    cgal::AABBTree aabb(d);
+	cgal::AABBTree3 aabb(d);
     double unit = getUnit();
-    std::vector<Pointi> flipped;
-    std::vector<Pointi> notFlipped;
+	std::vector<Point3i> flipped;
+	std::vector<Point3i> notFlipped;
     for (unsigned int i = 0; i < resX-1; i++){
         for (unsigned int j = 0; j < resY-1; j++){
             for (unsigned int k = 0; k < resZ-1; k++){
                 #ifdef CUBE_CENTROID
                 CG3_SUPPRESS_WARNING(tolerance);
-                Pointd bbmin = getPoint(i,j,k) - (unit/2);
-                Pointd bbmax = getPoint(i,j,k) + (unit/2);
+				Point3d bbmin = getPoint(i,j,k) - (unit/2);
+				Point3d bbmax = getPoint(i,j,k) + (unit/2);
                 #else
-                Pointd bbmin = getPoint(i,j,k);
-                Pointd bbmax(bbmin.x()+unit, bbmin.y()+unit, bbmin.z()+unit);
+				Point3d bbmin = getPoint(i,j,k);
+				Point3d bbmax(bbmin.x()+unit, bbmin.y()+unit, bbmin.z()+unit);
                 #endif
-                BoundingBox bb(bbmin, bbmax);
+				BoundingBox3 bb(bbmin, bbmax);
                 std::list<const Dcel::Face*> l;
-                aabb.getContainedDcelFaces(l, bb);
+				aabb.containedDcelFaces(l, bb);
                 if (l.size() != 0){
                     bool b = true;
                     for (std::list<const Dcel::Face*>::iterator it = l.begin(); it != l.end(); ++it) {
                         const Dcel::Face* f = *it;
-                        Pointi p(i,j,k);
-                        if (f->getNormal().dot(target) < FLIP_ANGLE && f->getFlag() != 1 && savedFaces.find(f) == savedFaces.end()){
+						Point3i p(i,j,k);
+						if (f->normal().dot(target) < FLIP_ANGLE && f->flag() != 1 && savedFaces.find(f) == savedFaces.end()){
                              flipped.push_back(p);
                              b = false;
                         }
@@ -150,9 +150,9 @@ void Grid::calculateWeightsAndFreezeKernel(const Dcel& d, double value, bool tol
 void Grid::calculateFullBoxValues(double (*integralTricubicInterpolation)(const gridreal *&, double, double, double, double, double, double)) {
     fullBoxValues = Array3D<gridreal>(getResX()-1, getResY()-1, getResZ()-1);
     #pragma omp parallel for
-    for (unsigned int i = 0; i < fullBoxValues.getSizeX(); ++i){
-        for (unsigned int j = 0; j < fullBoxValues.getSizeY(); ++j){
-            for (unsigned int k = 0; k < fullBoxValues.getSizeZ(); ++k){
+	for (unsigned int i = 0; i < fullBoxValues.sizeX(); ++i){
+		for (unsigned int j = 0; j < fullBoxValues.sizeY(); ++j){
+			for (unsigned int k = 0; k < fullBoxValues.sizeZ(); ++k){
                 const gridreal * coeffs;
                 getCoefficients(coeffs, i, j, k);
                 fullBoxValues(i,j,k) = integralTricubicInterpolation(coeffs, 0,0,0,1,1,1);
@@ -161,10 +161,10 @@ void Grid::calculateFullBoxValues(double (*integralTricubicInterpolation)(const 
     }
 }
 
-double Grid::getValue(const Pointd& p) const {
+double Grid::getValue(const Point3d& p) const {
     if (! bb.isStrictlyIntern(p)) return BORDER_PAY;
     unsigned int xi = getIndexOfCoordinateX(p.x()), yi = getIndexOfCoordinateY(p.y()), zi = getIndexOfCoordinateZ(p.z());
-    Pointd n = getPoint(xi, yi, zi);
+	Point3d n = getPoint(xi, yi, zi);
     if (n == p)
         return weights(xi,yi,zi);
     else{
@@ -177,10 +177,10 @@ double Grid::getValue(const Pointd& p) const {
 
 void Grid::getMinAndMax(double& min, double& max) {
     min = MIN_PAY; max = MAX_PAY;
-    for (double xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=0.5){
-        for (double yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=0.5){
-            for (double zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=0.5){
-                double w = getValue(Pointd(xi,yi,zi));
+	for (double xi = bb.minX(); xi <= bb.maxX(); xi+=0.5){
+		for (double yi = bb.minY(); yi <= bb.maxY(); yi+=0.5){
+			for (double zi = bb.minZ(); zi <= bb.maxZ(); zi+=0.5){
+				double w = getValue(Point3d(xi,yi,zi));
                 if (w < min){
                     min = w;
                 }

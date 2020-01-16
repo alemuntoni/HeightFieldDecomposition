@@ -15,7 +15,7 @@ void Energy::calculateFullBoxValues(Grid &g) const {
     g.calculateFullBoxValues(integralTricubicInterpolation);
 }
 
-bool Energy::wolfeConditions(const Eigen::VectorXd &x, double alfa, const Eigen::VectorXd &direction, const Pointd &c1, const Pointd &c2, const Pointd &c3, double cos2) const {
+bool Energy::wolfeConditions(const Eigen::VectorXd &x, double alfa, const Eigen::VectorXd &direction, const Point3d &c1, const Point3d &c2, const Point3d &c3, double cos2) const {
     double cos1 = 1e-4;
     Eigen::VectorXd gradient(6);
     gradientEnergy(gradient, x, c1, c2, c3);
@@ -26,7 +26,7 @@ bool Energy::wolfeConditions(const Eigen::VectorXd &x, double alfa, const Eigen:
     return con1 && con2;
 }
 
-bool Energy::strongWolfeConditions(const Eigen::VectorXd &x, double alfa, const Eigen::VectorXd &direction, const Pointd &c1, const Pointd &c2, const Pointd &c3, double cos2) const {
+bool Energy::strongWolfeConditions(const Eigen::VectorXd &x, double alfa, const Eigen::VectorXd &direction, const Point3d &c1, const Point3d &c2, const Point3d &c3, double cos2) const {
     double cos1 = 1e-4;
     Eigen::VectorXd gradient(6);
     gradientEnergy(gradient, x, c1, c2, c3);
@@ -48,11 +48,11 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     int nIterations = 0;
     double objValue, newObjValue;
     double alfa = 1;
-    Pointd c1 = b.getConstraint1();
-    Pointd c2 = b.getConstraint2();
-    Pointd c3 = b.getConstraint3();
+	Point3d c1 = b.getConstraint1();
+	Point3d c2 = b.getConstraint2();
+	Point3d c3 = b.getConstraint3();
     Eigen::VectorXd x(6);
-    x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
+	x << b.min().x(), b.min().y(), b.min().z(), b.max().x(), b.max().y(), b.max().z();
     Eigen::VectorXd new_x(6);
     Eigen::VectorXd gradient(6);
     Eigen::VectorXd newGradient(6);
@@ -71,8 +71,8 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
             objValue = newObjValue;
             gradient = newGradient;
             if (saveIt){
-                b.setMin(Pointd(x(0), x(1), x(2)));
-                b.setMax(Pointd(x(3), x(4), x(5)));
+				b.setMin(Point3d(x(0), x(1), x(2)));
+				b.setMax(Point3d(x(3), x(4), x(5)));
                 iterations.addBox(b);
             }
             alfa*=2;
@@ -86,8 +86,8 @@ int Energy::gradientDiscend(Box3D& b, BoxList& iterations, bool saveIt) const {
     } while (/*nIterations < 500 &&*/ gradient.norm() > 1e-3 && alfa > 0);
     std::cerr << "Alfa: " << alfa << "\n\n";
     std::cerr << "Gradient norm: " << gradient.norm() << "\n";
-    b.setMin(Pointd(x(0), x(1), x(2)));
-    b.setMax(Pointd(x(3), x(4), x(5)));
+	b.setMin(Point3d(x(0), x(1), x(2)));
+	b.setMax(Point3d(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
     return nIterations;
 }
@@ -96,11 +96,11 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
     int nIterations = 0;
     double alfa = 1;
     double ro;
-    Pointd c1 = b.getConstraint1();
-    Pointd c2 = b.getConstraint2();
-    Pointd c3 = b.getConstraint3();
+	Point3d c1 = b.getConstraint1();
+	Point3d c2 = b.getConstraint2();
+	Point3d c3 = b.getConstraint3();
     Eigen::VectorXd x(6);
-    x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
+	x << b.min().x(), b.min().y(), b.min().z(), b.max().x(), b.max().y(), b.max().z();
     Eigen::VectorXd new_x(6), gradient(6), newGradient(6), direction(6);
     Eigen::MatrixXd I = Eigen::MatrixXd::Identity(6,6);
     Eigen::MatrixXd Binv = I;
@@ -113,7 +113,7 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
 
     do{
         new_x = x +alfa * direction;
-        while ((! g->getBoundingBox().isIntern(new_x(0), new_x(1), new_x(2)) || ! g->getBoundingBox().isIntern(new_x(3), new_x(4), new_x(5))) && alfa != 0){
+		while ((! g->getBoundingBox().isIntern(new_x(0), new_x(1), new_x(2)) || ! g->getBoundingBox().isIntern(new_x(3), new_x(4), new_x(5))) && alfa != 0){
             alfa /= 2;
             new_x = x +alfa * direction;
         }
@@ -138,8 +138,8 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
             ro = 1.0 / tmp;
             Binv = (I - ro*s*y.transpose())*Binv*(I - ro*y*s.transpose()) + ro*s*s.transpose();
             if (saveIt){
-                b.setMin(Pointd(x(0), x(1), x(2)));
-                b.setMax(Pointd(x(3), x(4), x(5)));
+				b.setMin(Point3d(x(0), x(1), x(2)));
+				b.setMax(Point3d(x(3), x(4), x(5)));
                 iterations.addBox(b);
             }
             x = new_x;
@@ -155,22 +155,22 @@ int Energy::BFGS(Box3D& b, BoxList& iterations, bool saveIt) const {
             alfa *= 2;
         }
     }while (alfa > 1e-6 && gradient.norm() > 1e-7 && nIterations < MAX_BFGS_ITERATIONS);
-    b.setMin(Pointd(x(0), x(1), x(2)));
-    b.setMax(Pointd(x(3), x(4), x(5)));
+	b.setMin(Point3d(x(0), x(1), x(2)));
+	b.setMax(Point3d(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
 
     return nIterations;
 }
 
-int Energy::BFGS(Box3D& b, const Pointd& limits, BoxList& iterations, bool saveIt) const {
+int Energy::BFGS(Box3D& b, const Point3d& limits, BoxList& iterations, bool saveIt) const {
     int nIterations = 0;
     double alfa = 1;
     double ro;
-    Pointd c1 = b.getConstraint1();
-    Pointd c2 = b.getConstraint2();
-    Pointd c3 = b.getConstraint3();
+	Point3d c1 = b.getConstraint1();
+	Point3d c2 = b.getConstraint2();
+	Point3d c3 = b.getConstraint3();
     Eigen::VectorXd x(6);
-    x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
+	x << b.min().x(), b.min().y(), b.min().z(), b.max().x(), b.max().y(), b.max().z();
     Eigen::VectorXd new_x(6), gradient(6), newGradient(6), direction(6);
     Eigen::MatrixXd I = Eigen::MatrixXd::Identity(6,6);
     Eigen::MatrixXd Binv = I;
@@ -183,7 +183,7 @@ int Energy::BFGS(Box3D& b, const Pointd& limits, BoxList& iterations, bool saveI
 
     do{
         new_x = x +alfa * direction;
-        while ((! g->getBoundingBox().isIntern(new_x(0), new_x(1), new_x(2)) || ! g->getBoundingBox().isIntern(new_x(3), new_x(4), new_x(5))) && alfa != 0){
+		while ((! g->getBoundingBox().isIntern(new_x(0), new_x(1), new_x(2)) || ! g->getBoundingBox().isIntern(new_x(3), new_x(4), new_x(5))) && alfa != 0){
             alfa /= 2;
             new_x = x +alfa * direction;
         }
@@ -208,8 +208,8 @@ int Energy::BFGS(Box3D& b, const Pointd& limits, BoxList& iterations, bool saveI
             ro = 1.0 / tmp;
             Binv = (I - ro*s*y.transpose())*Binv*(I - ro*y*s.transpose()) + ro*s*s.transpose();
             if (saveIt){
-                b.setMin(Pointd(x(0), x(1), x(2)));
-                b.setMax(Pointd(x(3), x(4), x(5)));
+				b.setMin(Point3d(x(0), x(1), x(2)));
+				b.setMax(Point3d(x(3), x(4), x(5)));
                 iterations.addBox(b);
             }
             x = new_x;
@@ -225,14 +225,14 @@ int Energy::BFGS(Box3D& b, const Pointd& limits, BoxList& iterations, bool saveI
             alfa *= 2;
         }
     }while (alfa > 1e-6 && gradient.norm() > 1e-7 && nIterations < 100);
-    b.setMin(Pointd(x(0), x(1), x(2)));
-    b.setMax(Pointd(x(3), x(4), x(5)));
+	b.setMin(Point3d(x(0), x(1), x(2)));
+	b.setMax(Point3d(x(3), x(4), x(5)));
     if (saveIt) iterations.addBox(b);
 
     return nIterations;
 }
 
-void Energy::gradientBarrier(Eigen::VectorXd &gBarrier, const Eigen::VectorXd &x, const Pointd& c1, const Pointd& c2, const Pointd& c3, double s)  const {
+void Energy::gradientBarrier(Eigen::VectorXd &gBarrier, const Eigen::VectorXd &x, const Point3d& c1, const Point3d& c2, const Point3d& c3, double s)  const {
 
     gBarrier <<
         -derivateFi(c1.x()-x(0),s) - derivateFi(c2.x()-x(0),s) - derivateFi(c3.x()-x(0),s),
@@ -246,15 +246,15 @@ void Energy::gradientBarrier(Eigen::VectorXd &gBarrier, const Eigen::VectorXd &x
 void Energy::gradientBarrier(Eigen::VectorXd &gBarrier, const Box3D& b, double s)  const {
 
     gBarrier <<
-    -derivateFi(b.getConstraint1().x()-b.getMin().x(),s) - derivateFi(b.getConstraint2().x()-b.getMin().x(),s) - derivateFi(b.getConstraint3().x()-b.getMin().x(),s),
-    -derivateFi(b.getConstraint1().y()-b.getMin().y(),s) - derivateFi(b.getConstraint2().y()-b.getMin().y(),s) - derivateFi(b.getConstraint3().y()-b.getMin().y(),s),
-    -derivateFi(b.getConstraint1().z()-b.getMin().z(),s) - derivateFi(b.getConstraint2().z()-b.getMin().z(),s) - derivateFi(b.getConstraint3().z()-b.getMin().z(),s),
-    derivateFi(b.getMax().x()-b.getConstraint1().x(),s) + derivateFi(b.getMax().x()-b.getConstraint2().x(),s) + derivateFi(b.getMax().x()-b.getConstraint3().x(),s),
-    derivateFi(b.getMax().y()-b.getConstraint1().y(),s) + derivateFi(b.getMax().y()-b.getConstraint2().y(),s) + derivateFi(b.getMax().y()-b.getConstraint3().y(),s),
-    derivateFi(b.getMax().z()-b.getConstraint1().z(),s) + derivateFi(b.getMax().z()-b.getConstraint2().z(),s) + derivateFi(b.getMax().z()-b.getConstraint3().z(),s);
+	-derivateFi(b.getConstraint1().x()-b.min().x(),s) - derivateFi(b.getConstraint2().x()-b.min().x(),s) - derivateFi(b.getConstraint3().x()-b.min().x(),s),
+	-derivateFi(b.getConstraint1().y()-b.min().y(),s) - derivateFi(b.getConstraint2().y()-b.min().y(),s) - derivateFi(b.getConstraint3().y()-b.min().y(),s),
+	-derivateFi(b.getConstraint1().z()-b.min().z(),s) - derivateFi(b.getConstraint2().z()-b.min().z(),s) - derivateFi(b.getConstraint3().z()-b.min().z(),s),
+	derivateFi(b.max().x()-b.getConstraint1().x(),s) + derivateFi(b.max().x()-b.getConstraint2().x(),s) + derivateFi(b.max().x()-b.getConstraint3().x(),s),
+	derivateFi(b.max().y()-b.getConstraint1().y(),s) + derivateFi(b.max().y()-b.getConstraint2().y(),s) + derivateFi(b.max().y()-b.getConstraint3().y(),s),
+	derivateFi(b.max().z()-b.getConstraint1().z(),s) + derivateFi(b.max().z()-b.getConstraint2().z(),s) + derivateFi(b.max().z()-b.getConstraint3().z(),s);
 }
 
-void Energy::gradientBarrierLimits(Eigen::VectorXd& gBarrier, const Eigen::VectorXd &x, const Pointd& l, double s) const {
+void Energy::gradientBarrierLimits(Eigen::VectorXd& gBarrier, const Eigen::VectorXd &x, const Point3d& l, double s) const {
     gBarrier <<
             derivateFi(l.x()-x(3)+x(0),s),
             derivateFi(l.y()-x(4)+x(1),s),
@@ -264,7 +264,7 @@ void Energy::gradientBarrierLimits(Eigen::VectorXd& gBarrier, const Eigen::Vecto
             -derivateFi(l.z()-x(5)+x(2),s);
 }
 
-void Energy::gradientBarrierLimits(Eigen::VectorXd& gBarrier, const BoundingBox& b, const Pointd& l, double s) const {
+void Energy::gradientBarrierLimits(Eigen::VectorXd& gBarrier, const BoundingBox3& b, const Point3d& l, double s) const {
     gBarrier <<
             derivateFi(l.x()-b.maxX()+b.minX(),s),
             derivateFi(l.y()-b.maxY()+b.minY(),s),
@@ -766,7 +766,7 @@ double Energy::gradientZMaxComponent(const gridreal*& a, double u1, double v1, d
 double Energy::gradientEvaluateXMinComponent(const Eigen::VectorXd &x) const {
     double unit = g->getUnit();
 
-    Pointd min, max;
+	Point3d min, max;
     initializeMinMax(min, max, x);
 
     double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastY = max.y()+unit, lastZ = max.z()+unit;
@@ -794,14 +794,14 @@ double Energy::gradientEvaluateXMinComponent(const Eigen::VectorXd &x) const {
                 energy += 0;
             else {
                 const gridreal* coeffs;
-                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+				g->getCoefficients(coeffs, Point3d(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
                 double v1 = minby < y1 ? y1 : minby;
                 double w1 = minbz < z1 ? z1 : minbz;
                 double v2 = maxby > y2 ? y2 : maxby;
                 double w2 = maxbz > z2 ? z2 : maxbz;
-                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+				//g->addCube(BoundingBox3(Point3d(u1,v1,w1), Point3d(u2,v2,w2)));
                 u1 = (u1-x1)/unit;
                 v1 = (v1-y1)/unit;
                 v2 = (v2-y1)/unit;
@@ -819,7 +819,7 @@ double Energy::gradientEvaluateXMinComponent(const Eigen::VectorXd &x) const {
 double Energy::gradientEvaluateYMinComponent(const Eigen::VectorXd &x) const {
     double unit = g->getUnit();
 
-    Pointd min, max;
+	Point3d min, max;
     initializeMinMax(min, max, x);
 
     double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastZ = max.z()+unit;
@@ -849,14 +849,14 @@ double Energy::gradientEvaluateYMinComponent(const Eigen::VectorXd &x) const {
                 energy += 0;
             else {
                 const gridreal* coeffs;
-                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+				g->getCoefficients(coeffs, Point3d(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
                 double v1 = minby < y1 ? y1 : minby;
                 double w1 = minbz < z1 ? z1 : minbz;
                 double u2 = maxbx > x2 ? x2 : maxbx;
                 double w2 = maxbz > z2 ? z2 : maxbz;
-                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+				//g->addCube(BoundingBox3(Point3d(u1,v1,w1), Point3d(u2,v2,w2)));
                 u1 = (u1-x1)/unit;
                 u2 = (u2-x1)/unit;
                 v1 = (v1-y1)/unit;
@@ -873,7 +873,7 @@ double Energy::gradientEvaluateYMinComponent(const Eigen::VectorXd &x) const {
 double Energy::gradientEvaluateZMinComponent(const Eigen::VectorXd& x) const {
     double unit = g->getUnit();
 
-    Pointd min, max;
+	Point3d min, max;
     initializeMinMax(min, max, x);
 
     double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit;
@@ -903,14 +903,14 @@ double Energy::gradientEvaluateZMinComponent(const Eigen::VectorXd& x) const {
                 energy += 0;
             else {
                 const gridreal* coeffs;
-                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+				g->getCoefficients(coeffs, Point3d(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
                 double v1 = minby < y1 ? y1 : minby;
                 double w1 = minbz < z1 ? z1 : minbz;
                 double u2 = maxbx > x2 ? x2 : maxbx;
                 double v2 = maxby > y2 ? y2 : maxby;
-                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+				//g->addCube(BoundingBox3(Point3d(u1,v1,w1), Point3d(u2,v2,w2)));
                 u1 = (u1-x1)/unit;
                 u2 = (u2-x1)/unit;
                 v1 = (v1-y1)/unit;
@@ -927,7 +927,7 @@ double Energy::gradientEvaluateZMinComponent(const Eigen::VectorXd& x) const {
 double Energy::gradientEvaluateXMaxComponent(const Eigen::VectorXd &x) const {
     double unit = g->getUnit();
 
-    Pointd min, max;
+	Point3d min, max;
     initializeMinMax(min, max, x);
 
     double firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
@@ -955,14 +955,14 @@ double Energy::gradientEvaluateXMaxComponent(const Eigen::VectorXd &x) const {
                 energy += 0;
             else {
                 const gridreal* coeffs;
-                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+				g->getCoefficients(coeffs, Point3d(x1,y1,z1));
 
                 double v1 = minby < y1 ? y1 : minby;
                 double w1 = minbz < z1 ? z1 : minbz;
                 double u2 = maxbx > x2 ? x2 : maxbx;
                 double v2 = maxby > y2 ? y2 : maxby;
                 double w2 = maxbz > z2 ? z2 : maxbz;
-                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+				//g->addCube(BoundingBox3(Point3d(u1,v1,w1), Point3d(u2,v2,w2)));
                 u2 = (u2-x1)/unit;
                 v1 = (v1-y1)/unit;
                 v2 = (v2-y1)/unit;
@@ -980,7 +980,7 @@ double Energy::gradientEvaluateXMaxComponent(const Eigen::VectorXd &x) const {
 double Energy::gradientEvaluateYMaxComponent(const Eigen::VectorXd& x) const {
     double unit = g->getUnit();
 
-    Pointd min, max;
+	Point3d min, max;
     initializeMinMax(min, max, x);
 
     double firstX = min.x()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
@@ -1009,14 +1009,14 @@ double Energy::gradientEvaluateYMaxComponent(const Eigen::VectorXd& x) const {
                 energy += 0;
             else {
                 const gridreal* coeffs;
-                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+				g->getCoefficients(coeffs, Point3d(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
                 double w1 = minbz < z1 ? z1 : minbz;
                 double u2 = maxbx > x2 ? x2 : maxbx;
                 double v2 = maxby > y2 ? y2 : maxby;
                 double w2 = maxbz > z2 ? z2 : maxbz;
-                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+				//g->addCube(BoundingBox3(Point3d(u1,v1,w1), Point3d(u2,v2,w2)));
                 u1 = (u1-x1)/unit;
                 u2 = (u2-x1)/unit;
                 v2 = (v2-y1)/unit;
@@ -1033,7 +1033,7 @@ double Energy::gradientEvaluateYMaxComponent(const Eigen::VectorXd& x) const {
 double Energy::gradientEvaluateZMaxComponent(const Eigen::VectorXd &x) const {
     double unit = g->getUnit();
 
-    Pointd min, max;
+	Point3d min, max;
     initializeMinMax(min, max, x);
 
     double firstX = min.x()-unit, firstY = min.y()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
@@ -1062,14 +1062,14 @@ double Energy::gradientEvaluateZMaxComponent(const Eigen::VectorXd &x) const {
                 energy += 0;
             else {
                 const gridreal* coeffs;
-                g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+				g->getCoefficients(coeffs, Point3d(x1,y1,z1));
 
                 double u1 = minbx < x1 ? x1 : minbx;
                 double v1 = minby < y1 ? y1 : minby;
                 double u2 = maxbx > x2 ? x2 : maxbx;
                 double v2 = maxby > y2 ? y2 : maxby;
                 double w2 = maxbz > z2 ? z2 : maxbz;
-                //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+				//g->addCube(BoundingBox3(Point3d(u1,v1,w1), Point3d(u2,v2,w2)));
                 u1 = (u1-x1)/unit;
                 u2 = (u2-x1)/unit;
                 v1 = (v1-y1)/unit;
@@ -1083,7 +1083,7 @@ double Energy::gradientEvaluateZMaxComponent(const Eigen::VectorXd &x) const {
     return energy;
 }
 
-void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
+void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Point3d& c1, const Point3d& c2, const Point3d& c3) const {
     assert(x.rows() == 6);
     gradientTricubicInterpolationEnergy(gradient, x);
     //for (int i = 0; i < 6; i++) gradient(i) /= 2;
@@ -1093,7 +1093,7 @@ void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x,
     //gradient.normalize();
 }
 
-void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3, const Pointd& l) const {
+void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Point3d& c1, const Point3d& c2, const Point3d& c3, const Point3d& l) const {
     assert(x.rows() == 6);
     gradientEnergy(gradient, x, c1, c2, c3);
     Eigen::VectorXd gBarrier(6);
@@ -1103,11 +1103,11 @@ void Energy::gradientEnergy(Eigen::VectorXd& gradient, const Eigen::VectorXd& x,
 
 void Energy::gradientEnergyFiniteDifference(Eigen::VectorXd& gradient, const Box3D b) const {
     Eigen::VectorXd x(6);
-    x << b.getMin().x(), b.getMin().y(), b.getMin().z(), b.getMax().x(), b.getMax().y(), b.getMax().z();
+	x << b.min().x(), b.min().y(), b.min().z(), b.max().x(), b.max().y(), b.max().z();
     gradientEnergyFiniteDifference(gradient, x, b.getConstraint1(), b.getConstraint2(), b.getConstraint3());
 }
 
-void Energy::gradientEnergyFiniteDifference(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Pointd& c1, const Pointd& c2, const Pointd& c3) const {
+void Energy::gradientEnergyFiniteDifference(Eigen::VectorXd& gradient, const Eigen::VectorXd& x, const Point3d& c1, const Point3d& c2, const Point3d& c3) const {
     gradient <<
             (energy(x(0)+EPSILON_GRAD, x(1), x(2), x(3), x(4), x(5), c1, c2, c3) - energy(x(0)-EPSILON_GRAD, x(1), x(2), x(3), x(4), x(5), c1, c2, c3)) / (2*EPSILON_GRAD),
             (energy(x(0), x(1)+EPSILON_GRAD, x(2), x(3), x(4), x(5), c1, c2, c3) - energy(x(0), x(1)-EPSILON_GRAD, x(2), x(3), x(4), x(5), c1, c2, c3)) / (2*EPSILON_GRAD),
@@ -1267,7 +1267,7 @@ double Energy::integralTricubicInterpolation(const gridreal*& a, double u1, doub
     return C_result;
 }
 
-double Energy::integralTricubicInterpolationEnergy(const Pointd& bmin, const Pointd& bmax) const {
+double Energy::integralTricubicInterpolationEnergy(const Point3d& bmin, const Point3d& bmax) const {
     Eigen::VectorXd x(6);
     x << bmin.x(), bmin.y(), bmin.z(), bmax.x(), bmax.y(), bmax.z();
     return integralTricubicInterpolationEnergy(x);
@@ -1278,21 +1278,21 @@ double Energy::integralTricubicInterpolationEnergy(const Eigen::VectorXd& x) con
     //g->deleteCubes();
     double unit = g->getUnit();
 
-    Pointd min, max;
+	Point3d min, max;
     initializeMinMax(min, max, x);
 
     /*
-    const Pointd &c = bb.getMin();
-    Pointd d = c-Pointd(x(0), x(1), x(2));
-    Pointd nu = d / g->getUnit();
+	const Point3d &c = bb.min();
+	Point3d d = c-Point3d(x(0), x(1), x(2));
+	Point3d nu = d / g->getUnit();
     Pointi ni = Pointi(nu.x(), nu.y(), nu.z());
     Pointi di = ni * g->getUnit();
-    Pointd min = c - Pointd(di.x(), di.y(), di.z());
-    d = c-Pointd(x(3), x(4), x(5));
+	Point3d min = c - Point3d(di.x(), di.y(), di.z());
+	d = c-Point3d(x(3), x(4), x(5));
     nu = d / g->getUnit();
     ni = Pointi(nu.x(), nu.y(), nu.z());
     di = ni * g->getUnit();
-    Pointd max = c - Pointd(di.x(), di.y(), di.z());*/
+	Point3d max = c - Point3d(di.x(), di.y(), di.z());*/
 
 
     double firstX = min.x()-unit, firstY = min.y()-unit, firstZ = min.z()-unit, lastX = max.x()+unit, lastY = max.y()+unit, lastZ = max.z()+unit;
@@ -1315,23 +1315,23 @@ double Energy::integralTricubicInterpolationEnergy(const Eigen::VectorXd& x) con
                     energy += 0;
                 else {
                     const gridreal* coeffs;
-                    //g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+					//g->getCoefficients(coeffs, Point3d(x1,y1,z1));
                     if (minbx <= x1 && maxbx >= x2 &&
                         minby <= y1 && maxby >= y2 &&
                         minbz <= z1 && maxbz >= z2 ) { // completly contained
-                        energy += g->getFullBoxValue(Pointd(x1,y1,z1));
+						energy += g->getFullBoxValue(Point3d(x1,y1,z1));
                         //energy += integralTricubicInterpolation(coeffs, 0,0,0,1,1,1);
-                        //g->addCube(BoundingBox(Pointd(x1,y1,z1), Pointd(x2,y2,z2)));
+						//g->addCube(BoundingBox3(Point3d(x1,y1,z1), Point3d(x2,y2,z2)));
                     }
                     else { //partially contained
-                        g->getCoefficients(coeffs, Pointd(x1,y1,z1));
+						g->getCoefficients(coeffs, Point3d(x1,y1,z1));
                         double u1 = minbx < x1 ? x1 : minbx;
                         double v1 = minby < y1 ? y1 : minby;
                         double w1 = minbz < z1 ? z1 : minbz;
                         double u2 = maxbx > x2 ? x2 : maxbx;
                         double v2 = maxby > y2 ? y2 : maxby;
                         double w2 = maxbz > z2 ? z2 : maxbz;
-                        //g->addCube(BoundingBox(Pointd(u1,v1,w1), Pointd(u2,v2,w2)));
+						//g->addCube(BoundingBox3(Point3d(u1,v1,w1), Point3d(u2,v2,w2)));
                         u1 = (u1-x1)/unit;
                         u2 = (u2-x1)/unit;
                         v1 = (v1-y1)/unit;

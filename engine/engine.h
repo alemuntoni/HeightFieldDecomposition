@@ -23,31 +23,31 @@
 namespace Engine {
     Eigen::Matrix3d findOptimalOrientation(cg3::Dcel& d, cg3::EigenMesh& originalMesh);
 
-    cg3::Vec3 getClosestTarget(const cg3::Vec3 &n);
+	cg3::Vec3d getClosestTarget(const cg3::Vec3d &n);
 
     Eigen::Matrix3d rotateDcelAlreadyScaled(cg3::Dcel& d, unsigned int rot);
 
     Eigen::Matrix3d scaleAndRotateDcel(cg3::Dcel& d, unsigned int rot = 0, double factor = 1);
 
-    void getFlippedFaces(std::set<const cg3::Dcel::Face*>& flippedFaces, std::set<const cg3::Dcel::Face*>& savedFaces, const cg3::Dcel& d, const cg3::Vec3& target, double angleThreshold, double areaThreshold);
+	void getFlippedFaces(std::set<const cg3::Dcel::Face*>& flippedFaces, std::set<const cg3::Dcel::Face*>& savedFaces, const cg3::Dcel& d, const cg3::Vec3d& target, double angleThreshold, double areaThreshold);
 
     void setTrianglesTargets(cg3::Dcel scaled[]);
 
-    void generateGridAndDistanceField(cg3::Array3D<cg3::Pointd> &grid, cg3::Array3D<gridreal> &distanceField, const cg3::SimpleEigenMesh& m, bool generateDistanceField = true, double gridUnit = 2, bool integer = true);
+	void generateGridAndDistanceField(cg3::Array3D<cg3::Point3d> &grid, cg3::Array3D<gridreal> &distanceField, const cg3::SimpleEigenMesh& m, bool generateDistanceField = true, double gridUnit = 2, bool integer = true);
 
-    void calculateGridWeights(Grid& g, const cg3::Array3D<cg3::Pointd> &grid, const cg3::Array3D<gridreal> &distanceField, const cg3::Dcel& d, double kernelDistance, bool tolerance, const cg3::Vec3 &target, std::set<const cg3::Dcel::Face*>& savedFaces);
+	void calculateGridWeights(Grid& g, const cg3::Array3D<cg3::Point3d> &grid, const cg3::Array3D<gridreal> &distanceField, const cg3::Dcel& d, double kernelDistance, bool tolerance, const cg3::Vec3d &target, std::set<const cg3::Dcel::Face*>& savedFaces);
 
     static std::set<const cg3::Dcel::Face*> dummy;
     static cg3::Array3D<gridreal> ddf;
-    cg3::Array3D<gridreal> generateGrid(Grid &g, const cg3::Dcel &d, double kernelDistance = 6, bool tolerance = false, const cg3::Vec3& target = cg3::Vec3(), std::set<const cg3::Dcel::Face*> &savedFaces = dummy);
+	cg3::Array3D<gridreal> generateGrid(Grid &g, const cg3::Dcel &d, double kernelDistance = 6, bool tolerance = false, const cg3::Vec3d& target = cg3::Vec3d(), std::set<const cg3::Dcel::Face*> &savedFaces = dummy);
 
-    void addBox(BoxList& boxList, const cg3::Vec3 target, const cg3::Dcel::Face* f, const Eigen::Matrix3d& rot);
+	void addBox(BoxList& boxList, const cg3::Vec3d target, const cg3::Dcel::Face* f, const Eigen::Matrix3d& rot);
 
-    void calculateDecimatedBoxes(BoxList &boxList, const cg3::Dcel &d, const Eigen::VectorXi& mapping, const std::set<int> &coveredFaces, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), int orientation = -1,  bool onlyTarget = false, const cg3::Vec3& target = cg3::Vec3());
+	void calculateDecimatedBoxes(BoxList &boxList, const cg3::Dcel &d, const Eigen::VectorXi& mapping, const std::set<int> &coveredFaces, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), int orientation = -1,  bool onlyTarget = false, const cg3::Vec3d& target = cg3::Vec3d());
 
-    void calculateInitialBoxes(BoxList &boxList, const cg3::Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const cg3::Vec3& target = cg3::Vec3());
+	void calculateInitialBoxes(BoxList &boxList, const cg3::Dcel &d, const Eigen::Matrix3d& rot = Eigen::Matrix3d::Identity(), bool onlyTarget = false, const cg3::Vec3d& target = cg3::Vec3d());
 
-    void expandBoxes(BoxList &boxList, const Grid &g, bool limit, const cg3::Pointd& limits, bool printTimes = false);
+	void expandBoxes(BoxList &boxList, const Grid &g, bool limit, const cg3::Point3d& limits, bool printTimes = false);
 
     void createVectorTriples(std::vector<std::tuple<int, Box3D, std::vector<bool> > >& vectorTriples, const BoxList& boxList, const cg3::Dcel &d);
 
@@ -62,9 +62,9 @@ namespace Engine {
     int deleteBoxesGSC(BoxList& boxList, const cg3::Dcel &d);
 
     static BoxList dummy2;
-    double optimize(BoxList &solutions, cg3::Dcel& d, double kernelDistance, bool limit, cg3::Pointd limits = cg3::Pointd(), bool tolerance = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true);
+	double optimize(BoxList &solutions, cg3::Dcel& d, double kernelDistance, bool limit, cg3::Point3d limits = cg3::Point3d(), bool tolerance = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true);
 
-    void optimizeAndDeleteBoxes(BoxList &solutions, cg3::Dcel& d, double kernelDistance, bool limit, cg3::Pointd limits = cg3::Pointd(), bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true, BoxList& allSolutions = dummy2);
+	void optimizeAndDeleteBoxes(BoxList &solutions, cg3::Dcel& d, double kernelDistance, bool limit, cg3::Point3d limits = cg3::Point3d(), bool heightfields = true, bool onlyNearestTarget = true, double areaTolerance = 0, double angleTolerance = 0, bool file = false, bool decimate = true, BoxList& allSolutions = dummy2);
 
     void boxPostProcessing(BoxList &solutions, const cg3::Dcel& d);
 
@@ -72,7 +72,7 @@ namespace Engine {
 
     void stupidSnapping(const cg3::Dcel& d, BoxList& solutions, double epsilon);
 
-    bool smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cg3::cgal::AABBTree& tree);
+	bool smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cg3::cgal::AABBTree3& tree);
 
     void smartSnapping(const cg3::Dcel& d, BoxList& solutions);
 
@@ -94,14 +94,14 @@ namespace Engine {
 
     cg3::SimpleEigenMesh getMarkerMesh(const HeightfieldsList& he, const cg3::Dcel& d);
 
-    void updatePieceNormals(const cg3::cgal::AABBTree& tree, cg3::Dcel &piece);
-    void updatePieceNormals(const cg3::cgal::AABBTree& tree, cg3::EigenMesh &piece);
+	void updatePieceNormals(const cg3::cgal::AABBTree3& tree, cg3::Dcel &piece);
+	void updatePieceNormals(const cg3::cgal::AABBTree3& tree, cg3::EigenMesh &piece);
 
-    void updatePiecesNormals(const cg3::cgal::AABBTree& tree, HeightfieldsList &he);
+	void updatePiecesNormals(const cg3::cgal::AABBTree3& tree, HeightfieldsList &he);
 
     void saveObjs(const std::string &foldername, const cg3::EigenMesh& originalMesh, const cg3::Dcel& inputMesh, const cg3::EigenMesh& baseComplex, const HeightfieldsList& he);
 
-    bool isAnHeightfield(const cg3::EigenMesh &m, const cg3::Vec3& v, bool strictly = false);
+	bool isAnHeightfield(const cg3::EigenMesh &m, const cg3::Vec3d& v, bool strictly = false);
 
     void colorPieces(const cg3::Dcel& d, HeightfieldsList& he);
 

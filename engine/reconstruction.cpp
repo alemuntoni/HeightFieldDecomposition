@@ -1,5 +1,5 @@
 #include "reconstruction.h"
-#include "cg3/cgal/aabbtree.h"
+#include "cg3/cgal/aabb_tree3.h"
 #include "common.h"
 
 #include <cg3/cinolib/cinolib_mesh_conversions.h>
@@ -8,14 +8,14 @@ using namespace cg3;
 
 std::map< const Dcel::Vertex*,int > Reconstruction::getMappingId(const Dcel& smoothedSurface, const HeightfieldsList& he) {
     std::map< const Dcel::Vertex*,int > mapping;
-    cgal::AABBTree tree(smoothedSurface);
+	cgal::AABBTree3 tree(smoothedSurface);
     //int referenced = 0;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         const cg3::EigenMesh m = he.getHeightfield(i);
-        for (unsigned int j = 0; j < m.getNumberVertices(); j++){
-            const Dcel::Vertex* v = tree.getNearestDcelVertex(m.getVertex(j));
+		for (unsigned int j = 0; j < m.numberVertices(); j++){
+			const Dcel::Vertex* v = tree.nearestDcelVertex(m.vertex(j));
             assert(v != nullptr);
-            if (v->getCoordinate().dist(m.getVertex(j)) == 0){
+			if (v->coordinate().dist(m.vertex(j)) == 0){
                 mapping[v] = i;
                 //referenced++;
             }
@@ -29,22 +29,22 @@ std::map< const Dcel::Vertex*,int > Reconstruction::getMappingId(const Dcel& smo
 
 std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothedSurface, const HeightfieldsList& he) {
     std::vector< std::pair<int,int> > mapping;
-    mapping.resize(smoothedSurface.getNumberVertices(), std::pair<int,int>(-1,-1));
-    cgal::AABBTree tree(smoothedSurface);
+	mapping.resize(smoothedSurface.numberVertices(), std::pair<int,int>(-1,-1));
+	cgal::AABBTree3 tree(smoothedSurface);
     int referenced = 0;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         const cg3::EigenMesh m = he.getHeightfield(i);
-        for (unsigned int j = 0; j < m.getNumberVertices(); j++){
-            const Dcel::Vertex* v = tree.getNearestDcelVertex(m.getVertex(j));
+		for (unsigned int j = 0; j < m.numberVertices(); j++){
+			const Dcel::Vertex* v = tree.nearestDcelVertex(m.vertex(j));
             assert(v != nullptr);
-            if (v->getCoordinate().dist(m.getVertex(j)) == 0){
-                Vec3 target = he.getTarget(i);
+			if (v->coordinate().dist(m.vertex(j)) == 0){
+				Vec3d target = he.getTarget(i);
                 for (int k  = 0; k < 6; k++) {
                     if (target == XYZ[k]){ // it happens just one time for every target
                         std::pair<int,int> p;
                         p.first = i; //heightfield
                         p.second = k; //target id
-                        mapping[v->getId()] = p;
+						mapping[v->id()] = p;
                         referenced++;
                     }
                 }
@@ -52,7 +52,7 @@ std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothe
         }
     }
 
-    std::cerr << "Unreferenced vertices: " << smoothedSurface.getNumberVertices() - referenced << "\n";
+	std::cerr << "Unreferenced vertices: " << smoothedSurface.numberVertices() - referenced << "\n";
 
     return mapping;
 }
@@ -62,12 +62,12 @@ std::vector< std::pair<int,int> > Reconstruction::getMapping(const Dcel& smoothe
 bool Reconstruction::validate_move(const cinolib::Trimesh<> & m, const int vid, const int hf, const int dir, const cinolib::vec3d & vid_new_pos, const BoxList &boxList, bool internToHF)
 {
     cinolib::vec3d vertex = m.vert(vid);
-    if (hf < 0 || ! boxList[hf].isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z()), -1))
+	if (hf < 0 || ! boxList[hf].isEpsilonIntern(Point3d(vertex.x(), vertex.y(), vertex.z()), -1))
         return false;
     if (internToHF){
         if (hf >= 0) {
             for (int i = 0; i < hf; i++){
-                if (boxList.getBox(i).isEpsilonIntern(Pointd(vertex.x(), vertex.y(), vertex.z()), -0.1))
+				if (boxList.getBox(i).isEpsilonIntern(Point3d(vertex.x(), vertex.y(), vertex.z()), -0.1))
                     return false;
             }
         }
@@ -190,5 +190,5 @@ void Reconstruction::reconstruction(Dcel& smoothedSurface, const std::vector<std
     //restoring
     restore_high_frequencies_gauss_seidel(smoothedTrimesh, originalTrimesh, mapping, bl, 400, internToHF);
 
-    smoothedSurface = cg3::SimpleEigenMesh(smoothedTrimesh);
+	smoothedSurface = cg3::Dcel(cg3::SimpleEigenMesh(smoothedTrimesh));
 }

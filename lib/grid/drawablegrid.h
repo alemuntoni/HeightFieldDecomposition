@@ -3,14 +3,14 @@
 
 #include "cg3/viewer/interfaces//drawable_object.h"
 #include "grid.h"
-#include "cg3/viewer/opengl_objects/opengl_objects.h"
+#include "cg3/viewer/opengl_objects/opengl_objects3.h"
 
 class DrawableGrid: public Grid, public cg3::DrawableObject
 {
     public:
         DrawableGrid();
         DrawableGrid(const Grid &g);
-        DrawableGrid(const cg3::Pointi& resolution, const cg3::Array3D<cg3::Pointd>& gridCoordinates, const cg3::Array3D<gridreal>& signedDistances, const cg3::Pointd& gMin, const cg3::Pointd& gMax);
+		DrawableGrid(const cg3::Point3i& resolution, const cg3::Array3D<cg3::Point3d>& gridCoordinates, const cg3::Array3D<gridreal>& signedDistances, const cg3::Point3d& gMin, const cg3::Point3d& gMax);
         virtual ~DrawableGrid();
 
         double getKernelDistance() const;
@@ -27,10 +27,10 @@ class DrawableGrid: public Grid, public cg3::DrawableObject
 
         // DrawableObject interface
         void draw() const;
-        cg3::Pointd sceneCenter() const;
+		cg3::Point3d sceneCenter() const;
         double sceneRadius() const;
 
-        void addCube(const cg3::BoundingBox &bb);
+		void addCube(const cg3::BoundingBox3 &bb);
         void deleteCubes();
 
         void setStepDrawGrid(double value);
@@ -39,8 +39,8 @@ class DrawableGrid: public Grid, public cg3::DrawableObject
 
     private:
 
-        void drawLine(const cg3::Pointd& a, const cg3::Pointd& b) const;
-        void drawCube(const cg3::BoundingBox& b) const;
+		void drawLine(const cg3::Point3d& a, const cg3::Point3d& b) const;
+		void drawCube(const cg3::BoundingBox3& b) const;
 
         enum {
             DRAW_KERNEL, DRAW_WEIGHTS
@@ -53,7 +53,7 @@ class DrawableGrid: public Grid, public cg3::DrawableObject
         int drawMode;
         int slice;
         int sliceValue;
-        std::vector<cg3::BoundingBox> cubes;
+		std::vector<cg3::BoundingBox3> cubes;
         double stepDrawGrid;
         double minSignedDistance;
 };

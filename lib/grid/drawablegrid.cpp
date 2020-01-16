@@ -10,7 +10,7 @@ DrawableGrid::DrawableGrid(const Grid& g) : Grid(g), drawMode(DRAW_KERNEL), slic
     minSignedDistance = signedDistances.min();
 }
 
-DrawableGrid::DrawableGrid(const Pointi& resolution, const Array3D<Pointd>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Pointd& gMin, const Pointd& gMax) :
+DrawableGrid::DrawableGrid(const Point3i& resolution, const Array3D<Point3d>& gridCoordinates, const Array3D<gridreal>& signedDistances, const Point3d& gMin, const Point3d& gMax) :
     Grid(resolution, gridCoordinates, signedDistances, gMin, gMax), drawMode(DRAW_KERNEL), slice(NO_SLICE), sliceValue(0), stepDrawGrid(2) {
     minSignedDistance = signedDistances.min();
 }
@@ -85,9 +85,9 @@ void DrawableGrid::draw() const {
         case DRAW_KERNEL:
             switch (slice){
                 case NO_SLICE:
-                    for (unsigned int i = 0; i < getResX(); ++i){
-                        for (unsigned int j = 0; j < getResY(); ++j){
-                            for (unsigned int k = 0; k < getResZ(); ++k){
+					for (unsigned int i = 0; i < getResX(); ++i){
+						for (unsigned int j = 0; j < getResY(); ++j){
+							for (unsigned int k = 0; k < getResZ(); ++k){
                                 if (getSignedDistance(i,j,k) < -kernelDistance){
                                     opengl::drawSphere(getPoint(i,j,k), 0.3, QColor(255,0,0));
                                 }
@@ -96,8 +96,8 @@ void DrawableGrid::draw() const {
                     }
                     break;
                 case X_SLICE:
-                    for (unsigned int j = 0; j < getResY(); ++j){
-                        for (unsigned int k = 0; k < getResZ(); ++k){
+					for (unsigned int j = 0; j < getResY(); ++j){
+						for (unsigned int k = 0; k < getResZ(); ++k){
                             if (getSignedDistance(sliceValue,j,k) < -kernelDistance){
                                 opengl::drawSphere(getPoint(sliceValue,j,k), 0.3, QColor(255,0,0));
                             }
@@ -105,8 +105,8 @@ void DrawableGrid::draw() const {
                     }
                     break;
                 case Y_SLICE:
-                    for (unsigned int i = 0; i < getResX(); ++i){
-                        for (unsigned int k = 0; k < getResZ(); ++k){
+					for (unsigned int i = 0; i < getResX(); ++i){
+						for (unsigned int k = 0; k < getResZ(); ++k){
                             if (getSignedDistance(i,sliceValue,k) < -kernelDistance){
                                 opengl::drawSphere(getPoint(i,sliceValue,k), 0.3, QColor(255,0,0));
                             }
@@ -114,8 +114,8 @@ void DrawableGrid::draw() const {
                     }
                     break;
                 case Z_SLICE:
-                    for (unsigned int i = 0; i < getResX(); ++i){
-                        for (unsigned int j = 0; j < getResY(); ++j){
+					for (unsigned int i = 0; i < getResX(); ++i){
+						for (unsigned int j = 0; j < getResY(); ++j){
                             if (getSignedDistance(i,j,sliceValue) < -kernelDistance){
                                 opengl::drawSphere(getPoint(i,j,sliceValue), 0.3, QColor(255,0,0));
                             }
@@ -127,9 +127,9 @@ void DrawableGrid::draw() const {
         case DRAW_WEIGHTS:
             switch (slice){
                 case NO_SLICE:
-                    for (unsigned int i = 0; i < getResX(); i+=2){
-                        for (unsigned int j = 0; j < getResY(); j+=2){
-                            for (unsigned int k = 0; k < getResZ(); k+=2){
+					for (unsigned int i = 0; i < getResX(); i+=2){
+						for (unsigned int j = 0; j < getResY(); j+=2){
+							for (unsigned int k = 0; k < getResZ(); k+=2){
                                 double w = getWeight(i,j,k);
                                 QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
                                 opengl::drawSphere(getPoint(i,j,k), 0.3, c);
@@ -138,56 +138,56 @@ void DrawableGrid::draw() const {
                     }
                     break;
                 case X_SLICE:
-                    for (unsigned int j = 0; j < getResY(); ++j){
-                        for (unsigned int k = 0; k < getResZ(); ++k){
+					for (unsigned int j = 0; j < getResY(); ++j){
+						for (unsigned int k = 0; k < getResZ(); ++k){
                             double w = getWeight(sliceValue,j,k);
                             QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
                             opengl::drawSphere(getPoint(sliceValue,j,k), 0.4, c);
                         }
                     }
                     xi = getPoint(sliceValue, 0, 0).x();
-                    for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
-                        for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
-                            double w = getValue(Pointd(xi,yi,zi));
+					for (yi = bb.minY(); yi <= bb.maxY(); yi+=stepDrawGrid){
+						for (zi = bb.minZ(); zi <= bb.maxZ(); zi+=stepDrawGrid){
+							double w = getValue(Point3d(xi,yi,zi));
                             QColor c;
                             c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                            opengl::drawSphere(Pointd(xi,yi,zi), 0.2, c);
+							opengl::drawSphere(Point3d(xi,yi,zi), 0.2, c);
                         }
                     }
                     break;
                 case Y_SLICE:
-                    for (unsigned int i = 0; i < getResX(); ++i){
-                        for (unsigned int k = 0; k < getResZ(); ++k){
+					for (unsigned int i = 0; i < getResX(); ++i){
+						for (unsigned int k = 0; k < getResZ(); ++k){
                             double w = getWeight(i,sliceValue,k);
                             QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
                             opengl::drawSphere(getPoint(i,sliceValue,k), 0.4, c);
                         }
                     }
                     yi = getPoint(0,sliceValue,0).y();
-                    for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
-                        for (zi = bb.getMinZ(); zi <= bb.getMaxZ(); zi+=stepDrawGrid){
-                            double w = getValue(Pointd(xi,yi,zi));
+					for (xi = bb.minX(); xi <= bb.maxX(); xi+=stepDrawGrid){
+						for (zi = bb.minZ(); zi <= bb.maxZ(); zi+=stepDrawGrid){
+							double w = getValue(Point3d(xi,yi,zi));
                             QColor c;
                             c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                            opengl::drawSphere(Pointd(xi,yi,zi), 0.2, c);
+							opengl::drawSphere(Point3d(xi,yi,zi), 0.2, c);
                         }
                     }
                     break;
                 case Z_SLICE:
-                    for (unsigned int i = 0; i < getResX(); ++i){
-                        for (unsigned int j = 0; j < getResY(); ++j){
+					for (unsigned int i = 0; i < getResX(); ++i){
+						for (unsigned int j = 0; j < getResY(); ++j){
                             double w = getWeight(i,j,sliceValue);
                             QColor c; c.setHsv(getHsvHFactor(w)*240,255,255);
                             opengl::drawSphere(getPoint(i,j,sliceValue), 0.4, c);
                         }
                     }
                     zi = getPoint(0,0,sliceValue).z();
-                    for (xi = bb.getMinX(); xi <= bb.getMaxX(); xi+=stepDrawGrid){
-                        for (yi = bb.getMinY(); yi <= bb.getMaxY(); yi+=stepDrawGrid){
-                            double w = getValue(Pointd(xi,yi,zi));
+					for (xi = bb.minX(); xi <= bb.maxX(); xi+=stepDrawGrid){
+						for (yi = bb.minY(); yi <= bb.maxY(); yi+=stepDrawGrid){
+							double w = getValue(Point3d(xi,yi,zi));
                             QColor c;
                             c.setHsv(getHsvHFactor(w)*240,255,getHsvVFactor(w)*255);
-                            opengl::drawSphere(Pointd(xi,yi,zi), 0.2, c);
+							opengl::drawSphere(Point3d(xi,yi,zi), 0.2, c);
                         }
                     }
                     break;
@@ -202,7 +202,7 @@ void DrawableGrid::draw() const {
     }
 }
 
-Pointd DrawableGrid::sceneCenter() const {
+Point3d DrawableGrid::sceneCenter() const {
     return bb.center();
 }
 
@@ -210,7 +210,7 @@ double DrawableGrid::sceneRadius() const {
    return bb.diag() / 2;
 }
 
-void DrawableGrid::addCube(const BoundingBox& bb) {
+void DrawableGrid::addCube(const BoundingBox3& bb) {
     cubes.push_back(bb);
 }
 
@@ -218,7 +218,7 @@ void DrawableGrid::deleteCubes() {
     cubes.clear();
 }
 
-void DrawableGrid::drawLine(const Pointd &a, const Pointd &b) const {
+void DrawableGrid::drawLine(const Point3d &a, const Point3d &b) const {
     glBegin(GL_LINES);
     glColor3f(0.0, 0.0, 0.0);
     glVertex3f(a.x(), a.y(), a.z());
@@ -226,40 +226,40 @@ void DrawableGrid::drawLine(const Pointd &a, const Pointd &b) const {
     glEnd();
 }
 
-void DrawableGrid::drawCube(const BoundingBox &b) const {
-    Pointd to(b.getMinX(), b.getMinY(), b.getMaxZ());
-    drawLine(b.getMin(), to);
-    to.set(b.getMinX(), b.getMaxY(), b.getMinZ());
-    drawLine(b.getMin(), to);
-    to.set(b.getMaxX(), b.getMinY(), b.getMinZ());
-    drawLine(b.getMin(), to);
+void DrawableGrid::drawCube(const BoundingBox3&b) const {
+	Point3d to(b.minX(), b.minY(), b.maxZ());
+	drawLine(b.min(), to);
+	to.set(b.minX(), b.maxY(), b.minZ());
+	drawLine(b.min(), to);
+	to.set(b.maxX(), b.minY(), b.minZ());
+	drawLine(b.min(), to);
 
-    to.set(b.getMaxX(), b.getMaxY(), b.getMinZ());
-    drawLine(b.getMax(), to);
-    to.set(b.getMaxX(), b.getMinY(), b.getMaxZ());
-    drawLine(b.getMax(), to);
-    to.set(b.getMinX(), b.getMaxY(), b.getMaxZ());
-    drawLine(b.getMax(), to);
+	to.set(b.maxX(), b.maxY(), b.minZ());
+	drawLine(b.max(), to);
+	to.set(b.maxX(), b.minY(), b.maxZ());
+	drawLine(b.max(), to);
+	to.set(b.minX(), b.maxY(), b.maxZ());
+	drawLine(b.max(), to);
 
-    Pointd from(b.getMinX(), b.getMinY(), b.getMaxZ());
-    to.set(b.getMinX(), b.getMaxY(), b.getMaxZ());
+	Point3d from(b.minX(), b.minY(), b.maxZ());
+	to.set(b.minX(), b.maxY(), b.maxZ());
     drawLine(from, to);
-    from.set(b.getMinX(), b.getMinY(), b.getMaxZ());
-    to.set(b.getMaxX(), b.getMinY(), b.getMaxZ());
-    drawLine(from, to);
-
-    from.set(b.getMinX(), b.getMaxY(), b.getMinZ());
-    to.set(b.getMinX(), b.getMaxY(), b.getMaxZ());
-    drawLine(from, to);
-    from.set(b.getMinX(), b.getMaxY(), b.getMinZ());
-    to.set(b.getMaxX(), b.getMaxY(), b.getMinZ());
+	from.set(b.minX(), b.minY(), b.maxZ());
+	to.set(b.maxX(), b.minY(), b.maxZ());
     drawLine(from, to);
 
-    from.set(b.getMaxX(), b.getMinY(), b.getMinZ());
-    to.set(b.getMaxX(), b.getMaxY(), b.getMinZ());
+	from.set(b.minX(), b.maxY(), b.minZ());
+	to.set(b.minX(), b.maxY(), b.maxZ());
     drawLine(from, to);
-    from.set(b.getMaxX(), b.getMinY(), b.getMinZ());
-    to.set(b.getMaxX(), b.getMinY(), b.getMaxZ());
+	from.set(b.minX(), b.maxY(), b.minZ());
+	to.set(b.maxX(), b.maxY(), b.minZ());
+    drawLine(from, to);
+
+	from.set(b.maxX(), b.minY(), b.minZ());
+	to.set(b.maxX(), b.maxY(), b.minZ());
+    drawLine(from, to);
+	from.set(b.maxX(), b.minY(), b.minZ());
+	to.set(b.maxX(), b.minY(), b.maxZ());
     drawLine(from, to);
 }
 

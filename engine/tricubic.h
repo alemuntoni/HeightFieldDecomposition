@@ -3,7 +3,7 @@
 
 #include <Eigen/Core>
 #include "cg3/data_structures/arrays/arrays.h"
-#include "cg3/geometry/point.h"
+#include "cg3/geometry/point3.h"
 
 typedef float gridreal;
 
@@ -13,7 +13,7 @@ namespace TricubicInterpolator {
 
     void getCoefficients(cg3::Array4D<gridreal>& coeffs, const cg3::Array3D<gridreal> &weights);
 
-    double getValue(const cg3::Pointd &p, const gridreal* coeffs);
+	double getValue(const cg3::Point3d &p, const gridreal* coeffs);
 }
 
 #endif

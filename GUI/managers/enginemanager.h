@@ -32,7 +32,7 @@ class EngineManager : public QFrame, cg3::SerializableObject {
         void updateLabel(double value, QLabel* label);
         void updateBoxValues();
         void updateColors(double angleThreshold, double areaThreshold);
-        cg3::Pointd getLimits();
+		cg3::Point3d getLimits();
 
         void saveMSCFile(const std::string &filename, const cg3::Dcel &d, const BoxList &bl);
 

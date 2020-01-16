@@ -1,11 +1,11 @@
 #include "engine.h"
 #include <cg3/meshes/eigenmesh/algorithms/eigenmesh_algorithms.h>
 #include <cg3/meshes/dcel/algorithms/dcel_algorithms.h>
-#include <cg3/geometry/transformations.h>
+#include <cg3/geometry/transformations3.h>
 #include <cg3/utilities/set.h>
 #include <cg3/libigl/decimate.h>
 #include <cg3/libigl/booleans.h>
-#include <cg3/libigl/face_adjacences.h>
+#include <cg3/libigl/mesh_adjacencies.h>
 #include <cg3/libigl/connected_components.h>
 #include <cg3/libigl/remove_duplicate_vertices.h>
 
@@ -14,7 +14,7 @@
 #endif
 
 #include <cg3/cgal/polyhedron.h>
-#include <cg3/cgal/signeddistances.h>
+#include "unsigned_distances.h"
 #include <CGAL/mesh_segmentation.h>
 #include <CGAL/property_map.h>
 
@@ -25,18 +25,18 @@
 using namespace cg3;
 
 Eigen::Matrix3d Engine::findOptimalOrientation(Dcel &d, EigenMesh& originalMesh) {
-    Eigen::Matrix3d matr = cg3::globalOptimalRotationMatrix(d, 1000, true);
+	Eigen::Matrix3d matr = cg3::globalOptimalRotationMatrix(d, 1000);
     d.rotate(matr);
-    Pointd c = d.getBoundingBox().center();
+	Point3d c = d.boundingBox().center();
     d.translate(-c);
-    if (originalMesh.getNumberVertices() > 0){
+	if (originalMesh.numberVertices() > 0){
         originalMesh.rotate(matr);
         originalMesh.translate(-c);
     }
     return matr;
 }
 
-Vec3 Engine::getClosestTarget(const Vec3& n)
+Vec3d Engine::getClosestTarget(const Vec3d& n)
 {
     double angle = n.dot(XYZ[0]);
     int k = 0;
@@ -54,28 +54,28 @@ Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
     if (rot > 0){
         switch (rot){
             case 1:
-                cg3::getRotationMatrix(Vec3(0,0,1), M_PI/4, m);
+				cg3::rotationMatrix(Vec3d(0,0,1), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 //m.transpose();
-                cg3::getRotationMatrix(Vec3(0,0,-1), M_PI/4, m);
+				cg3::rotationMatrix(Vec3d(0,0,-1), M_PI/4, m);
                 break;
             case 2:
-                cg3::getRotationMatrix(Vec3(0,1,0), M_PI/4, m);
+				cg3::rotationMatrix(Vec3d(0,1,0), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 //m.transpose();
-                cg3::getRotationMatrix(Vec3(0,-1,0), M_PI/4, m);
+				cg3::rotationMatrix(Vec3d(0,-1,0), M_PI/4, m);
                 break;
             case 3:
-                cg3::getRotationMatrix(Vec3(1,0,0), M_PI/4, m);
+				cg3::rotationMatrix(Vec3d(1,0,0), M_PI/4, m);
                 d.rotate(m);
                 d.updateFaceNormals();
                 d.updateVertexNormals();
                 //m.transpose();
-                cg3::getRotationMatrix(Vec3(-1,0,0), M_PI/4, m);
+				cg3::rotationMatrix(Vec3d(-1,0,0), M_PI/4, m);
                 break;
             default:
                 assert(0);
@@ -85,33 +85,33 @@ Eigen::Matrix3d Engine::rotateDcelAlreadyScaled(Dcel& d, unsigned int rot) {
 }
 
 Eigen::Matrix3d Engine::scaleAndRotateDcel(Dcel& d, unsigned int rot, double factor) {
-    BoundingBox bb = d.getBoundingBox();
+	BoundingBox3 bb = d.boundingBox();
     double avg = 0;
     for (Dcel::HalfEdgeIterator heit = d.halfEdgeBegin(); heit != d.halfEdgeEnd(); ++heit){
-        avg += (*heit)->getLength();
+		avg += (*heit)->length();
     }
-    avg /= d.getNumberHalfEdges();
-    double maxl = std::max(bb.getMaxX() - bb.getMinX(), bb.getMaxY() - bb.getMinY());
-    maxl = std::max(maxl, bb.getMaxZ() - bb.getMinZ());
+	avg /= d.numberHalfEdges();
+	double maxl = std::max(bb.maxX() - bb.minX(), bb.maxY() - bb.minY());
+	maxl = std::max(maxl, bb.maxZ() - bb.minZ());
     int resolution = (maxl / avg + 1)*factor;
     double av = maxl / resolution;
-    BoundingBox nBB(-(bb.getMax()-bb.getMin())/av, (bb.getMax()-bb.getMin())/av);
+	BoundingBox3 nBB(-(bb.max()-bb.min())/av, (bb.max()-bb.min())/av);
     d.scale(nBB);
     return rotateDcelAlreadyScaled(d, rot);
 }
 
-void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set<const Dcel::Face*> &savedFaces, const Dcel& d, const Vec3& target, double angleThreshold, double areaThreshold) {
+void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set<const Dcel::Face*> &savedFaces, const Dcel& d, const Vec3d& target, double angleThreshold, double areaThreshold) {
     double dot = - angleThreshold;
     for (const Dcel::Face* f : d.faceIterator()){
-        if (f->getNormal().dot(target) < 0){
-            if (f->getNormal().dot(target) < dot)
+		if (f->normal().dot(target) < 0){
+			if (f->normal().dot(target) < dot)
                 flippedFaces.insert(f);
             else
                 savedFaces.insert(f);
         }
     }
     if (areaThreshold > 0) { //if areathreshold = 0, flipped charts are ignored
-        double totalArea = d.getSurfaceArea();
+		double totalArea = d.surfaceArea();
         areaThreshold*=totalArea;
 
         //Chart construction
@@ -124,7 +124,7 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
                 double area = 0;
                 while (stack.size() > 0) {
                     const Dcel::Face* f = stack.top();
-                    area += f->getArea();
+					area += f->area();
                     stack.pop();
                     connectedComponent.insert(f);
                     visitedFaces.insert(f);
@@ -144,11 +144,11 @@ void Engine::getFlippedFaces(std::set<const Dcel::Face*> &flippedFaces, std::set
     }
 }
 
-void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridreal> &distanceField, const SimpleEigenMesh &m, bool generateDistanceField, double gridUnit, bool integer){
+void Engine::generateGridAndDistanceField(Array3D<Point3d> &grid, Array3D<gridreal> &distanceField, const SimpleEigenMesh &m, bool generateDistanceField, double gridUnit, bool integer){
     assert(gridUnit > 0);
     // Bounding Box
     Eigen::RowVector3d Vmin, Vmax;
-    m.getBoundingBox(Vmin, Vmax);
+	m.boundingBox(Vmin, Vmax);
 
     // create grid GV
     Eigen::RowVector3d border((int)gridUnit*5, (int)gridUnit*5, (int)gridUnit*5);
@@ -170,7 +170,7 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
     unsigned int sizeX = res(0)+1, sizeY = res(1)+1, sizeZ = res(2)+1;
     std::vector<double> distances;
     Array3D<int> mapping(sizeX, sizeY, sizeZ, -1);
-    std::vector<Pointd> insidePoints;
+	std::vector<Point3d> insidePoints;
     int inside = 0;
 
     grid.resize(sizeX, sizeY, sizeZ);
@@ -178,7 +178,7 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
         distanceField.resize(sizeX, sizeY, sizeZ);
         distanceField.fill(1);
     }
-    cgal::AABBTree tree(m, true);
+	cgal::AABBTree3 tree(m, true);
     Array3D<unsigned char> isInside(sizeX, sizeY, sizeZ);
     isInside.fill(false);
 
@@ -188,7 +188,7 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
         for (unsigned int j = 0; j < sizeY; ++j){
             zi = nGmin(2);
             for (unsigned int k = 0; k < sizeZ; ++k){
-                grid(i,j,k) = Pointd(xi,yi,zi);
+				grid(i,j,k) = Point3d(xi,yi,zi);
                 zi+=gridUnit;
             }
             yi+=gridUnit;
@@ -226,9 +226,7 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
         // compute values
         //Eigen::VectorXd S = m.getSignedDistance(GV);
 
-
-
-        distances = cgal::getUnsignedDistances(insidePoints, tree);
+		distances = getUnsignedDistances(insidePoints, tree);
 
         for (unsigned int i = 0; i < sizeX; i++){
             for (unsigned int j = 0; j < sizeY; j++){
@@ -243,10 +241,10 @@ void Engine::generateGridAndDistanceField(Array3D<Pointd> &grid, Array3D<gridrea
     }
 }
 
-void Engine::calculateGridWeights(Grid& g, const Array3D<Pointd> &grid, const Array3D<gridreal> &distanceField, const Dcel& d, double kernelDistance, bool tolerance, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces){
-    Pointi res(grid.getSizeX(), grid.getSizeY(), grid.getSizeZ());
-    Pointd nGmin(grid(0,0,0));
-    Pointd nGmax(grid(res.x()-1, res.y()-1, res.z()-1));
+void Engine::calculateGridWeights(Grid& g, const Array3D<Point3d> &grid, const Array3D<gridreal> &distanceField, const Dcel& d, double kernelDistance, bool tolerance, const Vec3d &target, std::set<const Dcel::Face*>& savedFaces){
+	Point3i res(grid.sizeX(), grid.sizeY(), grid.sizeZ());
+	Point3d nGmin(grid(0,0,0));
+	Point3d nGmax(grid(res.x()-1, res.y()-1, res.z()-1));
     g = Grid(res, grid, distanceField, nGmin, nGmax);
     g.setTarget(target);
     g.calculateWeightsAndFreezeKernel(d, kernelDistance, tolerance, savedFaces);
@@ -254,9 +252,9 @@ void Engine::calculateGridWeights(Grid& g, const Array3D<Pointd> &grid, const Ar
     e.calculateFullBoxValues(g);
 }
 
-Array3D<gridreal> Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool tolerance, const Vec3 &target, std::set<const Dcel::Face*>& savedFaces) {
+Array3D<gridreal> Engine::generateGrid(Grid& g, const Dcel& d, double kernelDistance, bool tolerance, const Vec3d &target, std::set<const Dcel::Face*>& savedFaces) {
     SimpleEigenMesh m(d);
-    Array3D<Pointd> grid;
+	Array3D<Point3d> grid;
     Array3D<gridreal> distanceField;
     Engine::generateGridAndDistanceField(grid, distanceField, m);
     calculateGridWeights(g, grid, distanceField, d, kernelDistance, tolerance, target, savedFaces);
@@ -265,7 +263,7 @@ Array3D<gridreal> Engine::generateGrid(Grid& g, const Dcel& d, double kernelDist
 
 void Engine::setTrianglesTargets(Dcel scaled[]) {
     for (Dcel::FaceIterator fit = scaled[0].faceBegin(); fit != scaled[0].faceEnd(); ++fit){
-        Vec3 n = (*fit)->getNormal();
+		Vec3d n = (*fit)->normal();
         double angle = n.dot(XYZ[0]);
         int k = 0;
         for (unsigned int i = 1; i < 18; i++){
@@ -276,42 +274,42 @@ void Engine::setTrianglesTargets(Dcel scaled[]) {
         }
         if (k < 6){
             (*fit)->setFlag(0);
-            scaled[1].getFace((*fit)->getId())->setFlag(0);
-            scaled[2].getFace((*fit)->getId())->setFlag(0);
-            scaled[3].getFace((*fit)->getId())->setFlag(0);
+			scaled[1].face((*fit)->id())->setFlag(0);
+			scaled[2].face((*fit)->id())->setFlag(0);
+			scaled[3].face((*fit)->id())->setFlag(0);
         }
         else if (k < 10) {
             (*fit)->setFlag(1);
-            scaled[1].getFace((*fit)->getId())->setFlag(1);
-            scaled[2].getFace((*fit)->getId())->setFlag(1);
-            scaled[3].getFace((*fit)->getId())->setFlag(1);
+			scaled[1].face((*fit)->id())->setFlag(1);
+			scaled[2].face((*fit)->id())->setFlag(1);
+			scaled[3].face((*fit)->id())->setFlag(1);
         }
         else if (k < 14) {
             (*fit)->setFlag(2);
-            scaled[1].getFace((*fit)->getId())->setFlag(2);
-            scaled[2].getFace((*fit)->getId())->setFlag(2);
-            scaled[3].getFace((*fit)->getId())->setFlag(2);
+			scaled[1].face((*fit)->id())->setFlag(2);
+			scaled[2].face((*fit)->id())->setFlag(2);
+			scaled[3].face((*fit)->id())->setFlag(2);
         }
         else if (k < 18) {
             (*fit)->setFlag(3);
-            scaled[1].getFace((*fit)->getId())->setFlag(3);
-            scaled[2].getFace((*fit)->getId())->setFlag(3);
-            scaled[3].getFace((*fit)->getId())->setFlag(3);
+			scaled[1].face((*fit)->id())->setFlag(3);
+			scaled[2].face((*fit)->id())->setFlag(3);
+			scaled[3].face((*fit)->id())->setFlag(3);
         }
     }
 }
 
-void Engine::addBox(BoxList& boxList, const Vec3 target, const Dcel::Face* f, const Eigen::Matrix3d& rot){
+void Engine::addBox(BoxList& boxList, const Vec3d target, const Dcel::Face* f, const Eigen::Matrix3d& rot){
         Box3D box;
         box.setTarget(target);
-        Pointd p1 = f->getOuterHalfEdge()->getFromVertex()->getCoordinate();
-        Pointd p2 = f->getOuterHalfEdge()->getToVertex()->getCoordinate();
-        Pointd p3 = f->getOuterHalfEdge()->getNext()->getToVertex()->getCoordinate();
-        Pointd bmin = p1;
+		Point3d p1 = f->outerHalfEdge()->fromVertex()->coordinate();
+		Point3d p2 = f->outerHalfEdge()->toVertex()->coordinate();
+		Point3d p3 = f->outerHalfEdge()->next()->toVertex()->coordinate();
+		Point3d bmin = p1;
         bmin = bmin.min(p2);
         bmin = bmin.min(p3);
         bmin = bmin - 1;
-        Pointd bmax = p1;
+		Point3d bmax = p1;
         bmax = bmax.max(p2);
         bmax = bmax.max(p3);
         bmax = bmax + 1;
@@ -325,7 +323,7 @@ void Engine::addBox(BoxList& boxList, const Vec3 target, const Dcel::Face* f, co
         boxList.addBox(box);
 }
 
-void Engine::calculateDecimatedBoxes(BoxList& boxList, const Dcel& d, const Eigen::VectorXi &mapping, const std::set<int>& coveredFaces, const Eigen::Matrix3d& rot, int orientation, bool onlyTarget, const Vec3& target) {
+void Engine::calculateDecimatedBoxes(BoxList& boxList, const Dcel& d, const Eigen::VectorXi &mapping, const std::set<int>& coveredFaces, const Eigen::Matrix3d& rot, int orientation, bool onlyTarget, const Vec3d& target) {
     std::vector<int> facesToCover;
     for (unsigned int i = 0; i < mapping.size(); i++){
         if (coveredFaces.find(mapping(i)) == coveredFaces.end()){
@@ -334,29 +332,29 @@ void Engine::calculateDecimatedBoxes(BoxList& boxList, const Dcel& d, const Eige
     }
 
     for (unsigned int i = 0; i < facesToCover.size(); i++){
-        const Dcel::Face* f = d.getFace(facesToCover[i]);
-        Vec3 n =f->getNormal();
-        Vec3 closestTarget = getClosestTarget(n);
+		const Dcel::Face* f = d.face(facesToCover[i]);
+		Vec3d n =f->normal();
+		Vec3d closestTarget = getClosestTarget(n);
         if (!onlyTarget || (onlyTarget && closestTarget == target)){
-            if (orientation<0 || f->getFlag()==orientation){
+			if (orientation<0 || f->flag()==orientation){
                 addBox(boxList, closestTarget, f, rot);
             }
         }
     }
 }
 
-void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen::Matrix3d &rot, bool onlyTarget, const Vec3& target) {
+void Engine::calculateInitialBoxes(BoxList& boxList, const Dcel& d, const Eigen::Matrix3d &rot, bool onlyTarget, const Vec3d& target) {
     for (Dcel::ConstFaceIterator fit = d.faceBegin(); fit != d.faceEnd(); ++fit){
         const Dcel::Face* f = *fit;
-        Vec3 n =f->getNormal();
-        Vec3 closestTarget = getClosestTarget(n);
+		Vec3d n =f->normal();
+		Vec3d closestTarget = getClosestTarget(n);
         if (!onlyTarget || (onlyTarget && closestTarget == target)){
             addBox(boxList, closestTarget, f, rot);
         }
     }
 }
 
-void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool limit, const Pointd& limits, bool printTimes) {
+void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool limit, const Point3d& limits, bool printTimes) {
     Energy e(g);
     Timer total("Boxlist expanding");
     int np = boxList.getNumberBoxes();
@@ -375,7 +373,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool limit, const Poin
 			//put the Z limit to the milling direction of the box b
 			//the other two directions will have X and Y accordingly
 			//they can be switched at will
-			Pointd actualLimits(std::min(limits.x(), limits.y()), std::min(limits.x(), limits.y()), std::min(limits.x(), limits.y())); //all the limits set to min(X, Y)
+			Point3d actualLimits(std::min(limits.x(), limits.y()), std::min(limits.x(), limits.y()), std::min(limits.x(), limits.y())); //all the limits set to min(X, Y)
             bool find = false;
             for (unsigned int i = 0; i < 3 && !find; i++){
                 if (XYZ[i] == b.getTarget() || XYZ[i+3] == b.getTarget()){
@@ -399,7 +397,7 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool limit, const Poin
 }
 
 void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector<bool> > > &vectorTriples, const BoxList& boxList, const Dcel& d) {
-    cgal::AABBTree t(d);
+	cgal::AABBTree3 t(d);
 
 
     // creating vector of pairs
@@ -408,12 +406,12 @@ void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector
     for (unsigned int i = 0; i < boxList.getNumberBoxes(); ++i){
         Box3D b = boxList.getBox(i);
         std::list<const Dcel::Face*> covered;
-        t.getContainedDcelFaces(covered, b);
+		t.containedDcelFaces(covered, b);
 
         std::list<const Dcel::Face*>::iterator it = covered.begin();
         while (it != covered.end()) {
             const Dcel::Face* f = *it;
-            Pointd p1 = f->getVertex1()->getCoordinate(), p2 = f->getVertex2()->getCoordinate(), p3 = f->getVertex3()->getCoordinate();
+			Point3d p1 = f->vertex1()->coordinate(), p2 = f->vertex2()->coordinate(), p3 = f->vertex3()->coordinate();
 
             if (!b.isIntern(p1) || !b.isIntern(p2) || !b.isIntern(p3)) {
                 it =covered.erase(it);
@@ -423,10 +421,10 @@ void Engine::createVectorTriples(std::vector< std::tuple<int, Box3D, std::vector
 
         std::vector<bool> v;
         int n = covered.size();
-        v.resize(d.getNumberFaces(), false);
+		v.resize(d.numberFaces(), false);
         for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
             const Dcel::Face* f = *it;
-            v[f->getId()] = true;
+			v[f->id()] = true;
         }
         std::tuple<int, Box3D, std::vector<bool> > triple (n, boxList.getBox(i), v);
         vectorTriples.push_back(triple);
@@ -521,23 +519,23 @@ int Engine::minimalCoveringNonOptimal(BoxList& boxList, const Dcel& d) {
     Dcel scaled0(d);
     Eigen::Matrix3d m[ORIENTATIONS];
     m[0] = Eigen::Matrix3d::Identity();
-    cgal::AABBTree t0(scaled0);
+	cgal::AABBTree3 t0(scaled0);
     #if ORIENTATIONS > 1
-    getRotationMatrix(Vec3(0,0,1), 0.785398, m[1]);
+	getRotationMatrix(Vec3d(0,0,1), 0.785398, m[1]);
     Dcel scaled1(d);
     scaled1.rotate(m[1]);
-    getRotationMatrix(Vec3(0,0,-1), 0.785398, m[1]);
-    CGALInterface::AABBTree t1(scaled1);
-    getRotationMatrix(Vec3(1,0,0), 0.785398, m[2]);
+	getRotationMatrix(Vec3d(0,0,-1), 0.785398, m[1]);
+	CGALInterface::AABBTree3 t1(scaled1);
+	getRotationMatrix(Vec3d(1,0,0), 0.785398, m[2]);
     Dcel scaled2(d);
     scaled2.rotate(m[2]);
-    getRotationMatrix(Vec3(-1,0,0), 0.785398, m[2]);
-    CGALInterface::AABBTree t2(scaled2);
-    getRotationMatrix(Vec3(0,1,0), 0.785398, m[3]);
+	getRotationMatrix(Vec3d(-1,0,0), 0.785398, m[2]);
+	CGALInterface::AABBTree3 t2(scaled2);
+	getRotationMatrix(Vec3d(0,1,0), 0.785398, m[3]);
     Dcel scaled3(d);
     scaled3.rotate(m[3]);
-    getRotationMatrix(Vec3(0,-1,0), 0.785398, m[3]);
-    CGALInterface::AABBTree t3(scaled3);
+	getRotationMatrix(Vec3d(0,-1,0), 0.785398, m[3]);
+	CGALInterface::AABBTree3 t3(scaled3);
     #endif
 
     std::vector< std::tuple<int, Box3D, std::vector<bool> > > vectorTriples;
@@ -547,7 +545,7 @@ int Engine::minimalCoveringNonOptimal(BoxList& boxList, const Dcel& d) {
         Box3D b = boxList.getBox(i);
         std::list<const Dcel::Face*> covered;
         if (b.getRotationMatrix() == m[0])
-            t0.getContainedDcelFaces(covered, b);
+			t0.containedDcelFaces(covered, b);
         #if ORIENTATIONS > 1
         else if (b.getRotationMatrix() == m[1])
             t1.getIntersectedDcelFaces(covered, b);
@@ -561,7 +559,7 @@ int Engine::minimalCoveringNonOptimal(BoxList& boxList, const Dcel& d) {
         std::list<const Dcel::Face*>::iterator it = covered.begin();
         while (it != covered.end()) {
             const Dcel::Face* f = *it;
-            Pointd p1 = f->getVertex1()->getCoordinate(), p2 = f->getVertex2()->getCoordinate(), p3 = f->getVertex3()->getCoordinate();
+			Point3d p1 = f->vertex1()->coordinate(), p2 = f->vertex2()->coordinate(), p3 = f->vertex3()->coordinate();
 
             if (!b.isIntern(p1) || !b.isIntern(p2) || !b.isIntern(p3)) {
                 it =covered.erase(it);
@@ -571,38 +569,38 @@ int Engine::minimalCoveringNonOptimal(BoxList& boxList, const Dcel& d) {
 
         std::vector<bool> v;
         int n = covered.size();
-        v.resize(d.getNumberFaces(), false);
+		v.resize(d.numberFaces(), false);
         for (std::list<const Dcel::Face*>::iterator it = covered.begin(); it != covered.end(); ++it){
             const Dcel::Face* f = *it;
-            v[f->getId()] = true;
+			v[f->id()] = true;
         }
         std::tuple<int, Box3D, std::vector<bool> > triple (n, boxList.getBox(i), v);
         vectorTriples.push_back(triple);
     }
 
-    return minimalCoveringNonOptimal(boxList, vectorTriples, d.getNumberFaces());
+	return minimalCoveringNonOptimal(boxList, vectorTriples, d.numberFaces());
 }
 
 
 bool Engine::minimalCovering(BoxList& boxList, const Dcel& d) {
     #ifdef GUROBI_DEFINED
     unsigned int nBoxes = boxList.getNumberBoxes();
-    unsigned int nTris = d.getNumberFaces();
+	unsigned int nTris = d.numberFaces();
     Array2D<int> B(nBoxes+1, nTris, 0);
-    cgal::AABBTree aabb(d);
+	cgal::AABBTree3 aabb(d);
     for (unsigned int i = 0; i < nBoxes; i++){
-        std::list<const Dcel::Face*> containedFaces = aabb.getCompletelyContainedDcelFaces(boxList.getBox(i));
+		std::list<const Dcel::Face*> containedFaces = aabb.completelyContainedDcelFaces(boxList.getBox(i));
         for (const Dcel::Face* f : containedFaces){
-            B(i,f->getId()) = 1;
+			B(i,f->id()) = 1;
         }
     }
 
     //this piece of code allows to find a solution also if there are uncovered triangles.
     //it creates a "dummy box" for every uncovered triangles
     bool bb = false;
-    for (unsigned int j = 0; j < B.getSizeY(); j++){
+	for (unsigned int j = 0; j < B.sizeY(); j++){
         int sum = 0;
-        for (unsigned int i = 0; i < B.getSizeX() && sum == 0; i++){
+		for (unsigned int i = 0; i < B.sizeX() && sum == 0; i++){
             sum += B(i,j);
         }
         if (sum == 0){
@@ -624,7 +622,7 @@ bool Engine::minimalCovering(BoxList& boxList, const Dcel& d) {
         //constraints
         for (unsigned int j = 0; j < nTris; j++){
             GRBLinExpr line = 0;
-            for (unsigned int i = 0; i < B.getSizeX(); i++){
+			for (unsigned int i = 0; i < B.sizeX(); i++){
                 line += B(i,j) * x[i];
             }
             model.addConstr(line >= 1);
@@ -665,19 +663,19 @@ bool Engine::minimalCovering(BoxList& boxList, const Dcel& d) {
 bool Engine::secondMinimalCovering(BoxList& bestList, BoxList& boxList, const Dcel& d) {
     #ifdef GUROBI_DEFINED
     unsigned int nBoxes = boxList.getNumberBoxes();
-    unsigned int nTris = d.getNumberFaces();
+	unsigned int nTris = d.numberFaces();
     Array2D<int> B(nBoxes+1, nTris, 0);
-    cgal::AABBTree aabb(d);
+	cgal::AABBTree3 aabb(d);
     for (unsigned int i = 0; i < bestList.size(); i++){
-        std::list<const Dcel::Face*> containedFaces = aabb.getCompletelyContainedDcelFaces(bestList.getBox(i));
+		std::list<const Dcel::Face*> containedFaces = aabb.completelyContainedDcelFaces(bestList.getBox(i));
         for (const Dcel::Face* f : containedFaces){
-            B(nBoxes,f->getId()) = 1;
+			B(nBoxes,f->id()) = 1;
         }
     }
     for (unsigned int i = 0; i < nBoxes; i++){
-        std::list<const Dcel::Face*> containedFaces = aabb.getCompletelyContainedDcelFaces(boxList.getBox(i));
+		std::list<const Dcel::Face*> containedFaces = aabb.completelyContainedDcelFaces(boxList.getBox(i));
         for (const Dcel::Face* f : containedFaces){
-            B(i,f->getId()) = 1;
+			B(i,f->id()) = 1;
         }
     }
 
@@ -685,11 +683,11 @@ bool Engine::secondMinimalCovering(BoxList& bestList, BoxList& boxList, const Dc
     //this piece of code allows to find a solution also if there are uncovered triangles.
     //it creates a "dummy box" for every uncovered triangles
     bool bb = false;
-    for (unsigned int j = 0; j < B.getSizeY(); j++){
+	for (unsigned int j = 0; j < B.sizeY(); j++){
         int sum = 0;
 
         if (B(nBoxes, j) != 1) {
-            for (unsigned int i = 0; i < B.getSizeX() && sum == 0; i++){
+			for (unsigned int i = 0; i < B.sizeX() && sum == 0; i++){
                 sum += B(i,j);
             }
             if (sum == 0){
@@ -712,7 +710,7 @@ bool Engine::secondMinimalCovering(BoxList& bestList, BoxList& boxList, const Dc
         //constraints
         for (unsigned int j = 0; j < nTris; j++){
             GRBLinExpr line = 0;
-            for (unsigned int i = 0; i < B.getSizeX(); i++){
+			for (unsigned int i = 0; i < B.sizeX(); i++){
                 line += B(i,j) * x[i];
             }
             model.addConstr(line >= 1);
@@ -757,15 +755,15 @@ int Engine::deleteBoxesGSC(BoxList& boxList, const Dcel& d) {
     std::set<int> W;
     std::vector<int> C;
 
-    for (unsigned int i = 0; i < d.getNumberFaces(); i++)
+	for (unsigned int i = 0; i < d.numberFaces(); i++)
         W.insert(i);
 
-    cgal::AABBTree aabb(d);
+	cgal::AABBTree3 aabb(d);
     for (unsigned int i = 0; i < nBoxes; i++){
-        std::list<const Dcel::Face*> containedFaces = aabb.getCompletelyContainedDcelFaces(boxList.getBox(i));
+		std::list<const Dcel::Face*> containedFaces = aabb.completelyContainedDcelFaces(boxList.getBox(i));
         std::set<int> s;
         for (const Dcel::Face* f : containedFaces){
-            s.insert(f->getId());
+			s.insert(f->id());
         }
         F[i] = s;
     }
@@ -799,7 +797,7 @@ int Engine::deleteBoxesGSC(BoxList& boxList, const Dcel& d) {
 }
 
 
-double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate) {
+double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Point3d limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate) {
     assert(kernelDistance >= 0 && kernelDistance <= 1);
     solutions.clearBoxes();
     Dcel scaled[ORIENTATIONS];
@@ -820,20 +818,20 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
     std::set<int> coveredFaces;
     int factor = 1024;
 
-    unsigned int numberFaces = d.getNumberFaces();
+	unsigned int numberFaces = d.numberFaces();
     if (decimate){
         while (numberFaces/factor  < STARTING_NUMBER_FACES && factor != 1)
             factor/=2;
         numberFaces/=factor;
     }
-    cgal::AABBTree aabb[ORIENTATIONS];
+	cgal::AABBTree3 aabb[ORIENTATIONS];
     for (unsigned int i = 0; i < ORIENTATIONS; i++)
-        aabb[i] = cgal::AABBTree(scaled[i]);
+		aabb[i] = cgal::AABBTree3(scaled[i]);
     for (unsigned int i = 0; i < ORIENTATIONS; ++i){
         bool first = true;
         if (file) {
             double totalTimeGG = 0;
-            Array3D<Pointd> grid;
+			Array3D<Point3d> grid;
             Array3D<gridreal> distanceField;
             for (unsigned int j = 0; j < TARGETS; ++j) {
                 #ifdef USE_2D_ONLY
@@ -870,7 +868,7 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
             std::cerr << "Total time generating Grids: " << totalTimeGG << "\n";
         }
         else {
-            Array3D<Pointd> grid;
+			Array3D<Point3d> grid;
             Array3D<gridreal> distanceField;
             SimpleEigenMesh m(scaled[i]);
             Engine::generateGridAndDistanceField(grid, distanceField, m);
@@ -893,7 +891,7 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
     bool end = false;
 
     double totalTbg = 0;
-    while (coveredFaces.size() < scaled[0].getNumberFaces() && !end){
+	while (coveredFaces.size() < scaled[0].numberFaces() && !end){
         BoxList tmp[ORIENTATIONS][TARGETS];
         Eigen::VectorXi faces[ORIENTATIONS];
         for (unsigned int i = 0; i < ORIENTATIONS; i++){
@@ -956,9 +954,9 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
                 #endif
                     for (unsigned int k = 0; k < tmp[i][j].getNumberBoxes(); ++k){
                         std::list<const Dcel::Face*> list;
-                        aabb[i].getCompletelyContainedDcelFaces(list, tmp[i][j].getBox(k));
+						aabb[i].completelyContainedDcelFaces(list, tmp[i][j].getBox(k));
                         for (std::list<const Dcel::Face*>::iterator it = list.begin(); it != list.end(); ++it){
-                            coveredFaces.insert((*it)->getId());
+							coveredFaces.insert((*it)->id());
                         }
                     }
                 #ifdef USE_2D_ONLY
@@ -980,23 +978,23 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
         }
 
         std::cerr << "Starting Number Faces: " << numberFaces << "; Total Covered Faces: " << coveredFaces.size() << "\n";
-        std::cerr << "Target: " << scaled[0].getNumberFaces() << "\n";
-        if (numberFaces == scaled[0].getNumberFaces()) {
+		std::cerr << "Target: " << scaled[0].numberFaces() << "\n";
+		if (numberFaces == scaled[0].numberFaces()) {
             end = true;
-            if (coveredFaces.size() != scaled[0].getNumberFaces()){
+			if (coveredFaces.size() != scaled[0].numberFaces()){
                 std::cerr << "WARNING: Not every face has been covered by a box.\n";
-                std::cerr << "Number uncovered faces: " << scaled[0].getNumberFaces() - coveredFaces.size() << "\n";
+				std::cerr << "Number uncovered faces: " << scaled[0].numberFaces() - coveredFaces.size() << "\n";
                 for (Dcel::Face* f : d.faceIterator()){
-                    if (coveredFaces.find(f->getId()) == coveredFaces.end()){
-                        std::cerr << "Uncovered face id: " << f->getId() << "\n";
+					if (coveredFaces.find(f->id()) == coveredFaces.end()){
+						std::cerr << "Uncovered face id: " << f->id() << "\n";
                         f->setColor(Color(0,0,0));
                     }
                 }
             }
         }
         numberFaces*=2;
-        if (numberFaces > scaled[0].getNumberFaces())
-            numberFaces = scaled[0].getNumberFaces();
+		if (numberFaces > scaled[0].numberFaces())
+			numberFaces = scaled[0].numberFaces();
     }
     std::cerr << "Total time Boxes Growth: " << totalTbg << "\n";
 
@@ -1039,17 +1037,17 @@ double Engine::optimize(BoxList& solutions, Dcel& d, double kernelDistance, bool
  * @param areaTolerance
  * @param angleTolerance
  */
-void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Pointd limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate, BoxList& allSolutions) {
+void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDistance, bool limit, Point3d limits, bool tolerance, bool onlyNearestTarget, double areaTolerance, double angleTolerance, bool file, bool decimate, BoxList& allSolutions) {
     optimize(solutions, d, kernelDistance, limit, limits, tolerance, onlyNearestTarget, areaTolerance, angleTolerance, file, decimate);
     allSolutions=solutions;
 
     //
-    cg3::cgal::AABBTree tree(d);
+	cg3::cgal::AABBTree3 tree(d);
     BoxList bestSolutions, otherSolutions;
     for (const Box3D& b : solutions){
         int nEdges = 0;
         for (unsigned int i = 0; i < 6; i++){
-            BoundingBox bb = b;
+			BoundingBox3 bb = b;
             if (i < 3){
                 bb(i+3) = bb(i) + CG3_EPSILON;
 
@@ -1057,7 +1055,7 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
             else {
                 bb(i-3) = bb(i) - CG3_EPSILON;
             }
-            if (tree.getNumberIntersectedPrimitives(bb) > 0)
+			if (tree.numberIntersectedPrimitives(bb) > 0)
                 nEdges++;
         }
         if (nEdges <= 1)
@@ -1085,11 +1083,11 @@ void Engine::optimizeAndDeleteBoxes(BoxList& solutions, Dcel& d, double kernelDi
 }
 
 void Engine::boxPostProcessing(BoxList& solutions, const Dcel& d) {
-    cgal::AABBTree tree(d);
+	cgal::AABBTree3 tree(d);
     for (int bi = solutions.getNumberBoxes()-1; bi >= 0; bi--) {
         Box3D b = solutions.getBox(bi);
-        std::list<const Dcel::Face*> list = tree.getContainedDcelFaces(b);
-        std::vector<std::set<const Dcel::Face*> > connectedComponents = dcelAlgorithms::getConnectedComponents(list.begin(), list.end());
+		std::list<const Dcel::Face*> list = tree.containedDcelFaces(b);
+		std::vector<std::set<const Dcel::Face*> > connectedComponents = dcelAlgorithms::connectedComponents(list.begin(), list.end());
         if (connectedComponents.size() > 1){
             std::cerr << "Box " << bi << " has " << connectedComponents.size() << " connected components\n";
             std::vector<Box3D> tmpvect = splitBoxWithMoreThanOneConnectedComponent(b, connectedComponents);
@@ -1113,12 +1111,12 @@ std::vector<Box3D> Engine::splitBoxWithMoreThanOneConnectedComponent(const Box3D
             for (const Dcel::Vertex* v : f->incidentVertexIterator()){
                 if (first){
                     first = false;
-                    b.setMin(v->getCoordinate());
-                    b.setMax(v->getCoordinate());
+					b.setMin(v->coordinate());
+					b.setMax(v->coordinate());
                 }
                 else {
-                    b.setMin(b.min().min(v->getCoordinate()));
-                    b.setMax(b.max().max(v->getCoordinate()));
+					b.setMin(b.min().min(v->coordinate()));
+					b.setMax(b.max().max(v->coordinate()));
                 }
             }
         }
@@ -1133,9 +1131,9 @@ std::vector<Box3D> Engine::splitBoxWithMoreThanOneConnectedComponent(const Box3D
     return splittedBoxes;
 }
 
-bool checkNewBox(const Box3D& tmp, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cgal::AABBTree& tree){
+bool checkNewBox(const Box3D& tmp, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cgal::AABBTree3& tree){
     std::list<unsigned int> newTriangles;
-    tree.getCompletelyContainedDcelFaces(newTriangles, tmp);
+	tree.completelyContainedDcelFaces(newTriangles, tmp);
     std::set<unsigned int> uncovered = cg3::difference(b2.getTrianglesCovered(), std::set<unsigned int>(newTriangles.begin(), newTriangles.end()));
     bool shrink = true;
     for (unsigned int t : uncovered){
@@ -1154,7 +1152,7 @@ bool checkNewBox(const Box3D& tmp, Box3D& b2, std::vector<unsigned int>& triangl
 }
 
 void Engine::stupidSnapping(const Dcel& d, BoxList& solutions, double epsilon) {
-    BoundingBox bb = d.getBoundingBox();
+	BoundingBox3 bb = d.boundingBox();
     for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
         Box3D b1 = solutions.getBox(i);
         for (unsigned int coord = 0; coord < 3; coord++) {
@@ -1204,51 +1202,51 @@ void Engine::stupidSnapping(const Dcel& d, BoxList& solutions, double epsilon) {
     }
 }
 
-bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cgal::AABBTree& tree) {
+bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>& trianglesCovered, const cgal::AABBTree3& tree) {
     bool found = false;
     Box3D tmp = b2;
-    if (isInBounds(b2.getMinX(), b1.getMinX(), b1.getMaxX()) && b2.getMaxX() > b1.getMaxX()){
-        tmp.setMinX(b1.getMaxX());
+	if (isInBounds(b2.minX(), b1.minX(), b1.maxX()) && b2.maxX() > b1.maxX()){
+		tmp.setMinX(b1.maxX());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
             return true;
         else
             tmp = b2;
     }
-    if (isInBounds(b2.getMinY(), b1.getMinY(), b1.getMaxY()) && b2.getMaxY() > b1.getMaxY()) {
-        tmp.setMinY(b1.getMaxY());
+	if (isInBounds(b2.minY(), b1.minY(), b1.maxY()) && b2.maxY() > b1.maxY()) {
+		tmp.setMinY(b1.maxY());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
             return true;
         else
             tmp = b2;
     }
-    if (isInBounds(b2.getMinZ(), b1.getMinZ(), b1.getMaxZ()) && b2.getMaxZ() > b1.getMaxZ()) {
-        tmp.setMinZ(b1.getMaxZ());
+	if (isInBounds(b2.minZ(), b1.minZ(), b1.maxZ()) && b2.maxZ() > b1.maxZ()) {
+		tmp.setMinZ(b1.maxZ());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
             return true;
         else
             tmp = b2;
     }
-    if (isInBounds(b2.getMaxX(), b1.getMinX(), b1.getMaxX()) && b2.getMinX() < b1.getMinX()){
-        tmp.setMaxX(b1.getMinX());
+	if (isInBounds(b2.maxX(), b1.minX(), b1.maxX()) && b2.minX() < b1.minX()){
+		tmp.setMaxX(b1.minX());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
             return true;
         else
             tmp = b2;
     }
-    if (isInBounds(b2.getMaxY(), b1.getMinY(), b1.getMaxY()) && b2.getMinY() < b1.getMinY()){
-        tmp.setMaxY(b1.getMinY());
+	if (isInBounds(b2.maxY(), b1.minY(), b1.maxY()) && b2.minY() < b1.minY()){
+		tmp.setMaxY(b1.minY());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
             return true;
         else
             tmp = b2;
     }
-    if (isInBounds(b2.getMaxZ(), b1.getMinZ(), b1.getMaxZ()) && b2.getMinZ() < b1.getMinZ()){
-        tmp.setMaxZ(b1.getMinZ());
+	if (isInBounds(b2.maxZ(), b1.minZ(), b1.maxZ()) && b2.minZ() < b1.minZ()){
+		tmp.setMaxZ(b1.minZ());
         found = checkNewBox(tmp, b2, trianglesCovered, tree);
         if (found)
             return true;
@@ -1257,9 +1255,9 @@ bool Engine::smartSnapping(const Box3D& b1, Box3D& b2, std::vector<unsigned int>
 }
 
 void Engine::smartSnapping(const Dcel& d, BoxList& solutions) {
-    cgal::AABBTree tree(d);
+	cgal::AABBTree3 tree(d);
     solutions.calculateTrianglesCovered(tree);
-    std::vector<unsigned int> trianglesCovered(d.getNumberFaces(), 0);
+	std::vector<unsigned int> trianglesCovered(d.numberFaces(), 0);
     for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
         const std::set<unsigned int>& s = solutions[i].getTrianglesCovered();
         for (unsigned int j : s){
@@ -1311,8 +1309,8 @@ void Engine::smartSnapping(const Dcel& d, BoxList& solutions) {
 }
 
 void Engine::merging(const Dcel& d, BoxList& solutions) {
-    cgal::AABBTree tree(d);
-    std::vector<unsigned int> trianglesCovered(d.getNumberFaces(), 0);
+	cgal::AABBTree3 tree(d);
+	std::vector<unsigned int> trianglesCovered(d.numberFaces(), 0);
     for (unsigned int i = 0; i < solutions.getNumberBoxes(); i++){
         const std::set<unsigned int>& s = solutions[i].getTrianglesCovered();
         for (unsigned int j : s){
@@ -1337,7 +1335,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                 Box3D tmpa = a;
                                 tmpa.setBaseLevel(baseB);
                                 std::list<unsigned int> newTrianglesA;
-                                tree.getCompletelyContainedDcelFaces(newTrianglesA, tmpa);
+								tree.completelyContainedDcelFaces(newTrianglesA, tmpa);
                                 std::set<unsigned int> nonCoveredTrianglesA(newTrianglesA.begin(), newTrianglesA.end());
                                 nonCoveredTrianglesA = cg3::difference(a.getTrianglesCovered(), nonCoveredTrianglesA);
                                 bool shrink = true;
@@ -1356,8 +1354,8 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                     SimpleEigenMesh u = libigl::union_(a.getEigenMesh(), b.getEigenMesh());
                                     a.setEigenMesh(u);
                                     a.setTrianglesCovered(cg3::union_(a.getTrianglesCovered(), b.getTrianglesCovered()));
-                                    a.setMin(u.getBoundingBox().min());
-                                    a.setMax(u.getBoundingBox().max());
+									a.setMin(u.boundingBox().min());
+									a.setMax(u.boundingBox().max());
                                     solutions[i].setSplitted(true);
                                     solutions.removeBox(j);
                                     if (i > j)
@@ -1370,7 +1368,7 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                 Box3D tmpb = b;
                                 tmpb.setBaseLevel(baseA);
                                 std::list<unsigned int> newTrianglesB;
-                                tree.getCompletelyContainedDcelFaces(newTrianglesB, tmpb);
+								tree.completelyContainedDcelFaces(newTrianglesB, tmpb);
                                 std::set<unsigned int> nonCoveredTrianglesB(newTrianglesB.begin(), newTrianglesB.end());
                                 nonCoveredTrianglesB = cg3::difference(b.getTrianglesCovered(), nonCoveredTrianglesB);
                                 bool shrink = true;
@@ -1389,8 +1387,8 @@ void Engine::merging(const Dcel& d, BoxList& solutions) {
                                     SimpleEigenMesh u = libigl::union_(a.getEigenMesh(), b.getEigenMesh());
                                     a.setEigenMesh(u);
                                     a.setTrianglesCovered(cg3::union_(a.getTrianglesCovered(), b.getTrianglesCovered()));
-                                    a.setMin(u.getBoundingBox().min());
-                                    a.setMax(u.getBoundingBox().max());
+									a.setMin(u.boundingBox().min());
+									a.setMax(u.boundingBox().max());
                                     solutions[i].setSplitted(true);
                                     solutions.removeBox(j);
                                     if (i > j)
@@ -1431,7 +1429,7 @@ void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxLis
         SimpleEigenMesh intersection;
         box = solutions.getBox(i).getEigenMesh();
         //double eps = ((double) rand() / (RAND_MAX));
-        //box.scale(Vec3(1+ eps* 1e-5, 1+ eps* 1e-5, 1+ eps* 1e-5));
+		//box.scale(Vec3d(1+ eps* 1e-5, 1+ eps* 1e-5, 1+ eps* 1e-5));
         //#ifdef BOOL_DEBUG
         //box.saveOnObj("booleans/box" + std::to_string(i) + ".obj");
         //#endif
@@ -1449,7 +1447,7 @@ void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxLis
         }
         else
             he.addHeightfield(dimm, solutions.getBox(i).getRotatedTarget(), i, true);
-        std::cerr << i << ": " << solutions[i].getId() << "\n";
+		std::cerr << i << ": " << solutions[i].getId() << "\n";
     }
     timer.stopAndPrint();
     #ifdef CG3_USING_LIBIGL_CSGTREE
@@ -1464,31 +1462,31 @@ void Engine::booleanOperations(HeightfieldsList &he, SimpleEigenMesh &bc, BoxLis
 }
 
 void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions, std::map<unsigned int, unsigned int> &mapping) {
-    int lastId = solutions[0].getId();
+	int lastId = solutions[0].getId();
     for (unsigned int i = 1; i < solutions.getNumberBoxes(); i++){
-        if (solutions[i].getId() > lastId)
-            lastId = solutions[i].getId();
+		if (solutions[i].getId() > lastId)
+			lastId = solutions[i].getId();
     }
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         EigenMesh m = he.getHeightfield(i);
         std::vector<SimpleEigenMesh> cc;
-        cc = libigl::getConnectedComponents(m);
+		cc = libigl::connectedComponents(m);
         if (cc.size() > 1){
             ///
-            std::cerr << "Split: " << solutions[i].getId() << "; Number: " << cc.size() << "\n";
+			std::cerr << "Split: " << solutions[i].getId() << "; Number: " << cc.size() << "\n";
             ///
             Box3D box = solutions.getBox(i);
-            Vec3 target = he.getTarget(i);
+			Vec3d target = he.getTarget(i);
             EigenMesh em(cc[0]);
-            em.setFaceColor(m.getFaceColor(0));
+			em.setFaceColor(m.faceColor(0));
             he.setHeightfield(em, i, false);
             for (unsigned int j = 1; j < cc.size(); j++){
                 em = EigenMesh(cc[j]);
-                em.setFaceColor(m.getFaceColor(0));
+				em.setFaceColor(m.faceColor(0));
                 he.insertHeightfield(em, target, i+j, false);
                 solutions.insert(box, i+j);
                 solutions[i+j].setId(lastId+1);
-                unsigned int tmp = mapping[solutions[i].getId()];
+				unsigned int tmp = mapping[solutions[i].getId()];
                 bool cont = true;
                 do {
                     mapping[lastId+1] = tmp;
@@ -1506,12 +1504,12 @@ void Engine::splitConnectedComponents(HeightfieldsList& he, BoxList& solutions, 
 }
 
 void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& solutions, SimpleEigenMesh& bc, const Dcel& inputMesh) {
-    cgal::AABBTree aabb(inputMesh, true);
+	cgal::AABBTree3 aabb(inputMesh, true);
     for (int i = (int)he.getNumHeightfields()-1; i >= 0; i--){
         EigenMesh m = he.getHeightfield(i);
         bool inside = true;
-        for (unsigned int j = 0; j < m.getNumberVertices() && inside; j++){
-            if (aabb.getSquaredDistance(m.getVertex(j)) < CG3_EPSILON)
+		for (unsigned int j = 0; j < m.numberVertices() && inside; j++){
+			if (aabb.squaredDistance(m.vertex(j)) < CG3_EPSILON)
                 inside = false;
         }
         if (inside){
@@ -1523,13 +1521,13 @@ void Engine::glueInternHeightfieldsToBaseComplex(HeightfieldsList& he, BoxList& 
 }
 
 void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const Dcel& inputMesh) {
-    cgal::AABBTree aabb(inputMesh, true);
+	cgal::AABBTree3 aabb(inputMesh, true);
     for (int i = he.getNumHeightfields()-1; i >= 0; i--){
-        BoundingBox realBoundingBox;
+		BoundingBox3 realBoundingBox;
         bool first = true;
         for (unsigned int j = 0; j < he.getNumberVerticesHeightfield(i); j++){
-            Pointd p = he.getVertexOfHeightfield(i,j);
-            if (aabb.getSquaredDistance(p) < CG3_EPSILON){
+			Point3d p = he.getVertexOfHeightfield(i,j);
+			if (aabb.squaredDistance(p) < CG3_EPSILON){
                 if (first){
                     first = false;
                     realBoundingBox.min() = p;
@@ -1551,8 +1549,8 @@ void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const
         }*/
 
 
-        if (! epsilonEqual(realBoundingBox.min(), he.getHeightfield(i).getBoundingBox().min()) ||
-            ! epsilonEqual(realBoundingBox.max(), he.getHeightfield(i).getBoundingBox().max()) ){
+		if (! epsilonEqual(realBoundingBox.min(), he.getHeightfield(i).boundingBox().min()) ||
+			! epsilonEqual(realBoundingBox.max(), he.getHeightfield(i).boundingBox().max()) ){
             SimpleEigenMesh box = EigenMeshAlgorithms::makeBox(realBoundingBox);
             SimpleEigenMesh oldHeightfield = he.getHeightfield(i);
             SimpleEigenMesh gluePortion = libigl::difference(oldHeightfield, box);
@@ -1564,37 +1562,37 @@ void Engine::reduceHeightfields(HeightfieldsList& he, SimpleEigenMesh& bc, const
 }
 
 void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc, BoxList& solutions, const Dcel& inputMesh) {
-    cgal::AABBTree aabb(inputMesh, true);
+	cgal::AABBTree3 aabb(inputMesh, true);
     for (unsigned int i = solutions.getNumberBoxes()-1; i >= 1; i--){
         SimpleEigenMesh heightfield = he.getHeightfield(i);
-        std::vector<Pointd> pointsOnSurface;
-        for (unsigned int j = 0; j < heightfield.getNumberVertices(); j++){
-            Pointd p = heightfield.getVertex(j);
-            if (aabb.getSquaredDistance(p) < CG3_EPSILON) pointsOnSurface.push_back(p);
+		std::vector<Point3d> pointsOnSurface;
+		for (unsigned int j = 0; j < heightfield.numberVertices(); j++){
+			Point3d p = heightfield.vertex(j);
+			if (aabb.squaredDistance(p) < CG3_EPSILON) pointsOnSurface.push_back(p);
         }
         Eigen::Matrix3d m = solutions.getBox(i).getRotationMatrix(), mt;
         Eigen::Matrix3d arr[4];
         arr[0] = Eigen::Matrix3d::Identity();
-        cg3::getRotationMatrix(Vec3(0,0,-1), M_PI/4, arr[1]);
-        cg3::getRotationMatrix(Vec3(0,-1,0), M_PI/4, arr[2]);
-        cg3::getRotationMatrix(Vec3(-1,0,0), M_PI/4, arr[3]);
+		cg3::rotationMatrix(Vec3d(0,0,-1), M_PI/4, arr[1]);
+		cg3::rotationMatrix(Vec3d(0,-1,0), M_PI/4, arr[2]);
+		cg3::rotationMatrix(Vec3d(-1,0,0), M_PI/4, arr[3]);
         if (m == arr[0])
             mt = arr[0];
         else if (m == arr[1])
-            cg3::getRotationMatrix(Vec3(0,0,1), M_PI/4, mt);
+			cg3::rotationMatrix(Vec3d(0,0,1), M_PI/4, mt);
         else if (m == arr[2])
-            cg3::getRotationMatrix(Vec3(0,1,0), M_PI/4, mt);
+			cg3::rotationMatrix(Vec3d(0,1,0), M_PI/4, mt);
         else if (m == arr[3])
-            cg3::getRotationMatrix(Vec3(1,0,0), M_PI/4, mt);
+			cg3::rotationMatrix(Vec3d(1,0,0), M_PI/4, mt);
         else assert(0);
         pointsOnSurface[0].rotate(mt);
-        Pointd min = pointsOnSurface[0], max = pointsOnSurface[0];
+		Point3d min = pointsOnSurface[0], max = pointsOnSurface[0];
         for (unsigned int j = 1; j < pointsOnSurface.size(); j++){
             pointsOnSurface[j].rotate(mt);
             min = min.min(pointsOnSurface[j]);
             max = max.max(pointsOnSurface[j]);
         }
-        Vec3 target = solutions.getBox(i).getTarget();
+		Vec3d target = solutions.getBox(i).getTarget();
         Box3D b;
         if (target == XYZ[0] || target == XYZ[3]){
             b = solutions.getBox(i);
@@ -1602,8 +1600,8 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
             b.setMinZ(min.z());
             b.setMaxY(max.y());
             b.setMaxZ(max.z());
-            b.setMinX(b.getMinX()-5*CG3_EPSILON);
-            b.setMaxX(b.getMaxX()+5*CG3_EPSILON);
+			b.setMinX(b.minX()-5*CG3_EPSILON);
+			b.setMaxX(b.maxX()+5*CG3_EPSILON);
         }
         else if (target == XYZ[1] || target == XYZ[4]) {
             b = solutions.getBox(i);
@@ -1611,8 +1609,8 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
             b.setMinZ(min.z());
             b.setMaxX(max.x());
             b.setMaxZ(max.z());
-            b.setMinY(b.getMinY()-5*CG3_EPSILON);
-            b.setMaxY(b.getMaxY()+5*CG3_EPSILON);
+			b.setMinY(b.minY()-5*CG3_EPSILON);
+			b.setMaxY(b.maxY()+5*CG3_EPSILON);
         }
         else if (target == XYZ[2] || target == XYZ[5]) {
             b = solutions.getBox(i);
@@ -1620,8 +1618,8 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
             b.setMinX(min.x());
             b.setMaxY(max.y());
             b.setMaxX(max.x());
-            b.setMinZ(b.getMinZ()-5*CG3_EPSILON);
-            b.setMaxZ(b.getMaxZ()+5*CG3_EPSILON);
+			b.setMinZ(b.minZ()-5*CG3_EPSILON);
+			b.setMaxZ(b.maxZ()+5*CG3_EPSILON);
         }
         else assert(0);
         SimpleEigenMesh inters;
@@ -1641,8 +1639,9 @@ void Engine::gluePortionsToBaseComplex(HeightfieldsList& he, SimpleEigenMesh& bc
 std::set<unsigned int> chartExpansion(const EigenMesh &hf, unsigned int f, std::vector<bool> &seen) {
     std::stack<unsigned int> stack;
     std::set<unsigned int> chart;
-    Vec3 nf = hf.getFaceNormal(f);
-    Eigen::MatrixXi fadj = libigl::getFaceAdjacences(hf);
+	Vec3d nf = hf.faceNormal(f);
+	Eigen::MatrixXi fadj;
+	libigl::faceToFaceAdjacencies(hf, fadj);
     stack.push(f);
     do {
         f = stack.top();
@@ -1652,7 +1651,7 @@ std::set<unsigned int> chartExpansion(const EigenMesh &hf, unsigned int f, std::
             chart.insert(f);
             for (unsigned int ia = 0; ia < 3; ia++){
                 int adj = fadj(f,ia);
-                if (adj >= 0 && hf.getFaceNormal(adj) == nf){
+				if (adj >= 0 && hf.faceNormal(adj) == nf){
                     stack.push(adj);
                 }
             }
@@ -1662,27 +1661,28 @@ std::set<unsigned int> chartExpansion(const EigenMesh &hf, unsigned int f, std::
     return chart;
 }
 
-std::vector<Pointd> getPolygonFromChartMarker(const EigenMesh&hf, const cgal::AABBTree& tree, const std::set<unsigned int>& chart){
+std::vector<Point3d> getPolygonFromChartMarker(const EigenMesh&hf, const cgal::AABBTree3& tree, const std::set<unsigned int>& chart){
     std::vector<std::pair<unsigned int, unsigned int> > segments;
-    Eigen::MatrixXi fadj = libigl::getFaceAdjacences(hf);
+	Eigen::MatrixXi fadj;
+	libigl::faceToFaceAdjacencies(hf, fadj);
     for (unsigned int f : chart){
         for (unsigned int ia = 0; ia <3; ia++){
             int adj = fadj(f,ia);
             if (adj != -1 && chart.find(adj) == chart.end()){
-                std::pair<int, int> p = hf.getCommonVertices(f, (unsigned int)adj);
+				std::pair<int, int> p = hf.commonVertices(f, (unsigned int)adj);
                 assert(p.first >= 0 && p.second >= 0);
                 segments.push_back(std::pair<unsigned int, unsigned int>(p.first, p.second));
             }
         }
     }
 
-    std::vector<Pointd> polygon;
+	std::vector<Point3d> polygon;
     unsigned int first, actual;
     first = segments[0].first;
-    polygon.push_back(hf.getVertex(first));
+	polygon.push_back(hf.vertex(first));
     actual = segments[0].second;
     do {
-        polygon.push_back(hf.getVertex(actual));
+		polygon.push_back(hf.vertex(actual));
         bool found = false;
         for (unsigned int i = 0; i < segments.size() && !found; i++){
             if (actual == segments[i].first){
@@ -1695,7 +1695,7 @@ std::vector<Pointd> getPolygonFromChartMarker(const EigenMesh&hf, const cgal::AA
     } while (actual != first);
 
     for (int i = polygon.size()-1; i >= 0; i--){
-        if (tree.getSquaredDistance(polygon[i]) != 0){
+		if (tree.squaredDistance(polygon[i]) != 0){
             polygon.erase(polygon.begin() + i);
         }
     }
@@ -1706,17 +1706,17 @@ std::vector<Pointd> getPolygonFromChartMarker(const EigenMesh&hf, const cgal::AA
 SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d) {
 
     /*SimpleEigenMesh marked;
-    CGALInterface::AABBTree tree(d, true);
+	CGALInterface::AABBTree3 tree(d, true);
 
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         SimpleEigenMesh hf = he.getHeightfield(i);
         EigenMeshAlgorithms::removeDuplicateVertices(hf);
 
-        std::vector<bool> seen(hf.getNumberFaces(), false);
+		std::vector<bool> seen(hf.numberFaces(), false);
         std::vector< std::set<unsigned int> >charts;
 
-        for (unsigned int f = 0; f < hf.getNumberFaces(); f++) {
-            Vec3 nf = hf.getFaceNormal(f);
+		for (unsigned int f = 0; f < hf.numberFaces(); f++) {
+			Vec3d nf = hf.faceNormal(f);
             int idf = indexOfNormal(nf);
             if (idf != -1){
                 if (!seen[f])
@@ -1726,14 +1726,14 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
 
         for (std::set<unsigned int> &chart: charts){
             //polygons
-            std::vector<Pointd> pol = getPolygonFromChartMarker(hf, tree, chart);
+			std::vector<Point3d> pol = getPolygonFromChartMarker(hf, tree, chart);
             marked.addVertex(pol[0]);
             unsigned int last = marked.getNumberVertices()-1;
             unsigned int first = last;
             for (unsigned int i = 1; i < pol.size(); i++){
-                Pointd p1 = pol[i-1];
-                Pointd p2 = pol[i];
-                Pointd m = (p1+p2)/2;
+				Point3d p1 = pol[i-1];
+				Point3d p2 = pol[i];
+				Point3d m = (p1+p2)/2;
                 if (tree.getSquaredDistance(m) < 0.5){
                     marked.addVertex(m);
                     marked.addVertex(p2);
@@ -1747,7 +1747,7 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
                     last++;
                 }
             }
-            Pointd m = (pol[0] + pol[pol.size()-1]) / 2;
+			Point3d m = (pol[0] + pol[pol.size()-1]) / 2;
             if (tree.getSquaredDistance(m) < 0.5){
                 marked.addVertex(m);
                 unsigned int mid = marked.getNumberVertices()-1;
@@ -1760,34 +1760,35 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
     return marked;*/
 
 
-    cgal::AABBTree tree(d, true);
-    std::set< std::pair<Pointd, Pointd> > edges;
+	cgal::AABBTree3 tree(d, true);
+	std::set< std::pair<Point3d, Point3d> > edges;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         const EigenMesh& mesh = he.getHeightfield(i);
-        Eigen::MatrixXi TT = libigl::getFaceAdjacences(mesh);
-        for (unsigned int f = 0; f < mesh.getNumberFaces(); f++){
-            Vec3 n1 = mesh.getFaceNormal(f);
+		Eigen::MatrixXi TT;
+		libigl::faceToFaceAdjacencies(mesh, TT);
+		for (unsigned int f = 0; f < mesh.numberFaces(); f++){
+			Vec3d n1 = mesh.faceNormal(f);
             if (n1.dot(he.getTarget(i))<=CG3_EPSILON){
                 for (unsigned int k = 0; k < 3; k++){
                     int adj = TT(f,k);
                     if (adj >= 0){
-                        Vec3 n2 = mesh.getFaceNormal(adj);
+						Vec3d n2 = mesh.faceNormal(adj);
                         if (n2.dot(he.getTarget(i))>=-CG3_EPSILON){
-                            Pointi f1 = mesh.getFace(f);
-                            Pointi f2 = mesh.getFace(adj);
-                            std::set<Pointd> allPoints;
+							Point3i f1 = mesh.face(f);
+							Point3i f2 = mesh.face(adj);
+							std::set<Point3d> allPoints;
                             for (unsigned int i = 0; i < 3; i++){
-                                allPoints.insert(mesh.getVertex(f1[i]));
-                                allPoints.insert((mesh.getVertex(f1[i]) + mesh.getVertex(f1[(i+1)%3]))/2);
+								allPoints.insert(mesh.vertex(f1[i]));
+								allPoints.insert((mesh.vertex(f1[i]) + mesh.vertex(f1[(i+1)%3]))/2);
                             }
                             for (unsigned int i = 0; i < 3; i++){
-                                allPoints.insert(mesh.getVertex(f2[i]));
-                                allPoints.insert((mesh.getVertex(f2[i]) + mesh.getVertex(f2[(i+1)%3]))/2);
+								allPoints.insert(mesh.vertex(f2[i]));
+								allPoints.insert((mesh.vertex(f2[i]) + mesh.vertex(f2[(i+1)%3]))/2);
                             }
                             bool allNear = true;
                             bool allDist = true;
-                            for (Pointd  p : allPoints){
-                                if (tree.getSquaredDistance(p) > CG3_EPSILON)
+							for (Point3d  p : allPoints){
+								if (tree.squaredDistance(p) > CG3_EPSILON)
                                     allNear = false;
                                 else
                                     allDist = false;
@@ -1816,9 +1817,9 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
                                     }
                                 }
                                 assert(finded && v1 != v2);
-                                Pointd p1 = mesh.getVertex(v1);
-                                Pointd p2 = mesh.getVertex(v2);
-                                std::pair<Pointd, Pointd> edge;
+								Point3d p1 = mesh.vertex(v1);
+								Point3d p2 = mesh.vertex(v2);
+								std::pair<Point3d, Point3d> edge;
                                 if (p1 < p2){
                                     edge.first = p1;
                                     edge.second = p2;
@@ -1837,9 +1838,9 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
 
     }
     SimpleEigenMesh marked;
-    std::map<Pointd, int> mapVertices;
+	std::map<Point3d, int> mapVertices;
     int n = 0;
-    for (std::pair<Pointd, Pointd> edge : edges){
+	for (std::pair<Point3d, Point3d> edge : edges){
         int v1;
         if (mapVertices.find(edge.first) == mapVertices.end()){
             v1 = n;
@@ -1861,7 +1862,7 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
             v2 = mapVertices[edge.second];
         }
         int v3;
-        Pointd midPoint = (edge.first + edge.second) / 2.0;
+		Point3d midPoint = (edge.first + edge.second) / 2.0;
         if (mapVertices.find(midPoint) == mapVertices.end()){
             v3 = n;
             mapVertices[midPoint] = n;
@@ -1876,27 +1877,28 @@ SimpleEigenMesh Engine::getMarkerMesh(const HeightfieldsList& he, const Dcel &d)
     return marked;
 }
 
-std::vector<Pointd> getPolygonFromChart(const EigenMesh&hf, const std::set<unsigned int>& chart){
+std::vector<Point3d> getPolygonFromChart(const EigenMesh&hf, const std::set<unsigned int>& chart){
     std::vector<std::pair<unsigned int, unsigned int> > segments;
-    Eigen::MatrixXi fadj = libigl::getFaceAdjacences(hf);
+	Eigen::MatrixXi fadj;
+	libigl::faceToFaceAdjacencies(hf, fadj);
     for (unsigned int f : chart){
         for (unsigned int ia = 0; ia <3; ia++){
             int adj = fadj(f,ia);
             if (adj != -1 && chart.find(adj) == chart.end()){
-                std::pair<int, int> p = hf.getCommonVertices(f, (unsigned int)adj);
+				std::pair<int, int> p = hf.commonVertices(f, (unsigned int)adj);
                 assert(p.first >= 0 && p.second >= 0);
                 segments.push_back(std::pair<unsigned int, unsigned int>(p.first, p.second));
             }
         }
     }
 
-    std::vector<Pointd> polygon;
+	std::vector<Point3d> polygon;
     unsigned int first, actual;
     first = segments[0].first;
-    polygon.push_back(hf.getVertex(first));
+	polygon.push_back(hf.vertex(first));
     actual = segments[0].second;
     do {
-        polygon.push_back(hf.getVertex(actual));
+		polygon.push_back(hf.vertex(actual));
         bool found = false;
         for (unsigned int i = 0; i < segments.size() && !found; i++){
             if (actual == segments[i].first){
@@ -1919,10 +1921,10 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
     std::string heightfieldString = foldername + "/Heightfield";
     //std::string markerString = foldername + "/Marker.obj";
     std::string structureString = foldername + "/Structure.obj";
-    //CGALInterface::AABBTree tree(inputMesh);
-    if (originalMesh.getNumberVertices() > 0)
+	//CGALInterface::AABBTree3 tree(inputMesh);
+	if (originalMesh.numberVertices() > 0)
         originalMesh.saveOnObj(originalMeshString);
-    inputMesh.saveOnObjFile(inputMeshString);
+	inputMesh.saveOnObj(inputMeshString);
     baseComplex.saveOnObj(baseComplexString);
     //SimpleEigenMesh marker = getMarkerMesh(he, inputMesh);
     //marker.saveOnObj(markerString);
@@ -1930,7 +1932,7 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
         EigenMesh h = he.getHeightfield(i);
         Dcel d(h);
         //updatePieceNormals(tree, d);
-        d.saveOnObjFile(heightfieldString + std::to_string(i) + ".obj");
+		d.saveOnObj(heightfieldString + std::to_string(i) + ".obj");
     }
 
     /*if (baseComplex.getNumberVertices() > 0) {
@@ -1939,11 +1941,11 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
         EigenMesh structure;
         EigenMesh cbc(baseComplex);
         libigl::removeDuplicateVertices(cbc);
-        std::vector<bool> seen(cbc.getNumberFaces(), false);
+		std::vector<bool> seen(cbc.numberFaces(), false);
         std::vector< std::set<unsigned int> >charts;
 
-        for (unsigned int f = 0; f < cbc.getNumberFaces(); f++) {
-            Vec3 nf = cbc.getFaceNormal(f);
+		for (unsigned int f = 0; f < cbc.numberFaces(); f++) {
+			Vec3d nf = cbc.faceNormal(f);
             int idf = indexOfNormal(nf);
             if (idf != -1){
                 if (!seen[f])
@@ -1951,15 +1953,15 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
             }
         }
 
-        std::set<Pointd> spheres;
+		std::set<Point3d> spheres;
         for (std::set<unsigned int> &chart: charts){
             //polygons
-            std::vector<Pointd> polygon = getPolygonFromChart(cbc, chart);
+			std::vector<Point3d> polygon = getPolygonFromChart(cbc, chart);
 
             for (unsigned int j = 0; j < polygon.size(); j++){
-                Vec3 n1 = polygon[(j+1)%polygon.size()]-polygon[j];
+				Vec3d n1 = polygon[(j+1)%polygon.size()]-polygon[j];
                 n1.normalize();
-                Vec3 n2 = polygon[(j+2)%polygon.size()]-polygon[(j+1)%polygon.size()];
+				Vec3d n2 = polygon[(j+2)%polygon.size()]-polygon[(j+1)%polygon.size()];
                 n2.normalize();
                 if (epsilonEqual(n1, n2)){
                     polygon.erase(polygon.begin()+((j+1)%polygon.size()));
@@ -1983,34 +1985,34 @@ void Engine::saveObjs(const std::string& foldername, const EigenMesh &originalMe
     }*/
 }
 
-void Engine::updatePieceNormals(const cgal::AABBTree& tree, Dcel& piece) {
+void Engine::updatePieceNormals(const cgal::AABBTree3& tree, Dcel& piece) {
     for (Dcel::Vertex* v : piece.vertexIterator()){
-        if (tree.getSquaredDistance(v->getCoordinate() < CG3_EPSILON)){
-            const Dcel::Vertex* n = tree.getNearestDcelVertex(v->getCoordinate());
-            v->setNormal(n->getNormal());
+		if (tree.squaredDistance(v->coordinate() < CG3_EPSILON)){
+			const Dcel::Vertex* n = tree.nearestDcelVertex(v->coordinate());
+			v->setNormal(n->normal());
         }
     }
 }
 
-void Engine::updatePieceNormals(const cgal::AABBTree& tree, EigenMesh& piece) {
+void Engine::updatePieceNormals(const cgal::AABBTree3& tree, EigenMesh& piece) {
     Dcel d(piece);
     for (Dcel::Vertex* v : d.vertexIterator()){
-        if (tree.getSquaredDistance(v->getCoordinate() < CG3_EPSILON)){
-            const Dcel::Vertex* n = tree.getNearestDcelVertex(v->getCoordinate());
-            if (n->getCoordinate().dist(v->getCoordinate()) < 3)
-                v->setNormal(n->getNormal());
+		if (tree.squaredDistance(v->coordinate() < CG3_EPSILON)){
+			const Dcel::Vertex* n = tree.nearestDcelVertex(v->coordinate());
+			if (n->coordinate().dist(v->coordinate()) < 3)
+				v->setNormal(n->normal());
         }
     }
     piece = EigenMesh(d);
 }
 
-void Engine::updatePiecesNormals(const cgal::AABBTree& tree, HeightfieldsList& he) {
+void Engine::updatePiecesNormals(const cgal::AABBTree3& tree, HeightfieldsList& he) {
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         updatePieceNormals(tree, he.getHeightfield(i));
     }
 }
 
-bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
+bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3d& v, bool strictly) {
     bool first = true;
     bool heightfield = true;
     double baseCoord = -1;
@@ -2023,13 +2025,13 @@ bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
         dir = 2;
     else
         assert(0);
-    for (unsigned int i = 0; i < m.getNumberFaces() && heightfield; i++){
-        Vec3 normal = m.getFaceNormal(i);
+	for (unsigned int i = 0; i < m.numberFaces() && heightfield; i++){
+		Vec3d normal = m.faceNormal(i);
         if (epsilonEqual(normal, -v)){
-            Pointi face = m.getFace(i);
-            Pointd p0 = m.getVertex(face[0]);
-            Pointd p1 = m.getVertex(face[1]);
-            Pointd p2 = m.getVertex(face[2]);
+			Point3i face = m.face(i);
+			Point3d p0 = m.vertex(face[0]);
+			Point3d p1 = m.vertex(face[1]);
+			Point3d p2 = m.vertex(face[2]);
             if (first){
                 first = false;
                 baseCoord = p0[dir];
@@ -2052,7 +2054,7 @@ bool Engine::isAnHeightfield(const EigenMesh& m, const Vec3& v, bool strictly) {
 }
 
 void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
-    cgal::AABBTree tree(d);
+	cgal::AABBTree3 tree(d);
     constexpr int nColors = 9;
     std::array<QColor, nColors> colors;
     colors[0] = QColor(221, 126, 107); //
@@ -2134,12 +2136,12 @@ void Engine::colorPieces(const Dcel& d, HeightfieldsList& he) {
     }
 }
 
-std::vector<Pointd> getBasePolygon(const EigenMesh &m, const Vec3& target){
-    std::vector<bool> seen(m.getNumberFaces(), false);
+std::vector<Point3d> getBasePolygon(const EigenMesh &m, const Vec3d& target){
+	std::vector<bool> seen(m.numberFaces(), false);
     std::vector< std::set<unsigned int> >charts;
 
-    for (unsigned int f = 0; f < m.getNumberFaces(); f++) {
-        Vec3 nf = m.getFaceNormal(f);
+	for (unsigned int f = 0; f < m.numberFaces(); f++) {
+		Vec3d nf = m.faceNormal(f);
         if (nf == -target){
             if (!seen[f])
                     charts.push_back(chartExpansion(m, f, seen));
@@ -2149,11 +2151,11 @@ std::vector<Pointd> getBasePolygon(const EigenMesh &m, const Vec3& target){
     if (charts.size() > 1 || charts.size() == 0)
         std::cerr << "Maybe there is a problem with the heightfield..\n";
 
-    std::vector<Pointd> polygon;
+	std::vector<Point3d> polygon;
     for (std::set<unsigned int> &chart: charts){
 
         //polygons
-        std::vector<Pointd> p = getPolygonFromChart(m, chart);
+		std::vector<Point3d> p = getPolygonFromChart(m, chart);
         polygon.insert(polygon.end(), p.begin(), p.end());
     }
 
@@ -2161,30 +2163,30 @@ std::vector<Pointd> getBasePolygon(const EigenMesh &m, const Vec3& target){
 
 }
 
-void bringBaseDown(EigenMesh& m, const Vec3& target, double oldbase, double newbase){
-    std::vector<Pointd> base = getBasePolygon(m, target);
+void bringBaseDown(EigenMesh& m, const Vec3d& target, double oldbase, double newbase){
+	std::vector<Point3d> base = getBasePolygon(m, target);
     std::vector<unsigned int> baseIndices;
     std::set<unsigned int> baseIndicesSet;
     std::vector<unsigned int> newBaseIndices;
     baseIndices.resize(base.size());
-    unsigned int numberVerticesBeforeInsertion = m.getNumberVertices();
+	unsigned int numberVerticesBeforeInsertion = m.numberVertices();
     for (unsigned int i = 0; i < numberVerticesBeforeInsertion; i++){
-        std::vector<Pointd>::iterator it = std::find(base.begin(), base.end(), m.getVertex(i));
+		std::vector<Point3d>::iterator it = std::find(base.begin(), base.end(), m.vertex(i));
         if (it != base.end()){
             baseIndices[it - base.begin()] = i;
             baseIndicesSet.insert(i);
         }
     }
     unsigned int numberVerticesAfterInsertion = numberVerticesBeforeInsertion;
-    for (Pointd p : base){
+	for (Point3d p : base){
         m.addVertex(p);
         newBaseIndices.push_back(numberVerticesAfterInsertion++);
     }
 
-    for (unsigned int f = 0; f < m.getNumberFaces(); f++){
-        if (m.getFaceNormal(f) != -target){
-            Pointi vf = m.getFace(f);
-            Pointi nvf;
+	for (unsigned int f = 0; f < m.numberFaces(); f++){
+		if (m.faceNormal(f) != -target){
+			Point3i vf = m.face(f);
+			Point3i nvf;
             for (unsigned int k = 0; k < 3; k++){
                 if (baseIndicesSet.find(vf[k]) != baseIndicesSet.end()){
                     std::vector<unsigned int>::iterator it = std::find(baseIndices.begin(), baseIndices.end(), vf[k]);
@@ -2199,17 +2201,17 @@ void bringBaseDown(EigenMesh& m, const Vec3& target, double oldbase, double newb
     }
 
     for (unsigned int i = 0; i < numberVerticesBeforeInsertion; i++){
-        if (m.getVertex(i)[indexOfNormal(target)%3] == oldbase){
-            Pointd p = m.getVertex(i);
+		if (m.vertex(i)[indexOfNormal(target)%3] == oldbase){
+			Point3d p = m.vertex(i);
             p[indexOfNormal(target)%3] = newbase;
             m.setVertex(i, p);
         }
     }
 
     for (unsigned int i = 0; i < baseIndices.size(); i++){
-        Pointi f1(newBaseIndices[i], baseIndices[i], newBaseIndices[(i+1)%baseIndices.size()]);
-        Pointi f2(newBaseIndices[(i+1)%baseIndices.size()], baseIndices[i], baseIndices[(i+1)%baseIndices.size()]);
-        m.addFace(f1.x(), f1.z(), f1.y());
+		Point3i f1(newBaseIndices[i], baseIndices[i], newBaseIndices[(i+1)%baseIndices.size()]);
+		Point3i f2(newBaseIndices[(i+1)%baseIndices.size()], baseIndices[i], baseIndices[(i+1)%baseIndices.size()]);
+		m.addFace(f1.x(), f1.z(), f1.y());
         m.addFace(f2.x(), f2.z(), f2.y());
     }
 }
@@ -2219,7 +2221,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
 
     //first merging
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        cgal::AABBTree tree(he.getHeightfield(i), true);
+		cgal::AABBTree3 tree(he.getHeightfield(i), true);
         for (unsigned int j = 0; j < he.getNumHeightfields(); j++){
             if ( i != j){
                 //can I merge j with i?
@@ -2227,22 +2229,22 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                     //take all the points of the base of j
                     EigenMesh m = he.getHeightfield(j);
                     libigl::removeDuplicateVertices(m);
-                    std::vector<Pointd> base = getBasePolygon(m, he.getTarget(j));
+					std::vector<Point3d> base = getBasePolygon(m, he.getTarget(j));
 
                     //and check the distance between every point of the base of j and the surface of i
                     //if all distances are 0, blocks can be merged
                     bool same = true;
                     for (unsigned int i = 0; i < base.size() && same; i++){
-                        double dist = tree.getSquaredDistance(base[i]);
+						double dist = tree.squaredDistance(base[i]);
                         if (dist > 1e-05)
                             same = false;
                     }
                     if (same && base.size() != 0){ //heightfield j can be merged to heightfield i
                         EigenMesh un = libigl::union_(he.getHeightfield(i), he.getHeightfield(j));
-                        un.setFaceColor(he.getHeightfield(i).getFaceColor(0));
+						un.setFaceColor(he.getHeightfield(i).faceColor(0));
                         he.setHeightfield(un, i);
                         he.removeHeightfield(j);
-                        solutions.changeBoxLimits(un.getBoundingBox(), i);
+						solutions.changeBoxLimits(un.boundingBox(), i);
                         solutions.removeBox(j);
                         if (i > j)
                             i--;
@@ -2255,7 +2257,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
     }
 
     //second merging
-    cgal::AABBTree tree(d);
+	cgal::AABBTree3 tree(d);
 
     //building adjacences
     std::map< const Dcel::Vertex*, int > mapping = Reconstruction::getMappingId(d, he);
@@ -2280,8 +2282,8 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
         for (std::set<int>::iterator jit = adjacences[i].begin(); jit != adjacences[i].end() && !br; ++jit){
             unsigned int j = *jit;
             if (he.getTarget(i) == he.getTarget(j)){ //two adjacent blocks with same hf direction
-                BoundingBox bbi = he.getHeightfield(i).getBoundingBox();
-                BoundingBox bbj = he.getHeightfield(j).getBoundingBox();
+				BoundingBox3 bbi = he.getHeightfield(i).boundingBox();
+				BoundingBox3 bbj = he.getHeightfield(j).boundingBox();
 
 
                 int iohf = indexOfNormal(he.getTarget(i));
@@ -2303,10 +2305,10 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                 //can j reduce to i?
                 bool merged = false;
                 if (isPossibleReduce){
-                    std::vector<Pointd> points;
-                    points.reserve(he.getHeightfield(j).getNumberVertices());
-                    for (unsigned int i = 0; i < he.getHeightfield(j).getNumberVertices(); i++){
-                        points.push_back(he.getHeightfield(j).getVertex(i));
+					std::vector<Point3d> points;
+					points.reserve(he.getHeightfield(j).numberVertices());
+					for (unsigned int i = 0; i < he.getHeightfield(j).numberVertices(); i++){
+						points.push_back(he.getHeightfield(j).vertex(i));
                     }
 
                     //sort points using iohf%3
@@ -2314,7 +2316,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                         unsigned int i;
                         cmp(unsigned int i):i(i){}
 
-                        bool operator()(const Pointd& p1, const Pointd& p2){
+						bool operator()(const Point3d& p1, const Point3d& p2){
                             if (p1[i] < p2[i])
                                 return true;
                             if (p1[i] == p2[i])
@@ -2327,7 +2329,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                     std::sort(points.begin(), points.end(), cmp(iohf%3));
 
                     //check if look the points forward or backward according to iohf<3
-                    std::vector<Pointd> pointsToDelete;
+					std::vector<Point3d> pointsToDelete;
                     if (iohf < 3){
                         bool less = true;
                         for (unsigned int i = 0; i < points.size() && less; i++){
@@ -2348,7 +2350,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                     }
                     merged = true;
                     for (unsigned int i = 0; i < pointsToDelete.size() && merged; i++){
-                        if (tree.getSquaredDistance(pointsToDelete[i]) < 1e-4)
+						if (tree.squaredDistance(pointsToDelete[i]) < 1e-4)
                             merged = false;
                     }
                     if (merged){
@@ -2358,7 +2360,7 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                             bbj.max()[iohf] = basei;
                         else
                             bbj.min()[iohf-3] = basei;
-                        Color ci = he.getHeightfield(i).getFaceColor(0);
+						Color ci = he.getHeightfield(i).faceColor(0);
                         EigenMesh res = libigl::difference(he.getHeightfield(j), EigenMesh(EigenMeshAlgorithms::makeBox(bbj)));
                         res = libigl::union_(res, he.getHeightfield(i));
                         baseComplex = libigl::union_(baseComplex, libigl::intersection(he.getHeightfield(j), EigenMesh(EigenMeshAlgorithms::makeBox(bbj))));
@@ -2366,32 +2368,32 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
 
                         he.setHeightfield(res, i);
                         he.removeHeightfield(j);
-                        solutions.changeBoxLimits(res.getBoundingBox(), i);
+						solutions.changeBoxLimits(res.boundingBox(), i);
                         solutions.removeBox(j);
                     }
                 }
                 ///
                 else if (mergeDownwards){
-                    cgal::AABBTree treebc(baseComplex);
-                    cgal::AABBTree treei(he.getHeightfield(i));
-                    std::set<Pointd> basePoints;
-                    for (unsigned int pj = 0; pj < he.getHeightfield(j).getNumberVertices(); pj++){
-                        if (he.getHeightfield(j).getVertex(pj)[iohf%3] == basej){
-                            basePoints.insert(he.getHeightfield(j).getVertex(pj));
-                            //mw->addDebugSphere(he.getHeightfield(j).getVertex(pj), 2, QColor(255,0,0));
+					cgal::AABBTree3 treebc(baseComplex);
+					cgal::AABBTree3 treei(he.getHeightfield(i));
+					std::set<Point3d> basePoints;
+					for (unsigned int pj = 0; pj < he.getHeightfield(j).numberVertices(); pj++){
+						if (he.getHeightfield(j).vertex(pj)[iohf%3] == basej){
+							basePoints.insert(he.getHeightfield(j).vertex(pj));
+							//mw->addDebugSphere(he.getHeightfield(j).vertex(pj), 2, QColor(255,0,0));
                         }
                     }
 
                     merged = true;
-                    for (Pointd p : basePoints){
+					for (Point3d p : basePoints){
                         p[iohf%3] = basei;
-                        if (!(treebc.getSquaredDistance(p) == 0 || treei.getSquaredDistance(p) == 0 || treebc.isInside(p) || treei.isInside(p)))
+						if (!(treebc.squaredDistance(p) == 0 || treei.squaredDistance(p) == 0 || treebc.isInside(p) || treei.isInside(p)))
                             merged = false;
                     }
                     if (merged) {
                         /*for (unsigned int pj = 0; pj < he.getHeightfield(j).getNumberVertices(); pj++){
-                            if (he.getHeightfield(j).getVertex(pj)[iohf%3] == basej){
-                                Pointd p = he.getHeightfield(j).getVertex(pj);
+							if (he.getHeightfield(j).vertex(pj)[iohf%3] == basej){
+								Point3d p = he.getHeightfield(j).vertex(pj);
                                 p[iohf%3] = basei;
                                 he.getHeightfield(j).setVertex(pj, p);
                             }
@@ -2399,14 +2401,14 @@ void Engine::mergePostProcessing(HeightfieldsList &he, BoxList &solutions, Eigen
                         bringBaseDown(he.getHeightfield(j), he.getTarget(j), basej, basei);
                         he.getHeightfield(j).updateBoundingBox();
 
-                        Color ci = he.getHeightfield(i).getFaceColor(0);
+						Color ci = he.getHeightfield(i).faceColor(0);
                         EigenMesh res = libigl::union_(he.getHeightfield(i), he.getHeightfield(j));
                         baseComplex = libigl::difference(baseComplex, he.getHeightfield(i));
                         res.setFaceColor(ci);
 
                         he.setHeightfield(res, i);
                         he.removeHeightfield(j);
-                        solutions.changeBoxLimits(res.getBoundingBox(), i);
+						solutions.changeBoxLimits(res.boundingBox(), i);
                         solutions.removeBox(j);
                     }
                 }
