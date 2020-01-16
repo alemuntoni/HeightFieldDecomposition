@@ -12,13 +12,13 @@ cg3::viewer::MainWindow* mw;
 
 using namespace cg3;
 
-Color colorOfNormal(const Vec3& normal) {
+Color colorOfNormal(const Vec3d& normal) {
     for (unsigned int i = 0; i < XYZ.size(); i++)
         if (epsilonEqual(XYZ[i], normal)) return colors[i];
     return Color(128, 128, 128);
 }
 
-Vec3 nearestNormal(const Vec3& normal) {
+Vec3d nearestNormal(const Vec3d& normal) {
     double dot = -1;
     int nid = 0;
     for (unsigned int i = 0; i < 6; i++){
@@ -30,7 +30,7 @@ Vec3 nearestNormal(const Vec3& normal) {
     return XYZ[nid];
 }
 
-Color colorOfNearestNormal(const Vec3& normal) {
+Color colorOfNearestNormal(const Vec3d& normal) {
     double dot = -1;
     int nid = 0;
     for (unsigned int i = 0; i < XYZ.size(); i++){
@@ -42,8 +42,8 @@ Color colorOfNearestNormal(const Vec3& normal) {
     return colors[nid];
 }
 
-int indexOfNormal(const Vec3& v) {
-    std::vector<Vec3>::const_iterator it = std::find(XYZ.begin(), XYZ.end(), v);
+int indexOfNormal(const Vec3d& v) {
+	std::vector<Vec3d>::const_iterator it = std::find(XYZ.begin(), XYZ.end(), v);
     if (it != XYZ.end())
         return it - XYZ.begin();
     else

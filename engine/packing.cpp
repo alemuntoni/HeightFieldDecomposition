@@ -1,15 +1,15 @@
 #include "packing.h"
 #include "lib/packing/binpack2d.h"
-#include <cg3/geometry/transformations.h>
+#include <cg3/geometry/transformations3.h>
 
 using namespace cg3;
 
 void Packing::rotateAllPieces(HeightfieldsList& he) {
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         EigenMesh m = he.getHeightfield(i);
-        Vec3 normal = he.getTarget(i);
-        Vec3 zAxis(0,0,1);
-        Vec3 axis = normal.cross(zAxis);
+		Vec3d normal = he.getTarget(i);
+		Vec3d zAxis(0,0,1);
+		Vec3d axis = normal.cross(zAxis);
         axis.normalize();
         double dot = normal.dot(zAxis);
         double angle = acos(dot);
@@ -17,43 +17,43 @@ void Packing::rotateAllPieces(HeightfieldsList& he) {
         Eigen::Matrix3d r = Eigen::Matrix3d::Zero();
         if (normal != zAxis){
             if (normal == -zAxis){
-                axis = Vec3(1,0,0);
+				axis = Vec3d(1,0,0);
             }
-            cg3::getRotationMatrix(axis, angle, r);
+			cg3::rotationMatrix(axis, angle, r);
         }
         else {
             r = Eigen::Matrix3d::Identity();
         }
         m.rotate(r);
         m.updateBoundingBox();
-        m.translate(Pointd(0,0,-m.getBoundingBox().min().z()));
+		m.translate(Point3d(0,0,-m.boundingBox().min().z()));
         m.updateBoundingBox();
         he.setHeightfield(m,i);
     }
 }
 
-int Packing::getMaximum(const HeightfieldsList& he, const BoundingBox& block, double& factor) {
-    assert(block.getLengthX() > 0 || block.getLengthY() > 0 || block.getLengthZ() > 0);
+int Packing::getMaximum(const HeightfieldsList& he, const BoundingBox3& block, double& factor) {
+	assert(block.lengthX() > 0 || block.lengthY() > 0 || block.lengthZ() > 0);
 
     double maxx= 0, maxy=0, maxz=0;
     int ix=0, iy=0, iz=0;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
-        if (maxx < he.getHeightfield(i).getBoundingBox().getLengthX()){
+		if (maxx < he.getHeightfield(i).boundingBox().lengthX()){
             ix = i;
-            maxx = he.getHeightfield(i).getBoundingBox().getLengthX();
+			maxx = he.getHeightfield(i).boundingBox().lengthX();
         }
-        if (maxy < he.getHeightfield(i).getBoundingBox().getLengthY()){
+		if (maxy < he.getHeightfield(i).boundingBox().lengthY()){
             iy = i;
-            maxy = he.getHeightfield(i).getBoundingBox().getLengthY();
+			maxy = he.getHeightfield(i).boundingBox().lengthY();
         }
-        if (maxz < he.getHeightfield(i).getBoundingBox().getLengthZ()){
+		if (maxz < he.getHeightfield(i).boundingBox().lengthZ()){
             iz = i;
-            maxz = he.getHeightfield(i).getBoundingBox().getLengthZ();
+			maxz = he.getHeightfield(i).boundingBox().lengthZ();
         }
     }
-    double factorx = block.getLengthX() > 0 ? (block.getLengthX()-5) / maxx : std::numeric_limits<double>::max();
-    double factory = block.getLengthY() > 0 ? (block.getLengthY()-5) / maxy : std::numeric_limits<double>::max();
-    double factorz = block.getLengthZ() > 0 ? (block.getLengthZ()-1) / maxz : std::numeric_limits<double>::max();
+	double factorx = block.lengthX() > 0 ? (block.lengthX()-5) / maxx : std::numeric_limits<double>::max();
+	double factory = block.lengthY() > 0 ? (block.lengthY()-5) / maxy : std::numeric_limits<double>::max();
+	double factorz = block.lengthZ() > 0 ? (block.lengthZ()-1) / maxz : std::numeric_limits<double>::max();
     if (factorx <= factory && factorx <= factorz){
         factor = factorx;
         return ix;
@@ -72,18 +72,18 @@ int Packing::getMaximum(const HeightfieldsList& he, const BoundingBox& block, do
 }
 
 void Packing::scaleAll(HeightfieldsList& he, double factor) {
-    Vec3 vecFac(factor, factor, factor);
+	Vec3d vecFac(factor, factor, factor);
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++){
         he.getHeightfield(i).scale(vecFac);
         he.getHeightfield(i).updateBoundingBox();
     }
 }
 
-std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const HeightfieldsList& he, const BoundingBox &packSize, int distance) {
+std::vector< std::vector<std::pair<int, Point3d> > > Packing::pack(const HeightfieldsList& he, const BoundingBox3 &packSize, int distance) {
     if (distance <= 0){
-        distance = std::min(packSize.getLengthX(), packSize.getLengthY()) / 2;
+		distance = std::min(packSize.lengthX(), packSize.lengthY()) / 2;
     }
-    std::vector< std::vector<std::pair<int, Pointd> > > packs;
+	std::vector< std::vector<std::pair<int, Point3d> > > packs;
     std::set<unsigned int> piecesToPack;
     for (unsigned int i = 0; i < he.getNumHeightfields(); i++)
         piecesToPack.insert(i);
@@ -91,7 +91,7 @@ std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const Heightfi
     unsigned int oldSize = 0;
     while (piecesToPack.size() > 0 && oldSize != piecesToPack.size()){
         oldSize = piecesToPack.size();
-        std::vector<std::pair<int, Pointd> > actualPack;
+		std::vector<std::pair<int, Point3d> > actualPack;
 
         // Create some 'content' to work on.
         BinPack2D::ContentAccumulator<int> inputContent;
@@ -99,8 +99,8 @@ std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const Heightfi
         for(int i : piecesToPack) {
 
             // random size for this content
-            int width  = he.getHeightfield(i).getBoundingBox().getLengthX()*10 + distance;
-            int height = he.getHeightfield(i).getBoundingBox().getLengthY()*10 + distance;
+			int width  = he.getHeightfield(i).boundingBox().lengthX()*10 + distance;
+			int height = he.getHeightfield(i).boundingBox().lengthY()*10 + distance;
 
             // whatever data you want to associate with this content
 
@@ -115,7 +115,7 @@ std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const Heightfi
 
         // Create some bins!
         BinPack2D::CanvasArray<int> canvasArray =
-                BinPack2D::UniformCanvasArrayBuilder<int>(packSize.getLengthX()*10,packSize.getLengthY()*10,1).Build();
+				BinPack2D::UniformCanvasArrayBuilder<int>(packSize.lengthX()*10,packSize.lengthY()*10,1).Build();
 
         // A place to store content that didnt fit into the canvas array.
         BinPack2D::ContentAccumulator<int> remainder;
@@ -141,9 +141,9 @@ std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const Heightfi
 
             piecesToPack.erase(myContent);
 
-            Pointd pos((double)content.coord.x/10 + 0.1, (double)content.coord.y/10 + 0.1, (double)content.coord.z/10 + + 0.1);
+			Point3d pos((double)content.coord.x/10 + 0.1, (double)content.coord.y/10 + 0.1, (double)content.coord.z/10 + + 0.1);
 
-            std::pair<int, Pointd> pair;
+			std::pair<int, Point3d> pair;
             pair.first = content.rotated ? -(myContent+1): (myContent+1);
             pair.second = pos;
             actualPack.push_back(pair);
@@ -177,19 +177,19 @@ std::vector< std::vector<std::pair<int, Pointd> > > Packing::pack(const Heightfi
     return packs;
 }
 
-std::vector<std::vector<EigenMesh> > Packing::getPacks(std::vector<std::vector<std::pair<int, Pointd> > >& packing, const HeightfieldsList& he) {
+std::vector<std::vector<EigenMesh> > Packing::getPacks(std::vector<std::vector<std::pair<int, Point3d> > >& packing, const HeightfieldsList& he) {
     std::vector<std::vector<EigenMesh> > out;
     for (unsigned int i = 0; i < packing.size(); i++){
         std::vector<EigenMesh> actualPack;
         for (unsigned int j = 0; j < packing[i].size(); j++){
-            std::pair<int, Pointd> pair = packing[i][j];
+			std::pair<int, Point3d> pair = packing[i][j];
             int id;
             EigenMesh mesh;
             if (pair.first < 0){
                 id = (-pair.first)-1;
                 mesh = he.getHeightfield(id);
                 Eigen::Matrix3d rot;
-                cg3::getRotationMatrix(Vec3(0,0,1),M_PI/2,rot);
+				cg3::rotationMatrix(Vec3d(0,0,1),M_PI/2,rot);
                 mesh.rotate(rot);
             }
             else{
@@ -197,7 +197,7 @@ std::vector<std::vector<EigenMesh> > Packing::getPacks(std::vector<std::vector<s
                 mesh = he.getHeightfield(id);
             }
             mesh.updateBoundingBox();
-            mesh.translate(- mesh.getBoundingBox().min() + pair.second);
+			mesh.translate(- mesh.boundingBox().min() + pair.second);
             actualPack.push_back(mesh);
         }
         out.push_back(actualPack);

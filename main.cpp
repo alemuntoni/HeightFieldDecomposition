@@ -31,12 +31,12 @@ void serializeAfterBooleans(const std::string& filename, const Dcel& d, const Ei
 void deserializeAfterBooleans(const std::string& filename, Dcel& d, EigenMesh& originalMesh, BoxList& solutions, EigenMesh& baseComplex, HeightfieldsList& he, double &factor, double &kernel, BoxList& originalSolutions, std::map<unsigned int, unsigned int>& splittedBoxesToOriginals, std::list<unsigned int> &priorityBoxes);
 #endif
 
-static Pointd getCustomLimits(const Dcel &m, double lx, double ly, double lz)
+static Point3d getCustomLimits(const Dcel &m, double lx, double ly, double lz)
 {
-	Pointd limits;
-	limits.x() = m.getBoundingBox().diag() * lx;
-	limits.y() = m.getBoundingBox().diag() * ly;
-	limits.z() = m.getBoundingBox().diag() * lz;
+	Point3d limits;
+	limits.x() = m.boundingBox().diag() * lx;
+	limits.y() = m.boundingBox().diag() * ly;
+	limits.z() = m.boundingBox().diag() * lz;
 	return limits;
 }
 
@@ -89,15 +89,15 @@ int main(int argc, char *argv[]) {
 
         //reading files
         EigenMesh original;
-        original.readFromObj(filename);
+		original.loadFromObj(filename);
         Dcel d;
         if (fileExists(filename_smooth)){
-            d.loadFromObjFile(filename_smooth);
+			d.loadFromObj(filename_smooth);
             std::cerr << "Smooth File found.\n";
         }
         else {
             std::cerr << "Smooth File not found. Using original file.\n";
-            d = original;
+			d = cg3::Dcel(original);
             smoothed = false;
         }
 
@@ -139,9 +139,9 @@ int main(int argc, char *argv[]) {
             logFile << "No smoothing was applied.\n";
 
         //scaling meshes
-        BoundingBox bb= d.getBoundingBox();
+		BoundingBox3 bb= d.boundingBox();
         Engine::scaleAndRotateDcel(d, 0, precision);
-        original.scale(bb, d.getBoundingBox());
+		original.scale(bb, d.boundingBox());
 
 
 
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
 
         d.updateFaceNormals();
         d.updateVertexNormals();
-        d.saveOnObjFile(foldername + rawname + "r_smooth.obj");
+		d.saveOnObj(foldername + rawname + "r_smooth.obj");
         original.saveOnObj(foldername + rawname + "r.obj");
 
         //solutions
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
 		tBooleans.stop();
 		timerBooleans += tBooleans.delay();
 		logFile << tBooleans.delay() << ": Booleans \n";
-		cgal::AABBTree tree(d);
+		cgal::AABBTree3 tree(d);
 		Engine::updatePiecesNormals(tree, he);
 		Engine::colorPieces(d, he);
 
@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
             Engine::booleanOperations(he, baseComplex, solutions, false);
             Engine::splitConnectedComponents(he, solutions, splittedBoxesToOriginals);
             Engine::glueInternHeightfieldsToBaseComplex(he, solutions, baseComplex, d);
-            cgal::AABBTree tree(d);
+			cgal::AABBTree3 tree(d);
             Engine::updatePiecesNormals(tree, he);
             Engine::colorPieces(d, he);
         }

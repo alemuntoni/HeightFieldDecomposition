@@ -11,33 +11,33 @@
 using namespace cg3;
 
 bool Splitting::boxesIntersect(const Box3D& b1, const Box3D& b2) {
-    if (b1.getMaxX() <= b2.getMinX()) return false; // a is left of b
-    if (b1.getMinX() >= b2.getMaxX()) return false; // a is right of b
-    if (b1.getMaxY() <= b2.getMinY()) return false; // a is above b
-    if (b1.getMinY() >= b2.getMaxY()) return false; // a is below b
-    if (b1.getMaxZ() <= b2.getMinZ()) return false; // a is behind b
-    if (b1.getMinZ() >= b2.getMaxZ()) return false; // a is in front b
+	if (b1.maxX() <= b2.minX()) return false; // a is left of b
+	if (b1.minX() >= b2.maxX()) return false; // a is right of b
+	if (b1.maxY() <= b2.minY()) return false; // a is above b
+	if (b1.minY() >= b2.maxY()) return false; // a is below b
+	if (b1.maxZ() <= b2.minZ()) return false; // a is behind b
+	if (b1.minZ() >= b2.maxZ()) return false; // a is in front b
     return true; //boxes overlap
 }
 
 bool Splitting::boxesIntersectNS(const Box3D& b1, const Box3D& b2) {
-    if (b1.getMaxX() < b2.getMinX()) return false; // a is left of b
-    if (b1.getMinX() > b2.getMaxX()) return false; // a is right of b
-    if (b1.getMaxY() < b2.getMinY()) return false; // a is above b
-    if (b1.getMinY() > b2.getMaxY()) return false; // a is below b
-    if (b1.getMaxZ() < b2.getMinZ()) return false; // a is behind b
-    if (b1.getMinZ() > b2.getMaxZ()) return false; // a is in front b
+	if (b1.maxX() < b2.minX()) return false; // a is left of b
+	if (b1.minX() > b2.maxX()) return false; // a is right of b
+	if (b1.maxY() < b2.minY()) return false; // a is above b
+	if (b1.minY() > b2.maxY()) return false; // a is below b
+	if (b1.maxZ() < b2.minZ()) return false; // a is behind b
+	if (b1.minZ() > b2.maxZ()) return false; // a is in front b
     return true; //boxes overlap
 }
 
 bool Splitting::meshCollide(const SimpleEigenMesh &b1, const SimpleEigenMesh &b2){
-        cgal::AABBTree tree(b1, true);
-        BoundingBox bb;
+		cgal::AABBTree3 tree(b1, true);
+		BoundingBox3 bb;
         bool first = true;
-        for (unsigned int i = 0; i < b2.getNumberVertices() && first; i++){
-            Pointd p = b2.getVertex(i);
+		for (unsigned int i = 0; i < b2.numberVertices() && first; i++){
+			Point3d p = b2.vertex(i);
             if (tree.isInside(p)){
-                if (tree.getSquaredDistance(p) > 0)
+				if (tree.squaredDistance(p) > 0)
                     first = false;
             }
         }
@@ -66,7 +66,7 @@ bool Splitting::meshCollide(const SimpleEigenMesh &b1, const SimpleEigenMesh &b2
         else
             return true;
         /*else {
-            if (!Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
+			if (!Common::epsilonEqual(bb.minX(), bb.maxX()) && !Common::epsilonEqual(bb.minY(), bb.maxY()) && !Common::epsilonEqual(bb.minZ(), bb.maxZ())){
                 ////
                 //intersection.saveOnObj("int.obj");
                 ////
@@ -77,11 +77,11 @@ bool Splitting::meshCollide(const SimpleEigenMesh &b1, const SimpleEigenMesh &b2
         }*/
 }
 
-bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const cgal::AABBTree &tree, bool checkMeshes) {
-    Vec3 target2 = b2.getTarget();
-    BoundingBox bb = b1;
+bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const cgal::AABBTree3 &tree, bool checkMeshes) {
+	Vec3d target2 = b2.getTarget();
+	BoundingBox3 bb = b1;
 
-    std::vector<Vec3>::const_iterator cit = std::find(XYZ.begin(), XYZ.begin()+6, target2);
+	std::vector<Vec3d>::const_iterator cit = std::find(XYZ.begin(), XYZ.begin()+6, target2);
     assert(cit != XYZ.begin()+6);
     unsigned int t = cit - XYZ.begin();
 
@@ -121,7 +121,7 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                         bool b = false;
                         SimpleEigenMesh intersection = EigenMeshAlgorithms::intersection(b1.getEigenMesh(), b2.getEigenMesh());
                         BoundingBox bb = intersection.getBoundingBox();
-                        if (intersection.getNumberVertices() > 0 && !Common::epsilonEqual(bb.getMinX(), bb.getMaxX()) && !Common::epsilonEqual(bb.getMinY(), bb.getMaxY()) && !Common::epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
+						if (intersection.getNumberVertices() > 0 && !Common::epsilonEqual(bb.minX(), bb.maxX()) && !Common::epsilonEqual(bb.minY(), bb.maxY()) && !Common::epsilonEqual(bb.minZ(), bb.maxZ())){
                             b = true;
                         }
                         return b;
@@ -140,21 +140,21 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                         }
                     }
                     bool isInside = false;
-                    std::vector<Pointd> extremes;
-                    bb.getExtremes(extremes);
+					std::vector<Point3d> extremes;
+					bb.extremes(extremes);
                     for (unsigned int i = 0; i < extremes.size() && !isInside; i++){
                         if (tree.isInside(extremes[i]))
                             isInside = true;
                     }
-                    if(isInside || tree.getNumberIntersectedPrimitives(bb) > 0){
+					if(isInside || tree.numberIntersectedPrimitives(bb) > 0){
                         return true;
                     }
                 }
                 else {
                     bool b = false;
                     SimpleEigenMesh intersection = libigl::intersection(b1.getEigenMesh(), b2.getEigenMesh());
-                    BoundingBox bb = intersection.getBoundingBox();
-                    if (intersection.getNumberVertices() > 0 && !epsilonEqual(bb.getMinX(), bb.getMaxX()) && !epsilonEqual(bb.getMinY(), bb.getMaxY()) && !epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
+					BoundingBox3 bb = intersection.boundingBox();
+					if (intersection.numberVertices() > 0 && !epsilonEqual(bb.minX(), bb.maxX()) && !epsilonEqual(bb.minY(), bb.maxY()) && !epsilonEqual(bb.minZ(), bb.maxZ())){
                         b = true;
                     }
                     return b;
@@ -186,21 +186,21 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
                         }
                     }
                     bool isInside = false;
-                    std::vector<Pointd> extremes;
-                    bb.getExtremes(extremes);
+					std::vector<Point3d> extremes;
+					bb.extremes(extremes);
                     for (unsigned int i = 0; i < extremes.size() && !isInside; i++){
                         if (tree.isInside(extremes[i]))
                             isInside = true;
                     }
-                    if (isInside  || tree.getNumberIntersectedPrimitives(bb) > 0){
+					if (isInside  || tree.numberIntersectedPrimitives(bb) > 0){
                         return true;
                     }
                 }
                 else {
                     bool b = false;
                     SimpleEigenMesh intersection = libigl::intersection(b1.getEigenMesh(), b2.getEigenMesh());
-                    BoundingBox bb = intersection.getBoundingBox();
-                    if (intersection.getNumberVertices() > 0 && !epsilonEqual(bb.getMinX(), bb.getMaxX()) && !epsilonEqual(bb.getMinY(), bb.getMaxY()) && !epsilonEqual(bb.getMinZ(), bb.getMaxZ())){
+					BoundingBox3 bb = intersection.boundingBox();
+					if (intersection.numberVertices() > 0 && !epsilonEqual(bb.minX(), bb.maxX()) && !epsilonEqual(bb.minY(), bb.maxY()) && !epsilonEqual(bb.minZ(), bb.maxZ())){
                         b = true;
                     }
                     return b;
@@ -221,16 +221,16 @@ bool Splitting::isDangerousIntersection(const Box3D& b1, const Box3D& b2, const 
 bool Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
     b3.setColor(b2.getColor());
     b3.setTarget(b2.getTarget());
-    Vec3 target = b2.getTarget();
+	Vec3d target = b2.getTarget();
 
-    std::vector<Vec3>::const_iterator cit = std::find(XYZ.begin(), XYZ.begin()+6, target);
+	std::vector<Vec3d>::const_iterator cit = std::find(XYZ.begin(), XYZ.begin()+6, target);
     assert(cit != XYZ.begin()+6);
     unsigned int t = cit - XYZ.begin();
 
     if (t < 3){ //+x or +y or +z
         if (!(b1.max()[t] <= b2.max()[t])) {
-            b3.min() = Pointd();
-            b3.max() = Pointd();
+			b3.min() = Point3d();
+			b3.max() = Point3d();
             return false;
         }
         b3.min()[t] = b1.max()[t];
@@ -246,8 +246,8 @@ bool Splitting::getSplits(const Box3D& b1, const Box3D& b2, Box3D & b3) {
     else if (t >= 3){ //-x or -y or -z
         unsigned int i = t-3;
         if (!(b1.min()[i] >= b2.min()[i])) {
-            b3.min() = Pointd();
-            b3.max() = Pointd();
+			b3.min() = Point3d();
+			b3.max() = Point3d();
             return false;
         }
         b3.min()[i] = b2.min()[i];
@@ -284,23 +284,23 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
         oldBox = libigl::difference(oldBox, b1.getEigenMesh());
         SimpleEigenMesh tmp = oldBox;
         tmp = libigl::intersection(tmp, b3.getEigenMesh());
-        if (tmp.getNumberVertices() > 0){
+		if (tmp.numberVertices() > 0){
             oldBox = libigl::difference(oldBox, b3tmp.getEigenMesh());
             b2.setEigenMesh(oldBox);
-            BoundingBox newBBb2 = oldBox.getBoundingBox();
+			BoundingBox3 newBBb2 = oldBox.boundingBox();
             b2.setMin(newBBb2.min());
             b2.setMax(newBBb2.max());
             b3.setEigenMesh(tmp);
-            BoundingBox newBBb3 = tmp.getBoundingBox();
+			BoundingBox3 newBBb3 = tmp.boundingBox();
             b3.setMin(newBBb3.min());
             b3.setMax(newBBb3.max());
         }
         else{
             b2.setEigenMesh(oldBox);
-            BoundingBox newBBb2 = oldBox.getBoundingBox();
+			BoundingBox3 newBBb2 = oldBox.boundingBox();
             b2.setMin(newBBb2.min());
             b2.setMax(newBBb2.max());
-            b3.min() = b3.max() = Pointd();
+			b3.min() = b3.max() = Point3d();
         }
         b2.setSplitted(true);
         b3.setSplitted(true);
@@ -309,15 +309,15 @@ void Splitting::splitBox(const Box3D& b1, Box3D& b2, Box3D & b3, double subd) {
         SimpleEigenMesh oldBox = b2.getEigenMesh();
         oldBox = libigl::difference(oldBox, b1.getEigenMesh());
         b2.setEigenMesh(oldBox);
-        BoundingBox newBBb2 = oldBox.getBoundingBox();
+		BoundingBox3 newBBb2 = oldBox.boundingBox();
         b2.setMin(newBBb2.min());
         b2.setMax(newBBb2.max());
-        b3.min() = b3.max() = Pointd();
+		b3.min() = b3.max() = Point3d();
     }
 }
 
 
-int Splitting::getMinTrianglesCoveredIfBoxesSplitted(const Box3D &b1, const Box3D &b2, const cgal::AABBTree& tree){
+int Splitting::getMinTrianglesCoveredIfBoxesSplitted(const Box3D &b1, const Box3D &b2, const cgal::AABBTree3& tree){
 
     Box3D b3;
     getSplits(b1, b2, b3);
@@ -332,20 +332,20 @@ int Splitting::getMinTrianglesCoveredIfBoxesSplitted(const Box3D &b1, const Box3
     return min;
 }
 
-std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const cgal::AABBTree& aabb, bool completely) {
+std::set<unsigned int> Splitting::getTrianglesCovered(const Box3D &b, const cgal::AABBTree3& aabb, bool completely) {
     std::set<unsigned int> trianglesCovered;
     std::list<const Dcel::Face*> list;
     if (completely)
-        aabb.getCompletelyContainedDcelFaces(list, b);
+		aabb.completelyContainedDcelFaces(list, b);
     else
-        aabb.getContainedDcelFaces(list, b);
+		aabb.containedDcelFaces(list, b);
     for (const Dcel::Face* f : list){
-        trianglesCovered.insert(f->getId());
+		trianglesCovered.insert(f->id());
     }
     return trianglesCovered;
 }
 
-DirectedGraph Splitting::getGraph(const BoxList& bl, const cgal::AABBTree &tree){
+DirectedGraph Splitting::getGraph(const BoxList& bl, const cgal::AABBTree3 &tree){
     int lastId = bl[0].getId();
     for (unsigned int i = 1; i < bl.getNumberBoxes(); i++){
         if (bl[i].getId() > lastId)
@@ -373,7 +373,7 @@ DirectedGraph Splitting::getGraph(const BoxList& bl, const cgal::AABBTree &tree)
     return g;
 }
 
-std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList &bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs, const cgal::AABBTree& tree){
+std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vector<std::vector<unsigned int> > &loops, const BoxList &bl, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs, const cgal::AABBTree3& tree){
     //looking for the more convinient box to split
     std::map<std::pair<unsigned int, unsigned int>, int> arcs;
     for (std::vector<unsigned int> loop : loops){
@@ -439,13 +439,13 @@ std::pair<unsigned int, unsigned int> Splitting::getArcToRemove(const std::vecto
     return arcToRemove;
 }
 
-void Splitting::chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const cgal::AABBTree& tree, const std::set<unsigned int>& boxesToEliminate){
+void Splitting::chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const cgal::AABBTree3& tree, const std::set<unsigned int>& boxesToEliminate){
     Box3D bt3mp1, b3tmp2;
     getSplits(b2,b1,b3tmp2);
     //std::set<unsigned int> trianglesCoveredTmp2 = getTrianglesCovered(btmp2, tree, false);
     std::set<unsigned int> trianglesCoveredB3Tmp2 = getTrianglesCovered(b3tmp2, tree);
     trianglesCoveredB3Tmp2 = difference(intersection(trianglesCoveredB3Tmp2, b1.getTrianglesCovered()), b2.getTrianglesCovered());
-    if (trianglesCoveredB3Tmp2.size() == 0 || ((b3tmp2.min() == b3tmp2.max()) && (b3tmp2.min() == Pointd()))){
+	if (trianglesCoveredB3Tmp2.size() == 0 || ((b3tmp2.min() == b3tmp2.max()) && (b3tmp2.min() == Point3d()))){
         std::swap(b1, b2);
     }
     else {
@@ -465,7 +465,7 @@ void Splitting::chooseBestSplit(Box3D &b1, Box3D &b2, const BoxList &bl, const c
             getSplits(b1,b2,bt3mp1);
             std::set<unsigned int> trianglesCoveredB3Tmp1 = getTrianglesCovered(bt3mp1, tree);
             trianglesCoveredB3Tmp1 = difference(intersection(trianglesCoveredB3Tmp1, b2.getTrianglesCovered()), b1.getTrianglesCovered());
-            if ((bt3mp1.min() != Pointd() || bt3mp1.max() != Pointd()) && trianglesCoveredB3Tmp1.size() != 0){
+			if ((bt3mp1.min() != Point3d() || bt3mp1.max() != Point3d()) && trianglesCoveredB3Tmp1.size() != 0){
                 bool exit = false;
                 for (unsigned int i = 0; i < bl.getNumberBoxes() && !exit; i++){
                     if (boxesToEliminate.find(i) == boxesToEliminate.end() && (int)i != b2.getId()){
@@ -503,7 +503,7 @@ bool Splitting::checkDeleteBox(const Box3D &b, const std::set<unsigned int>& box
     return bIsEliminated;
 }
 
-void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const cgal::AABBTree& tree, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes, std::set<std::pair<unsigned int, unsigned int>, cmpUnorderedStdPair<unsigned int>> &impossibleArcs) {
+void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& g, const cgal::AABBTree3& tree, std::set<unsigned int> &boxesToEliminate, std::map<unsigned int, unsigned int> &mappingNewToOld, int& numberOfSplits, int& deletedBoxes, std::set<std::pair<unsigned int, unsigned int>, cmpUnorderedStdPair<unsigned int>> &impossibleArcs) {
     int lastId = bl[0].getId();
     for (unsigned int i = 1; i < bl.getNumberBoxes(); i++){
         if (bl[i].getId() > lastId)
@@ -517,7 +517,7 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
     //splitBox(b1, b2, b3, d.getAverageHalfEdgesLength()*LENGTH_MULTIPLIER);
     std::pair<unsigned int, unsigned int> impPair(b1.getId(), b2.getId());
     impossibleArcs.insert(impPair);
-    if (!(b3.min() == Pointd() && b3.max() == Pointd())){ //se b3 esiste
+	if (!(b3.min() == Point3d() && b3.max() == Point3d())){ //se b3 esiste
         g.removeEdgeIfExists(b1.getId(), b2.getId());
         g.removeEdgeIfExists(b2.getId(), b1.getId());
         b3.setId(lastId+1);
@@ -623,7 +623,7 @@ void Splitting::splitB2(const Box3D& b1, Box3D& b2, BoxList& bl, DirectedGraph& 
 }
 
 Array2D<int> Splitting::getOrdering(BoxList& bl, const Dcel& d, std::map<unsigned int, unsigned int> &mappingNewToOld, std::list<unsigned int>& priorityBoxes, const std::vector<std::pair<unsigned int, unsigned int> >& userArcs) {
-    cgal::AABBTree tree(d);
+	cgal::AABBTree3 tree(d);
     int lastId = bl[0].getId();
     for (unsigned int i = 1; i < bl.getNumberBoxes(); i++){
         if (bl[i].getId() > lastId)

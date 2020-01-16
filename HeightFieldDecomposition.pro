@@ -15,7 +15,7 @@ CONFIG += ALL
 CONFIG += SERVER_MODE
 
 ALL {
-    CONFIG += CG3_ALL
+    CONFIG += CG3_CORE CG3_DATA_STRUCTURES CG3_MESHES CG3_ALGORITHMS CG3_CGAL CG3_CINOLIB CG3_LIBIGL CG3_VIEWER
     include(cg3lib/cg3.pri)
 }
 
@@ -27,21 +27,6 @@ SERVER_MODE {
 !SERVER_MODE {
     message(GUI mode)
 }
-
-#my configurations, ignore them:
-#SERVER_HOME {
-#    DEFINES += SERVER_HOME
-#    CONFIG += FINAL_RELEASE
-#}
-
-#SERVER_AFTER {
-#    DEFINES += SERVER_AFTER
-#    CONFIG += FINAL_RELEASE
-#}
-
-#CONVERTER_MODE {
-#    DEFINES += CONVERTER_MODE
-#}
 
 message(Included modules: $$MODULES)
 FINAL_RELEASE {
@@ -74,6 +59,7 @@ HEADERS += \
     engine/packing.h \
     engine/splitting.h \
     engine/reconstruction.h \
+    engine/unsigned_distances.h \
     lib/grid/grid.h \
     lib/packing/binpack2d.h \
     lib/graph/undirectednode.h \
@@ -81,6 +67,7 @@ HEADERS += \
     engine/tinyfeaturedetection.h
 
 SOURCES += \
+    engine/unsigned_distances.cpp \
     main.cpp \
     common.cpp \
     GUI/managers/enginemanager.cpp \

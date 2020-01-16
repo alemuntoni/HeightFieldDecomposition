@@ -155,19 +155,19 @@ void BoxList::sortByHeight() {
     struct cmp {
         bool operator()(const Box3D &a, const Box3D &b) const {
             double ah, bh;
-            if (a.getTarget() == Vec3(1,0,0) || a.getTarget() == Vec3(-1,0,0))
-                ah = a.getLengthX();
-            else  if (a.getTarget() == Vec3(0,1,0) || a.getTarget() == Vec3(0,-1,0))
-                ah = a.getLengthY();
+			if (a.getTarget() == Vec3d(1,0,0) || a.getTarget() == Vec3d(-1,0,0))
+				ah = a.lengthX();
+			else  if (a.getTarget() == Vec3d(0,1,0) || a.getTarget() == Vec3d(0,-1,0))
+				ah = a.lengthY();
             else
-                ah = a.getLengthZ();
+				ah = a.lengthZ();
 
-            if (b.getTarget() == Vec3(1,0,0) || b.getTarget() == Vec3(-1,0,0))
-                bh = b.getLengthX();
-            else  if (b.getTarget() == Vec3(0,1,0) || b.getTarget() == Vec3(0,-1,0))
-                bh = b.getLengthY();
+			if (b.getTarget() == Vec3d(1,0,0) || b.getTarget() == Vec3d(-1,0,0))
+				bh = b.lengthX();
+			else  if (b.getTarget() == Vec3d(0,1,0) || b.getTarget() == Vec3d(0,-1,0))
+				bh = b.lengthY();
             else
-                bh = b.getLengthZ();
+				bh = b.lengthZ();
             return (ah > bh);
         }
     };
@@ -180,15 +180,15 @@ void BoxList::generatePieces(double minimumDistance) {
     }
 }
 
-void BoxList::calculateTrianglesCovered(const cgal::AABBTree& tree) {
+void BoxList::calculateTrianglesCovered(const cgal::AABBTree3& tree) {
     for (unsigned int i = 0; i < boxes.size(); i++){
         std::list<unsigned int> ids;
-        tree.getCompletelyContainedDcelFaces(ids, boxes[i]);
+		tree.completelyContainedDcelFaces(ids, boxes[i]);
         boxes[i].setTrianglesCovered(std::set<unsigned int>(ids.begin(), ids.end()));
     }
 }
 
-void BoxList::changeBoxLimits(const BoundingBox &newLimits, unsigned int i) {
+void BoxList::changeBoxLimits(const BoundingBox3 &newLimits, unsigned int i) {
     assert(i < boxes.size());
     boxes[i].min() = newLimits.min();
     boxes[i].max() = newLimits.max();
@@ -250,8 +250,8 @@ void BoxList::draw() const {
     #endif
 }
 
-Pointd BoxList::sceneCenter() const {
-    BoundingBox bb(Pointd(-1,-1,-1), Pointd(1,1,1));
+Point3d BoxList::sceneCenter() const {
+	BoundingBox3 bb(Point3d(-1,-1,-1), Point3d(1,1,1));
     for (unsigned int i = 0; i < boxes.size(); i++){
         bb.min() = bb.min().min(boxes[i].min());
         bb.max() = bb.max().max(boxes[i].max());
@@ -260,7 +260,7 @@ Pointd BoxList::sceneCenter() const {
 }
 
 double BoxList::sceneRadius() const {
-    BoundingBox bb(Pointd(-1,-1,-1), Pointd(1,1,1));
+	BoundingBox3 bb(Point3d(-1,-1,-1), Point3d(1,1,1));
     for (unsigned int i = 0; i < boxes.size(); i++){
         bb.min() = bb.min().min(boxes[i].min());
         bb.max() = bb.max().max(boxes[i].max());
@@ -269,7 +269,7 @@ double BoxList::sceneRadius() const {
 }
 
 #ifdef CG3_VIEWER_DEFINED
-void BoxList::drawLine(const Pointd &a, const Pointd &b, const Color& c) const {
+void BoxList::drawLine(const Point3d &a, const Point3d &b, const Color& c) const {
     glBegin(GL_LINES);
     glColor3f(c.redF(), c.greenF(), c.blueF());
     glLineWidth(3);
@@ -279,7 +279,7 @@ void BoxList::drawLine(const Pointd &a, const Pointd &b, const Color& c) const {
 }
 
 void BoxList::drawCube(const Box3D& b, const Color &c) const {
-    std::vector<Pointd> p;
+	std::vector<Point3d> p;
     b.getRotatedExtremes(p);
     drawLine(p[0], p[1], c);
     drawLine(p[1], p[2], c);

@@ -17,20 +17,20 @@ void HeightfieldsList::draw() const {
     }
 }
 
-Pointd HeightfieldsList::sceneCenter() const{
-    BoundingBox bb(Pointd(-1,-1,-1), Pointd(1,1,1));
+Point3d HeightfieldsList::sceneCenter() const{
+	BoundingBox3 bb(Point3d(-1,-1,-1), Point3d(1,1,1));
     for (unsigned int i = 0; i < heightfields.size(); i++){
-        bb.min() = bb.min().min(heightfields[i].getBoundingBox().min());
-        bb.max() = bb.max().max(heightfields[i].getBoundingBox().max());
+		bb.min() = bb.min().min(heightfields[i].boundingBox().min());
+		bb.max() = bb.max().max(heightfields[i].boundingBox().max());
     }
     return bb.center();
 }
 
 double HeightfieldsList::sceneRadius() const {
-    BoundingBox bb(Pointd(-1,-1,-1), Pointd(1,1,1));
+	BoundingBox3 bb(Point3d(-1,-1,-1), Point3d(1,1,1));
     for (unsigned int i = 0; i < heightfields.size(); i++){
-        bb.min() = bb.min().min(heightfields[i].getBoundingBox().min());
-        bb.max() = bb.max().max(heightfields[i].getBoundingBox().max());
+		bb.min() = bb.min().min(heightfields[i].boundingBox().min());
+		bb.max() = bb.max().max(heightfields[i].boundingBox().max());
     }
     return bb.diag() / 2;
 }
@@ -47,15 +47,15 @@ void HeightfieldsList::resize(int n) {
 
 unsigned int HeightfieldsList::getNumberVerticesHeightfield(int i) const {
     assert (i < (int)heightfields.size());
-    return heightfields[i].getNumberVertices();
+	return heightfields[i].numberVertices();
 }
 
-Pointd HeightfieldsList::getVertexOfHeightfield(int he, int v) const {
+Point3d HeightfieldsList::getVertexOfHeightfield(int he, int v) const {
     assert (he < (int)heightfields.size());
-    return heightfields[he].getVertex(v);
+	return heightfields[he].vertex(v);
 }
 
-Vec3 HeightfieldsList::getTarget(int i) const {
+Vec3d HeightfieldsList::getTarget(int i) const {
     assert(i < (int)heightfields.size());
     return targets[i];
 }
@@ -87,9 +87,9 @@ void HeightfieldsList::setSmoothShading() {
 void HeightfieldsList::checkHeightfields() const {
     for (unsigned int i = 0; i < heightfields.size(); i++){
         const DrawableEigenMesh& m = heightfields[i];
-        for (unsigned int f = 0; f < m.getNumberFaces(); f++){
-            if (m.getFaceNormal(f).dot(targets[i]) < FLIP_ANGLE-CG3_EPSILON && m.getFaceNormal(f).dot(targets[i]) > -1 + CG3_EPSILON){
-                std::cerr << "Hieghtfield: " << i << "; Triangle: " << f << "; Flip: " << m.getFaceNormal(f).dot(targets[i]) << "\n";
+		for (unsigned int f = 0; f < m.numberFaces(); f++){
+			if (m.faceNormal(f).dot(targets[i]) < FLIP_ANGLE-CG3_EPSILON && m.faceNormal(f).dot(targets[i]) > -1 + CG3_EPSILON){
+				std::cerr << "Hieghtfield: " << i << "; Triangle: " << f << "; Flip: " << m.faceNormal(f).dot(targets[i]) << "\n";
             }
         }
     }
@@ -103,15 +103,15 @@ void HeightfieldsList::rotate(const Eigen::MatrixXd m) {
     }
 }
 
-void HeightfieldsList::addHeightfield(const DrawableEigenMesh& m, const Vec3& target, int i, bool updateColor) {
+void HeightfieldsList::addHeightfield(const DrawableEigenMesh& m, const Vec3d& target, int i, bool updateColor) {
     if (i < 0){
         heightfields.push_back(m);
         targets.push_back(target);
         if (updateColor){
             Color c = colorOfNormal(target);
             heightfields[heightfields.size()-1].setFaceColor(c.redF(), c.greenF(), c.blueF());
-            for (unsigned int i = 0; i < m.getNumberFaces(); i++){
-                if (m.getFaceNormal(i).dot(target) < FLIP_ANGLE-CG3_EPSILON)
+			for (unsigned int i = 0; i < m.numberFaces(); i++){
+				if (m.faceNormal(i).dot(target) < FLIP_ANGLE-CG3_EPSILON)
                     heightfields[heightfields.size()-1].setFaceColor(0,0,0,i);
             }
         }
@@ -122,8 +122,8 @@ void HeightfieldsList::addHeightfield(const DrawableEigenMesh& m, const Vec3& ta
         if (updateColor) {
             Color c = colorOfNormal(target);
             heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
-            for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-                if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-CG3_EPSILON)
+			for (unsigned int j = 0; j < m.numberFaces(); j++){
+				if (m.faceNormal(j).dot(target) < FLIP_ANGLE-CG3_EPSILON)
                     heightfields[i].setFaceColor(0,0,0,j);
             }
         }
@@ -156,31 +156,31 @@ void HeightfieldsList::setHeightfield(const cg3::EigenMesh& m, unsigned int i, b
     if (updateColor){
         Color c = colorOfNormal(targets[i]);
         heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
-        for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-            if (m.getFaceNormal(j).dot(targets[i]) < FLIP_ANGLE-CG3_EPSILON)
+		for (unsigned int j = 0; j < m.numberFaces(); j++){
+			if (m.faceNormal(j).dot(targets[i]) < FLIP_ANGLE-CG3_EPSILON)
                 heightfields[i].setFaceColor(0,0,0,j);
         }
     }
 }
 
-void HeightfieldsList::insertHeightfield(const cg3::EigenMesh& m, const Vec3& target, unsigned int i, bool updateColor) {
+void HeightfieldsList::insertHeightfield(const cg3::EigenMesh& m, const Vec3d& target, unsigned int i, bool updateColor) {
     assert (i < heightfields.size()+1);
     heightfields.insert(heightfields.begin() + i, m);
     targets.insert(targets.begin() + i, target);
     if (updateColor){
         Color c = colorOfNormal(target);
         heightfields[i].setFaceColor(c.redF(), c.greenF(), c.blueF());
-        for (unsigned int j = 0; j < m.getNumberFaces(); j++){
-            if (m.getFaceNormal(j).dot(target) < FLIP_ANGLE-CG3_EPSILON)
+		for (unsigned int j = 0; j < m.numberFaces(); j++){
+			if (m.faceNormal(j).dot(target) < FLIP_ANGLE-CG3_EPSILON)
                 heightfields[i].setFaceColor(0,0,0,j);
         }
     }
 }
 
-void HeightfieldsList::explode(const Pointd& bc, double dist) {
+void HeightfieldsList::explode(const Point3d& bc, double dist) {
     for (unsigned int i = 0; i < heightfields.size(); ++i) {
-        Pointd translation;
-        Vec3 v = heightfields[i].getBarycenter() - bc;
+		Point3d translation;
+		Vec3d v = heightfields[i].barycenter() - bc;
         v.normalize();
         translation = v * dist;
         heightfields[i].translate(translation);
