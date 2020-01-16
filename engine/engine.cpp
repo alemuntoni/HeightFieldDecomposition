@@ -372,12 +372,16 @@ void Engine::expandBoxes(BoxList& boxList, const Grid& g, bool limit, const Poin
         if (!limit)
             e.BFGS(b);
         else{
-            Pointd actualLimits(limits.x(), limits.x(), limits.x());
+			//put the Z limit to the milling direction of the box b
+			//the other two directions will have X and Y accordingly
+			//they can be switched at will
+			Pointd actualLimits(std::min(limits.x(), limits.y()), std::min(limits.x(), limits.y()), std::min(limits.x(), limits.y())); //all the limits set to min(X, Y)
             bool find = false;
             for (unsigned int i = 0; i < 3 && !find; i++){
                 if (XYZ[i] == b.getTarget() || XYZ[i+3] == b.getTarget()){
-                    actualLimits[i] = limits.z();
+					actualLimits[i] = limits.z(); //the proper one is set to Z
                     find = true;
+					actualLimits[(i+1)%3] = std::max(limits.x(), limits.y()); //one of the other two is set to max(X, Y)
                 }
             }
             assert(find);
